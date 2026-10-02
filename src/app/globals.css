@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Geçici tema: logo ve tasarım netleşince bu renkler değişecek. */
+:root {
+  --bg: #f6f5f2;
+  --panel: #ffffff;
+  --line: #e2dfd8;
+  --text: #1b1a17;
+  --muted: #6b675f;
+  --accent: #d9480f;
+  --accent-ink: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1012;
+    --panel: #17191c;
+    --line: #2a2d32;
+    --text: #ecebe8;
+    --muted: #9a978f;
+    --accent: #ff7a3d;
+    --accent-ink: #1a0d05;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* alphaTab çalma imleci */
+.at-cursor-bar {
+  background: rgb(255 122 61 / 0.15);
+}
+.at-selection div {
+  background: rgb(255 122 61 / 0.1);
+}
+.at-cursor-beat {
+  background: #d9480f;
+  width: 3px;
+}
+.at-highlight * {
+  fill: #d9480f;
+  stroke: #d9480f;
+}
