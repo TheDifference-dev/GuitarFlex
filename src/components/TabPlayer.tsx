@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // alphaTab tarayıcıya klasik bir <script> olarak yüklenir (public/alphatab, bkz. scripts/copy-alphatab.mjs).
 // Böylece web worker ve font dosyalarını kendi yolundan bulur; bundler ayarı gerekmez.
@@ -31,49 +31,113 @@ function loadAlphaTab(): Promise<any> {
   return loader;
 }
 
+export type TabSource =
+  | { kind: "tex"; tex: string }
+  | { kind: "url"; url: string }
+  | { kind: "file"; data: ArrayBuffer; name: string };
+
+type View = "tab" | "score-tab" | "score";
+type TrackInfo = { index: number; name: string; percussion: boolean };
+
 type Props = {
-  tex: string;
-  baseBpm: number;
+  source: TabSource;
+  /** Egzersiz modu: tek track, sade araç çubuğu. */
+  compact?: boolean;
   onBpmChange?: (bpm: number) => void;
   onPlayingChange?: (playing: boolean) => void;
 };
 
-export default function TabPlayer({ tex, baseBpm, onBpmChange, onPlayingChange }: Props) {
+const SPEEDS = [50, 75, 100];
+
+function formatTime(ms: number) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+// Her kaynak nesnesine sabit bir anahtar ver: kaynak değişince oynatıcı temiz durumla yeniden kurulur.
+const sourceIds = new WeakMap<TabSource, number>();
+let nextSourceId = 0;
+
+export default function TabPlayer(props: Props) {
+  let id = sourceIds.get(props.source);
+  if (id === undefined) {
+    id = ++nextSourceId;
+    sourceIds.set(props.source, id);
+  }
+  return <Player key={id} {...props} />;
+}
+
+function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
+  const atRef = useRef<any>(null);
+
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [playerReady, setPlayerReady] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(100);
-  const [metronome, setMetronome] = useState(true);
-  const [loop, setLoop] = useState(true);
-  const [countIn, setCountIn] = useState(true);
-  const [showScore, setShowScore] = useState(false);
+  const [meta, setMeta] = useState<{ title: string; artist: string; tempo: number }>({ title: "", artist: "", tempo: 120 });
+  const [tracks, setTracks] = useState<TrackInfo[]>([]);
+  const [shown, setShown] = useState(0);
+  const [muted, setMuted] = useState<Set<number>>(new Set());
+  const [solo, setSolo] = useState<Set<number>>(new Set());
+  const [position, setPosition] = useState({ current: 0, end: 0 });
+  const [hasRange, setHasRange] = useState(false);
 
-  // Callback'leri ref'te tut: değişmeleri player'ı yeniden kurmasın.
+  const [speed, setSpeed] = useState(100);
+  const [metronome, setMetronome] = useState(compact);
+  const [countIn, setCountIn] = useState(compact);
+  const [loop, setLoop] = useState(compact);
+  const [zoom, setZoom] = useState(100);
+  const [horizontal, setHorizontal] = useState(false);
+  const [view, setView] = useState<View>("tab");
+
+  // Callback'leri ve görünüm ayarlarını ref'te tut: değişmeleri player'ı yeniden kurmasın.
   const callbacks = useRef({ onBpmChange, onPlayingChange });
+  const display = useRef({ view, zoom, horizontal });
   useEffect(() => {
     callbacks.current = { onBpmChange, onPlayingChange };
+    display.current = { view, zoom, horizontal };
   });
 
+  const staveProfile = useCallback((v: View, percussion: boolean) => {
+    const P = atRef.current.StaveProfile;
+    if (percussion || v === "score") return P.Score;
+    return v === "tab" ? P.Tab : P.ScoreTab;
+  }, []);
+
+  // Kaynak değiştiğinde player'ı kur.
   useEffect(() => {
     let disposed = false;
+
     loadAlphaTab()
       .then((at) => {
         if (disposed || !hostRef.current) return;
+        atRef.current = at;
         // Worker'lar blob üzerinden açıldığı için yollar tam URL olmalı.
         const abs = (path: string) => new URL(path, window.location.href).href;
+        const { view: v, zoom: z, horizontal: h } = display.current;
         const api = new at.AlphaTabApi(hostRef.current, {
           core: { fontDirectory: abs("/alphatab/font/"), scriptFile: abs(SCRIPT) },
-          display: { staveProfile: showScore ? at.StaveProfile.ScoreTab : at.StaveProfile.Tab, scale: 1.0 },
+          display: {
+            staveProfile: staveProfile(v, false),
+            scale: z / 100,
+            layoutMode: h ? at.LayoutMode.Horizontal : at.LayoutMode.Page,
+          },
           player: {
             playerMode: at.PlayerMode.EnabledSynthesizer,
             soundFont: abs("/alphatab/soundfont/sonivox.sf2"),
             scrollElement: viewportRef.current,
+            enableUserInteraction: true,
           },
         });
         apiRef.current = api;
+
+        api.scoreLoaded.on((score: any) => {
+          if (disposed) return;
+          setMeta({ title: score.title, artist: score.artist, tempo: score.tempo });
+          setTracks(score.tracks.map((t: any) => ({ index: t.index, name: t.name || `Track ${t.index + 1}`, percussion: !!t.staves[0]?.isPercussion })));
+        });
         api.renderFinished.on(() => !disposed && setStatus("ready"));
         api.error.on(() => !disposed && setStatus("error"));
         api.playerReady.on(() => !disposed && setPlayerReady(true));
@@ -83,7 +147,19 @@ export default function TabPlayer({ tex, baseBpm, onBpmChange, onPlayingChange }
           setPlaying(isPlaying);
           callbacks.current.onPlayingChange?.(isPlaying);
         });
-        api.tex(tex);
+        let last = 0;
+        api.playerPositionChanged.on((e: { currentTime: number; endTime: number }) => {
+          if (disposed) return;
+          const now = performance.now();
+          if (now - last < 200 && e.currentTime !== 0) return;
+          last = now;
+          setPosition({ current: e.currentTime, end: e.endTime });
+        });
+        api.playbackRangeChanged.on((e: { playbackRange: unknown }) => !disposed && setHasRange(!!e.playbackRange));
+
+        if (source.kind === "tex") api.tex(source.tex, [0]);
+        else if (source.kind === "url") api.load(source.url, [0]);
+        else api.load(new Uint8Array(source.data), [0]);
       })
       .catch(() => !disposed && setStatus("error"));
 
@@ -91,11 +167,30 @@ export default function TabPlayer({ tex, baseBpm, onBpmChange, onPlayingChange }
       disposed = true;
       apiRef.current?.destroy();
       apiRef.current = null;
-      setPlayerReady(false);
-      setPlaying(false);
     };
-  }, [tex, showScore]);
+  }, [source, staveProfile]);
 
+  // Görünen track ve görünüm türü
+  useEffect(() => {
+    const api = apiRef.current;
+    const track = api?.score?.tracks[shown];
+    if (!track) return;
+    api.settings.display.staveProfile = staveProfile(view, !!track.staves[0]?.isPercussion);
+    api.updateSettings();
+    api.renderTracks([track]);
+  }, [shown, view, tracks, staveProfile]);
+
+  // Zoom ve yerleşim
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api?.score) return;
+    api.settings.display.scale = zoom / 100;
+    api.settings.display.layoutMode = horizontal ? atRef.current.LayoutMode.Horizontal : atRef.current.LayoutMode.Page;
+    api.updateSettings();
+    api.render();
+  }, [zoom, horizontal]);
+
+  // Çalma ayarları
   useEffect(() => {
     const api = apiRef.current;
     if (!api) return;
@@ -106,69 +201,218 @@ export default function TabPlayer({ tex, baseBpm, onBpmChange, onPlayingChange }
   }, [speed, metronome, loop, countIn, playerReady]);
 
   useEffect(() => {
-    callbacks.current.onBpmChange?.(Math.round((baseBpm * speed) / 100));
-  }, [baseBpm, speed]);
+    callbacks.current.onBpmChange?.(Math.round((meta.tempo * speed) / 100));
+  }, [meta.tempo, speed]);
 
-  const bpm = Math.round((baseBpm * speed) / 100);
+  const clearRange = useCallback(() => {
+    const api = apiRef.current;
+    if (!api) return;
+    api.playbackRange = null;
+    api.clearPlaybackRangeHighlight();
+    setHasRange(false);
+  }, []);
+
+  // Klavye kısayolları: boşluk = çal/duraklat, L = döngü, M = metronom, Esc = seçimi temizle
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (el.closest("input, textarea, select, button, [contenteditable]")) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        apiRef.current?.playPause();
+      } else if (e.key === "l" || e.key === "L") setLoop((x) => !x);
+      else if (e.key === "m" || e.key === "M") setMetronome((x) => !x);
+      else if (e.key === "Escape") clearRange();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [clearRange]);
+
+  const toggleIn = (set: Set<number>, i: number) => {
+    const next = new Set(set);
+    if (next.has(i)) next.delete(i);
+    else next.add(i);
+    return next;
+  };
+
+  const toggleMute = (i: number) => {
+    const api = apiRef.current;
+    const next = toggleIn(muted, i);
+    setMuted(next);
+    api?.changeTrackMute([api.score.tracks[i]], next.has(i));
+  };
+
+  const toggleSolo = (i: number) => {
+    const api = apiRef.current;
+    const next = toggleIn(solo, i);
+    setSolo(next);
+    api?.changeTrackSolo([api.score.tracks[i]], next.has(i));
+  };
+
+  const changeVolume = (i: number, value: number) => {
+    const api = apiRef.current;
+    api?.changeTrackVolume([api.score.tracks[i]], value / 100);
+  };
+
+  const bpm = Math.round((meta.tempo * speed) / 100);
+  const btn = "rounded-md border border-line px-2.5 py-1.5 text-sm disabled:opacity-40";
+  const on = "border-accent bg-accent text-accent-ink";
 
   return (
     <div className="rounded-xl border border-line bg-panel">
-      <div className="flex flex-wrap items-center gap-3 border-b border-line p-3">
-        <button
-          type="button"
-          onClick={() => apiRef.current?.playPause()}
-          disabled={!playerReady}
-          className="rounded-lg bg-accent px-4 py-2 font-semibold text-accent-ink disabled:opacity-40"
-        >
-          {playing ? "❚❚ Duraklat" : "▶ Çal"}
-        </button>
-        <button
-          type="button"
-          onClick={() => apiRef.current?.stop()}
-          disabled={!playerReady}
-          className="rounded-lg border border-line px-3 py-2 disabled:opacity-40"
-        >
-          ■ Durdur
-        </button>
+      {/* Ana araç çubuğu */}
+      <div className="sticky top-[57px] z-[5] space-y-3 rounded-t-xl border-b border-line bg-panel p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => apiRef.current?.playPause()}
+            disabled={!playerReady}
+            className="min-w-28 rounded-lg bg-accent px-4 py-2 font-semibold text-accent-ink disabled:opacity-40"
+            title="Çal / Duraklat (Boşluk)"
+          >
+            {playing ? "❚❚ Duraklat" : "▶ Çal"}
+          </button>
+          <button type="button" onClick={() => apiRef.current?.stop()} disabled={!playerReady} className={btn} title="Başa dön">
+            ■
+          </button>
 
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-muted">Tempo</span>
+          <div className="flex min-w-48 flex-1 items-center gap-2 text-sm tabular-nums">
+            <span>{formatTime(position.current)}</span>
+            <input
+              type="range"
+              min={0}
+              max={Math.max(1, position.end)}
+              value={position.current}
+              onChange={(e) => {
+                const t = Number(e.target.value);
+                if (apiRef.current) apiRef.current.timePosition = t;
+                setPosition((p) => ({ ...p, current: t }));
+              }}
+              disabled={!playerReady}
+              className="flex-1 accent-[var(--accent)]"
+              aria-label="Konum"
+            />
+            <span className="text-muted">{formatTime(position.end)}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted">Hız</span>
+          {SPEEDS.map((s) => (
+            <button key={s} type="button" onClick={() => setSpeed(s)} className={`${btn} ${speed === s ? on : ""}`}>
+              %{s}
+            </button>
+          ))}
           <input
             type="range"
             min={25}
-            max={200}
+            max={150}
             step={5}
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))}
-            className="w-32 accent-[var(--accent)]"
+            className="w-24 accent-[var(--accent)]"
+            aria-label="Hız"
           />
-          <span className="w-24 tabular-nums">
-            {bpm} BPM <span className="text-muted">({speed}%)</span>
-          </span>
-        </label>
+          <span className="w-16 tabular-nums">{bpm} BPM</span>
 
-        <div className="flex flex-wrap gap-3 text-sm">
-          <Toggle label="Metronom" checked={metronome} onChange={setMetronome} />
-          <Toggle label="Döngü" checked={loop} onChange={setLoop} />
-          <Toggle label="Sayım" checked={countIn} onChange={setCountIn} />
-          <Toggle label="Nota" checked={showScore} onChange={setShowScore} />
+          <span className="mx-1 h-5 w-px bg-line" />
+          <button type="button" onClick={() => setMetronome((x) => !x)} className={`${btn} ${metronome ? on : ""}`} title="Metronom (M)">
+            Metronom
+          </button>
+          <button type="button" onClick={() => setCountIn((x) => !x)} className={`${btn} ${countIn ? on : ""}`} title="Başlamadan önce bir ölçü say">
+            Sayım
+          </button>
+          <button type="button" onClick={() => setLoop((x) => !x)} className={`${btn} ${loop ? on : ""}`} title="Döngü (L)">
+            Döngü
+          </button>
+          {hasRange && (
+            <button type="button" onClick={clearRange} className={btn} title="Seçimi temizle (Esc)">
+              Seçimi kaldır ✕
+            </button>
+          )}
+
+          <span className="mx-1 h-5 w-px bg-line" />
+          <div className="flex overflow-hidden rounded-md border border-line">
+            {(
+              [
+                ["tab", "Tab"],
+                ["score-tab", "Nota+Tab"],
+                ["score", "Nota"],
+              ] as const
+            ).map(([v, label]) => (
+              <button key={v} type="button" onClick={() => setView(v)} className={`px-2.5 py-1.5 ${view === v ? "bg-accent text-accent-ink" : ""}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {!compact && (
+            <button type="button" onClick={() => setHorizontal((x) => !x)} className={`${btn} ${horizontal ? on : ""}`} title="Tek satırda kaydır">
+              Yatay
+            </button>
+          )}
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={() => setZoom((z) => Math.max(60, z - 10))} className={btn} aria-label="Uzaklaştır">
+              −
+            </button>
+            <span className="w-11 text-center tabular-nums">%{zoom}</span>
+            <button type="button" onClick={() => setZoom((z) => Math.min(160, z + 10))} className={btn} aria-label="Yakınlaştır">
+              +
+            </button>
+          </div>
         </div>
+
+        {/* Track listesi */}
+        {tracks.length > 1 && (
+          <div className="flex flex-wrap gap-2">
+            {tracks.map((t) => (
+              <div
+                key={t.index}
+                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-sm ${shown === t.index ? "border-accent" : "border-line"}`}
+              >
+                <button type="button" onClick={() => setShown(t.index)} className={`font-medium ${shown === t.index ? "text-accent" : ""}`} title="Bu track'i göster">
+                  {t.percussion ? "🥁" : "🎸"} {t.name}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleMute(t.index)}
+                  className={`rounded px-1.5 text-xs font-bold ${muted.has(t.index) ? "bg-red-600 text-white" : "bg-line"}`}
+                  title="Sessize al"
+                >
+                  M
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleSolo(t.index)}
+                  className={`rounded px-1.5 text-xs font-bold ${solo.has(t.index) ? "bg-yellow-500 text-black" : "bg-line"}`}
+                  title="Solo"
+                >
+                  S
+                </button>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  defaultValue={100}
+                  onChange={(e) => changeVolume(t.index, Number(e.target.value))}
+                  className="w-16 accent-[var(--accent)]"
+                  aria-label={`${t.name} ses`}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div ref={viewportRef} className="relative max-h-[60vh] overflow-auto rounded-b-xl bg-white p-2 text-black">
+      <div ref={viewportRef} className={`relative overflow-auto rounded-b-xl bg-white p-2 text-black ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}>
         {status === "loading" && <p className="p-6 text-center text-sm text-neutral-500">Tab yükleniyor…</p>}
-        {status === "error" && <p className="p-6 text-center text-sm text-red-600">Tab gösterilemedi.</p>}
+        {status === "error" && <p className="p-6 text-center text-sm text-red-600">Tab açılamadı. Dosya bozuk ya da desteklenmeyen bir formatta olabilir.</p>}
         <div ref={hostRef} />
       </div>
+      {!compact && (
+        <p className="border-t border-line px-3 py-2 text-xs text-muted">
+          İpucu: Notaya tıklayarak oradan çal, sürükleyerek bölüm seç (döngü açıksa seçili bölüm tekrar eder). Kısayollar: Boşluk çal/duraklat · L döngü · M metronom · Esc seçimi kaldır.
+        </p>
+      )}
     </div>
-  );
-}
-
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex cursor-pointer items-center gap-1.5 select-none">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-[var(--accent)]" />
-      {label}
-    </label>
   );
 }

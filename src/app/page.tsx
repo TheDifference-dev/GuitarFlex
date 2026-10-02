@@ -10,6 +10,11 @@ const MODULES = [
     text: `${TECHNIQUES.length} teknik, ${ALL_EXERCISES.length} egzersiz. Kolaydan zora seviyeler, metronomlu tab oynatıcı.`,
   },
   {
+    href: "/oynatici",
+    title: "Tab Oynatıcı",
+    text: "Guitar Pro dosyalarını aç: çoklu enstrüman, mute/solo, hız, metronom, bölüm döngüsü.",
+  },
+  {
     href: "/teori",
     title: "Müzik Teorisi",
     text: `${THEORY.length} ders, interaktif gitar sapı: gamlar, akorlar ve aralıklar.`,

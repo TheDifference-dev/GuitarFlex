@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import TabPlayer from "./TabPlayer";
+import { useEffect, useMemo, useState } from "react";
+import TabPlayer, { type TabSource } from "./TabPlayer";
 import { formatDuration, logPractice, setCompleted, useProgress } from "@/lib/progress";
 
 type Props = {
@@ -19,6 +19,7 @@ export default function PracticePanel({ exerciseId, tex, startBpm, targetBpm }: 
   const [running, setRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [saved, setSaved] = useState<string | null>(null);
+  const source = useMemo<TabSource>(() => ({ kind: "tex", tex }), [tex]);
 
   useEffect(() => {
     if (!running) return;
@@ -39,7 +40,7 @@ export default function PracticePanel({ exerciseId, tex, startBpm, targetBpm }: 
 
   return (
     <div className="space-y-4">
-      <TabPlayer tex={tex} baseBpm={startBpm} onBpmChange={setBpm} onPlayingChange={setRunning} />
+      <TabPlayer source={source} compact onBpmChange={setBpm} onPlayingChange={setRunning} />
 
       <div className="grid gap-4 rounded-xl border border-line bg-panel p-4 sm:grid-cols-3">
         <div>

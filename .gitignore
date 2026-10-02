@@ -42,3 +42,7 @@ next-env.d.ts
 
 # alphaTab kopyalanan dosyalar (npm install ile üretilir)
 /public/alphatab
+
+# Kişisel arşiv (bilgisayarda kalır, Git'e gitmez)
+/ozel-kaynak/*
+!/ozel-kaynak/BENIOKU.md
