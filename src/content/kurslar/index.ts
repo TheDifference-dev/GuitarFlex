@@ -7,5 +7,6 @@ import { tappingCourse } from "./tapping.ts";
 import { economyCourse } from "./economy.ts";
 import { bendVibratoCourse } from "./bend-vibrato.ts";
 import { slideCourse } from "./slide.ts";
+import { palmMuteCourse } from "./palm-mute.ts";
 
-export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse, bendVibratoCourse, slideCourse];
+export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse, bendVibratoCourse, slideCourse, palmMuteCourse];
