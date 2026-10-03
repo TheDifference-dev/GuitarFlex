@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── RENK PALETİ: Lacivert & Siyah ─────────────────────────────
+/* ── RENK PALETİ: Lacivert · Turuncu · Beyaz ───────────────────
    Uygulamanın tüm renkleri buradan gelir; değiştirmek için sadece bu değerleri düzenle.
    --bg       sayfa arka planı        --panel   kart / kutu arka planı
    --line     çizgi ve kenarlıklar    --text    ana yazı
@@ -10,15 +10,15 @@
    ─────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
-  --bg: #04060c;
-  --panel: #0a1124;
-  --line: #1a2546;
-  --text: #e6ebf7;
-  --muted: #8a96b6;
-  --accent: #2c5be0;
+  --bg: #071029;
+  --panel: #0d1a3d;
+  --line: #213260;
+  --text: #ffffff;
+  --muted: #a3b0cf;
+  --accent: #f47216;
   --accent-ink: #ffffff;
-  --sheet: #070c1a;
-  --sheet-ink: #dfe6f7;
+  --sheet: #0a1534;
+  --sheet-ink: #f4f6fb;
 }
 
 @theme inline {

@@ -30,7 +30,7 @@ npm run dev            # web sitesi: http://localhost:3000
 ```
 
 Masaüstü uygulaması ile web sitesi aynı kodu kullanır; arayüzde yapılan her değişiklik ikisine birden yansır.
-Uygulama adı ve logo `src/config/site.ts`, renk paleti (lacivert & siyah) `src/app/globals.css` içinde.
+Uygulama adı ve logo `src/config/site.ts`, renk paleti (lacivert, turuncu, beyaz) `src/app/globals.css` içinde.
 Logo adayları `public/marka/` klasöründe; uygulamada **Marka** sayfasında (alt bilgideki bağlantı) görülebilir.
 Logoları yeniden üretmek için: `python3 scripts/logo-ciz.py`.
 

@@ -48,7 +48,7 @@ Dosyalar **Oynatıcı → Arşivim** altında görünür. Bu klasör GitHub'a g�
 | Ne | Nerede |
 |---|---|
 | Uygulama adı, slogan, logo | `src/config/site.ts` |
-| Renk paleti (lacivert & siyah) | `src/app/globals.css` dosyasının başı |
+| Renk paleti (lacivert, turuncu, beyaz) | `src/app/globals.css` dosyasının başı |
 | Logo adayları | `public/marka/` (uygulamada alt bilgideki **Marka** sayfası) |
 
 Masaüstü uygulaması `npm run desktop` ile açıkken kaydettiğin değişiklik pencerede anında görünür.
