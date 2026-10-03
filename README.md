@@ -19,7 +19,7 @@ Electron (desktop app with self-updating launcher) · Web Audio API (metronome, 
 - Multi-track Guitar Pro / MusicXML / alphaTex player: per-track mute/solo/volume, speed control, metronome, count-in, click-to-seek, drag-to-loop
 - Course structure (course → section → chapter → lesson) with timed lessons, locked sections and per-lesson progress
 - Pluggable private content packs (JSON + images + Guitar Pro files) loaded at runtime from a git-ignored folder
-- 150+ original exercises written as alphaTex; scale fingerings and sequences are computed from pitch data (`src/content/dizi.ts`) and every bar is validated by a custom checker (`npm run check-content`)
+- 12 complete technique courses with 550+ original exercises written as alphaTex. Scale fingerings, arpeggio shapes, sequences and pick-stroke directions are computed from pitch data (`src/content/dizi.ts`), and a custom checker (`npm run check-content`) validates every bar's length and every hammer-on/pull-off/slide
 - Interactive SVG fretboard: scales, chords, intervals, note playback and a timed note-finding quiz
 - Desktop launcher that pulls updates from GitHub, rebuilds when needed and starts the app with one click
 - Brand assets (logo silhouettes) generated programmatically as SVG (`scripts/logo-ciz.py`)
@@ -31,8 +31,8 @@ Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan masaü
 ## Özellikler
 
 - **Kurslar** (`/calis/<kurs>`): Bölüm → alt bölüm (1.0, 1.1 …) → ders yapısı. Her dersin BPM'i ve hedef süresi var; süre dolunca ders tamamlanır.
-  Sol panelde Egzersiz/Rehber sekmeleri, eğitim videoları, bölümler ve sınav satırları. 12 teknik kursu ve 2 başlangıç rehberi yerleşik gelir.
-  Her derste "Müzik Bilgisi" kutusu dersin arkasındaki teoriyi (gam, aralık, akor, ritim) anlatır. Alternate Picking 6 bölüm / 30 alt bölüm / 90 dersle tam kurs olarak yazıldı.
+  Sol panelde Egzersiz/Rehber sekmeleri, eğitim videoları, bölümler ve sınav satırları. 12 teknik kursu (3–6 bölüm, toplam 550'den fazla ders) ve 2 başlangıç rehberi yerleşik gelir.
+  Her derste "Müzik Bilgisi" kutusu dersin arkasındaki teoriyi (gam, aralık, akor, ritim) anlatır.
 - **İçerik paketi**: `ozel-kaynak/icerik/*.json` ile kendi kurslarını, görsellerini ve tablarını ekleyebilirsin (bkz. [docs/ICERIK-PAKETI.md](docs/ICERIK-PAKETI.md)).
 - **Tab oynatıcı** (`/oynatici`): Guitar Pro (.gp, .gp3–.gp7, .gpx), MusicXML ve alphaTex dosyalarını açar. Özellikler:
   - çoklu enstrüman: track seçimi, mute, solo, ses seviyesi
@@ -69,7 +69,7 @@ Diğer komutlar:
 ```bash
 npm run build          # production build
 npm run lint
-npm run check-content  # tüm tabları alphaTab ile ayrıştırır, her ölçünün 4/4 olduğunu doğrular
+npm run check-content  # tüm tabları alphaTab ile ayrıştırır; ölçü uzunluklarını, bağları ve slide'ları doğrular
 ```
 
 ## Yapı
@@ -79,10 +79,11 @@ desktop/main.cjs            masaüstü uygulaması (Electron penceresi + menüle
 desktop/guncelle.cjs        kısayoldan açılışta GitHub'dan güncelleme + derleme
 desktop/kisayol-olustur.cjs masaüstü / Başlat menüsü kısayolu (Windows)
 src/config/site.ts          uygulama adı ve metinleri
-src/content/courses.ts      yerleşik kurslar ve başlangıç rehberleri
-src/lib/courses.ts          kurs yükleyici (yerleşik + ozel-kaynak/icerik paketi)
-src/content/techniques.ts   egzersizler (alphaTex formatında tablar)
+src/content/kurslar/        12 teknik kursu (her biri ayrı dosya) ve ortak yardımcılar
+src/content/courses.ts      kurs sırası ve başlangıç rehberleri
+src/content/dizi.ts         gam, arpej ve sekansları sap üzerine yerleştiren hesaplar
 src/content/tex.ts          tab yazım yardımcıları
+src/lib/courses.ts          kurs yükleyici (yerleşik + kişisel içerik paketi)
 src/content/theory.ts       teori dersleri
 src/content/songs.ts        oynatıcıyla gelen örnek şarkılar
 src/lib/archive.ts          kişisel arşiv (ozel-kaynak/tablar) okuma
@@ -92,6 +93,9 @@ src/lib/music.ts            nota, gam ve akor hesapları
 src/components/             TabPlayer, Fretboard, Metronome, NoteQuiz…
 ```
 
-### Yeni egzersiz eklemek
+### Yeni ders eklemek
 
-`src/content/techniques.ts` içinde ilgili tekniğin `level(...)` listesine bir nesne ekle. Tab yazımı `perde.tel` şeklindedir (tel 1 = ince Mi, tel 6 = kalın Mi). Örnek: `:8 5.6 7.6 5.5{h} 7.5`. Sözdizimi için [alphaTex dokümantasyonuna](https://alphatab.net/docs/alphatex/introduction) bak. Ekledikten sonra `npm run check-content` çalıştır.
+İlgili kursun dosyasında (`src/content/kurslar/<kurs>.ts`) bir alt bölümün ders listesine `ders(başlık, bpm, tab, açıklama, ipuçları, müzik bilgisi)` ekle.
+Tab yazımı `perde.tel` şeklindedir (tel 1 = ince Mi, tel 6 = kalın Mi). Örnek: `:8 5.6 7.6 5.5{h} 7.5`.
+Gamlar ve arpejler elle yazılmak zorunda değil: `dizi.ts` içindeki `perString`, `inPosition`, `arpShape`, `groups` gibi yardımcılar perdeleri notalardan hesaplar.
+Sözdizimi için [alphaTex dokümantasyonuna](https://alphatab.net/docs/alphatex/introduction) bak. Ekledikten sonra `npm run check-content` çalıştır.

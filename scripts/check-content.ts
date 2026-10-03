@@ -2,7 +2,6 @@
 // ölçü sayısına uymayan ölçüleri ve track'ler arası ölçü sayısı farkını raporlar.
 // Çalıştırma: npm run check-content
 import * as alphaTab from "@coderline/alphatab";
-import { ALL_EXERCISES } from "../src/content/techniques.ts";
 import { SONGS } from "../src/content/songs.ts";
 import { BUILTIN_COURSES, flatLessons } from "../src/content/courses.ts";
 
@@ -48,11 +47,8 @@ function check(tex: string): string[] {
 
 let failures = 0;
 const ids = new Set<string>();
-const items = [
-  ...ALL_EXERCISES.map((e) => ({ id: e.id, title: e.title, tex: e.tex })),
-  ...SONGS.map((s) => ({ id: `sarki:${s.slug}`, title: s.title, tex: s.tex })),
-];
-// Kurslardaki dersler (techniques.ts'den gelenler yukarıda zaten var)
+const items = SONGS.map((s) => ({ id: `sarki:${s.slug}`, title: s.title, tex: s.tex }));
+// Kurslardaki dersler (rehberler aynı dersleri kullandığı için aynı tab bir kez denetlenir)
 const seenTex = new Set(items.map((i) => i.tex));
 let courseLessons = 0;
 for (const c of BUILTIN_COURSES) {
@@ -74,5 +70,5 @@ for (const item of items) {
   }
 }
 
-console.log(`${ALL_EXERCISES.length} egzersiz, ${courseLessons} kurs dersi ve ${SONGS.length} şarkı kontrol edildi, ${failures} hatalı.`);
+console.log(`${courseLessons} ders ve ${SONGS.length} şarkı kontrol edildi, ${failures} hatalı.`);
 process.exit(failures ? 1 : 0);

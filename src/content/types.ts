@@ -1,32 +1,5 @@
-export type Exercise = {
-  /** Benzersiz kimlik: `<teknik>-<seviye>-<sıra>` */
-  id: string;
-  title: string;
-  description: string;
-  tips: string[];
-  /** alphaTex formatında tab (bkz. https://alphatab.net/docs/alphatex/introduction) */
-  tex: string;
-  startBpm: number;
-  targetBpm: number;
-};
-
-export type Level = {
-  level: number;
-  title: string;
-  goal: string;
-  exercises: Exercise[];
-};
-
-export type Technique = {
-  slug: string;
-  name: string;
-  icon: string;
-  summary: string;
-  levels: Level[];
-};
-
 // ── Kurs yapısı: Kurs → Bölüm → Alt bölüm (1.0, 1.1 …) → Ders ─────────────────
-// Yerleşik kurslar src/content/courses.ts içinde; kişisel içerik paketleri
+// Yerleşik kurslar src/content/kurslar/ içinde; kişisel içerik paketleri
 // ozel-kaynak/icerik/*.json dosyalarından aynı şekilde okunur (bkz. src/lib/courses.ts).
 
 export type Lesson = {
