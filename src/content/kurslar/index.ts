@@ -9,5 +9,6 @@ import { bendVibratoCourse } from "./bend-vibrato.ts";
 import { slideCourse } from "./slide.ts";
 import { palmMuteCourse } from "./palm-mute.ts";
 import { arpejCourse } from "./arpejler.ts";
+import { akorCourse } from "./akorlar.ts";
 
-export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse, bendVibratoCourse, slideCourse, palmMuteCourse, arpejCourse];
+export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse, bendVibratoCourse, slideCourse, palmMuteCourse, arpejCourse, akorCourse];
