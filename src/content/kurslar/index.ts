@@ -2,5 +2,6 @@
 import type { Course } from "../types.ts";
 import { alternatePickingCourse } from "./alternate-picking.ts";
 import { legatoCourse } from "./legato.ts";
+import { sweepCourse } from "./sweep.ts";
 
-export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse];
+export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse];

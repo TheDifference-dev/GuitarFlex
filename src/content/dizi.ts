@@ -127,3 +127,41 @@ export function pos(notes: string[]): Pos[] {
     return { f, s, m: OPEN[s - 1] + f };
   });
 }
+
+export const TRIAD = { major: [0, 4, 7], minor: [0, 3, 7], dim: [0, 3, 6], aug: [0, 4, 8] } as const;
+export const SEVENTH = { maj7: [0, 4, 7, 11], m7: [0, 3, 7, 10], dom7: [0, 4, 7, 10], m7b5: [0, 3, 6, 10] } as const;
+
+/**
+ * Arpej şekli: `start` notasından (dahil) yukarı doğru akor tonlarını alır ve
+ * `counts` ile tellere dağıtır (ör. [2,1,1,1,2] = 5 telli sweep şekli). Şekil 5 perdeden
+ * geniş olursa hata verir.
+ */
+export function arpShape(root: number, intervals: readonly number[], start: number, counts: number[], startString: number): Pos[] {
+  const total = counts.reduce((a, b) => a + b, 0);
+  const pitches: number[] = [];
+  for (let p = start; pitches.length < total; p++) if (intervals.includes(pc(p - root))) pitches.push(p);
+  const ps = perString(pitches, counts, startString);
+  const frets = ps.map((p) => p.f);
+  if (Math.max(...frets) - Math.min(...frets) > 5) throw new Error(`Arpej şekli çok geniş: ${tabs(ps).join(" ")}`);
+  return ps;
+}
+
+/** Sweep döngüsü: çık ve in, en alttaki ve en üstteki nota bir kez (ör. 7 notalık şekil → 12 nota). */
+export const sweepCycle = (ps: Pos[]) => [...ps, ...[...ps].reverse().slice(1, -1)];
+
+/**
+ * Sweep pena işaretleri, tüm diziye birden uygulanır: tel değiştirerek çıkarken aşağı,
+ * inerken yukarı pena (yön değişene kadar pena aynı yönde "süpürür"); aynı teldeki
+ * yakın notalar hammer-on / pull-off ile bağlanır.
+ */
+export function sweepMarks(ps: Pos[]): string[] {
+  const near = (a: Pos | undefined, b: Pos | undefined) => !!a && !!b && a.s === b.s && a.f !== b.f && Math.abs(a.f - b.f) <= 5;
+  return ps.map((p, i) => {
+    const prev = ps[i - 1];
+    const next = ps[i + 1];
+    const fx: string[] = [];
+    if (!near(prev, p)) fx.push(prev ? (p.m > prev.m ? "sd" : "su") : next && next.m < p.m ? "su" : "sd");
+    if (near(p, next)) fx.push("h");
+    return fx.length ? `${tab(p)}{${fx.join(" ")}}` : tab(p);
+  });
+}
