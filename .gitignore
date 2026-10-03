@@ -46,3 +46,6 @@ next-env.d.ts
 # Kişisel arşiv (bilgisayarda kalır, Git'e gitmez)
 /ozel-kaynak/*
 !/ozel-kaynak/BENIOKU.md
+
+# Masaüstü güncelleyicisinin derleme günlüğü
+/desktop/son-derleme-hatasi.log

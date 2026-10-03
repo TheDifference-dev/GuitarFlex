@@ -14,7 +14,8 @@
     "check-content": "node --experimental-strip-types scripts/check-content.ts",
     "predesktop": "npm run copy-alphatab",
     "desktop": "electron desktop/main.cjs",
-    "desktop:prod": "npm run build && electron desktop/main.cjs --prod"
+    "desktop:prod": "npm run build && electron desktop/main.cjs --prod",
+    "kisayol": "node desktop/kisayol-olustur.cjs"
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",

@@ -4,6 +4,8 @@
 //
 //   npm run desktop        → geliştirme modu: kod değişiklikleri pencerede anında görünür
 //   npm run desktop:prod   → derlenmiş hızlı mod (önce `npm run build` çalıştırır)
+//   --guncelle             → masaüstü kısayolunun kullandığı mod: önce GitHub'dan güncelleme
+//                            çeker, gerekirse derler (bkz. guncelle.cjs), sonra açar
 
 const { app, BrowserWindow, Menu, shell, dialog } = require("electron");
 const { spawn, execFile } = require("node:child_process");
@@ -13,7 +15,8 @@ const path = require("node:path");
 const fs = require("node:fs");
 
 const ROOT = path.join(__dirname, "..");
-const PROD = process.argv.includes("--prod");
+const AUTO_UPDATE = process.argv.includes("--guncelle");
+let PROD = process.argv.includes("--prod");
 const ARCHIVE_DIR = path.join(ROOT, "ozel-kaynak", "tablar");
 
 let server = null;
@@ -81,7 +84,7 @@ function stopServer() {
 }
 
 const APP_NAME = "GuitarFlex";
-const ICON = path.join(__dirname, "icon.png");
+const ICON = path.join(__dirname, process.platform === "win32" ? "icon.ico" : "icon.png");
 const LOGO_SVG = path.join(ROOT, "public", "marka", "sahne.svg");
 
 function splash() {
@@ -91,8 +94,17 @@ function splash() {
   } catch {}
   const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#071029;color:#ffffff;font-family:system-ui,sans-serif">
 <div style="text-align:center">${logo}<div style="font-size:30px;font-weight:700;margin-top:16px">${APP_NAME}</div>
-<p style="color:#a3b0cf">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
+<p id="durum" style="color:#a3b0cf;max-width:520px;margin:12px auto 0">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+}
+
+function setStatus(text) {
+  win?.webContents.executeJavaScript(`document.getElementById("durum") && (document.getElementById("durum").textContent = ${JSON.stringify(text)})`).catch(() => {});
+}
+
+function relaunchWithUpdate() {
+  app.relaunch({ args: [path.join(__dirname, "main.cjs"), "--guncelle"] });
+  app.exit(0);
 }
 
 function buildMenu() {
@@ -111,6 +123,7 @@ function buildMenu() {
           },
         },
         { label: "Proje klasörünü aç", click: () => shell.openPath(ROOT) },
+        { label: "Güncellemeleri denetle ve yeniden başlat", click: relaunchWithUpdate },
         { type: "separator" },
         isMac ? { role: "close", label: "Kapat" } : { role: "quit", label: "Çıkış" },
       ],
@@ -172,6 +185,22 @@ async function createWindow() {
 
   await win.loadURL(splash());
 
+  if (AUTO_UPDATE) {
+    try {
+      const { prepare } = require("./guncelle.cjs");
+      const { mode, notes } = await prepare(ROOT, setStatus);
+      PROD = mode === "prod";
+      if (notes.length) {
+        setStatus(notes.join(" "));
+        await new Promise((r) => setTimeout(r, 2500));
+      }
+    } catch (e) {
+      setStatus(`Güncelleme sırasında hata: ${e.message || e}. Mevcut sürümle açılıyor.`);
+      await new Promise((r) => setTimeout(r, 2500));
+    }
+    setStatus(PROD ? "Açılıyor…" : "Geliştirme modunda açılıyor… (bir dakika kadar sürebilir)");
+  }
+
   const port = await freePort();
   baseUrl = `http://127.0.0.1:${port}`;
   startServer(port);
@@ -184,6 +213,7 @@ async function createWindow() {
 }
 
 app.setName(APP_NAME);
+if (process.platform === "win32") app.setAppUserModelId("com.guitarflex.app");
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
