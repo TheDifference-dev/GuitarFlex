@@ -1,6 +1,28 @@
 # GuitarFlex — Gitar Akademisi
 
-Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan web sitesi. İleride **Ton Lab** (ünlü şarkıların tonlarını kişinin kendi ekipmanına uyarlama) modülü eklenecek.
+**GuitarFlex** is a guitar practice platform that runs both as a desktop app (Electron) and as a website (Next.js) from a single codebase.
+It offers structured technique pathways with an interactive tab player, music theory lessons with an interactive fretboard,
+practice tracking (streaks, ranks, badges) and a Songsterr-style multi-track Guitar Pro player.
+
+| Ana sayfa | Tab oynatıcı |
+|---|---|
+| ![Ana sayfa](docs/ekran/ana-sayfa.png) | ![Tab oynatıcı](docs/ekran/oynatici.png) |
+| **Müzik teorisi** | **Marka** |
+| ![Teori](docs/ekran/teori.png) | ![Marka](docs/ekran/marka.png) |
+
+**Tech stack:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · alphaTab (tab rendering & MIDI playback) ·
+Electron (desktop app with self-updating launcher) · Web Audio API (metronome, note playback)
+
+**Highlights**
+- Multi-track Guitar Pro / MusicXML / alphaTex player: per-track mute/solo/volume, speed control, metronome, count-in, click-to-seek, drag-to-loop
+- 65 original exercises written as alphaTex and validated by a custom checker (`npm run check-content`) that verifies every bar's length
+- Interactive SVG fretboard: scales, chords, intervals, note playback and a timed note-finding quiz
+- Desktop launcher that pulls updates from GitHub, rebuilds when needed and starts the app with one click
+- Brand assets (logo silhouettes) generated programmatically as SVG (`scripts/logo-ciz.py`)
+
+---
+
+Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan masaüstü uygulaması ve web sitesi. İleride **Ton Lab** (ünlü şarkıların tonlarını kişinin kendi ekipmanına uyarlama) modülü eklenecek.
 
 ## Özellikler
 
@@ -26,6 +48,7 @@ Adım adım Windows rehberi: [KURULUM.md](KURULUM.md)
 npm install            # alphaTab dosyalarını public/alphatab altına da kopyalar
 npm run desktop        # masaüstü uygulaması (Electron), geliştirme modu
 npm run desktop:prod   # masaüstü uygulaması, derlenmiş hızlı mod
+npm run kisayol        # Windows: masaüstüne kendini güncelleyen GuitarFlex kısayolu ekler
 npm run dev            # web sitesi: http://localhost:3000
 ```
 
@@ -46,6 +69,8 @@ npm run check-content  # tüm tabları alphaTab ile ayrıştırır, her ölçün
 
 ```
 desktop/main.cjs            masaüstü uygulaması (Electron penceresi + menüler)
+desktop/guncelle.cjs        kısayoldan açılışta GitHub'dan güncelleme + derleme
+desktop/kisayol-olustur.cjs masaüstü / Başlat menüsü kısayolu (Windows)
 src/config/site.ts          uygulama adı ve metinleri
 src/content/techniques.ts   egzersizler (alphaTex formatında tablar)
 src/content/tex.ts          tab yazım yardımcıları
