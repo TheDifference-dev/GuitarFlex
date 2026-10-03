@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col font-sans">
         <SiteHeader
           subtitle={texts.navSubtitle}
-          courses={courses.map((c) => ({ slug: c.slug, title: c.title, status: c.status }))}
+          courses={courses.map((c) => ({ slug: c.slug, title: c.title, status: c.status, kind: c.kind }))}
           theory={THEORY.map((t) => ({ slug: t.slug, title: t.title }))}
         />
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>

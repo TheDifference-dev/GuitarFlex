@@ -6,10 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { Bell, BookOpen, ChevronDown, Guitar, Trophy, User, Wrench } from "lucide-react";
 import { SITE } from "@/config/site";
 
-type MenuItem = { href?: string; label: string; note?: string; heading?: boolean };
+type MenuItem = { href?: string; label: string; note?: string };
+type MenuColumn = { title?: string; items: MenuItem[] };
 type Props = {
   subtitle: string;
-  courses: { slug: string; title: string; status?: string }[];
+  courses: { slug: string; title: string; status?: string; kind: "technique" | "guide" }[];
   theory: { slug: string; title: string }[];
 };
 
@@ -27,21 +28,33 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const menus: { id: string; label: string; icon: typeof User; href?: string; active: boolean; items?: MenuItem[] }[] = [
+  const courseItem = (c: Props["courses"][number]): MenuItem => ({
+    href: c.status ? undefined : `/calis/${c.slug}`,
+    label: c.title,
+    note: c.status ? "Yakında" : undefined,
+  });
+
+  const menus: { id: string; label: string; icon: typeof User; href?: string; active: boolean; columns?: MenuColumn[] }[] = [
     { id: "profil", label: "Profil", icon: User, href: "/profil", active: pathname.startsWith("/profil") },
     {
       id: "calis",
       label: "Gitar Çalış",
       icon: Guitar,
       active: pathname === "/" || pathname.startsWith("/calis") || pathname.startsWith("/oynatici") || pathname.startsWith("/sarkilar"),
-      items: [
-        { href: "/", label: "Tüm Egzersizler" },
-        { label: "Teknik Egzersizler", heading: true },
-        ...courses.map((c) => ({ href: c.status ? undefined : `/calis/${c.slug}`, label: c.title, note: c.status ? "Yakında" : undefined })),
-        { label: "Şarkı ve Sololar", heading: true },
-        { href: "/sarkilar", label: "Popüler Şarkılar" },
-        { href: "/oynatici", label: "Tabla Keşfet" },
-        { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
+      columns: [
+        { title: "Teknik Egzersizler", items: courses.filter((c) => c.kind === "technique").map(courseItem) },
+        {
+          title: "Başlangıç",
+          items: [{ href: "/", label: "Tüm Egzersizler" }, ...courses.filter((c) => c.kind === "guide").map(courseItem)],
+        },
+        {
+          title: "Şarkı ve Sololar",
+          items: [
+            { href: "/sarkilar", label: "Popüler Şarkılar" },
+            { href: "/oynatici", label: "Tabla Keşfet" },
+            { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
+          ],
+        },
       ],
     },
     {
@@ -49,17 +62,17 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
       label: "Müzik Teorisi",
       icon: BookOpen,
       active: pathname.startsWith("/teori"),
-      items: [{ href: "/teori", label: "Sap Gezgini" }, ...theory.map((t) => ({ href: `/teori/${t.slug}`, label: t.title }))],
+      columns: [
+        { title: "Araç", items: [{ href: "/teori", label: "Sap Gezgini" }] },
+        { title: "Dersler", items: theory.map((t) => ({ href: `/teori/${t.slug}`, label: t.title })) },
+      ],
     },
     {
       id: "yarisma",
       label: "Yarışma",
       icon: Trophy,
       active: false,
-      items: [
-        { label: "Haftalık Meydan Okuma", note: "Yakında" },
-        { label: "Sıralama", note: "Yakında" },
-      ],
+      columns: [{ items: [{ label: "Haftalık Meydan Okuma", note: "Yakında" }, { label: "Sıralama", note: "Yakında" }] }],
     },
   ];
 
@@ -78,40 +91,57 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
           </span>
         </Link>
 
-        <nav className="flex flex-1 items-center justify-center gap-1 overflow-x-auto">
+        <nav className="flex flex-1 flex-wrap items-center justify-center gap-1">
           {menus.map((m) => {
             const Icon = m.icon;
             const cls = `flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap ${
               m.active ? "bg-accent/15 text-accent" : "text-text hover:bg-panel"
             }`;
-            if (!m.items)
+            if (!m.columns)
               return (
                 <Link key={m.id} href={m.href!} className={cls}>
                   <Icon size={16} /> {m.label}
                 </Link>
               );
+            const wide = m.columns.length > 1;
             return (
               <div key={m.id} className="relative">
                 <button type="button" className={cls} onClick={() => setOpen(open === m.id ? null : m.id)}>
-                  <Icon size={16} /> {m.label} <ChevronDown size={14} />
+                  <Icon size={16} /> {m.label} <ChevronDown size={14} className={`transition ${open === m.id ? "rotate-180" : ""}`} />
                 </button>
                 {open === m.id && (
-                  <div className="absolute left-0 top-full mt-2 max-h-[70vh] w-64 overflow-auto rounded-xl border border-line bg-panel p-1.5 shadow-2xl">
-                    {m.items.map((it) =>
-                      it.heading ? (
-                        <p key={it.label} className="mt-1 border-t border-line px-3 pb-1 pt-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-accent first:mt-0 first:border-0">
-                          {it.label}
-                        </p>
-                      ) : it.href ? (
-                        <Link key={it.label} href={it.href} onClick={() => setOpen(null)} className="block rounded-lg px-3 py-2 text-sm hover:bg-bg">
-                          {it.label}
-                        </Link>
-                      ) : (
-                        <span key={it.label} className="flex justify-between rounded-lg px-3 py-2 text-sm text-muted">
-                          {it.label} {it.note && <span className="text-xs text-accent">{it.note}</span>}
-                        </span>
-                      ),
-                    )}
+                  <div
+                    className={`absolute top-full z-40 mt-2 max-h-[80vh] overflow-y-auto rounded-2xl border border-line bg-panel p-3 shadow-2xl ${
+                      !wide
+                        ? "left-0 w-64"
+                        : m.columns.length === 3
+                          ? "left-1/2 grid w-[min(94vw,860px)] -translate-x-1/2 gap-4 sm:grid-cols-[1.7fr_1fr_1fr]"
+                          : "left-1/2 grid w-[min(94vw,640px)] -translate-x-1/2 gap-4 sm:grid-cols-[1fr_2fr]"
+                    }`}
+                  >
+                    {m.columns.map((col, ci) => (
+                      <div key={col.title ?? ci} className="min-w-0">
+                        {col.title && <p className="px-3 pb-2 pt-1 text-[11px] font-bold uppercase tracking-[0.18em] text-accent">{col.title}</p>}
+                        <div className={col.items.length > 8 ? "grid gap-x-2 sm:grid-cols-2" : ""}>
+                          {col.items.map((it) =>
+                            it.href ? (
+                              <Link
+                                key={it.label}
+                                href={it.href}
+                                onClick={() => setOpen(null)}
+                                className={`block rounded-lg px-3 py-2 text-sm hover:bg-bg hover:text-accent ${pathname === it.href ? "text-accent" : ""}`}
+                              >
+                                {it.label}
+                              </Link>
+                            ) : (
+                              <span key={it.label} className="flex justify-between gap-2 rounded-lg px-3 py-2 text-sm text-muted">
+                                {it.label} {it.note && <span className="text-xs text-accent">{it.note}</span>}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
