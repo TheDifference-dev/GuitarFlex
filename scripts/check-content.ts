@@ -4,6 +4,7 @@
 import * as alphaTab from "@coderline/alphatab";
 import { SONGS } from "../src/content/songs.ts";
 import { BUILTIN_COURSES, flatLessons } from "../src/content/courses.ts";
+import { BACKINGS } from "../src/content/dogaclama.ts";
 
 function check(tex: string): string[] {
   const problems: string[] = [];
@@ -47,7 +48,10 @@ function check(tex: string): string[] {
 
 let failures = 0;
 const ids = new Set<string>();
-const items = SONGS.map((s) => ({ id: `sarki:${s.slug}`, title: s.title, tex: s.tex }));
+const items = [
+  ...SONGS.map((s) => ({ id: `sarki:${s.slug}`, title: s.title, tex: s.tex })),
+  ...BACKINGS.map((b) => ({ id: `eslik:${b.slug}`, title: b.title, tex: b.tex })),
+];
 // Kurslardaki dersler (rehberler aynı dersleri kullandığı için aynı tab bir kez denetlenir)
 const seenTex = new Set(items.map((i) => i.tex));
 let courseLessons = 0;
@@ -70,5 +74,5 @@ for (const item of items) {
   }
 }
 
-console.log(`${courseLessons} ders ve ${SONGS.length} şarkı kontrol edildi, ${failures} hatalı.`);
+console.log(`${courseLessons} ders, ${SONGS.length} şarkı ve ${BACKINGS.length} eşlik kaydı kontrol edildi, ${failures} hatalı.`);
 process.exit(failures ? 1 : 0);

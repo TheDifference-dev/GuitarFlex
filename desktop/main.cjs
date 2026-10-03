@@ -140,7 +140,9 @@ function buildMenu() {
       submenu: [
         { label: "Ana sayfa", accelerator: "CmdOrCtrl+1", click: () => go("/") },
         { label: "Profil", accelerator: "CmdOrCtrl+2", click: () => go("/profil") },
-        { label: "Tab Oynatıcı", accelerator: "CmdOrCtrl+3", click: () => go("/oynatici") },
+        { label: "Popüler Şarkılar", accelerator: "CmdOrCtrl+3", click: () => go("/sarkilar") },
+        { label: "Tabla Keşfet", accelerator: "CmdOrCtrl+6", click: () => go("/oynatici") },
+        { label: "Doğaçlama Çal", accelerator: "CmdOrCtrl+7", click: () => go("/sarkilar/dogaclama") },
         { label: "Müzik Teorisi", accelerator: "CmdOrCtrl+4", click: () => go("/teori") },
         { label: "Araçlar", accelerator: "CmdOrCtrl+5", click: () => go("/araclar") },
         { type: "separator" },

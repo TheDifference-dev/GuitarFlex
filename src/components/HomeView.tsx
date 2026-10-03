@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Map } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, Map, Mic2, Star } from "lucide-react";
 import type { SiteTexts } from "@/content/types";
 import { useProgress, type Progress } from "@/lib/progress";
 
@@ -117,9 +117,35 @@ export default function HomeView({ texts, courses }: { texts: SiteTexts; courses
           );
         })}
       </section>
+
+      {/* Şarkı ve Sololar */}
+      <section className="space-y-4">
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Şarkı ve Sololar</h2>
+        <div className="grid gap-5 md:grid-cols-3">
+          {SONG_CARDS.map(({ href, title, text, icon: Icon }) => (
+            <Link key={href} href={href} className="group flex gap-4 rounded-2xl border border-line bg-panel p-5 transition hover:border-accent">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                <Icon size={22} />
+              </span>
+              <span>
+                <span className="flex items-center gap-1 text-lg font-black">
+                  {title} <ArrowRight size={16} className="opacity-0 transition group-hover:opacity-100" />
+                </span>
+                <span className="mt-1 block text-sm text-muted">{text}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
+
+const SONG_CARDS = [
+  { href: "/sarkilar", title: "Popüler Şarkılar", text: "Ünlü şarkı ve sololar zorluğa göre; tablar Songsterr'de açılır.", icon: Star },
+  { href: "/oynatici", title: "Tabla Keşfet", text: "Kendi Guitar Pro arşivini ve örnek şarkıları çok kanallı oynatıcıda çal.", icon: Compass },
+  { href: "/sarkilar/dogaclama", title: "Doğaçlama Çal", text: "Davul, bas ve gitar eşliğinde önerilen gamlarla solo çal.", icon: Mic2 },
+];
 
 /** Kartın sağındaki Fa majör (barre) akor diyagramı */
 function ChordDiagram() {

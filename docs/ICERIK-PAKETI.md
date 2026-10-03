@@ -89,3 +89,30 @@ ozel-kaynak/
 ```
 
 Verilmeyen alanlar yerleşik metinlerle doldurulur.
+
+## sarkilar.json
+
+"Popüler Şarkılar" listesine kendi şarkılarını eklemek için `icerik/sarkilar.json`:
+
+```json
+[
+  {
+    "title": "Şarkı adı",
+    "artist": "Sanatçı",
+    "level": 2,
+    "kind": "solo",
+    "tags": ["Bend", "Pentatonik"],
+    "courses": ["bend-vibrato"],
+    "url": "https://www.songsterr.com/a/wsa/..."
+  }
+]
+```
+
+| Alan | Açıklama |
+|---|---|
+| `level` | 1 kolay, 2 orta, 3 zor |
+| `kind` | `şarkı`, `solo` ya da `riff` |
+| `courses` | "Hazırlık" bağlantıları (kurs slug'ları) |
+| `url` | Doğrudan bağlantı; verilmezse Songsterr'de şarkı adıyla arama açılır |
+
+Aynı sanatçı ve şarkı adı yerleşik listede de varsa paketteki geçerlidir.

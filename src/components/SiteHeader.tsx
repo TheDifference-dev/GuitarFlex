@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Bell, BookOpen, ChevronDown, Guitar, Trophy, User, Wrench } from "lucide-react";
 import { SITE } from "@/config/site";
 
-type MenuItem = { href?: string; label: string; note?: string };
+type MenuItem = { href?: string; label: string; note?: string; heading?: boolean };
 type Props = {
   subtitle: string;
   courses: { slug: string; title: string; status?: string }[];
@@ -33,11 +33,15 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
       id: "calis",
       label: "Gitar Çalış",
       icon: Guitar,
-      active: pathname === "/" || pathname.startsWith("/calis") || pathname.startsWith("/oynatici"),
+      active: pathname === "/" || pathname.startsWith("/calis") || pathname.startsWith("/oynatici") || pathname.startsWith("/sarkilar"),
       items: [
         { href: "/", label: "Tüm Egzersizler" },
+        { label: "Teknik Egzersizler", heading: true },
         ...courses.map((c) => ({ href: c.status ? undefined : `/calis/${c.slug}`, label: c.title, note: c.status ? "Yakında" : undefined })),
-        { href: "/oynatici", label: "Tab Oynatıcı" },
+        { label: "Şarkı ve Sololar", heading: true },
+        { href: "/sarkilar", label: "Popüler Şarkılar" },
+        { href: "/oynatici", label: "Tabla Keşfet" },
+        { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
       ],
     },
     {
@@ -94,7 +98,11 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
                 {open === m.id && (
                   <div className="absolute left-0 top-full mt-2 max-h-[70vh] w-64 overflow-auto rounded-xl border border-line bg-panel p-1.5 shadow-2xl">
                     {m.items.map((it) =>
-                      it.href ? (
+                      it.heading ? (
+                        <p key={it.label} className="mt-1 border-t border-line px-3 pb-1 pt-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-accent first:mt-0 first:border-0">
+                          {it.label}
+                        </p>
+                      ) : it.href ? (
                         <Link key={it.label} href={it.href} onClick={() => setOpen(null)} className="block rounded-lg px-3 py-2 text-sm hover:bg-bg">
                           {it.label}
                         </Link>

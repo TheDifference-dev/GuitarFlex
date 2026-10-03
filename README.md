@@ -20,6 +20,7 @@ Electron (desktop app with self-updating launcher) · Web Audio API (metronome, 
 - Course structure (course → section → chapter → lesson) with timed lessons, locked sections and per-lesson progress
 - Pluggable private content packs (JSON + images + Guitar Pro files) loaded at runtime from a git-ignored folder
 - 12 complete technique courses with 550+ original exercises written as alphaTex. Scale fingerings, arpeggio shapes, sequences and pick-stroke directions are computed from pitch data (`src/content/dizi.ts`), and a custom checker (`npm run check-content`) validates every bar's length and every hammer-on/pull-off/slide
+- Backing tracks (drums, bass, rhythm guitar) generated as multi-track alphaTex, with suggested scales shown on the fretboard
 - Interactive SVG fretboard: scales, chords, intervals, note playback and a timed note-finding quiz
 - Desktop launcher that pulls updates from GitHub, rebuilds when needed and starts the app with one click
 - Brand assets (logo silhouettes) generated programmatically as SVG (`scripts/logo-ciz.py`)
@@ -40,6 +41,8 @@ Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan masaü
   - notaya tıklayıp oradan çalma, sürükleyerek bölüm seçip döngüye alma
   - Tab, Nota+Tab ya da Nota görünümü; yatay mod; zoom
   - kısayollar: Boşluk çal/duraklat, L döngü, M metronom, Esc seçimi kaldır
+- **Şarkı ve Sololar**: Popüler Şarkılar (zorluk ve tekniğe göre filtrelenen liste; tablar Songsterr'de açılır), Tabla Keşfet (oynatıcı ve arşiv),
+  Doğaçlama Çal (davul, bas ve ritim gitarından oluşan 7 eşlik kaydı; üzerinde çalınacak gamlar sap gezgininde gösterilir).
 - **Kişisel arşiv**: `ozel-kaynak/tablar/` klasörüne koyduğun tab dosyaları oynatıcıda "Arşivim" altında listelenir. Bu klasör Git'e gönderilmez.
 - **Profil** (`/profil`): Çalma süresi otomatik sayılır. Seri (streak), rütbe, rozetler, kurs ilerlemesi, son çalışmalar.
 - **Müzik teorisi** (`/teori`): 10 ders ve interaktif sap gezgini (gamlar, akorlar, aralıklar, Do-Re-Mi).
