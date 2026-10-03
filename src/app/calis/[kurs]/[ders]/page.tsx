@@ -46,7 +46,9 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
           {lesson.description && <p className="mt-1 max-w-3xl text-muted">{lesson.description}</p>}
         </div>
         <div className="flex gap-2 text-sm font-bold">
-          <span className="rounded-lg border border-line bg-panel px-3 py-1.5">{lesson.bpm} BPM</span>
+          <span className="rounded-lg border border-line bg-panel px-3 py-1.5">
+            {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
+          </span>
           <span className="rounded-lg border border-accent/60 bg-accent/15 px-3 py-1.5 text-accent">Toplam: {lesson.minutes}dk</span>
         </div>
       </header>

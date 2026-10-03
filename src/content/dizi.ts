@@ -192,3 +192,38 @@ export function inWindow(root: number, intervals: readonly number[], low: number
   }
   return out.sort((a, b) => a.m - b.m);
 }
+
+/** Majör gamın modları (aynı notalar, farklı başlangıç derecesi) */
+export const MODES = {
+  Ionian: [0, 2, 4, 5, 7, 9, 11],
+  Dorian: [0, 2, 3, 5, 7, 9, 10],
+  Phrygian: [0, 1, 3, 5, 7, 8, 10],
+  Lydian: [0, 2, 4, 6, 7, 9, 11],
+  Mixolydian: [0, 2, 4, 5, 7, 9, 10],
+  Aeolian: [0, 2, 3, 5, 7, 8, 10],
+  Locrian: [0, 1, 3, 5, 6, 8, 10],
+} as const;
+export type ModeName = keyof typeof MODES;
+export const MODE_NAMES = Object.keys(MODES) as ModeName[];
+
+/**
+ * Bir majör gamın 7 modunu 6. telde art arda başlayan 3 nota/tel kalıpları olarak verir
+ * (ör. Sol majör: Sol Ionian 3. perde, La Dorian 5. perde, Si Phrygian 7. perde …).
+ */
+export function modeShapes(parentRoot: number): Record<ModeName, Pos[]> {
+  const out = {} as Record<ModeName, Pos[]>;
+  MODE_NAMES.forEach((name, i) => {
+    const root = parentRoot + [0, 2, 4, 5, 7, 9, 11][i];
+    out[name] = perString(run(root, MODES[name], 18), 3);
+  });
+  return out;
+}
+
+/** Pentatonik kutu: gamın n'inci notasından (0-4) 6. telde başlayan, tel başına 2 notalık şekil */
+export function pentaBox(root: number, intervals: readonly number[], n: number): Pos[] {
+  const start = root + intervals[n];
+  return perString(between(root, intervals, start, start + 36).slice(0, 12), 2);
+}
+
+/** Bir dizideki belirli bir telin notaları (pesten tize) */
+export const onStr = (ps: Pos[], s: number) => ps.filter((p) => p.s === s);

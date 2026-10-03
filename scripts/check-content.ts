@@ -5,6 +5,10 @@ import * as alphaTab from "@coderline/alphatab";
 import { SONGS } from "../src/content/songs.ts";
 import { BUILTIN_COURSES, flatLessons } from "../src/content/courses.ts";
 import { BACKINGS } from "../src/content/dogaclama.ts";
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { PRIVATE_ROOTS } from "../src/lib/private-roots.ts";
+import type { Course } from "../src/content/types.ts";
 
 function check(tex: string): string[] {
   const problems: string[] = [];
@@ -64,6 +68,25 @@ for (const c of BUILTIN_COURSES) {
   }
 }
 
+// Kişisel içerik paketindeki kurslar (varsa)
+let packLessons = 0;
+for (const root of PRIVATE_ROOTS) {
+  let files: string[] = [];
+  try {
+    files = readdirSync(path.join(root, "icerik")).filter((f) => f.endsWith(".json") && f !== "site.json" && f !== "sarkilar.json");
+  } catch {
+    continue;
+  }
+  for (const f of files) {
+    const c = JSON.parse(readFileSync(path.join(root, "icerik", f), "utf8")) as Course;
+    for (const s of c.sections ?? []) for (const ch of s.chapters ?? []) for (const l of ch.lessons ?? []) {
+      if (!l.tex) continue;
+      packLessons++;
+      items.push({ id: `paket:${c.slug}/${l.id ?? l.title}`, title: l.title, tex: l.tex });
+    }
+  }
+}
+
 for (const item of items) {
   const problems = check(item.tex);
   if (ids.has(item.id)) problems.push("tekrarlanan id");
@@ -74,5 +97,5 @@ for (const item of items) {
   }
 }
 
-console.log(`${courseLessons} ders, ${SONGS.length} şarkı ve ${BACKINGS.length} eşlik kaydı kontrol edildi, ${failures} hatalı.`);
+console.log(`${courseLessons} ders, ${packLessons} paket dersi, ${SONGS.length} şarkı ve ${BACKINGS.length} eşlik kaydı kontrol edildi, ${failures} hatalı.`);
 process.exit(failures ? 1 : 0);

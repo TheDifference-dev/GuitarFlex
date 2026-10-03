@@ -6,6 +6,8 @@ export type Lesson = {
   id: string;
   title: string;
   bpm: number;
+  /** Önerilen tempo aralığı (ör. [40, 150]); verilirse "40–150 BPM" olarak gösterilir */
+  bpmRange?: [number, number];
   /** Dersin hedef çalışma süresi (dakika). Bu süreye ulaşınca ders tamamlanır. */
   minutes: number;
   description?: string;
@@ -33,6 +35,8 @@ export type Section = {
   chapters: Chapter[];
   /** Bölüm sonunda sınav satırı gösterilsin mi */
   exam?: boolean;
+  /** Sınav kademelerinin BPM eşikleri (kolaydan zora) */
+  examTiers?: number[];
 };
 
 export type Course = {

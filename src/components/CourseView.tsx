@@ -115,9 +115,9 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                         </a>
                       );
                     })}
-                    {s.exam && (
+                    {(s.exam || !!s.examTiers?.length) && (
                       <span className="flex items-center gap-2 px-2 py-1 text-xs font-semibold text-accent" title="Sınav yakında">
-                        <Sparkles size={12} /> Sınav
+                        <Sparkles size={12} /> Sınav{s.examTiers?.length ? <span className="font-normal text-muted">· {s.examTiers.join(" · ")} BPM</span> : null}
                       </span>
                     )}
                   </div>
@@ -184,7 +184,7 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                               <ListVideo size={14} />
                             </span>
                           </div>
-                          <p className="mt-10 text-right text-sm font-black">{l.bpm} BPM</p>
+                          <p className="mt-10 text-right text-sm font-black">{l.bpmRange ? `${l.bpmRange[0]}–${l.bpmRange[1]}` : l.bpm} BPM</p>
                           <div className="mt-3 flex items-center justify-between border-t border-line/70 pt-3 text-xs font-bold">
                             <span>
                               {formatClock(done)} / {formatClock(target)} dk
