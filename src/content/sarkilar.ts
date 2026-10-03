@@ -1,5 +1,5 @@
 // Popüler şarkı ve sololar. Tablar uygulamada değil, Songsterr'de açılır (telifli içerik burada tutulmaz).
-// Kişisel liste için içerik paketine icerik/sarkilar.json eklenebilir (bkz. docs/ICERIK-PAKETI.md).
+// Kişisel liste için içerik paketine icerik/sarkilar.json eklenebilir.
 
 export type SongLevel = 1 | 2 | 3;
 
