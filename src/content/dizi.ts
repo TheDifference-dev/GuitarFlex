@@ -111,3 +111,19 @@ export function measures(duration: string, notes: string[], perBar: number, tupl
 
 /** Bir notayı verilen sayıda tekrarlar */
 export const times = (note: string, n: number) => Array<string>(n).fill(note);
+
+/** Legato: aynı telde bir sonraki notaya hammer-on / pull-off bağı ekler. */
+export function slurred(ps: Pos[]): string[] {
+  return ps.map((p, i) => {
+    const n = ps[i + 1];
+    return n && n.s === p.s && n.f !== p.f ? `${tab(p)}{h}` : tab(p);
+  });
+}
+
+/** "5.3" biçimindeki tab notalarını Pos'a çevirir (elle yazılan cümleler için). */
+export function pos(notes: string[]): Pos[] {
+  return notes.map((n) => {
+    const [f, s] = n.split(".").map(Number);
+    return { f, s, m: OPEN[s - 1] + f };
+  });
+}

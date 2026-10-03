@@ -1,9 +1,9 @@
 import type { Course, Exercise, Lesson, Section, SiteTexts, Technique } from "./types.ts";
 import { TECHNIQUES } from "./techniques.ts";
-import { alternatePickingCourse } from "./kurslar/alternate-picking.ts";
+import { FULL_COURSES as FULL_LIST } from "./kurslar/index.ts";
 
 // Tam (6 bölümlük) olarak yazılmış kurslar; diğerleri techniques.ts seviyelerinden üretilir.
-const FULL_COURSES: Record<string, Course> = { [alternatePickingCourse.slug]: alternatePickingCourse };
+const FULL_COURSES: Record<string, Course> = Object.fromEntries(FULL_LIST.map((c) => [c.slug, c]));
 
 // Yerleşik (özgün) kurslar. Kişisel içerik paketi aynı slug'la bir kurs içerirse onun yerine geçer.
 
