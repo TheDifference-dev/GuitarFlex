@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Popüler Şarkılar" };
 
 export default async function SongsPage() {
   const [songs, courses] = await Promise.all([getPopularSongs(), getCourses()]);
-  const courseTitles = Object.fromEntries(courses.filter((c) => c.kind === "technique").map((c) => [c.slug, c.title]));
+  const courseTitles = Object.fromEntries(courses.map((c) => [c.slug, c.title]));
   return (
     <div className="space-y-6">
       <SongsNav />

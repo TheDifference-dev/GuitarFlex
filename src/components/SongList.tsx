@@ -52,7 +52,7 @@ export default function SongList({ songs, courseTitles }: Props) {
         ))}
         <select value={course} onChange={(e) => setCourse(e.target.value)} className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm">
           <option value="">Bütün teknikler</option>
-          {Object.entries(courseTitles).map(([slug, title]) => (
+          {Object.entries(courseTitles).filter(([slug]) => songs.some((s) => s.courses?.includes(slug))).map(([slug, title]) => (
             <option key={slug} value={slug}>
               {title}
             </option>
@@ -64,7 +64,7 @@ export default function SongList({ songs, courseTitles }: Props) {
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {shown.map((s) => (
-          <article key={`${s.artist}-${s.title}`} className="flex flex-col rounded-2xl border border-line bg-panel p-4">
+          <article key={`${s.artist}-${s.title}-${s.kind}`} className="flex flex-col rounded-2xl border border-line bg-panel p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h3 className="font-bold leading-tight">{s.title}</h3>

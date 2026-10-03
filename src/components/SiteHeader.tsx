@@ -118,9 +118,11 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
                     className={`absolute top-full z-40 mt-2 max-h-[80vh] overflow-y-auto rounded-2xl border border-line bg-panel p-3 shadow-2xl ${
                       !wide
                         ? "left-0 w-64"
-                        : m.columns.length === 3
-                          ? "left-1/2 grid w-[min(94vw,860px)] -translate-x-1/2 gap-4 sm:grid-cols-[1.7fr_1fr_1fr]"
-                          : "left-1/2 grid w-[min(94vw,640px)] -translate-x-1/2 gap-4 sm:grid-cols-[1fr_2fr]"
+                        : m.columns.length === 4
+                          ? "left-1/2 grid w-[min(96vw,1120px)] -translate-x-1/2 gap-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1.2fr_1fr]"
+                          : m.columns.length === 3
+                            ? "left-1/2 grid w-[min(94vw,860px)] -translate-x-1/2 gap-4 sm:grid-cols-[1.7fr_1fr_1fr]"
+                            : "left-1/2 grid w-[min(94vw,640px)] -translate-x-1/2 gap-4 sm:grid-cols-[1fr_2fr]"
                     }`}
                   >
                     {m.columns.map((col, ci) => (

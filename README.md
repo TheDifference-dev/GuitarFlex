@@ -49,7 +49,8 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
-- **Akustik gitar** kursları için ayrı menü sütunu ve ana sayfa bölümü
+- **Akustik gitar** kursları için ayrı menü sütunu ve ana sayfa bölümü; Gitar Çalış menüsü dört sütunlu panel
+- Şarkı listesinde her şarkının altında hazırlık kurslarının adları ve kurs filtresi
 - Rehberlerde tabsız **okuma adımları** ("Nasıl çalınır?" anlatımları) ve kurs sırasının içerikle birlikte belirlenmesi
 - **Şarkı ve Sololar** bölümü: Popüler Şarkılar, Tabla Keşfet ve Doğaçlama Çal
 - **12 teknik kursunun tamamı** yeniden yazıldı: 3–6 bölüm, toplam 557 ders; her derste "Müzik Bilgisi" kutusu
