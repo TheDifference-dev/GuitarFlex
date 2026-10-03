@@ -1,22 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Bell, BookOpen, ChevronDown, Guitar, Trophy, User, Wrench } from "lucide-react";
+import { ArrowLeft, Bell, BookOpen, ChevronDown, Compass, Guitar, House, Trophy, User, Wrench } from "lucide-react";
 import { SITE } from "@/config/site";
-import type { CourseKind } from "@/content/types";
 
 type MenuItem = { href?: string; label: string; note?: string };
-type MenuColumn = { title?: string; items: MenuItem[] };
-type Props = {
-  subtitle: string;
-  courses: { slug: string; title: string; status?: string; kind: CourseKind }[];
-  theory: { slug: string; title: string }[];
-};
+type MenuGroup = { title?: string; items: MenuItem[] };
+type Menu = { id: string; label: string; icon: typeof User; href?: string; active: boolean; banner?: { href: string; title: string; text: string }; groups?: MenuGroup[] };
 
-export default function SiteHeader({ subtitle, courses, theory }: Props) {
+/** Logonun yanındaki sayfa adı: bulunulan bölüme göre değişir */
+function sectionName(p: string, fallback: string) {
+  if (p.startsWith("/profil")) return "Profil";
+  if (p.startsWith("/akustik")) return "Akustik Gitar";
+  if (p.startsWith("/sarkilar") || p.startsWith("/oynatici")) return "Şarkı ve Sololar";
+  if (p.startsWith("/teori")) return "Müzik Teorisi";
+  if (p.startsWith("/araclar")) return "Araçlar";
+  if (p.startsWith("/nasil-calismaliyim")) return "Çalışma Planı";
+  return fallback;
+}
+
+export default function SiteHeader({ subtitle }: { subtitle: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -29,34 +36,27 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const courseItem = (c: Props["courses"][number]): MenuItem => ({
-    href: c.status ? undefined : `/calis/${c.slug}`,
-    label: c.title,
-    note: c.status ? "Yakında" : undefined,
-  });
-
-  const menus: { id: string; label: string; icon: typeof User; href?: string; active: boolean; columns?: MenuColumn[] }[] = [
+  const menus: Menu[] = [
     { id: "profil", label: "Profil", icon: User, href: "/profil", active: pathname.startsWith("/profil") },
     {
       id: "calis",
       label: "Gitar Çalış",
       icon: Guitar,
-      active: pathname === "/" || pathname.startsWith("/calis") || pathname.startsWith("/oynatici") || pathname.startsWith("/sarkilar"),
-      columns: [
-        { title: "Teknik Egzersizler", items: courses.filter((c) => c.kind === "technique").map(courseItem) },
+      active: ["/calis", "/akustik", "/sarkilar", "/oynatici", "/nasil-calismaliyim"].some((p) => pathname.startsWith(p)) || pathname === "/",
+      banner: { href: "/nasil-calismaliyim", title: "Gitarda Nasıl Çalışmalıyım?", text: "Seviyeni seç, sana uygun yolu önerelim." },
+      groups: [
         {
-          title: "Başlangıç",
-          items: [{ href: "/", label: "Tüm Egzersizler" }, ...courses.filter((c) => c.kind === "guide").map(courseItem)],
-        },
-        ...(courses.some((c) => c.kind === "acoustic")
-          ? [{ title: "Akustik", items: courses.filter((c) => c.kind === "acoustic").map(courseItem) }]
-          : []),
-        {
-          title: "Şarkı ve Sololar",
+          title: "Akustik Gitar",
           items: [
-            { href: "/sarkilar", label: "Popüler Şarkılar" },
-            { href: "/oynatici", label: "Tabla Keşfet" },
-            { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
+            { href: "/akustik", label: "Teknik Egzersizler", note: "Yeni" },
+            { href: "/akustik/sarkilar", label: "Şarkılar", note: "Yeni" },
+          ],
+        },
+        {
+          title: "Elektro Gitar",
+          items: [
+            { href: "/", label: "Teknik Egzersizler" },
+            { href: "/sarkilar", label: "Şarkı ve Sololar" },
           ],
         },
       ],
@@ -66,9 +66,16 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
       label: "Müzik Teorisi",
       icon: BookOpen,
       active: pathname.startsWith("/teori"),
-      columns: [
-        { title: "Araç", items: [{ href: "/teori", label: "Sap Gezgini" }] },
-        { title: "Dersler", items: theory.map((t) => ({ href: `/teori/${t.slug}`, label: t.title })) },
+      groups: [
+        {
+          title: "Müzik Teorisi",
+          items: [
+            { href: "/teori#dersler", label: "Armoni" },
+            { label: "Ritim", note: "Yakında" },
+            { href: "/teori#sap", label: "Klavye Görselleştirme" },
+            { label: "Kulak Eğitimi", note: "Yakında" },
+          ],
+        },
       ],
     },
     {
@@ -76,19 +83,30 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
       label: "Yarışma",
       icon: Trophy,
       active: false,
-      columns: [{ items: [{ label: "Haftalık Meydan Okuma", note: "Yakında" }, { label: "Sıralama", note: "Yakında" }] }],
+      groups: [{ items: [{ label: "Sezon Yarışı", note: "Yakında" }, { label: "Cover Yarışması", note: "Yakında" }] }],
     },
   ];
+
+  const iconBtn = "rounded-lg p-2 text-muted hover:bg-panel hover:text-text";
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
       <div ref={navRef} className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
-        <Link href="/" className="mr-4 flex shrink-0 items-center gap-3" onClick={() => setOpen(null)}>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <button type="button" onClick={() => router.back()} className={iconBtn} title="Önceki sayfa" aria-label="Önceki sayfa">
+            <ArrowLeft size={18} />
+          </button>
+          <Link href="/" className={`${iconBtn} ${pathname === "/" ? "text-accent" : ""}`} title="Ana sayfa" aria-label="Ana sayfa">
+            <House size={18} />
+          </Link>
+        </div>
+
+        <Link href="/" className="mr-4 flex shrink-0 items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={SITE.logo} alt="" width={40} height={40} className="rounded-lg" />
           <span className="h-8 w-px bg-accent" />
           <span className="leading-tight">
-            <span className="block text-xs font-semibold tracking-[0.2em] text-muted">{subtitle}</span>
+            <span className="block text-xs font-semibold tracking-[0.2em] text-muted">{sectionName(pathname, subtitle)}</span>
             <span className="block text-lg font-bold">
               <span className="text-accent">Guitar</span>Flex
             </span>
@@ -101,51 +119,47 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
             const cls = `flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap ${
               m.active ? "bg-accent/15 text-accent" : "text-text hover:bg-panel"
             }`;
-            if (!m.columns)
+            if (!m.groups)
               return (
                 <Link key={m.id} href={m.href!} className={cls}>
                   <Icon size={16} /> {m.label}
                 </Link>
               );
-            const wide = m.columns.length > 1;
             return (
               <div key={m.id} className="relative">
                 <button type="button" className={cls} onClick={() => setOpen(open === m.id ? null : m.id)}>
                   <Icon size={16} /> {m.label} <ChevronDown size={14} className={`transition ${open === m.id ? "rotate-180" : ""}`} />
                 </button>
                 {open === m.id && (
-                  <div
-                    className={`absolute top-full z-40 mt-2 max-h-[80vh] overflow-y-auto rounded-2xl border border-line bg-panel p-3 shadow-2xl ${
-                      !wide
-                        ? "left-0 w-64"
-                        : m.columns.length === 4
-                          ? "left-1/2 grid w-[min(96vw,1120px)] -translate-x-1/2 gap-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1.2fr_1fr]"
-                          : m.columns.length === 3
-                            ? "left-1/2 grid w-[min(94vw,860px)] -translate-x-1/2 gap-4 sm:grid-cols-[1.7fr_1fr_1fr]"
-                            : "left-1/2 grid w-[min(94vw,640px)] -translate-x-1/2 gap-4 sm:grid-cols-[1fr_2fr]"
-                    }`}
-                  >
-                    {m.columns.map((col, ci) => (
-                      <div key={col.title ?? ci} className="min-w-0">
-                        {col.title && <p className="px-3 pb-2 pt-1 text-[11px] font-bold uppercase tracking-[0.18em] text-accent">{col.title}</p>}
-                        <div className={col.items.length > 8 ? "grid gap-x-2 sm:grid-cols-2" : ""}>
-                          {col.items.map((it) =>
-                            it.href ? (
-                              <Link
-                                key={it.label}
-                                href={it.href}
-                                onClick={() => setOpen(null)}
-                                className={`block rounded-lg px-3 py-2 text-sm hover:bg-bg hover:text-accent ${pathname === it.href ? "text-accent" : ""}`}
-                              >
-                                {it.label}
-                              </Link>
-                            ) : (
-                              <span key={it.label} className="flex justify-between gap-2 rounded-lg px-3 py-2 text-sm text-muted">
-                                {it.label} {it.note && <span className="text-xs text-accent">{it.note}</span>}
-                              </span>
-                            ),
-                          )}
-                        </div>
+                  <div onClick={() => setOpen(null)} className="absolute left-1/2 top-full z-40 mt-2 w-72 -translate-x-1/2 rounded-2xl border border-line bg-panel p-2 shadow-2xl">
+                    {m.banner && (
+                      <Link href={m.banner.href} className="mb-1 flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 p-3 hover:border-accent">
+                        <Compass size={20} className="shrink-0 text-accent" />
+                        <span>
+                          <span className="block text-sm font-bold">{m.banner.title}</span>
+                          <span className="block text-xs text-muted">{m.banner.text}</span>
+                        </span>
+                      </Link>
+                    )}
+                    {m.groups.map((g, gi) => (
+                      <div key={g.title ?? gi} className={gi > 0 ? "mt-1 border-t border-line pt-1" : ""}>
+                        {g.title && <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-accent">{g.title}</p>}
+                        {g.items.map((it) =>
+                          it.href ? (
+                            <Link
+                              key={it.label}
+                              href={it.href}
+                              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-semibold hover:bg-bg hover:text-accent ${pathname === it.href ? "text-accent" : ""}`}
+                            >
+                              {it.label}
+                              {it.note && <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-accent-ink">{it.note}</span>}
+                            </Link>
+                          ) : (
+                            <span key={it.label} className="flex justify-between gap-2 rounded-lg px-3 py-2 text-sm text-muted">
+                              {it.label} {it.note && <span className="text-xs text-accent">{it.note}</span>}
+                            </span>
+                          ),
+                        )}
                       </div>
                     ))}
                   </div>
@@ -156,10 +170,10 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1">
-          <button type="button" className="rounded-lg p-2 text-muted hover:bg-panel hover:text-text" title="Bildirimler">
+          <button type="button" className={iconBtn} title="Bildirimler">
             <Bell size={18} />
           </button>
-          <Link href="/araclar" className="rounded-lg p-2 text-muted hover:bg-panel hover:text-text" title="Araçlar">
+          <Link href="/araclar" className={iconBtn} title="Araçlar">
             <Wrench size={18} />
           </Link>
           <Link href="/profil" className="ml-1 flex items-center gap-1 rounded-xl border border-line bg-panel p-1.5" title="Profil">

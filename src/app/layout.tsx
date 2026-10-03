@@ -4,8 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/config/site";
 import SiteHeader from "@/components/SiteHeader";
-import { getCourses, getSiteTexts } from "@/lib/courses";
-import { THEORY } from "@/content/theory";
+import { getSiteTexts } from "@/lib/courses";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,15 +25,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [courses, texts] = await Promise.all([getCourses(), getSiteTexts()]);
+  const texts = await getSiteTexts();
   return (
     <html lang="tr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <SiteHeader
-          subtitle={texts.navSubtitle}
-          courses={courses.map((c) => ({ slug: c.slug, title: c.title, status: c.status, kind: c.kind }))}
-          theory={THEORY.map((t) => ({ slug: t.slug, title: t.title }))}
-        />
+        <SiteHeader subtitle={texts.navSubtitle} />
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>
         <footer className="border-t border-line py-6 text-center text-xs text-muted">
           {SITE.name} · {SITE.footer} ·{" "}

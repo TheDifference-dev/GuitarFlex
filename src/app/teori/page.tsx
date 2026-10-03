@@ -14,12 +14,12 @@ export default function TheoryPage() {
         <p className="mt-1 text-muted">Gitarcının ihtiyaç duyduğu teori, sap üzerinde görerek.</p>
       </header>
 
-      <section className="space-y-3">
+      <section id="sap" className="scroll-mt-24 space-y-3">
         <h2 className="text-xl font-semibold">Sap Gezgini</h2>
         <FretboardExplorer />
       </section>
 
-      <section className="space-y-3">
+      <section id="dersler" className="scroll-mt-24 space-y-3">
         <h2 className="text-xl font-semibold">Dersler</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {lessons.map((l) => (

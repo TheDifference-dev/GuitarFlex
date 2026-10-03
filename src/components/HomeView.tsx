@@ -21,11 +21,11 @@ export function coursePercent(p: Progress, keys: string[]) {
   return Math.round((keys.filter((k) => p.exercises[k]?.completed).length / keys.length) * 100);
 }
 
-export default function HomeView({ texts, courses }: { texts: SiteTexts; courses: CourseSummary[] }) {
+/** Teknik egzersiz merkezi: rehberler, akor yolu kartı, kurs kartları ve şarkı bağlantıları (elektro ya da akustik) */
+export default function HomeView({ texts, courses, songs = "elektro" }: { texts: SiteTexts; courses: CourseSummary[]; songs?: "elektro" | "akustik" }) {
   const p = useProgress();
   const guideIcons = [BookOpen, Map];
-  const electric = courses.filter((c) => c.kind !== "acoustic");
-  const acoustic = courses.filter((c) => c.kind === "acoustic");
+  const songCards = songs === "akustik" ? acousticSongCards(texts.chordCard.slug) : SONG_CARDS;
   const renderCard = (c: CourseSummary) => {
     const pct = coursePercent(p, c.keys);
     const disabled = !!c.status;
@@ -57,7 +57,7 @@ export default function HomeView({ texts, courses }: { texts: SiteTexts; courses
               </div>
             </div>
             <span className="rounded-lg border border-line bg-bg px-4 py-2 text-sm font-bold">
-              {c.kind === "guide" ? "Rehberi Aç" : "Egzersize Başla"}
+              {c.kind === "guide" || c.slug.endsWith("-rehberi") ? "Rehberi Aç" : "Egzersize Başla"}
             </span>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function HomeView({ texts, courses }: { texts: SiteTexts; courses
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">{texts.hero.eyebrow}</p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-accent sm:text-4xl">{texts.hero.title}</h1>
           <p className="mt-2 text-muted">{texts.hero.text}</p>
-          <div className="mt-6 grid gap-3 rounded-2xl border border-line bg-bg/60 p-2 sm:grid-cols-2">
+          <div className={`mt-6 grid gap-3 rounded-2xl border border-line bg-bg/60 p-2 ${texts.hero.guides.length > 1 ? "sm:grid-cols-2" : ""}`}>
             {texts.hero.guides.map((g, i) => {
               const Icon = guideIcons[i % guideIcons.length];
               return (
@@ -117,20 +117,17 @@ export default function HomeView({ texts, courses }: { texts: SiteTexts; courses
       </section>
 
       {/* Kurs kartları */}
-      <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{electric.map(renderCard)}</section>
-
-      {acoustic.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Akustik Gitar</h2>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{acoustic.map(renderCard)}</div>
-        </section>
+      {courses.length > 0 ? (
+        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{courses.map(renderCard)}</section>
+      ) : (
+        <p className="rounded-2xl border border-dashed border-line p-6 text-sm text-muted">Bu bölümün kursları yakında eklenecek.</p>
       )}
 
       {/* Şarkı ve Sololar */}
       <section className="space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Şarkı ve Sololar</h2>
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent">{songs === "akustik" ? "Şarkılar" : "Şarkı ve Sololar"}</h2>
         <div className="grid gap-5 md:grid-cols-3">
-          {SONG_CARDS.map(({ href, title, text, icon: Icon }) => (
+          {songCards.map(({ href, title, text, icon: Icon }) => (
             <Link key={href} href={href} className="group flex gap-4 rounded-2xl border border-line bg-panel p-5 transition hover:border-accent">
               <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent">
                 <Icon size={22} />
@@ -153,6 +150,11 @@ const SONG_CARDS = [
   { href: "/sarkilar", title: "Popüler Şarkılar", text: "Ünlü şarkı ve sololar zorluğa göre; tablar Songsterr'de açılır.", icon: Star },
   { href: "/oynatici", title: "Tabla Keşfet", text: "Kendi Guitar Pro arşivini ve örnek şarkıları çok kanallı oynatıcıda çal.", icon: Compass },
   { href: "/sarkilar/dogaclama", title: "Doğaçlama Çal", text: "Davul, bas ve gitar eşliğinde önerilen gamlarla solo çal.", icon: Mic2 },
+];
+
+const acousticSongCards = (chordSlug: string) => [
+  { href: "/akustik/sarkilar", title: "Akustik Şarkılar", text: "Akorlarla çalınan şarkılar zorluğa göre; tablar Songsterr'de açılır.", icon: Star },
+  { href: `/calis/${chordSlug}`, title: "Akorları Çal", text: "Şarkılara hazırlık: akorlar, geçişler ve ritim kalıpları.", icon: Compass },
 ];
 
 /** Kartın sağındaki Fa majör (barre) akor diyagramı */

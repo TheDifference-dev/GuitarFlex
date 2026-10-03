@@ -40,7 +40,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 - **12 teknik kursu, 557 özgün ders**: Bölüm → alt bölüm (1.0, 1.1 …) → ders yapısı. Her dersin tabı, BPM'i ve hedef süresi var; süre dolunca ders tamamlanır.
 - **Müzik Bilgisi**: Her derste gam, aralık, akor ve ritim açıklaması; tab ile aynı veriden üretildiği için nota adları her zaman tabla uyuşur.
 - **Başlangıç rehberleri**: Sıfırdan başlayanlar ve başlangıç–orta seviye için kurslardan seçilmiş çalışma yolları; tablı derslerin arasında okuma adımları.
-- **Elektro ve akustik**: Teknik kursları elektro ve akustik gitar için ayrı gruplarda.
+- **Elektro ve akustik**: Teknik kursları ve şarkılar elektro ve akustik gitar için ayrı sayfalarda; seviyeye göre çalışma yolu seçici.
 - **Şarkı ve Sololar**: Popüler Şarkılar (zorluk ve tekniğe göre, Songsterr bağlantılı), Tabla Keşfet (çok kanallı tab oynatıcı) ve Doğaçlama Çal (7 eşlik kaydı ve önerilen gamlar).
 - **Tab oynatıcı**: Guitar Pro, MusicXML ve alphaTex; enstrüman bazında ses/mute/solo, hız, metronom, sayım, döngü, nota görünümü.
 - **Müzik teorisi**: 10 ders ve interaktif sap gezgini (gamlar, akorlar, aralıklar, Do-Re-Mi).
@@ -49,13 +49,15 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
-- **Akustik gitar** kursları için ayrı menü sütunu ve ana sayfa bölümü; Gitar Çalış menüsü dört sütunlu panel
+- Üst menü sadeleşti: **Gitar Çalış** altında Akustik (Teknik Egzersizler, Şarkılar) ve Elektro (Teknik Egzersizler, Şarkı ve Sololar) başlıkları; egzersizler bu sayfalarda
+- **Geri** ve **Ana sayfa** tuşları; logonun yanındaki başlık bulunulan bölümü gösterir
+- **Gitarda Nasıl Çalışmalıyım?**: elektro ve akustik için seviyeye göre çalışma yolu seçici
+- Akustik gitar için ayrı egzersiz ve şarkı sayfaları
 - Şarkı listesinde her şarkının altında hazırlık kurslarının adları ve kurs filtresi
 - Rehberlerde tabsız **okuma adımları** ("Nasıl çalınır?" anlatımları) ve kurs sırasının içerikle birlikte belirlenmesi
 - **Şarkı ve Sololar** bölümü: Popüler Şarkılar, Tabla Keşfet ve Doğaçlama Çal
 - **12 teknik kursunun tamamı** yeniden yazıldı: 3–6 bölüm, toplam 557 ders; her derste "Müzik Bilgisi" kutusu
 - Gam, arpej, sweep, legato ve economy picking parmak düzenleri ile pena yönleri nota verisinden otomatik hesaplanıyor
-- Üst menü sütunlu açılır panellere dönüştü
 - Başlangıç rehberleri yeni kurslardan seçilmiş derslerle yeniden kuruldu
 
 ### Yol haritası

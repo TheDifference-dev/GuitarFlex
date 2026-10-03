@@ -141,6 +141,8 @@ function buildMenu() {
         { label: "Ana sayfa", accelerator: "CmdOrCtrl+1", click: () => go("/") },
         { label: "Profil", accelerator: "CmdOrCtrl+2", click: () => go("/profil") },
         { label: "Popüler Şarkılar", accelerator: "CmdOrCtrl+3", click: () => go("/sarkilar") },
+        { label: "Akustik Egzersizler", accelerator: "CmdOrCtrl+8", click: () => go("/akustik") },
+        { label: "Gitarda Nasıl Çalışmalıyım?", accelerator: "CmdOrCtrl+9", click: () => go("/nasil-calismaliyim") },
         { label: "Tabla Keşfet", accelerator: "CmdOrCtrl+6", click: () => go("/oynatici") },
         { label: "Doğaçlama Çal", accelerator: "CmdOrCtrl+7", click: () => go("/sarkilar/dogaclama") },
         { label: "Müzik Teorisi", accelerator: "CmdOrCtrl+4", click: () => go("/teori") },
@@ -215,6 +217,8 @@ async function createWindow() {
   try {
     await waitForServer(baseUrl + "/");
     await win.loadURL(baseUrl + "/");
+    // Açılış ekranı geçmişte kalmasın: "Geri" tuşu onu tekrar açmasın
+    win.webContents.navigationHistory.clear();
   } catch (e) {
     dialog.showErrorBox("Başlatılamadı", String(e.message || e));
   }
