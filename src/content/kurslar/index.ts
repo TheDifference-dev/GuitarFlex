@@ -5,5 +5,6 @@ import { legatoCourse } from "./legato.ts";
 import { sweepCourse } from "./sweep.ts";
 import { tappingCourse } from "./tapping.ts";
 import { economyCourse } from "./economy.ts";
+import { bendVibratoCourse } from "./bend-vibrato.ts";
 
-export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse];
+export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse, bendVibratoCourse];
