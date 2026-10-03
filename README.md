@@ -1,16 +1,27 @@
 # GuitarFlex — Gitar Akademisi
 
 **GuitarFlex** is a guitar practice platform that runs both as a desktop app (Electron) and as a website (Next.js) from a single codebase.
-It offers structured technique pathways with an interactive tab player, music theory lessons with an interactive fretboard,
+It offers 12 structured technique courses (550+ original exercises) with an interactive tab player and a music-theory note on every lesson,
+a songs & solos library, backing tracks for improvisation, music theory lessons with an interactive fretboard,
 practice tracking (streaks, ranks, badges) and a Songsterr-style multi-track Guitar Pro player.
 
-| Ana sayfa | Kurs |
+| Ana sayfa | Menü |
 |---|---|
-| ![Ana sayfa](docs/ekran/ana-sayfa.png) | ![Kurs](docs/ekran/kurs.png) |
-| **Ders** | **Tab oynatıcı** |
-| ![Ders](docs/ekran/ders.png) | ![Tab oynatıcı](docs/ekran/oynatici.png) |
-| **Müzik teorisi** | **Marka** |
-| ![Teori](docs/ekran/teori.png) | ![Marka](docs/ekran/marka.png) |
+| ![Ana sayfa](docs/ekran/ana-sayfa.png) | ![Menü](docs/ekran/menu.png) |
+| **Kurs** | **Ders** |
+| ![Kurs](docs/ekran/kurs.png) | ![Ders](docs/ekran/ders.png) |
+| **Popüler Şarkılar** | **Doğaçlama Çal** |
+| ![Popüler Şarkılar](docs/ekran/sarkilar.png) | ![Doğaçlama Çal](docs/ekran/dogaclama.png) |
+| **Tab oynatıcı** | **Müzik teorisi** |
+| ![Tab oynatıcı](docs/ekran/oynatici.png) | ![Teori](docs/ekran/teori.png) |
+
+## Son güncellemeler
+
+- **Şarkı ve Sololar** bölümü: Popüler Şarkılar (Songsterr bağlantılı, zorluk ve tekniğe göre filtre), Tabla Keşfet ve Doğaçlama Çal (7 eşlik kaydı + önerilen gamlar)
+- **12 teknik kursunun tamamı** yeniden yazıldı: 3–6 bölüm, toplam 557 ders; her derste "Müzik Bilgisi" kutusu
+- Gam, arpej, sweep, legato ve economy picking parmak düzenleri ile pena yönleri nota verisinden otomatik hesaplanıyor
+- Üst menü sütunlu açılır panellere dönüştü
+- Başlangıç rehberleri yeni kurslardan seçilmiş derslerle yeniden kuruldu
 
 **Tech stack:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · alphaTab (tab rendering & MIDI playback) ·
 Electron (desktop app with self-updating launcher) · Web Audio API (metronome, note playback)
@@ -89,11 +100,14 @@ src/content/tex.ts          tab yazım yardımcıları
 src/lib/courses.ts          kurs yükleyici (yerleşik + kişisel içerik paketi)
 src/content/theory.ts       teori dersleri
 src/content/songs.ts        oynatıcıyla gelen örnek şarkılar
+src/content/sarkilar.ts     Popüler Şarkılar listesi (Songsterr bağlantıları)
+src/content/dogaclama.ts    doğaçlama eşlik kayıtları (davul, bas, ritim gitarı)
+src/lib/songs.ts            şarkı listesi + kişisel içerik paketindeki sarkilar.json
 src/lib/archive.ts          kişisel arşiv (ozel-kaynak/tablar) okuma
 src/lib/progress.ts         ilerleme kaydı
 src/lib/ranks.ts            rütbe ve rozetler
 src/lib/music.ts            nota, gam ve akor hesapları
-src/components/             TabPlayer, Fretboard, Metronome, NoteQuiz…
+src/components/             TabPlayer, Fretboard, SongList, BackingView, Metronome, NoteQuiz…
 ```
 
 ### Yeni ders eklemek
