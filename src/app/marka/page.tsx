@@ -7,8 +7,8 @@ export const metadata: Metadata = { title: "Marka" };
 const LOGOS = [
   { file: "sahne", title: "Sahne ışığı", text: "Lacivert zemin, arkadan turuncu sahne ışığı." },
   { file: "gunbatimi", title: "Gün batımı", text: "Turuncu güneşin önünde silüet; rock posteri havası." },
-  { file: "rozet", title: "Rozet", text: "Beyaz zemin, turuncu halka, lacivert silüet." },
-  { file: "pena", title: "Pena", text: "Turuncu gitar penası içinde lacivert silüet." },
+  { file: "rozet", title: "Rozet", text: "Beyaz zemin, turuncu halka, siyah silüet." },
+  { file: "pena", title: "Pena", text: "Turuncu gitar penası içinde siyah silüet." },
   { file: "siluet", title: "Yalın silüet", text: "Zeminsiz; açık renkli yüzeylerde kullanmak için." },
 ];
 
@@ -20,7 +20,7 @@ export default function BrandPage() {
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Marka</h1>
         <p className="mt-1 text-muted">
-          {SITE.name} logo adayları: geniş, sahne duruşunda Les Paul çalan kısa saçlı gitarist silüeti. Şu an kullanılan: <b className="text-text">{SITE.logo.split("/").pop()}</b>. Değiştirmek için{" "}
+          {SITE.name} logo adayları: geniş sahne duruşunda, başı öne eğik, uzun saçları gitara dökülen, Les Paul çalan siyah gitarist silüeti. Şu an kullanılan: <b className="text-text">{SITE.logo.split("/").pop()}</b>. Değiştirmek için{" "}
           <code className="rounded bg-line px-1">src/config/site.ts</code> içindeki <code className="rounded bg-line px-1">logo</code> satırını düzenle.
         </p>
       </header>

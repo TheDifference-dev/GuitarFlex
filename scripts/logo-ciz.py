@@ -1,14 +1,14 @@
 # GuitarFlex logo adaylarını (SVG) üretir: python3 scripts/logo-ciz.py
 # Çıktı: public/marka/*.svg
-# Silüet: kısa saçlı, Les Paul çalan gitarist; geniş, dizleri bükük sahne duruşu,
-# gitar kalça hizasında alçakta, sap yukarıda, baş öne eğik.
+# Silüet: uzun saçlı, Les Paul çalan siyah gölge gitarist; geniş, dizleri bükük sahne duruşu,
+# gitar kalça hizasında alçakta, sap yukarıda, baş öne eğik (headbang), saçlar gitara kadar iniyor.
 import math, os
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public", "marka")
 
 NAVY = "#0b1838"      # koyu lacivert
 NAVY2 = "#13275a"     # lacivert
-DEEP = "#050b1c"      # neredeyse siyah lacivert (silüet)
+DEEP = "#020308"      # siyah (silüet)
 ORANGE = "#f47216"    # turuncu
 ORANGE2 = "#ffa047"   # açık turuncu
 WHITE = "#ffffff"
@@ -55,20 +55,31 @@ def player(fill, outline):
         parts.append(f'<rect x="{min(ankle[0], toe[0]) - 5}" y="{toe[1] - 2}" width="{abs(toe[0] - ankle[0]) + 10}" height="5" rx="2" fill="{fill}"/>')
     # Kalça ve gövde: hafif yana yaslanmış, geniş omuz
     parts.append(f'<path d="M84 128 L116 128 L118 112 Q119 90 128 66 Q102 54 74 64 Q80 90 82 112 Z" fill="{fill}"/>')
-    # Boyun ve öne eğik baş (headbang), kısa saç
-    parts.append(f'<path d="M93 60 L107 58 L106 48 L95 49 Z" fill="{fill}"/>')
-    parts.append(f'<g transform="translate(1 4) rotate(9 100 44)">'
-                 f'<ellipse cx="100" cy="36" rx="12" ry="13.5" fill="{fill}"/>'
-                 f'<path d="M87.5 36 Q86 26 91 22.5 Q93 19 98 20 Q101 17.5 105 19.5 Q110 19 112 23 Q115.5 27 112.5 36 Q111 29 104.5 28.5 Q100 27.5 95 29 Q89.5 29.5 87.5 36 Z" fill="{fill}"/>'
-                 f'</g>')
+    # Boyun ve öne eğik baş
+    parts.append(f'<path d="M94 62 L107 60 L106 50 L95 51 Z" fill="{fill}"/>')
+    parts.append(f'<ellipse cx="101" cy="45" rx="11.5" ry="12.5" fill="{fill}"/>')
+    # Ön kollar ve saçtan önce: arka kol parçaları (gövdenin üstünde)
+    elbow = (137, 106)
+    parts.append(line([(124, 68), elbow], fill, 11))              # sap kolu: omuz → dirsek
+    parts.append(line([(77, 68), (62, 100)], fill, 11.5))         # tel kolu: omuz → dirsek
+    # Uzun saç: başın üstünden yüzün önüne dökülüp gitara kadar iniyor; uçları dağınık.
+    # Göğsün önünde görünsün diye kenarına ince kontur (ışık) çizilir.
+    hair = ("M86 44 C83 30 92 24 101 24 C111 24 119 30 117 44 "
+            "C121 56 124 66 127 80 C129 88 127 94 130 100 "
+            "L124 102 L125 110 L119 104 L117 115 L112 105 L108 117 L104 106 L100 119 L97 106 "
+            "L92 116 L90 104 L85 112 L84 101 L78 106 C78 98 74 90 77 80 C80 66 82 56 86 44 Z")
+    strands = ["M95 34 C93 60 92 84 91 104", "M101 30 C101 60 101 86 100 112", "M107 33 C109 58 111 82 112 102",
+               "M90 50 C86 70 84 86 83 98", "M113 48 C117 66 120 82 122 96"]
+    if outline:
+        parts.append(f'<path d="{hair}" fill="{outline}" stroke="{outline}" stroke-width="5" stroke-linejoin="round"/>')
+    parts.append(f'<path d="{hair}" fill="{fill}"/>')
+    if outline:
+        for d in strands:
+            parts.append(f'<path d="{d}" fill="none" stroke="{outline}" stroke-width="1.3" stroke-linecap="round" opacity="0.55"/>')
     # Gitar: kalça hizasında alçakta, sap yukarı dik
     gx, gy, ang, sc = 92, 132, -42, 1.22
     a = math.radians(ang)
     hx, hy = gx + 80 * sc * math.cos(a) * 0.86, gy + 80 * sc * math.sin(a) * 0.86  # sap üzerindeki el
-    # Arka kol parçaları (gövdenin üstünde, gitarın altında kalır)
-    elbow = (137, 106)
-    parts.append(line([(124, 68), elbow], fill, 11))              # sap kolu: omuz → dirsek
-    parts.append(line([(77, 68), (62, 100)], fill, 11.5))         # tel kolu: omuz → dirsek
     parts.append(guitar(gx, gy, ang, sc, fill, outline))
     # Ön kol parçaları (gitarın önünde): kontur + dolgu
     for seg, w in ((((62, 100), (88, 126)), 10), ((elbow, (hx, hy)), 9.5)):
@@ -104,17 +115,17 @@ variants = {
         f'<circle cx="120" cy="104" r="78" fill="{ORANGE}"/>'
         f'<rect x="0" y="206" width="240" height="34" fill="{DEEP}"/><rect x="0" y="200" width="240" height="6" fill="{NAVY2}"/>'
         + placed(DEEP, ORANGE, 20, 4)),
-    # 3) Rozet: beyaz zemin, turuncu halka, lacivert silüet
+    # 3) Rozet: beyaz zemin, turuncu halka, siyah silüet
     "rozet": svg(
         f'<circle cx="120" cy="120" r="116" fill="{WHITE}"/><circle cx="120" cy="120" r="106" fill="none" stroke="{ORANGE}" stroke-width="8"/>'
-        + placed(NAVY, WHITE, 32, 18, 0.88)),
-    # 4) Pena: turuncu pena, lacivert silüet, beyaz kontur
+        + placed(DEEP, WHITE, 32, 18, 0.88)),
+    # 4) Pena: turuncu pena, siyah silüet, beyaz kontur
     "pena": svg(
         f'<path d="{PICK}" fill="{ORANGE}"/>'
         f'<path d="{PICK}" fill="none" stroke="{WHITE}" stroke-width="5" transform="translate(120 120) scale(0.92) translate(-120 -120)"/>'
-        + placed(NAVY, ORANGE, 47, 22, 0.73)),
-    # 5) Yalın silüet: zeminsiz lacivert, turuncu gitar konturu
-    "siluet": svg(player(NAVY, ORANGE), vb="10 6 200 216"),
+        + placed(DEEP, WHITE, 47, 22, 0.73)),
+    # 5) Yalın silüet: zeminsiz siyah, turuncu kontur
+    "siluet": svg(player(DEEP, ORANGE), vb="10 6 200 216"),
 }
 
 os.makedirs(OUT, exist_ok=True)
