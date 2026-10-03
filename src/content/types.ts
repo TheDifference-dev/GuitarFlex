@@ -16,6 +16,8 @@ export type Lesson = {
   theory?: string[];
   /** alphaTex formatında tab */
   tex?: string;
+  /** Tabsız okuma adımı (rehberlerde "Nasıl çalınır?" gibi): paragraflar, "## " ile başlayan satır başlıktır */
+  body?: string[];
   /** ozel-kaynak klasörüne göre tab dosyası yolu (.gp, .gpx, .xml …) */
   tabFile?: string;
 };
@@ -39,11 +41,14 @@ export type Section = {
   examTiers?: number[];
 };
 
+/** technique: elektro teknik kursu · guide: rehber · acoustic: akustik gitar kursu */
+export type CourseKind = "technique" | "guide" | "acoustic";
+
 export type Course = {
   slug: string;
   title: string;
   description: string;
-  kind: "technique" | "guide";
+  kind: CourseKind;
   /** Kart ve ders kartlarının arka plan görseli: /marka/... ya da ozel-kaynak'a göre yol */
   image?: string;
   icon?: string;
@@ -63,4 +68,6 @@ export type SiteTexts = {
     guides: { slug: string; title: string; text: string; button: string }[];
   };
   chordCard: { eyebrow: string; title: string; text: string; button: string; slug: string };
+  /** Kursların sırası (slug listesi). Listede olmayanlar yerleşik sırayla sona eklenir. */
+  courseOrder?: string[];
 };

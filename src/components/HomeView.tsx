@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, Map, Mic2, Star } from "lucide-react";
-import type { SiteTexts } from "@/content/types";
+import type { CourseKind, SiteTexts } from "@/content/types";
 import { useProgress, type Progress } from "@/lib/progress";
 
 export type CourseSummary = {
   slug: string;
   title: string;
   description: string;
-  kind: "technique" | "guide";
+  kind: CourseKind;
   image?: string;
   icon?: string;
   status?: string;
@@ -24,6 +24,53 @@ export function coursePercent(p: Progress, keys: string[]) {
 export default function HomeView({ texts, courses }: { texts: SiteTexts; courses: CourseSummary[] }) {
   const p = useProgress();
   const guideIcons = [BookOpen, Map];
+  const electric = courses.filter((c) => c.kind !== "acoustic");
+  const acoustic = courses.filter((c) => c.kind === "acoustic");
+  const renderCard = (c: CourseSummary) => {
+    const pct = coursePercent(p, c.keys);
+    const disabled = !!c.status;
+    const card = (
+      <div className={`flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-panel transition ${disabled ? "opacity-70" : "hover:border-accent"}`}>
+        <div className="relative h-44 overflow-hidden">
+          {c.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={c.image} alt="" className="absolute inset-0 size-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-line via-panel to-bg text-6xl opacity-80">{c.icon ?? "🎸"}</div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+          <span className="absolute right-4 top-4 flex size-12 items-center justify-center rounded-full border-2 border-white/25 bg-black/60 text-xs font-bold">
+            {pct}%
+          </span>
+          {disabled && (
+            <span className="absolute right-20 top-5 rounded-full bg-black/70 px-3 py-1 text-xs font-extrabold tracking-wider">YAKINDA</span>
+          )}
+          <h3 lang="en" className="absolute bottom-4 left-5 right-5 text-xl font-black uppercase leading-tight tracking-tight">{c.title}</h3>
+        </div>
+        <div className="flex flex-1 flex-col p-5">
+          <p className="flex-1 text-sm text-muted">{c.description}</p>
+          <div className="mt-4 flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-bold">%{pct}</p>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-line">
+                <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+            <span className="rounded-lg border border-line bg-bg px-4 py-2 text-sm font-bold">
+              {c.kind === "guide" ? "Rehberi Aç" : "Egzersize Başla"}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+    return disabled ? (
+      <div key={c.slug}>{card}</div>
+    ) : (
+      <Link key={c.slug} href={`/calis/${c.slug}`}>
+        {card}
+      </Link>
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -70,53 +117,14 @@ export default function HomeView({ texts, courses }: { texts: SiteTexts; courses
       </section>
 
       {/* Kurs kartları */}
-      <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {courses.map((c) => {
-          const pct = coursePercent(p, c.keys);
-          const disabled = !!c.status;
-          const card = (
-            <div className={`flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-panel transition ${disabled ? "opacity-70" : "hover:border-accent"}`}>
-              <div className="relative h-44 overflow-hidden">
-                {c.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.image} alt="" className="absolute inset-0 size-full object-cover" />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-line via-panel to-bg text-6xl opacity-80">{c.icon ?? "🎸"}</div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                <span className="absolute right-4 top-4 flex size-12 items-center justify-center rounded-full border-2 border-white/25 bg-black/60 text-xs font-bold">
-                  {pct}%
-                </span>
-                {disabled && (
-                  <span className="absolute right-20 top-5 rounded-full bg-black/70 px-3 py-1 text-xs font-extrabold tracking-wider">YAKINDA</span>
-                )}
-                <h3 lang="en" className="absolute bottom-4 left-5 right-5 text-xl font-black uppercase leading-tight tracking-tight">{c.title}</h3>
-              </div>
-              <div className="flex flex-1 flex-col p-5">
-                <p className="flex-1 text-sm text-muted">{c.description}</p>
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="flex-1">
-                    <p className="text-sm font-bold">%{pct}</p>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-line">
-                      <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                  <span className="rounded-lg border border-line bg-bg px-4 py-2 text-sm font-bold">
-                    {c.kind === "guide" ? "Rehberi Aç" : "Egzersize Başla"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-          return disabled ? (
-            <div key={c.slug}>{card}</div>
-          ) : (
-            <Link key={c.slug} href={`/calis/${c.slug}`}>
-              {card}
-            </Link>
-          );
-        })}
-      </section>
+      <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{electric.map(renderCard)}</section>
+
+      {acoustic.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Akustik Gitar</h2>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{acoustic.map(renderCard)}</div>
+        </section>
+      )}
 
       {/* Şarkı ve Sololar */}
       <section className="space-y-4">

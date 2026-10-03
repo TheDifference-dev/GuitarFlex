@@ -184,7 +184,7 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                               <ListVideo size={14} />
                             </span>
                           </div>
-                          <p className="mt-10 text-right text-sm font-black">{l.bpmRange ? `${l.bpmRange[0]}–${l.bpmRange[1]}` : l.bpm} BPM</p>
+                          <p className="mt-10 text-right text-sm font-black">{l.tex || l.tabFile ? `${l.bpmRange ? `${l.bpmRange[0]}–${l.bpmRange[1]}` : l.bpm} BPM` : "Okuma"}</p>
                           <div className="mt-3 flex items-center justify-between border-t border-line/70 pt-3 text-xs font-bold">
                             <span>
                               {formatClock(done)} / {formatClock(target)} dk

@@ -5,12 +5,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Bell, BookOpen, ChevronDown, Guitar, Trophy, User, Wrench } from "lucide-react";
 import { SITE } from "@/config/site";
+import type { CourseKind } from "@/content/types";
 
 type MenuItem = { href?: string; label: string; note?: string };
 type MenuColumn = { title?: string; items: MenuItem[] };
 type Props = {
   subtitle: string;
-  courses: { slug: string; title: string; status?: string; kind: "technique" | "guide" }[];
+  courses: { slug: string; title: string; status?: string; kind: CourseKind }[];
   theory: { slug: string; title: string }[];
 };
 
@@ -47,6 +48,9 @@ export default function SiteHeader({ subtitle, courses, theory }: Props) {
           title: "Başlangıç",
           items: [{ href: "/", label: "Tüm Egzersizler" }, ...courses.filter((c) => c.kind === "guide").map(courseItem)],
         },
+        ...(courses.some((c) => c.kind === "acoustic")
+          ? [{ title: "Akustik", items: courses.filter((c) => c.kind === "acoustic").map(courseItem) }]
+          : []),
         {
           title: "Şarkı ve Sololar",
           items: [

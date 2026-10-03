@@ -62,10 +62,13 @@ async function readPack(): Promise<{ courses: Course[]; site: Partial<SiteTexts>
 }
 
 export async function getCourses(): Promise<Course[]> {
-  const { courses: pack } = await readPack();
+  const { courses: pack, site } = await readPack();
   const replaced = BUILTIN_COURSES.map((c) => pack.find((p) => p.slug === c.slug) ?? c);
   const extra = pack.filter((p) => !BUILTIN_COURSES.some((b) => b.slug === p.slug));
-  return [...replaced, ...extra];
+  const all = [...replaced, ...extra];
+  const order = site?.courseOrder ?? [];
+  const rank = new Map(all.map((c, i) => [c.slug, order.includes(c.slug) ? order.indexOf(c.slug) : order.length + i]));
+  return all.sort((a, b) => rank.get(a.slug)! - rank.get(b.slug)!);
 }
 
 export async function getCourse(slug: string): Promise<Course | undefined> {

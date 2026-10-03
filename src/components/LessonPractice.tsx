@@ -14,12 +14,14 @@ type Props = {
   tex?: string;
   /** Tarayıcıdan erişilebilir tab dosyası adresi */
   tabUrl?: string;
+  /** Tabsız okuma adımı: metin sayfada gösterilir, burada sadece sayaç kalır */
+  reading?: boolean;
 };
 
 const SAVE_EVERY = 5;
 
 /** Ders ekranı: tab oynatıcı + hedef süre sayacı. Çalma süresi otomatik kaydedilir. */
-export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl }: Props) {
+export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading }: Props) {
   const progress = useProgress();
   const saved = progress.exercises[progressKey];
   const target = minutes * 60;
@@ -121,7 +123,7 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl 
 
       {source ? (
         <TabPlayer source={source} compact onBpmChange={setCurrentBpm} onPlayingChange={setRunning} />
-      ) : (
+      ) : reading ? null : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="rounded-2xl border border-dashed border-line p-6 text-sm text-muted">
             Bu dersin tabı henüz eklenmedi. Metronomla çalışıp sayacı elle başlatabilirsin.
