@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { ALL_EXERCISES, TECHNIQUES } from "@/content/techniques";
 import { formatDuration, resetProgress, useProgress } from "@/lib/progress";
-import { RANKS, badges, completedCount, rankFor, techniqueProgress } from "@/lib/ranks";
+import { RANKS, badges, completedCount, keysProgress, rankFor } from "@/lib/ranks";
 import { ProgressBar, SummaryStrip } from "./ProgressWidgets";
 
 const DAYS = 35;
 
-export default function ProgressDashboard() {
+export type CourseInfo = { slug: string; title: string; icon?: string; keys: string[]; titles: Record<string, string> };
+
+export default function ProgressDashboard({ courses }: { courses: CourseInfo[] }) {
   const p = useProgress();
   const done = completedCount(p);
   const { current, next } = rankFor(done);
@@ -23,7 +24,8 @@ export default function ProgressDashboard() {
   });
   const maxDay = Math.max(1, ...days.map((d) => d.seconds));
   const recent = [...p.sessions].reverse().slice(0, 10);
-  const titleOf = (id: string) => ALL_EXERCISES.find((e) => e.id === id)?.title ?? id;
+  const titleOf = (key: string) => courses.find((c) => c.titles[key])?.titles[key] ?? key;
+  const hrefOf = (key: string) => `/calis/${key.split("/")[0]}/${encodeURIComponent(key.split("/").slice(1).join("/"))}`;
 
   return (
     <div className="space-y-8">
@@ -63,7 +65,7 @@ export default function ProgressDashboard() {
       <section>
         <h2 className="mb-3 font-semibold">Rozetler</h2>
         <div className="grid gap-3 sm:grid-cols-3">
-          {badges(p).map((b) => (
+          {badges(p, courses).map((b) => (
             <div key={b.id} className={`flex gap-3 rounded-xl border border-line bg-panel p-4 ${b.earned ? "" : "opacity-40 grayscale"}`}>
               <span className="text-2xl">{b.icon}</span>
               <div>
@@ -76,14 +78,14 @@ export default function ProgressDashboard() {
       </section>
 
       <section>
-        <h2 className="mb-3 font-semibold">Teknikler</h2>
+        <h2 className="mb-3 font-semibold">Kurslar</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {TECHNIQUES.map((t) => {
-            const { done: d, total } = techniqueProgress(p, t.slug);
+          {courses.map((t) => {
+            const { done: d, total } = keysProgress(p, t.keys);
             return (
-              <Link key={t.slug} href={`/yollar/${t.slug}`} className="rounded-xl border border-line bg-panel p-4 hover:border-accent">
+              <Link key={t.slug} href={`/calis/${t.slug}`} className="rounded-xl border border-line bg-panel p-4 hover:border-accent">
                 <p className="font-medium">
-                  {t.icon} {t.name}
+                  {t.icon} {t.title}
                 </p>
                 <ProgressBar value={d} max={total} />
               </Link>
@@ -100,7 +102,7 @@ export default function ProgressDashboard() {
           <ul className="mt-2 divide-y divide-[var(--line)] text-sm">
             {recent.map((s, i) => (
               <li key={i} className="flex justify-between gap-4 py-2">
-                <Link href={`/egzersiz/${s.exerciseId}`} className="hover:text-accent">
+                <Link href={hrefOf(s.exerciseId)} className="hover:text-accent">
                   {titleOf(s.exerciseId)}
                 </Link>
                 <span className="text-muted tabular-nums">

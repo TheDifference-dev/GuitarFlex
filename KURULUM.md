@@ -43,6 +43,11 @@ Guitar Pro / MusicXML dosyalarını `ozel-kaynak\tablar\` klasörüne koy (alt k
 Masaüstü uygulamasında **Dosya → Tab arşivi klasörünü aç** ile bu klasöre doğrudan ulaşırsın.
 Dosyalar **Oynatıcı → Arşivim** altında görünür. Bu klasör GitHub'a gönderilmez.
 
+## D2. Kendi içerik paketin
+
+Kendi kurslarını, görsellerini ve tablarını `ozel-kaynak\icerik\` klasörüne JSON dosyası olarak koyabilirsin.
+Biçim: [docs/ICERIK-PAKETI.md](docs/ICERIK-PAKETI.md). Bu klasör de GitHub'a gönderilmez.
+
 ## E. Adı ve renkleri değiştirmek
 
 | Ne | Nerede |

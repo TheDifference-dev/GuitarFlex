@@ -4,9 +4,11 @@
 It offers structured technique pathways with an interactive tab player, music theory lessons with an interactive fretboard,
 practice tracking (streaks, ranks, badges) and a Songsterr-style multi-track Guitar Pro player.
 
-| Ana sayfa | Tab oynatıcı |
+| Ana sayfa | Kurs |
 |---|---|
-| ![Ana sayfa](docs/ekran/ana-sayfa.png) | ![Tab oynatıcı](docs/ekran/oynatici.png) |
+| ![Ana sayfa](docs/ekran/ana-sayfa.png) | ![Kurs](docs/ekran/kurs.png) |
+| **Ders** | **Tab oynatıcı** |
+| ![Ders](docs/ekran/ders.png) | ![Tab oynatıcı](docs/ekran/oynatici.png) |
 | **Müzik teorisi** | **Marka** |
 | ![Teori](docs/ekran/teori.png) | ![Marka](docs/ekran/marka.png) |
 
@@ -15,6 +17,8 @@ Electron (desktop app with self-updating launcher) · Web Audio API (metronome, 
 
 **Highlights**
 - Multi-track Guitar Pro / MusicXML / alphaTex player: per-track mute/solo/volume, speed control, metronome, count-in, click-to-seek, drag-to-loop
+- Course structure (course → section → chapter → lesson) with timed lessons, locked sections and per-lesson progress
+- Pluggable private content packs (JSON + images + Guitar Pro files) loaded at runtime from a git-ignored folder
 - 65 original exercises written as alphaTex and validated by a custom checker (`npm run check-content`) that verifies every bar's length
 - Interactive SVG fretboard: scales, chords, intervals, note playback and a timed note-finding quiz
 - Desktop launcher that pulls updates from GitHub, rebuilds when needed and starts the app with one click
@@ -26,7 +30,9 @@ Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan masaü
 
 ## Özellikler
 
-- **Teknik Yolları** (`/yollar`): 12 teknik, 65 egzersiz, her teknik 2–3 seviye. Tüm tablar özgündür.
+- **Kurslar** (`/calis/<kurs>`): Bölüm → alt bölüm (1.0, 1.1 …) → ders yapısı. Her dersin BPM'i ve hedef süresi var; süre dolunca ders tamamlanır.
+  Sol panelde Egzersiz/Rehber sekmeleri, eğitim videoları, bölümler ve sınav satırları. 12 teknik kursu ve 2 başlangıç rehberi yerleşik gelir.
+- **İçerik paketi**: `ozel-kaynak/icerik/*.json` ile kendi kurslarını, görsellerini ve tablarını ekleyebilirsin (bkz. [docs/ICERIK-PAKETI.md](docs/ICERIK-PAKETI.md)).
 - **Tab oynatıcı** (`/oynatici`): Guitar Pro (.gp, .gp3–.gp7, .gpx), MusicXML ve alphaTex dosyalarını açar. Özellikler:
   - çoklu enstrüman: track seçimi, mute, solo, ses seviyesi
   - hız (%25–150), metronom, sayım, döngü
@@ -34,7 +40,7 @@ Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan masaü
   - Tab, Nota+Tab ya da Nota görünümü; yatay mod; zoom
   - kısayollar: Boşluk çal/duraklat, L döngü, M metronom, Esc seçimi kaldır
 - **Kişisel arşiv**: `ozel-kaynak/tablar/` klasörüne koyduğun tab dosyaları oynatıcıda "Arşivim" altında listelenir. Bu klasör Git'e gönderilmez.
-- **Çalışma takibi**: Çalma süresi otomatik sayılır. En iyi BPM, tamamlanan egzersizler, seri (streak), rütbe ve rozetler (`/ilerleme`).
+- **Profil** (`/profil`): Çalma süresi otomatik sayılır. Seri (streak), rütbe, rozetler, kurs ilerlemesi, son çalışmalar.
 - **Müzik teorisi** (`/teori`): 10 ders ve interaktif sap gezgini (gamlar, akorlar, aralıklar, Do-Re-Mi).
 - **Araçlar** (`/araclar`): Metronom ve 60 saniyelik nota bulma testi.
 
@@ -72,6 +78,8 @@ desktop/main.cjs            masaüstü uygulaması (Electron penceresi + menüle
 desktop/guncelle.cjs        kısayoldan açılışta GitHub'dan güncelleme + derleme
 desktop/kisayol-olustur.cjs masaüstü / Başlat menüsü kısayolu (Windows)
 src/config/site.ts          uygulama adı ve metinleri
+src/content/courses.ts      yerleşik kurslar ve başlangıç rehberleri
+src/lib/courses.ts          kurs yükleyici (yerleşik + ozel-kaynak/icerik paketi)
 src/content/techniques.ts   egzersizler (alphaTex formatında tablar)
 src/content/tex.ts          tab yazım yardımcıları
 src/content/theory.ts       teori dersleri

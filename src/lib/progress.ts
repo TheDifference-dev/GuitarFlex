@@ -93,6 +93,32 @@ export function logPractice(exerciseId: string, seconds: number, bpm: number, co
   });
 }
 
+/**
+ * Çalma süresini ekler; toplam süre hedefe ulaşınca dersi tamamlanmış sayar.
+ * Aynı gün aynı derse ait kayıtlar tek oturum satırında birleşir.
+ */
+export function addPracticeTime(key: string, seconds: number, bpm: number, targetSeconds: number) {
+  if (seconds <= 0) return;
+  const p = read();
+  const prev = p.exercises[key];
+  const total = (prev?.totalSeconds ?? 0) + seconds;
+  const entry: ExerciseProgress = {
+    completed: (prev?.completed ?? false) || total >= targetSeconds,
+    bestBpm: Math.max(prev?.bestBpm ?? 0, bpm),
+    totalSeconds: total,
+    lastPracticedAt: new Date().toISOString(),
+  };
+  const date = today();
+  const sessions = [...p.sessions];
+  const last = sessions[sessions.length - 1];
+  if (last && last.date === date && last.exerciseId === key) {
+    sessions[sessions.length - 1] = { ...last, seconds: last.seconds + seconds, bpm: Math.max(last.bpm, bpm) };
+  } else {
+    sessions.push({ date, exerciseId: key, seconds, bpm });
+  }
+  write({ ...p, exercises: { ...p.exercises, [key]: entry }, sessions });
+}
+
 export function setCompleted(exerciseId: string, completed: boolean) {
   const p = read();
   const prev = p.exercises[exerciseId] ?? { completed: false, bestBpm: 0, totalSeconds: 0, lastPracticedAt: new Date().toISOString() };

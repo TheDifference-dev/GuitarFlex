@@ -1,6 +1,5 @@
 import type { Progress } from "./progress";
 import { streak, totalSeconds } from "./progress";
-import { ALL_EXERCISES, TECHNIQUES } from "@/content/techniques";
 
 export const RANKS = [
   { name: "Çaylak", min: 0 },
@@ -8,11 +7,11 @@ export const RANKS = [
   { name: "Sahne", min: 15 },
   { name: "Turne", min: 30 },
   { name: "Usta", min: 45 },
-  { name: "Efsane", min: ALL_EXERCISES.length },
+  { name: "Efsane", min: 80 },
 ];
 
 export function completedCount(p: Progress): number {
-  return ALL_EXERCISES.filter((e) => p.exercises[e.id]?.completed).length;
+  return Object.values(p.exercises).filter((e) => e.completed).length;
 }
 
 export function rankFor(completed: number) {
@@ -20,21 +19,20 @@ export function rankFor(completed: number) {
   return { current: RANKS[index], next: RANKS[index + 1] };
 }
 
-export function techniqueProgress(p: Progress, slug: string) {
-  const t = TECHNIQUES.find((x) => x.slug === slug);
-  const ids = t?.levels.flatMap((l) => l.exercises.map((e) => e.id)) ?? [];
-  const done = ids.filter((id) => p.exercises[id]?.completed).length;
-  return { done, total: ids.length };
+/** Bir kursun (ders anahtarlarıyla) tamamlanma durumu */
+export function keysProgress(p: Progress, keys: string[]) {
+  const done = keys.filter((k) => p.exercises[k]?.completed).length;
+  return { done, total: keys.length };
 }
 
 export type Badge = { id: string; icon: string; title: string; description: string; earned: boolean };
 
-export function badges(p: Progress): Badge[] {
+export function badges(p: Progress, courses: { keys: string[] }[] = []): Badge[] {
   const done = completedCount(p);
   const secs = totalSeconds(p.sessions);
   const best = Math.max(0, ...Object.values(p.exercises).map((e) => e.bestBpm));
-  const fullTechniques = TECHNIQUES.filter((t) => {
-    const { done: d, total } = techniqueProgress(p, t.slug);
+  const fullTechniques = courses.filter((c) => {
+    const { done: d, total } = keysProgress(p, c.keys);
     return total > 0 && d === total;
   }).length;
   const s = streak(p.sessions);
@@ -47,7 +45,7 @@ export function badges(p: Progress): Badge[] {
     { id: "bir-saat", icon: "⏱", title: "Bir Saat", description: "Toplam 60 dakika çalış.", earned: secs >= 3600 },
     { id: "on-saat", icon: "🏋", title: "On Saat", description: "Toplam 10 saat çalış.", earned: secs >= 36000 },
     { id: "on-egzersiz", icon: "✅", title: "Onluk", description: "10 egzersizi tamamla.", earned: done >= 10 },
-    { id: "teknik-ustasi", icon: "🏅", title: "Teknik Ustası", description: "Bir tekniğin tüm egzersizlerini bitir.", earned: fullTechniques >= 1 },
+    { id: "teknik-ustasi", icon: "🏅", title: "Teknik Ustası", description: "Bir kursun tüm derslerini bitir.", earned: fullTechniques >= 1 },
     { id: "hizli", icon: "⚡", title: "Hız Treni", description: "Herhangi bir egzersizde 140 BPM'e ulaş.", earned: best >= 140 },
     { id: "kulak", icon: "🎯", title: "Sap Hakimi", description: "Nota bulma testinde 20 doğru yap.", earned: (p.quizBest["nota-bulma"] ?? 0) >= 20 },
   ];

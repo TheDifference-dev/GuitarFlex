@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",
+    "lucide-react": "^1.51.0",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8"
