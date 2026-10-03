@@ -1,5 +1,5 @@
 {
-  "name": "muzik",
+  "name": "guitarflex",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -33,6 +33,7 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "description": "Muzik — gitar akademisi (masaüstü uygulaması ve web sitesi)",
-  "main": "desktop/main.cjs"
+  "description": "GuitarFlex — gitar akademisi (masaüstü uygulaması ve web sitesi)",
+  "main": "desktop/main.cjs",
+  "productName": "GuitarFlex"
 }

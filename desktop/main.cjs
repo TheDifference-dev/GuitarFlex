@@ -80,9 +80,20 @@ function stopServer() {
   }
 }
 
-const SPLASH = `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#0f1012;color:#ecebe8;font-family:system-ui,sans-serif">
-<div style="text-align:center"><div style="font-size:28px;font-weight:700"><span style="color:#ff7a3d">●</span> Başlatılıyor…</div>
-<p style="color:#9a978f">İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`)}`;
+const APP_NAME = "GuitarFlex";
+const ICON = path.join(__dirname, "icon.png");
+const LOGO_SVG = path.join(ROOT, "public", "marka", "sahne.svg");
+
+function splash() {
+  let logo = "";
+  try {
+    logo = `<img src="data:image/svg+xml;base64,${fs.readFileSync(LOGO_SVG).toString("base64")}" width="120" height="120" style="border-radius:24px">`;
+  } catch {}
+  const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#04060c;color:#e6ebf7;font-family:system-ui,sans-serif">
+<div style="text-align:center">${logo}<div style="font-size:30px;font-weight:700;margin-top:16px">${APP_NAME}</div>
+<p style="color:#8a96b6">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
+  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+}
 
 function buildMenu() {
   const isMac = process.platform === "darwin";
@@ -139,7 +150,9 @@ async function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    backgroundColor: "#0f1012",
+    backgroundColor: "#04060c",
+    title: APP_NAME,
+    icon: fs.existsSync(ICON) ? ICON : undefined,
     autoHideMenuBar: false,
     webPreferences: { contextIsolation: true, sandbox: true },
   });
@@ -157,7 +170,7 @@ async function createWindow() {
     }
   });
 
-  await win.loadURL(SPLASH);
+  await win.loadURL(splash());
 
   const port = await freePort();
   baseUrl = `http://127.0.0.1:${port}`;
@@ -169,6 +182,8 @@ async function createWindow() {
     dialog.showErrorBox("Başlatılamadı", String(e.message || e));
   }
 }
+
+app.setName(APP_NAME);
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();

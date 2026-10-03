@@ -7,7 +7,7 @@
    (her ekranda *Next*, "Tools for Native Modules" kutusunu işaretleme, sonda *Finish*).
    Kurulumdan sonra bilgisayarı yeniden başlat.
 3. **Projeyi indir**: GitHub Desktop → **File → Clone repository** → `TheDifference-dev/Muzik` seç →
-   en alttaki **Local path** kutusuna `C:\Projeler\Muzik` yaz → **Clone**.
+   en alttaki **Local path** kutusuna `C:\Projeler\GuitarFlex` yaz → **Clone**.
    > OneDrive klasörü (`...\OneDrive\...`) kullanma: binlerce dosyayı buluta yüklemeye çalışır ve hatalara yol açar.
 4. Üstteki **Current branch** menüsünden `claude/charming-bardeen-qvypma` seç.
 5. **Repository → Open in Command Prompt** → açılan siyah pencereye:
@@ -47,13 +47,14 @@ Dosyalar **Oynatıcı → Arşivim** altında görünür. Bu klasör GitHub'a g�
 
 | Ne | Nerede |
 |---|---|
-| Uygulama adı, slogan, alt yazı | `src/config/site.ts` |
-| Renk paleti (açık ve koyu tema) | `src/app/globals.css` dosyasının başı |
+| Uygulama adı, slogan, logo | `src/config/site.ts` |
+| Renk paleti (lacivert & siyah) | `src/app/globals.css` dosyasının başı |
+| Logo adayları | `public/marka/` (uygulamada alt bilgideki **Marka** sayfası) |
 
 Masaüstü uygulaması `npm run desktop` ile açıkken kaydettiğin değişiklik pencerede anında görünür.
 
 ## F. Sorun giderme
 
 - **`npm` / `node` is not recognized** → Node.js kurulmamış ya da pencere kurulumdan önce açılmış. Node.js'i kur, bütün siyah pencereleri kapat, gerekirse bilgisayarı yeniden başlat.
-- **`npm install` hata veriyor** → proje OneDrive içinde mi? `C:\Projeler\Muzik` gibi bir yere yeniden clone et.
+- **`npm install` hata veriyor** → proje OneDrive içinde mi? `C:\Projeler\GuitarFlex` gibi bir yere yeniden clone et.
 - Başka bir hata → siyah penceredeki yazının ekran görüntüsünü paylaş.

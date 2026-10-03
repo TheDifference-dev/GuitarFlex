@@ -1,4 +1,4 @@
-# Muzik — Gitar Akademisi
+# GuitarFlex — Gitar Akademisi
 
 Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan web sitesi. İleride **Ton Lab** (ünlü şarkıların tonlarını kişinin kendi ekipmanına uyarlama) modülü eklenecek.
 
@@ -30,7 +30,9 @@ npm run dev            # web sitesi: http://localhost:3000
 ```
 
 Masaüstü uygulaması ile web sitesi aynı kodu kullanır; arayüzde yapılan her değişiklik ikisine birden yansır.
-Uygulama adı `src/config/site.ts`, renk paleti `src/app/globals.css` içinde.
+Uygulama adı ve logo `src/config/site.ts`, renk paleti (lacivert & siyah) `src/app/globals.css` içinde.
+Logo adayları `public/marka/` klasöründe; uygulamada **Marka** sayfasında (alt bilgideki bağlantı) görülebilir.
+Logoları yeniden üretmek için: `python3 scripts/logo-ciz.py`.
 
 Diğer komutlar:
 

@@ -1,33 +1,24 @@
 @import "tailwindcss";
 
-/* ── RENK PALETİ ───────────────────────────────────────────────
+/* ── RENK PALETİ: Lacivert & Siyah ─────────────────────────────
    Uygulamanın tüm renkleri buradan gelir; değiştirmek için sadece bu değerleri düzenle.
-   İlk blok açık tema, ikinci blok (prefers-color-scheme: dark) koyu tema.
    --bg       sayfa arka planı        --panel   kart / kutu arka planı
    --line     çizgi ve kenarlıklar    --text    ana yazı
    --muted    ikincil yazı            --accent  vurgu (düğmeler, aktif öğeler)
    --accent-ink  vurgu rengi üstündeki yazı
+   --sheet    tab kağıdı arka planı   --sheet-ink  tab/nota çizimi
    ─────────────────────────────────────────────────────────────── */
 :root {
-  --bg: #f6f5f2;
-  --panel: #ffffff;
-  --line: #e2dfd8;
-  --text: #1b1a17;
-  --muted: #6b675f;
-  --accent: #d9480f;
+  color-scheme: dark;
+  --bg: #04060c;
+  --panel: #0a1124;
+  --line: #1a2546;
+  --text: #e6ebf7;
+  --muted: #8a96b6;
+  --accent: #2c5be0;
   --accent-ink: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1012;
-    --panel: #17191c;
-    --line: #2a2d32;
-    --text: #ecebe8;
-    --muted: #9a978f;
-    --accent: #ff7a3d;
-    --accent-ink: #1a0d05;
-  }
+  --sheet: #070c1a;
+  --sheet-ink: #dfe6f7;
 }
 
 @theme inline {

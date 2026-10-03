@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { noteName } from "@/lib/music";
 
 // alphaTab tarayıcıya klasik bir <script> olarak yüklenir (public/alphatab, bkz. scripts/copy-alphatab.mjs).
 // Böylece web worker ve font dosyalarını kendi yolundan bulur; bundler ayarı gerekmez.
@@ -37,7 +38,7 @@ export type TabSource =
   | { kind: "file"; data: ArrayBuffer; name: string };
 
 type View = "tab" | "score-tab" | "score";
-type TrackInfo = { index: number; name: string; percussion: boolean };
+type TrackInfo = { index: number; name: string; percussion: boolean; tuning: string };
 
 type Props = {
   source: TabSource;
@@ -117,12 +118,23 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
         // Worker'lar blob üzerinden açıldığı için yollar tam URL olmalı.
         const abs = (path: string) => new URL(path, window.location.href).href;
         const { view: v, zoom: z, horizontal: h } = display.current;
+        // Tab renkleri paletten (globals.css) okunur.
+        const css = getComputedStyle(document.documentElement);
+        const color = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
+        const ink = color("--sheet-ink", "#000000");
         const api = new at.AlphaTabApi(hostRef.current, {
           core: { fontDirectory: abs("/alphatab/font/"), scriptFile: abs(SCRIPT) },
           display: {
             staveProfile: staveProfile(v, false),
             scale: z / 100,
             layoutMode: h ? at.LayoutMode.Horizontal : at.LayoutMode.Page,
+            resources: {
+              mainGlyphColor: ink,
+              secondaryGlyphColor: color("--muted", "#666666"),
+              staffLineColor: color("--muted", "#666666"),
+              barSeparatorColor: ink,
+              barNumberColor: color("--accent", "#c00000"),
+            },
           },
           player: {
             playerMode: at.PlayerMode.EnabledSynthesizer,
@@ -132,11 +144,24 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
           },
         });
         apiRef.current = api;
+        // Şarkı adı, sanatçı ve akort zaten arayüzde gösteriliyor; tab alanında tekrar çizilmesin.
+        const E = at.NotationElement;
+        for (const el of [E.ScoreTitle, E.ScoreSubTitle, E.ScoreArtist, E.ScoreAlbum, E.ScoreWords, E.ScoreMusic, E.ScoreWordsAndMusic, E.ScoreCopyright, E.GuitarTuning]) {
+          api.settings.notation.elements.set(el, false);
+        }
+        api.updateSettings();
 
         api.scoreLoaded.on((score: any) => {
           if (disposed) return;
           setMeta({ title: score.title, artist: score.artist, tempo: score.tempo });
-          setTracks(score.tracks.map((t: any) => ({ index: t.index, name: t.name || `Track ${t.index + 1}`, percussion: !!t.staves[0]?.isPercussion })));
+          setTracks(
+            score.tracks.map((t: any) => {
+              const staff = t.staves[0];
+              // alphaTab akordu inceden kalına tutar; kalından inceye yaz (E A D G B E).
+              const tuning = staff?.isPercussion ? "" : [...(staff?.tuning ?? [])].reverse().map((m: number) => noteName(m)).join(" ");
+              return { index: t.index, name: t.name || `Track ${t.index + 1}`, percussion: !!staff?.isPercussion, tuning };
+            }),
+          );
         });
         api.renderFinished.on(() => !disposed && setStatus("ready"));
         api.error.on(() => !disposed && setStatus("error"));
@@ -361,6 +386,12 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
           </div>
         </div>
 
+        {tracks[shown]?.tuning && (
+          <p className="text-xs text-muted">
+            Akort: <span className="font-mono text-text">{tracks[shown].tuning}</span>
+          </p>
+        )}
+
         {/* Track listesi */}
         {tracks.length > 1 && (
           <div className="flex flex-wrap gap-2">
@@ -403,9 +434,9 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
         )}
       </div>
 
-      <div ref={viewportRef} className={`relative overflow-auto rounded-b-xl bg-white p-2 text-black ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}>
-        {status === "loading" && <p className="p-6 text-center text-sm text-neutral-500">Tab yükleniyor…</p>}
-        {status === "error" && <p className="p-6 text-center text-sm text-red-600">Tab açılamadı. Dosya bozuk ya da desteklenmeyen bir formatta olabilir.</p>}
+      <div ref={viewportRef} className={`relative overflow-auto rounded-b-xl bg-[var(--sheet)] p-2 text-[var(--sheet-ink)] ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}>
+        {status === "loading" && <p className="p-6 text-center text-sm text-muted">Tab yükleniyor…</p>}
+        {status === "error" && <p className="p-6 text-center text-sm text-red-400">Tab açılamadı. Dosya bozuk ya da desteklenmeyen bir formatta olabilir.</p>}
         <div ref={hostRef} />
       </div>
       {!compact && (

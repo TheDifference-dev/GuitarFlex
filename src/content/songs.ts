@@ -20,9 +20,9 @@ const PROGRESSION = ["E5", "C5", "G5", "D5", "E5", "C5", "G5", "D5"] as const;
 const demoRock: Song = {
   slug: "muzik-demo-rock",
   title: "Demo Rock",
-  artist: "Muzik (özgün)",
+  artist: "GuitarFlex (özgün)",
   tex: [
-    `\\title "Demo Rock" \\artist "Muzik" \\tempo 112 .`,
+    `\\title "Demo Rock" \\artist "GuitarFlex" \\tempo 112 .`,
     `\\track "Lead Gitar" \\instrument 29 \\staff {tabs}`,
     [
       ":1 r", ":1 r", ":1 r", ":1 r",
