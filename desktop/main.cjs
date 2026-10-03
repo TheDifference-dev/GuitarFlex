@@ -123,6 +123,13 @@ function buildMenu() {
           },
         },
         { label: "Proje klasörünü aç", click: () => shell.openPath(ROOT) },
+        {
+          label: "İçerik deposunu aç",
+          click: () => {
+            const dir = path.join(ROOT, "..", "GuitarFlex-icerik");
+            shell.openPath(fs.existsSync(dir) ? dir : path.join(ROOT, "ozel-kaynak"));
+          },
+        },
         { label: "Güncellemeleri denetle ve yeniden başlat", click: relaunchWithUpdate },
         { type: "separator" },
         isMac ? { role: "close", label: "Kapat" } : { role: "quit", label: "Çıkış" },

@@ -3,7 +3,10 @@
 GuitarFlex'teki kurslar iki kaynaktan gelir:
 
 1. **Yerleşik kurslar**: `src/content/courses.ts` (depoda, herkese açık).
-2. **Kişisel içerik paketi**: `ozel-kaynak/icerik/` klasöründeki JSON dosyaları. Bu klasör Git'e gönderilmez; sadece kendi bilgisayarında durur.
+2. **Kişisel içerik paketi**: aşağıdaki iki kökten birindeki `icerik/*.json` dosyaları:
+   - `ozel-kaynak/` — proje içindeki, Git'e gönderilmeyen yerel klasör
+   - `../GuitarFlex-icerik/` — proje klasörünün yanında duran ayrı (gizli) içerik deposu.
+     Masaüstü kısayolu her açılışta bu depoyu da `git pull` ile günceller.
 
 Paketteki bir kurs, aynı `slug`'a sahip yerleşik kursun yerine geçer. Farklı `slug`'lı kurslar listenin sonuna eklenir.
 Değişiklikler uygulama yeniden başlatılmadan görünür (sayfayı yenilemek yeterli).

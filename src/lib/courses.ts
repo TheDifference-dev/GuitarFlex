@@ -3,12 +3,12 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { BUILTIN_COURSES, DEFAULT_SITE_TEXTS } from "@/content/courses";
 import type { Course, SiteTexts } from "@/content/types";
+import { PRIVATE_ROOTS } from "./private-roots";
 
-// Kişisel içerik paketi: ozel-kaynak/icerik/
+// Kişisel içerik paketi: <kök>/icerik/ (kökler için bkz. private-roots.ts)
 //   <kurs>.json  → Course şeklinde bir kurs (aynı slug'lı yerleşik kursun yerine geçer)
 //   site.json    → SiteTexts alanlarının bir kısmı ya da tamamı (ana sayfa metinleri)
 // Bu klasör Git'e gönderilmez; sadece kullanıcının bilgisayarında bulunur.
-export const PACK_DIR = path.join(process.cwd(), "ozel-kaynak", "icerik");
 
 function normalize(raw: Course): Course | null {
   if (!raw?.slug || !raw.title || !Array.isArray(raw.sections)) return null;
@@ -34,24 +34,28 @@ function normalize(raw: Course): Course | null {
 }
 
 async function readPack(): Promise<{ courses: Course[]; site: Partial<SiteTexts> | null }> {
-  let files: string[] = [];
-  try {
-    files = (await readdir(PACK_DIR)).filter((f) => f.endsWith(".json"));
-  } catch {
-    return { courses: [], site: null };
-  }
   const courses: Course[] = [];
   let site: Partial<SiteTexts> | null = null;
-  for (const f of files.sort()) {
+  for (const root of PRIVATE_ROOTS) {
+    const dir = path.join(root, "icerik");
+    let files: string[] = [];
     try {
-      const data = JSON.parse(await readFile(path.join(PACK_DIR, f), "utf8"));
-      if (f === "site.json") site = data;
-      else {
-        const c = normalize(data);
-        if (c) courses.push(c);
-      }
+      files = (await readdir(dir)).filter((f) => f.endsWith(".json"));
     } catch {
-      // Bozuk bir dosya diğerlerini engellemesin.
+      continue;
+    }
+    for (const f of files.sort()) {
+      try {
+        const data = JSON.parse(await readFile(path.join(dir, f), "utf8"));
+        if (f === "site.json") site = { ...(data as Partial<SiteTexts>), ...(site ?? {}) };
+        else {
+          const c = normalize(data);
+          // Aynı slug iki kökte varsa ilk kökteki (ozel-kaynak) geçerlidir.
+          if (c && !courses.some((x) => x.slug === c.slug)) courses.push(c);
+        }
+      } catch {
+        // Bozuk bir dosya diğerlerini engellemesin.
+      }
     }
   }
   return { courses, site };

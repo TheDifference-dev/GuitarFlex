@@ -87,6 +87,14 @@ async function prepare(root, status) {
     notes.push("Git bulunamadı; güncelleme denetlenmeden açılıyor.");
   }
 
+  // Gizli içerik deposu (proje klasörünün yanındaki GuitarFlex-icerik) varsa onu da güncelle.
+  const contentRepo = path.join(root, "..", "GuitarFlex-icerik");
+  if (git && fs.existsSync(path.join(contentRepo, ".git"))) {
+    status("İçerik güncelleniyor…");
+    const pullContent = await run(git, ["pull", "--ff-only"], { cwd: contentRepo, env: { ...process.env, GIT_TERMINAL_PROMPT: "0" } });
+    if (pullContent.code !== 0) notes.push("İçerik deposu güncellenemedi; GitHub Desktop'ta GuitarFlex-icerik için Pull yapabilirsin.");
+  }
+
   const needInstall = !fs.existsSync(path.join(root, "node_modules", "next")) || fileHash(lockFile) !== lockBefore;
   if (needInstall) {
     status("Yeni paketler kuruluyor… (birkaç dakika sürebilir)");

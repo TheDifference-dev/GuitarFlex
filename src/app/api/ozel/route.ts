@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { NextRequest } from "next/server";
+import { resolvePrivate } from "@/lib/private-roots";
 
 export const dynamic = "force-dynamic";
 
-// ozel-kaynak/ klasöründeki görselleri ve tab dosyalarını sunar (kişisel içerik paketi).
-const ROOT = path.join(process.cwd(), "ozel-kaynak");
+// Kişisel içerik köklerindeki görselleri ve tab dosyalarını sunar (bkz. private-roots.ts).
 const TYPES: Record<string, string> = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -27,9 +27,9 @@ const TYPES: Record<string, string> = {
 
 export async function GET(request: NextRequest) {
   const rel = request.nextUrl.searchParams.get("yol") ?? "";
-  const full = path.resolve(ROOT, rel);
-  const type = TYPES[path.extname(full).toLowerCase()];
-  if (!full.startsWith(ROOT + path.sep) || !type) return new Response("Geçersiz yol", { status: 400 });
+  const type = TYPES[path.extname(rel).toLowerCase()];
+  const full = type ? resolvePrivate(rel) : null;
+  if (!full) return new Response("Dosya bulunamadı", { status: 404 });
   try {
     const data = await readFile(full);
     return new Response(new Uint8Array(data), { headers: { "Content-Type": type, "Cache-Control": "no-store" } });
