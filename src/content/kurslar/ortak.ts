@@ -54,6 +54,6 @@ export function ders(
   theory: string | string[] = [],
   minutes = 1,
 ): LessonInput {
-  const arr = (x: string | string[]) => (Array.isArray(x) ? x : [x]);
+  const arr = (x: string | string[]) => (Array.isArray(x) ? x : [x]).filter(Boolean);
   return { title, bpm, tex: texStr, description, tips: arr(tips), theory: arr(theory), minutes };
 }

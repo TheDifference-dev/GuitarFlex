@@ -180,3 +180,15 @@ export function economyMarks(ps: Pos[]): string[] {
     return `${tab(p)}{${last}}`;
   });
 }
+
+/** Bir pozisyondaki (perde aralığı) bütün akor/gam tonları, pesten tize; aynı nota iki telde varsa kalın teldeki alınır. */
+export function inWindow(root: number, intervals: readonly number[], low: number, high: number): Pos[] {
+  const out: Pos[] = [];
+  for (let s = 6; s >= 1; s--) {
+    for (let f = low; f <= high; f++) {
+      const m = OPEN[s - 1] + f;
+      if (intervals.includes(pc(m - root)) && !out.some((p) => p.m === m)) out.push({ s, f, m });
+    }
+  }
+  return out.sort((a, b) => a.m - b.m);
+}
