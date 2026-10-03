@@ -20,7 +20,7 @@ export default function BrandPage() {
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Marka</h1>
         <p className="mt-1 text-muted">
-          {SITE.name} logo adayları: geniş sahne duruşunda, başı öne eğik, uzun saçları gitara dökülen, Les Paul çalan siyah gitarist silüeti. Şu an kullanılan: <b className="text-text">{SITE.logo.split("/").pop()}</b>. Değiştirmek için{" "}
+          {SITE.name} logo adayları: derin çömelmiş sahne duruşunda, başı sap tarafına eğik, uzun dalgalı saçları gitara dökülen, Les Paul çalan siyah gitarist silüeti. Şu an kullanılan: <b className="text-text">{SITE.logo.split("/").pop()}</b>. Değiştirmek için{" "}
           <code className="rounded bg-line px-1">src/config/site.ts</code> içindeki <code className="rounded bg-line px-1">logo</code> satırını düzenle.
         </p>
       </header>

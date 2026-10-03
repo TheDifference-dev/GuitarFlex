@@ -1,7 +1,7 @@
 # GuitarFlex logo adaylarını (SVG) üretir: python3 scripts/logo-ciz.py
 # Çıktı: public/marka/*.svg
-# Silüet: uzun saçlı, Les Paul çalan siyah gölge gitarist; geniş, dizleri bükük sahne duruşu,
-# gitar kalça hizasında alçakta, sap yukarıda, baş öne eğik (headbang), saçlar gitara kadar iniyor.
+# Silüet: uzun dalgalı saçlı, Les Paul çalan siyah gölge gitarist; derin çömelmiş geniş sahne duruşu,
+# gitar kalça hizasında alçakta, sap yukarıda, baş sap tarafına eğik, saçlar yüzün önünden gitara dökülüyor.
 import math, os
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public", "marka")
@@ -47,35 +47,45 @@ def player(fill, outline):
     """Geniş sahne duruşu. Koordinatlar 200x220 alan içinde, ayaklar y≈208."""
     parts = []
     # Bacaklar: kalça → diz (dışa bükük) → bilek; kalın uyluk, ince baldır
-    for hip, knee, ankle, toe in (((92, 124), (62, 160), (44, 200), (26, 208)), ((108, 124), (140, 160), (158, 200), (176, 208))):
-        parts.append(line([hip, knee], fill, 19))
-        parts.append(line([knee, ankle], fill, 14))
+    for hip, knee, ankle, toe in (((93, 126), (54, 150), (47, 199), (27, 208)), ((107, 126), (146, 150), (153, 199), (173, 208))):
+        parts.append(line([hip, knee], fill, 20))
+        parts.append(line([knee, ankle], fill, 15))
         # Bot: bilekten dışa doğru basık bir şekil
         parts.append(line([ankle, toe], fill, 9))
         parts.append(f'<rect x="{min(ankle[0], toe[0]) - 5}" y="{toe[1] - 2}" width="{abs(toe[0] - ankle[0]) + 10}" height="5" rx="2" fill="{fill}"/>')
     # Kalça ve gövde: hafif yana yaslanmış, geniş omuz
     parts.append(f'<path d="M84 128 L116 128 L118 112 Q119 90 128 66 Q102 54 74 64 Q80 90 82 112 Z" fill="{fill}"/>')
-    # Boyun ve öne eğik baş
-    parts.append(f'<path d="M94 62 L107 60 L106 50 L95 51 Z" fill="{fill}"/>')
-    parts.append(f'<ellipse cx="101" cy="45" rx="11.5" ry="12.5" fill="{fill}"/>')
-    # Ön kollar ve saçtan önce: arka kol parçaları (gövdenin üstünde)
+    # Boyun ve sap tarafına (sağa) öne eğik baş
+    parts.append(f'<path d="M95 62 L108 60 L108 50 L97 51 Z" fill="{fill}"/>')
+    parts.append(f'<ellipse cx="104" cy="45" rx="11.5" ry="12.5" fill="{fill}"/>')
+    # Arka kol parçaları (gövdenin üstünde)
     elbow = (137, 106)
     parts.append(line([(124, 68), elbow], fill, 11))              # sap kolu: omuz → dirsek
     parts.append(line([(77, 68), (62, 100)], fill, 11.5))         # tel kolu: omuz → dirsek
-    # Uzun saç: başın üstünden yüzün önüne dökülüp gitara kadar iniyor; uçları dağınık.
-    # Göğsün önünde görünsün diye kenarına ince kontur (ışık) çizilir.
-    hair = ("M86 44 C83 30 92 24 101 24 C111 24 119 30 117 44 "
-            "C121 56 124 66 127 80 C129 88 127 94 130 100 "
-            "L124 102 L125 110 L119 104 L117 115 L112 105 L108 117 L104 106 L100 119 L97 106 "
-            "L92 116 L90 104 L85 112 L84 101 L78 106 C78 98 74 90 77 80 C80 66 82 56 86 44 Z")
-    strands = ["M95 34 C93 60 92 84 91 104", "M101 30 C101 60 101 86 100 112", "M107 33 C109 58 111 82 112 102",
-               "M90 50 C86 70 84 86 83 98", "M113 48 C117 66 120 82 122 96"]
+    # Uzun, dalgalı saç: tepeden yüzün önüne ve sağ omzun dışına dökülür, gitarın üstüne kadar iner.
+    # Dış hattı gövdenin dışına taşar; göğsün önünde ince kenar ışığıyla ayrılır.
+    hair = ("M90 42 C88 27 100 20 110 22 C122 24 130 33 130 45 "
+            "C138 52 134 60 143 68 C152 77 141 84 150 94 C158 104 146 110 152 120 "
+            "L144 116 Q146 126 138 128 Q140 118 134 116 Q134 126 126 126 Q130 116 124 112 "
+            "Q122 122 116 120 Q120 110 114 104 "
+            "C110 96 106 90 104 82 C100 74 100 68 96 62 C92 56 89 50 90 42 Z")
+    # Dağınık, dışa taşan tek tük teller
+    loose = ["M129 38 C138 41 143 47 146 54", "M145 96 C153 98 158 104 158 112",
+             "M139 66 C147 62 151 64 155 69", "M150 118 C156 122 157 128 154 132"]
+    # Saçın içindeki ışık çizgileri (dalgaları takip eder)
+    strands = ["M101 29 C114 36 118 50 124 64 C132 78 126 88 134 100 C138 108 136 114 138 122",
+               "M96 40 C102 54 108 66 112 78 C116 90 116 100 122 110",
+               "M112 25 C124 32 130 46 134 58 C140 70 136 80 142 92 C146 100 144 108 146 114"]
     if outline:
         parts.append(f'<path d="{hair}" fill="{outline}" stroke="{outline}" stroke-width="5" stroke-linejoin="round"/>')
+        for d in loose:
+            parts.append(f'<path d="{d}" fill="none" stroke="{outline}" stroke-width="5.5" stroke-linecap="round"/>')
     parts.append(f'<path d="{hair}" fill="{fill}"/>')
+    for d in loose:
+        parts.append(f'<path d="{d}" fill="none" stroke="{fill}" stroke-width="2.4" stroke-linecap="round"/>')
     if outline:
         for d in strands:
-            parts.append(f'<path d="{d}" fill="none" stroke="{outline}" stroke-width="1.3" stroke-linecap="round" opacity="0.55"/>')
+            parts.append(f'<path d="{d}" fill="none" stroke="{outline}" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>')
     # Gitar: kalça hizasında alçakta, sap yukarı dik
     gx, gy, ang, sc = 92, 132, -42, 1.22
     a = math.radians(ang)
