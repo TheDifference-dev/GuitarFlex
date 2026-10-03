@@ -165,3 +165,18 @@ export function sweepMarks(ps: Pos[]): string[] {
     return fx.length ? `${tab(p)}{${fx.join(" ")}}` : tab(p);
   });
 }
+
+/**
+ * Economy picking: aynı telde aşağı-yukarı sırayla; tel değiştirirken pena gidilen telin
+ * yönünde vurur (ince tele geçerken aşağı, kalın tele geçerken yukarı).
+ */
+export function economyMarks(ps: Pos[]): string[] {
+  let last: "sd" | "su" = "su";
+  return ps.map((p, i) => {
+    const prev = ps[i - 1];
+    if (!prev) last = "sd";
+    else if (prev.s === p.s) last = last === "sd" ? "su" : "sd";
+    else last = p.s < prev.s ? "sd" : "su";
+    return `${tab(p)}{${last}}`;
+  });
+}

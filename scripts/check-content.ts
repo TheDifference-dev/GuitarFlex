@@ -27,7 +27,8 @@ function check(tex: string): string[] {
         // Hammer-on / pull-off / slide: bir sonraki nota aynı telde ve farklı perdede olmalı
         bar.voices[0].beats.forEach((beat) => {
           for (const note of beat.notes) {
-            const linked = note.isHammerPullOrigin || note.slideOutType !== 0;
+            // 1 = shift slide, 2 = legato slide; dışarı kaymalar (3-6) devam gerektirmez
+            const linked = note.isHammerPullOrigin || note.slideOutType === 1 || note.slideOutType === 2;
             if (!linked) continue;
             const next = beat.nextBeat?.notes.find((n) => n.string === note.string);
             if (!next) problems.push(`${track.name} ölçü ${i + 1}: ${note.fret}. perdedeki bağ/slide aynı telde devam etmiyor`);
