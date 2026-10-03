@@ -40,7 +40,7 @@ export const POPULAR_SONGS: PopularSong[] = [
   S("Back in Black", "AC/DC", 1, "riff", ["Power chord", "Riff"], ["palm-mute"]),
   S("Paranoid", "Black Sabbath", 1, "şarkı", ["Power chord", "Palm mute"], ["palm-mute"]),
   S("Iron Man", "Black Sabbath", 1, "riff", ["Power chord", "Slide"], ["palm-mute", "slide"]),
-  S("Haydi Gel İçelim", "Duman", 1, "şarkı", ["Açık akorlar", "Tarama"], ["akorlar", "ritim-tarama"]),
+  S("Bu Akşam", "Duman", 1, "şarkı", ["Akorlar", "Tarama"], ["akorlar", "ritim-tarama"]),
   // Orta
   S("Nothing Else Matters", "Metallica", 2, "şarkı", ["Açık tel arpej", "Mi minör"], ["arpej"]),
   S("House of the Rising Sun", "The Animals", 2, "şarkı", ["6/8 arpej", "La minör"], ["arpej", "akorlar"]),
