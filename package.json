@@ -11,7 +11,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check-content": "node --experimental-strip-types scripts/check-content.ts"
+    "check-content": "node --experimental-strip-types scripts/check-content.ts",
+    "predesktop": "npm run copy-alphatab",
+    "desktop": "electron desktop/main.cjs",
+    "desktop:prod": "npm run build && electron desktop/main.cjs --prod"
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",
@@ -24,9 +27,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "electron": "^44.5.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "Muzik — gitar akademisi (masaüstü uygulaması ve web sitesi)",
+  "main": "desktop/main.cjs"
 }

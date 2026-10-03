@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
-/* Geçici tema: logo ve tasarım netleşince bu renkler değişecek. */
+/* ── RENK PALETİ ───────────────────────────────────────────────
+   Uygulamanın tüm renkleri buradan gelir; değiştirmek için sadece bu değerleri düzenle.
+   İlk blok açık tema, ikinci blok (prefers-color-scheme: dark) koyu tema.
+   --bg       sayfa arka planı        --panel   kart / kutu arka planı
+   --line     çizgi ve kenarlıklar    --text    ana yazı
+   --muted    ikincil yazı            --accent  vurgu (düğmeler, aktif öğeler)
+   --accent-ink  vurgu rengi üstündeki yazı
+   ─────────────────────────────────────────────────────────────── */
 :root {
   --bg: #f6f5f2;
   --panel: #ffffff;
@@ -42,16 +49,16 @@ body {
 
 /* alphaTab çalma imleci */
 .at-cursor-bar {
-  background: rgb(255 122 61 / 0.15);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 .at-selection div {
-  background: rgb(255 122 61 / 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 .at-cursor-beat {
-  background: #d9480f;
+  background: var(--accent);
   width: 3px;
 }
 .at-highlight * {
-  fill: #d9480f;
-  stroke: #d9480f;
+  fill: var(--accent);
+  stroke: var(--accent);
 }

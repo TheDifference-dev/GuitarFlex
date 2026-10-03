@@ -20,10 +20,17 @@ Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan web si
 
 ## Çalıştırma
 
+Adım adım Windows rehberi: [KURULUM.md](KURULUM.md)
+
 ```bash
-npm install        # alphaTab dosyalarını public/alphatab altına da kopyalar
-npm run dev        # http://localhost:3000
+npm install            # alphaTab dosyalarını public/alphatab altına da kopyalar
+npm run desktop        # masaüstü uygulaması (Electron), geliştirme modu
+npm run desktop:prod   # masaüstü uygulaması, derlenmiş hızlı mod
+npm run dev            # web sitesi: http://localhost:3000
 ```
+
+Masaüstü uygulaması ile web sitesi aynı kodu kullanır; arayüzde yapılan her değişiklik ikisine birden yansır.
+Uygulama adı `src/config/site.ts`, renk paleti `src/app/globals.css` içinde.
 
 Diğer komutlar:
 
@@ -36,6 +43,8 @@ npm run check-content  # tüm tabları alphaTab ile ayrıştırır, her ölçün
 ## Yapı
 
 ```
+desktop/main.cjs            masaüstü uygulaması (Electron penceresi + menüler)
+src/config/site.ts          uygulama adı ve metinleri
 src/content/techniques.ts   egzersizler (alphaTex formatında tablar)
 src/content/tex.ts          tab yazım yardımcıları
 src/content/theory.ts       teori dersleri

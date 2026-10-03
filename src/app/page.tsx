@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ALL_EXERCISES, TECHNIQUES } from "@/content/techniques";
 import { THEORY } from "@/content/theory";
 import { SummaryStrip } from "@/components/ProgressWidgets";
+import { SITE } from "@/config/site";
 
 const MODULES = [
   {
@@ -35,7 +36,7 @@ export default function Home() {
   return (
     <div className="space-y-10">
       <section className="space-y-4">
-        <p className="text-sm font-semibold uppercase tracking-widest text-accent">Gitar Akademisi</p>
+        <p className="text-sm font-semibold uppercase tracking-widest text-accent">{SITE.tagline}</p>
         <h1 className="max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">Her gün biraz daha iyi çal.</h1>
         <p className="max-w-2xl text-lg text-muted">
           Teknikleri seviye seviye çalış, tempoyu adım adım yükselt, gelişimini takip et.
