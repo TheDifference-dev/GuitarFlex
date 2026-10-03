@@ -57,6 +57,27 @@ async function findGit() {
 }
 
 /**
+ * GitHub'daki geçmiş yeniden yazıldıysa (zorla gönderim) `git pull --ff-only` başarısız olur.
+ * Yereldeki son sürümün içeriği uzak dalın geçmişinde birebir varsa yerelde kaybolacak bir şey
+ * yoktur; bu durumda yerel dal uzak dala eşitlenir. Kaynak dosyalarda kaydedilmemiş değişiklik
+ * varsa hiçbir şeye dokunulmaz.
+ */
+async function recoverRewrittenHistory(git, root) {
+  if ((await run(git, ["fetch", "origin"], { cwd: root, env: { ...process.env, GIT_TERMINAL_PROMPT: "0" } })).code !== 0) return false;
+  const upstream = (await run(git, ["rev-parse", "--abbrev-ref", "@{u}"], { cwd: root })).out.trim();
+  if (!upstream) return false;
+  const dirty = (await run(git, ["status", "--porcelain", "--untracked-files=no"], { cwd: root })).out
+    .split("\n")
+    .map((l) => l.slice(3).trim())
+    .some((f) => /^(src|public|desktop|scripts)\//.test(f));
+  if (dirty) return false;
+  const localTree = (await run(git, ["rev-parse", "HEAD^{tree}"], { cwd: root })).out.trim();
+  const remoteTrees = (await run(git, ["log", upstream, "--format=%T"], { cwd: root })).out.split("\n");
+  if (!localTree || !remoteTrees.includes(localTree)) return false;
+  return (await run(git, ["reset", "--hard", upstream], { cwd: root })).code === 0;
+}
+
+/**
  * @param {string} root proje klasörü
  * @param {(text: string) => void} status açılış ekranındaki durum yazısı
  * @returns {Promise<{ mode: "prod" | "dev", notes: string[] }>}
@@ -74,7 +95,9 @@ async function prepare(root, status) {
   if (git && hasRepo) {
     status("Güncellemeler kontrol ediliyor…");
     const pull = await run(git, ["pull", "--ff-only"], { cwd: root });
-    if (pull.code !== 0) notes.push("Güncelleme alınamadı (internet yok ya da çakışan yerel değişiklik var); mevcut sürümle açılıyor.");
+    if (pull.code !== 0 && !(await recoverRewrittenHistory(git, root))) {
+      notes.push("Güncelleme alınamadı (internet yok ya da çakışan yerel değişiklik var); mevcut sürümle açılıyor.");
+    }
     head = (await run(git, ["rev-parse", "HEAD"], { cwd: root })).out.trim() || "yerel";
     // Sadece gerçek kaynak dosyalarındaki değişiklikler sayılır; araçların kendiliğinden
     // dokunduğu dosyalar (tsconfig.json, package-lock.json vb.) yok sayılır.
@@ -126,4 +149,4 @@ async function prepare(root, status) {
   return { mode: "prod", notes };
 }
 
-module.exports = { prepare };
+module.exports = { prepare, recoverRewrittenHistory };
