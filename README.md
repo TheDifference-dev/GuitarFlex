@@ -19,7 +19,7 @@ Electron (desktop app with self-updating launcher) · Web Audio API (metronome, 
 - Multi-track Guitar Pro / MusicXML / alphaTex player: per-track mute/solo/volume, speed control, metronome, count-in, click-to-seek, drag-to-loop
 - Course structure (course → section → chapter → lesson) with timed lessons, locked sections and per-lesson progress
 - Pluggable private content packs (JSON + images + Guitar Pro files) loaded at runtime from a git-ignored folder
-- 65 original exercises written as alphaTex and validated by a custom checker (`npm run check-content`) that verifies every bar's length
+- 150+ original exercises written as alphaTex; scale fingerings and sequences are computed from pitch data (`src/content/dizi.ts`) and every bar is validated by a custom checker (`npm run check-content`)
 - Interactive SVG fretboard: scales, chords, intervals, note playback and a timed note-finding quiz
 - Desktop launcher that pulls updates from GitHub, rebuilds when needed and starts the app with one click
 - Brand assets (logo silhouettes) generated programmatically as SVG (`scripts/logo-ciz.py`)
@@ -32,6 +32,7 @@ Kolaydan zora gitar teknikleri, müzik teorisi ve çalışma takibi sunan masaü
 
 - **Kurslar** (`/calis/<kurs>`): Bölüm → alt bölüm (1.0, 1.1 …) → ders yapısı. Her dersin BPM'i ve hedef süresi var; süre dolunca ders tamamlanır.
   Sol panelde Egzersiz/Rehber sekmeleri, eğitim videoları, bölümler ve sınav satırları. 12 teknik kursu ve 2 başlangıç rehberi yerleşik gelir.
+  Her derste "Müzik Bilgisi" kutusu dersin arkasındaki teoriyi (gam, aralık, akor, ritim) anlatır. Alternate Picking 6 bölüm / 30 alt bölüm / 90 dersle tam kurs olarak yazıldı.
 - **İçerik paketi**: `ozel-kaynak/icerik/*.json` ile kendi kurslarını, görsellerini ve tablarını ekleyebilirsin (bkz. [docs/ICERIK-PAKETI.md](docs/ICERIK-PAKETI.md)).
 - **Tab oynatıcı** (`/oynatici`): Guitar Pro (.gp, .gp3–.gp7, .gpx), MusicXML ve alphaTex dosyalarını açar. Özellikler:
   - çoklu enstrüman: track seçimi, mute, solo, ses seviyesi

@@ -1,5 +1,9 @@
 import type { Course, Exercise, Lesson, Section, SiteTexts, Technique } from "./types.ts";
 import { TECHNIQUES } from "./techniques.ts";
+import { alternatePickingCourse } from "./kurslar/alternate-picking.ts";
+
+// Tam (6 bölümlük) olarak yazılmış kurslar; diğerleri techniques.ts seviyelerinden üretilir.
+const FULL_COURSES: Record<string, Course> = { [alternatePickingCourse.slug]: alternatePickingCourse };
 
 // Yerleşik (özgün) kurslar. Kişisel içerik paketi aynı slug'la bir kurs içerirse onun yerine geçer.
 
@@ -124,7 +128,7 @@ const intermediateGuide: Course = {
 export const BUILTIN_COURSES: Course[] = [
   beginnerGuide,
   intermediateGuide,
-  ...ORDER.map((slug) => courseFromTechnique(bySlug[slug])),
+  ...ORDER.map((slug) => FULL_COURSES[slug] ?? courseFromTechnique(bySlug[slug])),
 ];
 
 export const DEFAULT_SITE_TEXTS: SiteTexts = {

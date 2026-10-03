@@ -37,6 +37,8 @@ export type Lesson = {
   minutes: number;
   description?: string;
   tips?: string[];
+  /** "Müzik Bilgisi" kutusu: dersin arkasındaki teori (gam, aralık, akor, ritim) */
+  theory?: string[];
   /** alphaTex formatında tab */
   tex?: string;
   /** ozel-kaynak klasörüne göre tab dosyası yolu (.gp, .gpx, .xml …) */
@@ -47,6 +49,8 @@ export type Chapter = {
   /** "1.0", "1.1" … */
   code: string;
   title: string;
+  /** Alt bölümdeki tüm derslerde gösterilen "Müzik Bilgisi" */
+  theory?: string[];
   lessons: Lesson[];
 };
 

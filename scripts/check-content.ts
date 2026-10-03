@@ -4,6 +4,7 @@
 import * as alphaTab from "@coderline/alphatab";
 import { ALL_EXERCISES } from "../src/content/techniques.ts";
 import { SONGS } from "../src/content/songs.ts";
+import { BUILTIN_COURSES, flatLessons } from "../src/content/courses.ts";
 
 function check(tex: string): string[] {
   const problems: string[] = [];
@@ -40,6 +41,17 @@ const items = [
   ...ALL_EXERCISES.map((e) => ({ id: e.id, title: e.title, tex: e.tex })),
   ...SONGS.map((s) => ({ id: `sarki:${s.slug}`, title: s.title, tex: s.tex })),
 ];
+// Kurslardaki dersler (techniques.ts'den gelenler yukarıda zaten var)
+const seenTex = new Set(items.map((i) => i.tex));
+let courseLessons = 0;
+for (const c of BUILTIN_COURSES) {
+  for (const l of flatLessons(c)) {
+    if (!l.tex || seenTex.has(l.tex)) continue;
+    seenTex.add(l.tex);
+    courseLessons++;
+    items.push({ id: `${c.slug}/${l.id}`, title: l.title, tex: l.tex });
+  }
+}
 
 for (const item of items) {
   const problems = check(item.tex);
@@ -51,5 +63,5 @@ for (const item of items) {
   }
 }
 
-console.log(`${ALL_EXERCISES.length} egzersiz ve ${SONGS.length} şarkı kontrol edildi, ${failures} hatalı.`);
+console.log(`${ALL_EXERCISES.length} egzersiz, ${courseLessons} kurs dersi ve ${SONGS.length} şarkı kontrol edildi, ${failures} hatalı.`);
 process.exit(failures ? 1 : 0);

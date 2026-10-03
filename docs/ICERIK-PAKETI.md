@@ -44,6 +44,7 @@ ozel-kaynak/
         {
           "code": "1.0",
           "title": "Alt bölüm adı",
+          "theory": ["Alt bölümdeki her derste görünen müzik bilgisi"],
           "lessons": [
             { "id": "1-0-1", "title": "Ders adı", "bpm": 50, "minutes": 1, "tabFile": "tablar/ders.gp" },
             { "id": "1-0-2", "title": "Ders adı", "bpm": 60, "minutes": 2, "tex": "\\tempo 60 . :8 5.6 7.6 | ..." }
@@ -67,6 +68,8 @@ ozel-kaynak/
 | `minutes` | Dersin hedef süresi; bu süre dolunca ders tamamlanır (varsayılan 1) |
 | `tabFile` | `ozel-kaynak/` klasörüne göre tab dosyası (.gp, .gp3–.gp7, .gpx, .xml, .musicxml, .tex) |
 | `tex` | Tab'ı doğrudan alphaTex olarak yazmak için |
+| `theory` | "Müzik Bilgisi" kutusu (alt bölümde ya da derste; ikisi birlikte gösterilir) |
+| `description`, `tips` | Ders açıklaması ve "İpuçları" kutusu |
 
 `tabFile` ve `tex` yoksa ders, metronom ve elle başlatılan sayaçla çalışılır.
 

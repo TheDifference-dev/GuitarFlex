@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lightbulb, Music } from "lucide-react";
 import LessonPractice from "@/components/LessonPractice";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { assetUrl, getCourse } from "@/lib/courses";
@@ -27,6 +27,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
   const { course, lessons, index, lesson } = found;
   const prev = lessons[index - 1];
   const next = lessons[index + 1];
+  const theory = [...(lesson.chapter.theory ?? []), ...(lesson.theory ?? [])];
   const href = (id: string) => `/calis/${course.slug}/${encodeURIComponent(id)}`;
 
   return (
@@ -59,15 +60,33 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         tabUrl={assetUrl(lesson.tabFile)}
       />
 
-      {!!lesson.tips?.length && (
-        <section className="rounded-2xl border border-line bg-panel p-5">
-          <h2 className="font-bold">İpuçları</h2>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
-            {lesson.tips.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </section>
+      {(theory.length > 0 || !!lesson.tips?.length) && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {theory.length > 0 && (
+            <section className="rounded-2xl border border-accent/40 bg-panel p-5">
+              <h2 className="flex items-center gap-2 font-bold">
+                <Music size={18} className="text-accent" /> Müzik Bilgisi
+              </h2>
+              <ul className="mt-2 space-y-2 text-sm text-muted">
+                {theory.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {!!lesson.tips?.length && (
+            <section className="rounded-2xl border border-line bg-panel p-5">
+              <h2 className="flex items-center gap-2 font-bold">
+                <Lightbulb size={18} className="text-accent" /> İpuçları
+              </h2>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
+                {lesson.tips.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
       )}
 
       <div className="flex justify-between gap-4 text-sm font-bold">
