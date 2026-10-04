@@ -24,7 +24,7 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 
 - **12 complete technique courses, 557 original exercises** — Alternate Picking, Legato, Sweep Picking, Tapping, Economy Picking, Bend & Vibrato, Slide, Palm Mute, Arpeggios, Chords, Rhythm & Strumming and Chromatic Warm-ups, each split into 3–6 sections that progress from easy to hard
 - **Music theory on every lesson** — scale formulas, intervals, chord construction, progressions and rhythm explained next to the tab
-- **Generated, verified tabs** — scale fingerings, arpeggio shapes, sequences, legato slurs and pick-stroke directions (alternate, sweep, economy) are computed from pitch data; an automated checker validates every bar's length and every hammer-on, pull-off and slide
+- **Generated, verified tabs** — scale fingerings, arpeggio shapes, sequences, legato slurs and pick-stroke directions (alternate, sweep, economy) are computed from pitch data and placed on the strings and fret ranges of a lesson plan, from open position to the 24th fret; an automated checker validates every bar's length, every hammer-on, pull-off and slide, chord tones and scale membership
 - **Multi-track tab player** — Guitar Pro / MusicXML / alphaTex playback with per-track mute, solo and volume, speed control, metronome, count-in, click-to-seek and drag-to-loop
 - **Theory practice paths** — Rhythm (70 steps), Fretboard Visualization (84) and Ear Training (60): questions are generated fresh on every attempt — notes, octaves, pentatonic, CAGED and 3NPS shapes on a clickable fretboard, chord diagrams, interval/chord/scale/progression recognition with synthesized guitar sound, and rhythm reading with tap-back scoring rendered in SMuFL notation
 - **Harmony course** — 5 sections, 10 chapters with reading cards, generated practice quizzes (correctly spelled scales, triads, modes, diatonic and seventh chords) and playable example tabs
@@ -57,6 +57,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Egzersizler baştan yazıldı**: elektro ve akustik 17 kursun 521 dersi artık sapın doğru bölgesinde — her ders ders planındaki tellerde, perde aralığında, nota değerinde ve ölçü sayısında. Hybrid picking'de triad kalıpları 16. perdeye, 7'li akorlar 20. perdeye kadar, sweep 20., tapping 24. perdeye kadar, palm mute riff'leri kalın Mi, La ve Re telinde, strumming'de 5–9. perdede barre ve ghost vuruşlar, akustik derslerde boş tellerden yedi diyatonik pozisyona. Akor tonları, gam notaları, power chord aralıkları ve pena yönleri üretim sırasında denetleniyor
 - **Renk paleti**: lacivert zemin, beyaz yazı (ikincil yazılar da beyaza yakın), sayfa başlıkları turuncu; teori ve profil ekranlarındaki ek renkler bu palete indirildi
 - **Teori yolları**: Ritim (dinle, yazımı seç, geri vur), Klavye Görselleştirme (sapta tel, nota, oktav, pentatonik, CAGED, 3NPS) ve Kulak Eğitimi (aralık, akor türü, gam, akor yürüyüşü); adımlar sırayla açılır, sonuçlar kaydedilir
 - **Armoni**: 5 bölüm, 10 alt bölüm; Eğitim metinleri, her denemede yeni sorularla Pratik kartları (notalar harf adına göre doğru yazılır) ve çalınacak Ek İnceleme tabları
