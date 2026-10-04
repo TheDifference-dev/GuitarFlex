@@ -12,7 +12,7 @@ export default async function TheoryPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">Müzik Teorisi</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-accent">Müzik Teorisi</h1>
         <p className="mt-1 text-muted">Gitarcının ihtiyaç duyduğu teori, sap üzerinde görerek.</p>
       </header>
 

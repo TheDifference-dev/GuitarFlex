@@ -26,7 +26,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
           </Link>{" "}
           / {yol.ad}
         </nav>
-        <h1 className="text-3xl font-bold tracking-tight">{yol.ad}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-accent">{yol.ad}</h1>
         <p className="text-muted">{yol.ozet}</p>
         <div className="flex items-center gap-3">
           <div className="h-2 max-w-md flex-1 overflow-hidden rounded-full bg-panel">

@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
-/* ── RENK PALETİ: Lacivert · Turuncu · Beyaz ───────────────────
+/* ── RENK PALETİ: Lacivert zemin · Beyaz yazı · Turuncu büyük başlıklar ───
    Uygulamanın tüm renkleri buradan gelir; değiştirmek için sadece bu değerleri düzenle.
+   Sayfa başlıkları (h1) turuncu, diğer yazılar beyaz; ikincil yazı da beyaza yakın.
    --bg       sayfa arka planı        --panel   kart / kutu arka planı
    --line     çizgi ve kenarlıklar    --text    ana yazı
    --muted    ikincil yazı            --accent  vurgu (düğmeler, aktif öğeler)
@@ -14,7 +15,7 @@
   --panel: #0d1a3d;
   --line: #213260;
   --text: #ffffff;
-  --muted: #a3b0cf;
+  --muted: #d3dcef;
   --accent: #f47216;
   --accent-ink: #ffffff;
   --sheet: #0a1534;

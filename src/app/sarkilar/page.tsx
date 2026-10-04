@@ -13,7 +13,7 @@ export default async function SongsPage() {
     <div className="space-y-6">
       <SongsNav />
       <header>
-        <h1 className="text-3xl font-black tracking-tight">Popüler Şarkılar</h1>
+        <h1 className="text-3xl font-black tracking-tight text-accent">Popüler Şarkılar</h1>
         <p className="mt-1 max-w-3xl text-muted">
           Ünlü şarkı ve sololar zorluk ve tekniğe göre. Tablar Songsterr&apos;de açılır; her şarkının altında o şarkıya hazırlayan kurslar var.
         </p>

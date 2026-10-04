@@ -17,11 +17,12 @@ const KATEGORI: Record<string, string> = {
   membership: "Üyelik",
   practice: "Pratik",
 };
+// Nadirlik: lacivert–beyaz–turuncu paletiyle kademeli vurgu
 const NADIRLIK: Record<string, string> = {
   YAYGIN: "border-line text-muted",
-  NADİR: "border-sky-500/60 text-sky-300",
-  EPİK: "border-violet-500/60 text-violet-300",
-  EFSANEVİ: "border-amber-400/70 text-amber-300",
+  NADİR: "border-text/60 text-text",
+  EPİK: "border-accent/70 text-accent",
+  EFSANEVİ: "border-accent bg-accent text-accent-ink",
 };
 
 /** Profil: günlük görevler, seri ve seri kalkanı, ders madalyaları ve başarımlar */
@@ -48,9 +49,9 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Kutu ikon={<Flame size={18} className="text-accent" />} etiket="Seri" deger={`${s.seri} gün`} not={`Rekor: ${s.rekor} gün`} />
-        <Kutu ikon={<Shield size={18} className="text-sky-300" />} etiket="Seri Kalkanı" deger={`${s.kalkan} / ${kural.kalkanMaks}`} not={s.kullanilan ? `${s.kullanilan} kez seriyi korudu` : `Üç görevi ${kural.kalkanGun} günde tamamla`} />
+        <Kutu ikon={<Shield size={18} className="text-accent" />} etiket="Seri Kalkanı" deger={`${s.kalkan} / ${kural.kalkanMaks}`} not={s.kullanilan ? `${s.kullanilan} kez seriyi korudu` : `Üç görevi ${kural.kalkanGun} günde tamamla`} />
         <Kutu ikon={<Check size={18} className="text-emerald-400" />} etiket="Bugünkü görevler" deger={`${tamamSayi} / ${bugun.length}`} not={s.bugunTamam ? "Seri bugün korundu" : "Seri için en az 1 görev"} />
-        <Kutu ikon={<Trophy size={18} className="text-amber-300" />} etiket="Başarım puanı" deger={`${xp} XP`} not={`${kazanilan.length} / ${oyun.basarimlar.length} başarım`} />
+        <Kutu ikon={<Trophy size={18} className="text-accent" />} etiket="Başarım puanı" deger={`${xp} XP`} not={`${kazanilan.length} / ${oyun.basarimlar.length} başarım`} />
       </div>
 
       <section className="rounded-xl border border-line bg-panel p-5">
@@ -129,7 +130,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-semibold leading-tight">{b.ad}</p>
-                    <span className="shrink-0 text-xs font-bold text-amber-300">+{b.xp} XP</span>
+                    <span className="shrink-0 text-xs font-bold text-accent">+{b.xp} XP</span>
                   </div>
                   <p className="text-sm text-muted">{b.aciklama}</p>
                   <div className="mt-2 flex items-center gap-2">

@@ -37,7 +37,7 @@ export default async function AdimPage(props: PageProps<"/teori/yol/[yol]/[adim]
           {adim.kod}
           {adim.kontrol ? " · Bölüm kontrolü" : ""} · {adim.seviye}
         </p>
-        <h1 className="text-3xl font-bold tracking-tight">{adim.ad}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-accent">{adim.ad}</h1>
       </header>
       <AdimCalis key={adim.kod} yol={yol.slug} adim={adim} sonraki={sonraki ? { kod: sonraki.kod, ad: sonraki.ad } : undefined} geri={yol.kurs ? `/calis/${yol.kurs}` : undefined} />
     </div>

@@ -76,8 +76,8 @@ export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik }: 
             else if (yanlis) sinif = "fill-rose-500";
             else if (sec) sinif = "fill-[var(--accent)]";
             else if (p?.tur === "kok") sinif = "fill-[var(--accent)]";
-            else if (p?.tur === "soru") sinif = "fill-sky-500";
-            else if (p?.tur === "referans") sinif = "fill-violet-500";
+            else if (p?.tur === "soru") sinif = "fill-[var(--text)]";
+            else if (p?.tur === "referans") sinif = "fill-[var(--text)]";
             else if (p) sinif = "fill-[var(--muted)]";
             const goster = Boolean(sinif);
             const etiket = p?.etiket ?? (dogrular && dogru && !p ? "✓" : yanlis ? "✕" : "");
@@ -92,7 +92,7 @@ export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik }: 
                 <rect x={cx - (f === 0 ? 14 : fw / 2)} y={cy - 12} width={f === 0 ? 28 : fw} height={24} fill="transparent" />
                 {goster ? <circle cx={cx} cy={cy} r={10} className={sinif} /> : null}
                 {goster && etiket ? (
-                  <text x={cx} y={cy + 4} textAnchor="middle" className="pointer-events-none fill-white text-[11px] font-bold">
+                  <text x={cx} y={cy + 4} textAnchor="middle" className={`pointer-events-none text-[11px] font-bold ${p && (p.tur === "soru" || p.tur === "referans") && !(dogrular && (dogru || yanlis)) ? "fill-[var(--bg)]" : "fill-white"}`}>
                     {etiket}
                   </text>
                 ) : null}

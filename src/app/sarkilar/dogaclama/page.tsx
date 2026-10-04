@@ -13,7 +13,7 @@ export default function ImprovPage() {
     <div className="space-y-6">
       <SongsNav />
       <header>
-        <h1 className="text-3xl font-black tracking-tight">Doğaçlama Çal</h1>
+        <h1 className="text-3xl font-black tracking-tight text-accent">Doğaçlama Çal</h1>
         <p className="mt-1 max-w-3xl text-muted">
           Davul, bas ve ritim gitarından oluşan {BACKINGS.length} eşlik kaydı. Bir kayıt seç, döngüye al ve önerilen gamlarla üzerine solo çal. Çaldığın süre günlük &quot;Serbest Çalışma&quot; görevine yazılır.
         </p>

@@ -28,7 +28,7 @@ export default async function LessonPage(props: PageProps<"/teori/[ders]">) {
       </nav>
       <header>
         <p className="text-sm font-semibold uppercase tracking-wide text-accent">Seviye {lesson.level}</p>
-        <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-accent">{lesson.title}</h1>
         <p className="mt-1 text-muted">{lesson.summary}</p>
       </header>
 

@@ -17,7 +17,7 @@ export default async function YolPage(props: PageProps<"/teori/yol/[yol]">) {
   if (!yol) {
     return (
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold tracking-tight">{tanim.ad}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-accent">{tanim.ad}</h1>
         <p className="text-muted">Bu yolun adımları kişisel içerik paketinde. Paket bulunamadı; <Link href="/teori" className="text-accent">Müzik Teorisi</Link> sayfasına dön.</p>
       </div>
     );

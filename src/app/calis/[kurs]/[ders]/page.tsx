@@ -42,7 +42,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
 
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">{lesson.title}</h1>
+          <h1 className="text-3xl font-black tracking-tight text-accent">{lesson.title}</h1>
           {lesson.description && <p className="mt-1 max-w-3xl text-muted">{lesson.description}</p>}
         </div>
         <div className="flex gap-2 text-sm font-bold">
