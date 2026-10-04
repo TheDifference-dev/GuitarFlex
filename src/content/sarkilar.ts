@@ -15,7 +15,18 @@ export type PopularSong = {
   courses?: string[];
   /** Doğrudan bağlantı; verilmezse Songsterr'de arama açılır */
   url?: string;
+  /** Zorluk madalyası (Tüm Şarkılar filtreleri) */
+  madalya?: Madalya;
+  koken?: "Global" | "Türkçe";
+  bpm?: number;
+  /** Listeye yeni eklenen şarkı */
+  yeni?: boolean;
+  /** Şarkı Rehberi adımı: sıra, seviye kodu (ör. "1.10"), hazırlayan teknik bölümleri ve kilit eşiği */
+  rehber?: { adim: number; seviye: string; bolumler: { kurs: string; bolum: number; ad: string }[]; puan: number };
 };
+
+export const MADALYALAR = ["Bronz", "Gümüş", "Altın", "Platin", "Elmas", "Usta"] as const;
+export type Madalya = (typeof MADALYALAR)[number];
 
 export const LEVEL_NAMES: Record<SongLevel, string> = { 1: "Kolay", 2: "Orta", 3: "Zor" };
 

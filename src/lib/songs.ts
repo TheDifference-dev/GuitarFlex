@@ -4,7 +4,7 @@ import path from "node:path";
 import { POPULAR_SONGS, type PopularSong } from "@/content/sarkilar";
 import { PRIVATE_ROOTS } from "./private-roots";
 
-/** Yerleşik liste + kişisel içerik paketindeki icerik/sarkilar.json (varsa) */
+/** Kişisel içerik paketindeki icerik/sarkilar.json; paket yoksa yerleşik liste */
 export async function getPopularSongs(): Promise<PopularSong[]> {
   const extra: PopularSong[] = [];
   for (const root of PRIVATE_ROOTS) {
@@ -19,7 +19,6 @@ export async function getPopularSongs(): Promise<PopularSong[]> {
       // Dosya yoksa ya da bozuksa yerleşik liste yeterli.
     }
   }
-  const key = (s: PopularSong) => `${s.artist}|${s.title}`.toLocaleLowerCase("tr");
-  const seen = new Set(extra.map(key));
-  return [...extra, ...POPULAR_SONGS.filter((s) => !seen.has(key(s)))];
+  // İçerik paketinin listesi varsa o kullanılır (seviye sayıları ve Şarkı Rehberi ona göre); yoksa yerleşik liste
+  return extra.length ? extra : POPULAR_SONGS;
 }

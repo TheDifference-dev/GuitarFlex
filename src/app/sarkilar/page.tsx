@@ -18,7 +18,7 @@ export default async function SongsPage() {
           Ünlü şarkı ve sololar zorluk ve tekniğe göre. Tablar Songsterr&apos;de açılır; her şarkının altında o şarkıya hazırlayan kurslar var.
         </p>
       </header>
-      <SongList songs={songs.filter((s) => !s.tags.includes("Akustik"))} courseTitles={courseTitles} />
+      <SongList songs={songs.filter((s) => !s.tags.includes("Akustik"))} courseTitles={courseTitles} rehber />
     </div>
   );
 }
