@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { noteName } from "@/lib/music";
 
 // alphaTab tarayıcıya klasik bir <script> olarak yüklenir (public/alphatab, bkz. scripts/copy-alphatab.mjs).
@@ -49,6 +49,36 @@ type Props = {
 };
 
 const SPEEDS = [50, 75, 100];
+/** "Sayım" (başlamadan önce bir ölçü say) tercihi tarayıcıda saklanır */
+const COUNT_IN_KEY = "gf-sayim";
+
+const COUNT_IN_EVENT = "gf-sayim-degisti";
+
+function storedCountIn(): string | null {
+  try {
+    return window.localStorage.getItem(COUNT_IN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function subscribeCountIn(onChange: () => void) {
+  window.addEventListener(COUNT_IN_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(COUNT_IN_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function saveCountIn(on: boolean) {
+  try {
+    window.localStorage.setItem(COUNT_IN_KEY, on ? "1" : "0");
+  } catch {
+    // Saklanamazsa tercih sadece bu sayfada geçerli olur.
+  }
+  window.dispatchEvent(new Event(COUNT_IN_EVENT));
+}
 
 function formatTime(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -87,7 +117,15 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
 
   const [speed, setSpeed] = useState(100);
   const [metronome, setMetronome] = useState(compact);
-  const [countIn, setCountIn] = useState(compact);
+  const stored = useSyncExternalStore(subscribeCountIn, storedCountIn, () => null);
+  const [countInOverride, setCountInOverride] = useState<boolean | null>(null);
+  const countIn = countInOverride ?? (stored === null ? compact : stored === "1");
+  const setCountIn = useCallback((on: boolean) => {
+    setCountInOverride(on);
+    saveCountIn(on);
+  }, []);
+  /** Sayım sürerken kalan vuruş (ekranda büyük rakam); sayım yoksa null */
+  const [counting, setCounting] = useState<number | null>(null);
   const [loop, setLoop] = useState(compact);
   const [zoom, setZoom] = useState(100);
   const [horizontal, setHorizontal] = useState(false);
@@ -96,9 +134,13 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
   // Callback'leri ve görünüm ayarlarını ref'te tut: değişmeleri player'ı yeniden kurmasın.
   const callbacks = useRef({ onBpmChange, onPlayingChange });
   const display = useRef({ view, zoom, horizontal });
+  const playback = useRef({ countIn, speed });
+  /** "Hemen başla" ile sayımsız başlatılan çalmada sayım gösterilmez */
+  const skipNext = useRef(false);
   useEffect(() => {
     callbacks.current = { onBpmChange, onPlayingChange };
     display.current = { view, zoom, horizontal };
+    playback.current = { countIn, speed };
   });
 
   const staveProfile = useCallback((v: View, percussion: boolean) => {
@@ -166,11 +208,33 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
         api.renderFinished.on(() => !disposed && setStatus("ready"));
         api.error.on(() => !disposed && setStatus("error"));
         api.playerReady.on(() => !disposed && setPlayerReady(true));
+        let countTimer = 0;
+        const stopCounting = () => {
+          window.clearInterval(countTimer);
+          setCounting(null);
+        };
         api.playerStateChanged.on((e: { state: number }) => {
           if (disposed) return;
           const isPlaying = e.state === 1;
           setPlaying(isPlaying);
           callbacks.current.onPlayingChange?.(isPlaying);
+          stopCounting();
+          const skipped = skipNext.current;
+          if (isPlaying) skipNext.current = false;
+          if (!isPlaying || skipped || !playback.current.countIn || !api.score) return;
+          // alphaTab çalmaya başlamadan önce bulunulan ölçünün vuruş sayısı kadar sayar
+          const tick = api.tickPosition ?? 0;
+          const bars = api.score.masterBars;
+          const bar = [...bars].reverse().find((b: any) => b.start <= tick) ?? bars[0];
+          const tempo = (bar?.tempoAutomations?.[0]?.value ?? api.score.tempo) * (playback.current.speed / 100);
+          const beatMs = (60000 / tempo) * (4 / bar.timeSignatureDenominator);
+          let left = bar.timeSignatureNumerator;
+          setCounting(left);
+          countTimer = window.setInterval(() => {
+            left--;
+            if (left > 0) setCounting(left);
+            else stopCounting();
+          }, beatMs);
         });
         let last = 0;
         api.playerPositionChanged.on((e: { currentTime: number; endTime: number }) => {
@@ -190,6 +254,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
 
     return () => {
       disposed = true;
+      setCounting(null);
       apiRef.current?.destroy();
       apiRef.current = null;
     };
@@ -229,6 +294,24 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
     callbacks.current.onBpmChange?.(Math.round((meta.tempo * speed) / 100));
   }, [meta.tempo, speed]);
 
+  /** Sayımı iptal et: çalma başlamadan durur */
+  const cancelCountIn = useCallback(() => {
+    apiRef.current?.pause();
+    setCounting(null);
+  }, []);
+
+  /** Sayımı atla: beklemeden hemen çalmaya başlar */
+  const skipCountIn = useCallback(() => {
+    const api = apiRef.current;
+    if (!api) return;
+    api.pause();
+    skipNext.current = true;
+    api.countInVolume = 0;
+    api.play();
+    api.countInVolume = playback.current.countIn ? 1 : 0;
+    setCounting(null);
+  }, []);
+
   const clearRange = useCallback(() => {
     const api = apiRef.current;
     if (!api) return;
@@ -247,11 +330,14 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
         apiRef.current?.playPause();
       } else if (e.key === "l" || e.key === "L") setLoop((x) => !x);
       else if (e.key === "m" || e.key === "M") setMetronome((x) => !x);
-      else if (e.key === "Escape") clearRange();
+      else if (e.key === "Escape") {
+        if (counting !== null) cancelCountIn();
+        else clearRange();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [clearRange]);
+  }, [clearRange, cancelCountIn, counting]);
 
   const toggleIn = (set: Set<number>, i: number) => {
     const next = new Set(set);
@@ -344,8 +430,13 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
           <button type="button" onClick={() => setMetronome((x) => !x)} className={`${btn} ${metronome ? on : ""}`} title="Metronom (M)">
             Metronom
           </button>
-          <button type="button" onClick={() => setCountIn((x) => !x)} className={`${btn} ${countIn ? on : ""}`} title="Başlamadan önce bir ölçü say">
-            Sayım
+          <button
+            type="button"
+            onClick={() => setCountIn(!countIn)}
+            className={`${btn} ${countIn ? on : ""}`}
+            title={countIn ? "Sayım açık: başlamadan önce bir ölçü sayar. Kapatmak için tıkla." : "Sayım kapalı: Çal'a basınca hemen başlar."}
+          >
+            Sayım {countIn ? "açık" : "kapalı"}
           </button>
           <button type="button" onClick={() => setLoop((x) => !x)} className={`${btn} ${loop ? on : ""}`} title="Döngü (L)">
             Döngü
@@ -435,13 +526,38 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
       </div>
 
       <div ref={viewportRef} className={`relative overflow-auto rounded-b-xl bg-[var(--sheet)] p-2 text-[var(--sheet-ink)] ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}>
+        {counting !== null && (
+          <div className="sticky inset-x-0 top-0 z-10 flex justify-center p-2" role="status" aria-live="assertive">
+            <div className="flex items-center gap-4 rounded-2xl border border-accent bg-panel px-5 py-3 text-text shadow-2xl">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-muted">Sayım</span>
+              <span className="w-10 text-center text-4xl font-black tabular-nums text-accent">{counting}</span>
+              <button type="button" onClick={skipCountIn} className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-accent-ink" title="Beklemeden başla">
+                Hemen başla
+              </button>
+              <button type="button" onClick={cancelCountIn} className="rounded-lg border border-line px-3 py-2 text-sm font-bold" title="Sayımı iptal et (Esc)">
+                İptal ✕
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCountIn(false);
+                  skipCountIn();
+                }}
+                className="text-xs text-muted underline-offset-2 hover:text-text hover:underline"
+                title="Sayımı kapat ve hemen başla; tercih saklanır"
+              >
+                Sayımı kapat
+              </button>
+            </div>
+          </div>
+        )}
         {status === "loading" && <p className="p-6 text-center text-sm text-muted">Tab yükleniyor…</p>}
         {status === "error" && <p className="p-6 text-center text-sm text-red-400">Tab açılamadı. Dosya bozuk ya da desteklenmeyen bir formatta olabilir.</p>}
         <div ref={hostRef} />
       </div>
       {!compact && (
         <p className="border-t border-line px-3 py-2 text-xs text-muted">
-          İpucu: Notaya tıklayarak oradan çal, sürükleyerek bölüm seç (döngü açıksa seçili bölüm tekrar eder). Kısayollar: Boşluk çal/duraklat · L döngü · M metronom · Esc seçimi kaldır.
+          İpucu: Notaya tıklayarak oradan çal, sürükleyerek bölüm seç (döngü açıksa seçili bölüm tekrar eder). Kısayollar: Boşluk çal/duraklat · L döngü · M metronom · Esc sayımı iptal et / seçimi kaldır.
         </p>
       )}
     </div>
