@@ -173,7 +173,7 @@ export default function CourseView({ course, image }: { course: Course; image?: 
           </article>
         ) : (
           current.chapters.map((c) => {
-            const total = c.lessons.reduce((sum, l) => sum + l.minutes, 0);
+            const total = Math.round(c.lessons.reduce((sum, l) => sum + l.minutes, 0) * 10) / 10;
             return (
               <section key={c.code} id={`bolum-${c.code}`} className="scroll-mt-24 space-y-4">
                 <div className="flex items-center gap-4 border-b border-line pb-3">
@@ -205,12 +205,15 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                               <ListVideo size={14} />
                             </span>
                           </div>
-                          <p className="mt-10 text-right text-sm font-black">{l.tex || l.tabFile ? `${l.bpmRange ? `${l.bpmRange[0]}–${l.bpmRange[1]}` : l.bpm} BPM` : "Okuma"}</p>
+                          {l.target && <p className="mt-2 text-xs font-bold text-muted">Hedef: <span className="text-accent">{l.target}</span></p>}
+                          <p className={`${l.target ? "mt-4" : "mt-10"} text-right text-sm font-black`}>{l.tex || l.tabFile ? `${l.bpmRange ? `${l.bpmRange[0]}–${l.bpmRange[1]}` : l.bpm} BPM` : "Okuma"}</p>
                           <div className="mt-3 flex items-center justify-between border-t border-line/70 pt-3 text-xs font-bold">
                             <span>
                               {formatClock(done)} / {formatClock(target)} dk
                             </span>
-                            <span className="rounded-md border border-accent/60 bg-accent/15 px-2 py-0.5 text-accent">Toplam: {l.minutes}dk</span>
+                            <span className="rounded-md border border-accent/60 bg-accent/15 px-2 py-0.5 text-accent">
+                              {Number.isInteger(l.minutes) ? `Toplam: ${l.minutes}dk` : `Min. ${Math.round(l.minutes * 60)} sn`}
+                            </span>
                           </div>
                           <div className="mt-2 h-1 overflow-hidden rounded-full bg-line">
                             <div className={`h-full ${ep?.completed ? "bg-green-500" : "bg-accent"}`} style={{ width: `${(done / target) * 100}%` }} />

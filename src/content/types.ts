@@ -8,8 +8,10 @@ export type Lesson = {
   bpm: number;
   /** Önerilen tempo aralığı (ör. [40, 150]); verilirse "40–150 BPM" olarak gösterilir */
   bpmRange?: [number, number];
-  /** Dersin hedef çalışma süresi (dakika). Bu süreye ulaşınca ders tamamlanır. */
+  /** Dersin hedef çalışma süresi (dakika; 0.75 = 45 sn). Bu süreye ulaşınca ders tamamlanır. */
   minutes: number;
+  /** Rehberlerde adımın hedef kademesi (ör. "Gümüş I") */
+  target?: string;
   description?: string;
   tips?: string[];
   /** "Müzik Bilgisi" kutusu: dersin arkasındaki teori (gam, aralık, akor, ritim) */
