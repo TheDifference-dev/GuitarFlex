@@ -20,14 +20,19 @@ export type Session = {
   bpm: number;
 };
 
+/** Teori yollarındaki (Ritim, Klavye, Kulak) bir adımın en iyi sonucu */
+export type StepProgress = { best: number; passed: boolean; attempts: number; at: string };
+
 export type Progress = {
   exercises: Record<string, ExerciseProgress>;
   sessions: Session[];
   quizBest: Record<string, number>;
+  /** "<yol>/<kod>" → adım sonucu (ör. "klavye/2.3") */
+  steps: Record<string, StepProgress>;
 };
 
 const KEY = "muzik.progress.v1";
-const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {} };
+const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {}, steps: {} };
 
 let cache: Progress | null = null;
 const listeners = new Set<() => void>();
@@ -129,6 +134,19 @@ export function saveQuizScore(quiz: string, score: number) {
   const p = read();
   if ((p.quizBest[quiz] ?? 0) >= score) return;
   write({ ...p, quizBest: { ...p.quizBest, [quiz]: score } });
+}
+
+/** Teori yolu adımının sonucunu kaydeder; geçilen adım geçilmiş kalır, en iyi yüzde saklanır */
+export function saveStep(key: string, score: number, passed: boolean) {
+  const p = read();
+  const prev = p.steps[key];
+  const entry: StepProgress = {
+    best: Math.max(prev?.best ?? 0, score),
+    passed: passed || !!prev?.passed,
+    attempts: (prev?.attempts ?? 0) + 1,
+    at: new Date().toISOString(),
+  };
+  write({ ...p, steps: { ...p.steps, [key]: entry } });
 }
 
 export function resetProgress() {

@@ -71,9 +71,9 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
           title: "Müzik Teorisi",
           items: [
             { href: "/teori#dersler", label: "Armoni" },
-            { label: "Ritim", note: "Yakında" },
-            { href: "/teori#sap", label: "Klavye Görselleştirme" },
-            { label: "Kulak Eğitimi", note: "Yakında" },
+            { href: "/teori/yol/ritim", label: "Ritim" },
+            { href: "/teori/yol/klavye", label: "Klavye Görselleştirme" },
+            { href: "/teori/yol/kulak", label: "Kulak Eğitimi" },
           ],
         },
       ],

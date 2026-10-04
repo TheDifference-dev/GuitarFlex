@@ -53,3 +53,10 @@ body {
   fill: var(--accent);
   stroke: var(--accent);
 }
+
+/* Ritim yazımı (teori yolları) için SMuFL nota yazı tipi */
+@font-face {
+  font-family: "GFBravura";
+  src: url("/alphatab/font/Bravura.woff2") format("woff2");
+  font-display: block;
+}
