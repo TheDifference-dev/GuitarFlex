@@ -38,12 +38,12 @@ export default function HomeView({ texts, courses, songs = "elektro" }: { texts:
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-line via-panel to-bg text-6xl opacity-80">{c.icon ?? "🎸"}</div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-          <span className="absolute right-4 top-4 flex size-12 items-center justify-center rounded-full border-2 border-white/25 bg-black/60 text-xs font-bold">
+          <div className="absolute inset-0 bg-gradient-to-t from-bg/90 via-bg/30 to-transparent" />
+          <span className="absolute right-4 top-4 flex size-12 items-center justify-center rounded-full border-2 border-white/25 bg-bg/70 text-xs font-bold">
             {pct}%
           </span>
           {disabled && (
-            <span className="absolute right-20 top-5 rounded-full bg-black/70 px-3 py-1 text-xs font-extrabold tracking-wider">YAKINDA</span>
+            <span className="absolute right-20 top-5 rounded-full bg-bg/80 px-3 py-1 text-xs font-extrabold tracking-wider">YAKINDA</span>
           )}
           <h3 lang="en" className="absolute bottom-4 left-5 right-5 text-xl font-black uppercase leading-tight tracking-tight">{c.title}</h3>
         </div>

@@ -11,14 +11,14 @@
    ─────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
-  --bg: #071029;
-  --panel: #0d1a3d;
-  --line: #213260;
+  --bg: #0b1c4a;
+  --panel: #142a62;
+  --line: #2d4a8f;
   --text: #ffffff;
   --muted: #d3dcef;
   --accent: #f47216;
   --accent-ink: #ffffff;
-  --sheet: #0a1534;
+  --sheet: #0f2357;
   --sheet-ink: #f4f6fb;
 }
 
