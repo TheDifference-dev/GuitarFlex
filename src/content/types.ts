@@ -34,11 +34,17 @@ export type Chapter = {
 export type Section = {
   number: number;
   title: string;
+  /** Bölümdeki derslerin seviye adı, bölüm adından farklıysa (ör. "Level 3" → "İleri Arpej") */
+  level?: string;
   chapters: Chapter[];
   /** Bölüm sonunda sınav satırı gösterilsin mi */
   exam?: boolean;
+  /** Sınavın adı (ör. "Bölüm 1, 2 Geçiş Sınavı", "Bölüm 1, 2, 3 Tamamlama Sınavı") */
+  examName?: string;
   /** Sınav kademelerinin BPM eşikleri (kolaydan zora) */
   examTiers?: number[];
+  /** Kademe adları, `examTiers` ile aynı sırada (ör. "Altın I", "Platin I", "Elmas I", "Usta") */
+  examTierNames?: string[];
 };
 
 /** technique: elektro teknik kursu · guide: rehber · acoustic: akustik gitar kursu */
@@ -47,6 +53,8 @@ export type CourseKind = "technique" | "guide" | "acoustic";
 export type Course = {
   slug: string;
   title: string;
+  /** Kurs kartındaki ad, başlıktan farklıysa (ör. "Bend - Vibrato" → "Bend & Vibrato") */
+  cardTitle?: string;
   description: string;
   kind: CourseKind;
   /** Kart ve ders kartlarının arka plan görseli: /marka/... ya da ozel-kaynak'a göre yol */

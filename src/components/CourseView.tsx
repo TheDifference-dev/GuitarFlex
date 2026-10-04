@@ -17,6 +17,28 @@ function sectionDone(p: Progress, course: Course, s: Section) {
   return lessons.length > 0 && lessons.every((l) => p.exercises[lessonKey(course.slug, l.id)]?.completed);
 }
 
+/** Bölüm sonundaki sınav satırı: sınavın adı ve kademelerin BPM eşikleri (Altın I · Platin I · Elmas I · Usta) */
+function ExamRow({ section: s }: { section: Section }) {
+  const tiers = s.examTiers ?? [];
+  return (
+    <div className="mt-1 rounded-lg border border-accent/30 bg-accent/5 px-2 py-1.5 text-xs" title="Sınava girmek istediğin kademeyi ve BPM'i seç">
+      <span className="flex items-center gap-1.5 font-semibold text-accent">
+        <Sparkles size={12} className="shrink-0" /> {s.examName ?? "Sınav"}
+      </span>
+      {!!tiers.length && (
+        <span className="mt-1 flex flex-wrap gap-1">
+          {tiers.map((bpm, i) => (
+            <span key={i} className="rounded border border-line bg-bg/60 px-1.5 py-0.5 font-semibold tabular-nums text-muted">
+              {s.examTierNames?.[i] ? `${s.examTierNames[i]} ` : ""}
+              <span className="text-text">{bpm}</span>
+            </span>
+          ))}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function CourseView({ course, image }: { course: Course; image?: string }) {
   const p = useProgress();
   const [tab, setTab] = useState<"egzersiz" | "rehber">("egzersiz");
@@ -95,8 +117,11 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                     ) : (
                       <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-accent/20 text-xs text-accent">{s.number}</span>
                     )}
-                    <span className="truncate">
-                      Bölüm {s.number} – {s.title}
+                    <span className="min-w-0">
+                      <span className="block truncate">
+                        Bölüm {s.number} – {s.title}
+                      </span>
+                      {s.level && <span className="block truncate text-[11px] font-semibold text-muted">{s.level}</span>}
                     </span>
                   </button>
                   <div className="space-y-0.5 pb-2 pl-3 pr-2">
@@ -115,11 +140,7 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                         </a>
                       );
                     })}
-                    {(s.exam || !!s.examTiers?.length) && (
-                      <span className="flex items-center gap-2 px-2 py-1 text-xs font-semibold text-accent" title="Sınav yakında">
-                        <Sparkles size={12} /> Sınav{s.examTiers?.length ? <span className="font-normal text-muted">· {s.examTiers.join(" · ")} BPM</span> : null}
-                      </span>
-                    )}
+                    {(s.exam || !!s.examTiers?.length) && <ExamRow section={s} />}
                   </div>
                 </div>
               );

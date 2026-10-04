@@ -6,7 +6,7 @@ export default async function Home() {
   const [courses, texts] = await Promise.all([getCourses(), getSiteTexts()]);
   const summaries: CourseSummary[] = courses.filter((c) => c.kind !== "acoustic").map((c) => ({
     slug: c.slug,
-    title: c.title,
+    title: c.cardTitle ?? c.title,
     description: c.description,
     kind: c.kind,
     image: assetUrl(c.image),

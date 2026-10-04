@@ -12,7 +12,7 @@ export default async function AcousticPage() {
   const guides = acoustic.filter((c) => c.slug.endsWith("-rehberi"));
   const summaries: CourseSummary[] = acoustic.map((c) => ({
     slug: c.slug,
-    title: c.title,
+    title: c.cardTitle ?? c.title,
     description: c.description,
     kind: c.kind,
     image: assetUrl(c.image),
