@@ -22,6 +22,10 @@ export type Lesson = {
   body?: string[];
   /** ozel-kaynak klasörüne göre tab dosyası yolu (.gp, .gpx, .xml …) */
   tabFile?: string;
+  /** Teori derslerinde kartın türü: Eğitim (okuma), Pratik (soru), Ek İnceleme (çalınacak örnek) */
+  card?: "egitim" | "pratik" | "ek";
+  /** Pratik kartı: soruların bulunduğu teori yolu adımı (ör. { yol: "armoni", kod: "1.1" }) */
+  practice?: { yol: string; kod: string };
 };
 
 export type Chapter = {
@@ -49,8 +53,8 @@ export type Section = {
   examTierNames?: string[];
 };
 
-/** technique: elektro teknik kursu · guide: rehber · acoustic: akustik gitar kursu */
-export type CourseKind = "technique" | "guide" | "acoustic";
+/** technique: elektro teknik kursu · guide: rehber · acoustic: akustik gitar kursu · theory: müzik teorisi dersleri */
+export type CourseKind = "technique" | "guide" | "acoustic" | "theory";
 
 export type Course = {
   slug: string;

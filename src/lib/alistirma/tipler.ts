@@ -18,6 +18,8 @@ export type Alistirma =
   | { tur: "akorTuru"; turler: string[] }
   | { tur: "gam"; gamlar: string[] }
   | { tur: "progresyon"; secenekler: string[][] }
+  // Armoni (Müzik Teorisi Dersleri pratikleri)
+  | { tur: "teori"; konu: "giris" | "gam" | "besli" | "uclu" | "mod" | "modFormul" | "modAnla" | "diyatonik" | "yuruyus" | "dortlu" | "yedili" }
   // Ritim
   | { tur: "ritim"; olcu: [number, number]; hucreler: string[]; olcuSayisi: number; bpm: [number, number]; sus?: number }
   | { tur: "karma"; parcalar: Alistirma[] };
@@ -44,4 +46,6 @@ export type Yol = {
   bolumler: YolBolum[];
   adimlar: YolAdim[];
   modul: { ad: string; sekmeler: string[] };
+  /** Yol bir kursun pratik kartlarıysa (ör. Armoni) o kursun adı; geri dönüş bağlantıları kursa gider */
+  kurs?: string;
 };

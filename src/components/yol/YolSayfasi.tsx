@@ -38,29 +38,31 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
         </div>
       </header>
 
-      <section className="space-y-3 rounded-2xl border border-line bg-panel p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">Modül</p>
-        <h2 className="text-xl font-semibold">{yol.modul.ad}</h2>
-        <div className="flex flex-wrap gap-2" role="tablist">
-          {yol.modul.sekmeler.map((s, i) => (
-            <button
-              key={s}
-              type="button"
-              role="tab"
-              aria-selected={i === sekme}
-              onClick={() => setSekme(i)}
-              className={`rounded-full border px-3 py-1 text-sm transition ${i === sekme ? "border-accent bg-accent text-accent-ink" : "border-line hover:border-accent"}`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-        <div className="max-w-3xl space-y-2 leading-relaxed">
-          {metin.map((p) => (
-            <p key={p}>{p}</p>
-          ))}
-        </div>
-      </section>
+      {yol.modul.sekmeler.length ? (
+        <section className="space-y-3 rounded-2xl border border-line bg-panel p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent">Modül</p>
+          <h2 className="text-xl font-semibold">{yol.modul.ad}</h2>
+          <div className="flex flex-wrap gap-2" role="tablist">
+            {yol.modul.sekmeler.map((s, i) => (
+              <button
+                key={s}
+                type="button"
+                role="tab"
+                aria-selected={i === sekme}
+                onClick={() => setSekme(i)}
+                className={`rounded-full border px-3 py-1 text-sm transition ${i === sekme ? "border-accent bg-accent text-accent-ink" : "border-line hover:border-accent"}`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <div className="max-w-3xl space-y-2 leading-relaxed">
+            {metin.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {yol.bolumler.map((b) => {
         const adimlar = yol.adimlar.map((a, i) => ({ a, i })).filter(({ a }) => a.bolum === b.no);
@@ -72,7 +74,8 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                 {b.no}. {b.ad}
               </h2>
               <span className="text-sm text-muted">
-                Seviye: {b.seviye} · {biten}/{adimlar.length}
+                {b.seviye ? `Seviye: ${b.seviye} · ` : ""}
+                {biten}/{adimlar.length}
               </span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

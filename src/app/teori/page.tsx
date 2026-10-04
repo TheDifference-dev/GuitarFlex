@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Müzik Teorisi" };
 
 export default async function TheoryPage() {
   const lessons = [...THEORY].sort((a, b) => a.level - b.level);
-  const yollar = await Promise.all(YOLLAR.map(async (y) => ({ ...y, yol: await getYol(y.slug) })));
+  const yollar = await Promise.all(YOLLAR.filter((y) => !("gizli" in y)).map(async (y) => ({ ...y, yol: await getYol(y.slug) })));
   return (
     <div className="space-y-8">
       <header>

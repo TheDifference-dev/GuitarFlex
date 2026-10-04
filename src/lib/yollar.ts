@@ -20,4 +20,6 @@ export const YOLLAR = [
   { slug: "ritim", ad: "Ritim", etiket: "Ritim Programı" },
   { slug: "klavye", ad: "Klavye Görselleştirme", etiket: "Klavye Görselleştirme" },
   { slug: "kulak", ad: "Kulak Eğitimi", etiket: "Kulak Eğitimi Programı" },
+  // Armoni pratik kartları: Müzik Teorisi Dersleri kursundan açılır, listede ayrıca gösterilmez
+  { slug: "armoni", ad: "Armoni Pratikleri", etiket: "Müzik Teorisi Dersleri", gizli: true },
 ] as const;

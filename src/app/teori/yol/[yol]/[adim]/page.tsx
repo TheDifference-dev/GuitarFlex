@@ -27,8 +27,8 @@ export default async function AdimPage(props: PageProps<"/teori/yol/[yol]/[adim]
           Müzik Teorisi
         </Link>{" "}
         /{" "}
-        <Link href={`/teori/yol/${yol.slug}`} className="hover:text-accent">
-          {yol.ad}
+        <Link href={yol.kurs ? `/calis/${yol.kurs}` : `/teori/yol/${yol.slug}`} className="hover:text-accent">
+          {yol.kurs ? "Armoni" : yol.ad}
         </Link>{" "}
         / {bolum?.ad}
       </nav>
@@ -39,7 +39,7 @@ export default async function AdimPage(props: PageProps<"/teori/yol/[yol]/[adim]
         </p>
         <h1 className="text-3xl font-bold tracking-tight">{adim.ad}</h1>
       </header>
-      <AdimCalis key={adim.kod} yol={yol.slug} adim={adim} sonraki={sonraki ? { kod: sonraki.kod, ad: sonraki.ad } : undefined} />
+      <AdimCalis key={adim.kod} yol={yol.slug} adim={adim} sonraki={sonraki ? { kod: sonraki.kod, ad: sonraki.ad } : undefined} geri={yol.kurs ? `/calis/${yol.kurs}` : undefined} />
     </div>
   );
 }

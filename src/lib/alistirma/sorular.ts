@@ -10,6 +10,7 @@ import {
   ACIK, AKOR_SEKLI, AKOR_TURU, ARALIK_ADI, GAM, MOD_IV, TEL_ADI, dogalMi, karistir, kisaAd, notaAdi, pc, perdeSes, rnd, romen, sec, secenekler,
 } from "./muzik";
 import { ritimSorusu, type RitimSorusu } from "./ritim";
+import { armoniSorusu } from "./armoni";
 
 export type Nokta = { s: number; f: number; etiket?: string; tur: "kok" | "nota" | "soru" | "referans" };
 export type Sap = { perde: [number, number]; noktalar: Nokta[]; tel?: number };
@@ -479,6 +480,8 @@ export function soruUret(a: Alistirma): Soru {
       return gamSorusu(a.gamlar);
     case "progresyon":
       return progresyonSorusu(a.secenekler);
+    case "teori":
+      return armoniSorusu(a.konu);
     case "ritim":
       return ritimSorusu(a);
     case "karma":

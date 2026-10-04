@@ -4,7 +4,7 @@ import { assetUrl, getCourses, getSiteTexts } from "@/lib/courses";
 
 export default async function Home() {
   const [courses, texts] = await Promise.all([getCourses(), getSiteTexts()]);
-  const summaries: CourseSummary[] = courses.filter((c) => c.kind !== "acoustic").map((c) => ({
+  const summaries: CourseSummary[] = courses.filter((c) => c.kind !== "acoustic" && c.kind !== "theory").map((c) => ({
     slug: c.slug,
     title: c.cardTitle ?? c.title,
     description: c.description,

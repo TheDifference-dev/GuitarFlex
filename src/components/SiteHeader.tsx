@@ -15,7 +15,7 @@ function sectionName(p: string, fallback: string) {
   if (p.startsWith("/profil")) return "Profil";
   if (p.startsWith("/akustik")) return "Akustik Gitar";
   if (p.startsWith("/sarkilar") || p.startsWith("/oynatici")) return "Şarkı ve Sololar";
-  if (p.startsWith("/teori")) return "Müzik Teorisi";
+  if (p.startsWith("/teori") || p.startsWith("/calis/armoni")) return "Müzik Teorisi";
   if (p.startsWith("/araclar")) return "Araçlar";
   if (p.startsWith("/nasil-calismaliyim")) return "Çalışma Planı";
   return fallback;
@@ -42,7 +42,7 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
       id: "calis",
       label: "Gitar Çalış",
       icon: Guitar,
-      active: ["/calis", "/akustik", "/sarkilar", "/oynatici", "/nasil-calismaliyim"].some((p) => pathname.startsWith(p)) || pathname === "/",
+      active: (["/calis", "/akustik", "/sarkilar", "/oynatici", "/nasil-calismaliyim"].some((p) => pathname.startsWith(p)) && !pathname.startsWith("/calis/armoni")) || pathname === "/",
       banner: { href: "/nasil-calismaliyim", title: "Gitarda Nasıl Çalışmalıyım?", text: "Seviyeni seç, sana uygun yolu önerelim." },
       groups: [
         {
@@ -65,12 +65,12 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
       id: "teori",
       label: "Müzik Teorisi",
       icon: BookOpen,
-      active: pathname.startsWith("/teori"),
+      active: pathname.startsWith("/teori") || pathname.startsWith("/calis/armoni"),
       groups: [
         {
           title: "Müzik Teorisi",
           items: [
-            { href: "/teori#dersler", label: "Armoni" },
+            { href: "/calis/armoni", label: "Armoni" },
             { href: "/teori/yol/ritim", label: "Ritim" },
             { href: "/teori/yol/klavye", label: "Klavye Görselleştirme" },
             { href: "/teori/yol/kulak", label: "Kulak Eğitimi" },

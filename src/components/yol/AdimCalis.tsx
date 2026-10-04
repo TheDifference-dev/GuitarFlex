@@ -13,13 +13,13 @@ import AkorKutusu from "./AkorKutusu";
 import RitimYazi from "./RitimYazi";
 
 type Sonuc = { puan: number; tam: boolean; vurus?: number };
-type Props = { yol: string; adim: YolAdim; sonraki?: { kod: string; ad: string } };
+type Props = { yol: string; adim: YolAdim; sonraki?: { kod: string; ad: string }; geri?: string };
 
 const btn = "rounded-lg px-4 py-2 font-semibold transition disabled:opacity-40";
 const btnAna = `${btn} bg-accent text-accent-ink hover:brightness-110`;
 const btnIkincil = `${btn} border border-line bg-panel hover:border-accent`;
 
-export default function AdimCalis({ yol, adim, sonraki }: Props) {
+export default function AdimCalis({ yol, adim, sonraki, geri }: Props) {
   const [sorular, setSorular] = useState<Soru[] | null>(null);
   const [i, setI] = useState(0);
   const [sonuclar, setSonuclar] = useState<Sonuc[]>([]);
@@ -46,7 +46,7 @@ export default function AdimCalis({ yol, adim, sonraki }: Props) {
           {adim.soru} soru · Geçmek için en az %{adim.gecme.dogruluk} doğruluk
           {adim.gecme.vurus ? `, %${adim.gecme.vurus} vuruş puanı` : ""} ve %{adim.gecme.secim} tam doğru cevap gerekir.
         </p>
-        {yol !== "klavye" ? (
+        {yol === "kulak" || yol === "ritim" ? (
           <p className="flex items-center gap-2 text-sm text-muted">
             <Headphones size={16} /> Bu adımda ses var; kulaklık ya da hoparlör açık olsun.
           </p>
@@ -58,7 +58,7 @@ export default function AdimCalis({ yol, adim, sonraki }: Props) {
     );
   }
 
-  if (bitti) return <Ozet yol={yol} adim={adim} sonuclar={sonuclar} sonraki={sonraki} tekrar={basla} />;
+  if (bitti) return <Ozet yol={yol} adim={adim} sonuclar={sonuclar} sonraki={sonraki} tekrar={basla} geri={geri} />;
 
   const soru = sorular[i];
   const cevaplandi = sonuclar.length > i;
@@ -325,7 +325,7 @@ function RitimSoruGoster({
   );
 }
 
-function Ozet({ yol, adim, sonuclar, sonraki, tekrar }: { yol: string; adim: YolAdim; sonuclar: Sonuc[]; sonraki?: { kod: string; ad: string }; tekrar: () => void }) {
+function Ozet({ yol, adim, sonuclar, sonraki, tekrar, geri }: { yol: string; adim: YolAdim; sonuclar: Sonuc[]; sonraki?: { kod: string; ad: string }; tekrar: () => void; geri?: string }) {
   const n = sonuclar.length || 1;
   const dogruluk = Math.round((sonuclar.reduce((a, s) => a + s.puan, 0) / n) * 100);
   const secim = Math.round((sonuclar.filter((s) => s.tam).length / n) * 100);
@@ -370,8 +370,8 @@ function Ozet({ yol, adim, sonuclar, sonraki, tekrar }: { yol: string; adim: Yol
             Sonraki adım: {sonraki.kod} {sonraki.ad}
           </Link>
         ) : null}
-        <Link href={`/teori/yol/${yol}`} className={btnIkincil}>
-          Yola dön
+        <Link href={geri ?? `/teori/yol/${yol}`} className={btnIkincil}>
+          {geri ? "Derslere dön" : "Yola dön"}
         </Link>
       </div>
     </div>

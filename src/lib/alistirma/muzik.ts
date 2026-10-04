@@ -98,3 +98,38 @@ export function secenekler<T>(dogru: T, havuz: T[], n = 4, eq: (a: T, b: T) => b
   for (const o of others) if (out.length < n && !out.some((x) => eq(x, o))) out.push(o);
   return karistir(out);
 }
+
+/* ---------------- Doğru yazım (harf + arıza): Fa majörde Si♭, La# değil ---------------- */
+
+export type Ad = { h: number; a: number };
+const HARF_TR = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
+const HARF_EN = ["C", "D", "E", "F", "G", "A", "B"];
+const ARIZA: Record<number, string> = { [-2]: "♭♭", [-1]: "♭", 0: "", 1: "#", 2: "𝄪" };
+
+export const adSes = (n: Ad) => pc(DOGAL[n.h] + n.a);
+export const adTr = (n: Ad) => HARF_TR[n.h] + ARIZA[n.a];
+export const adEn = (n: Ad) => HARF_EN[n.h] + ARIZA[n.a];
+/** "Si♭ (B♭)" */
+export const adYaz = (n: Ad) => `${adTr(n)} (${adEn(n)})`;
+export const ciftArizaMi = (ns: Ad[]) => ns.some((n) => Math.abs(n.a) > 1);
+
+/** `n`den `harf` harf ve `yarim` yarım ses yukarıdaki nota (harf adı korunur, arıza hesaplanır) */
+export function yukari(n: Ad, harf: number, yarim: number): Ad {
+  const h = (n.h + harf) % 7;
+  let a = adSes(n) + yarim - DOGAL[h];
+  a = ((a % 12) + 12) % 12;
+  if (a > 6) a -= 12;
+  return { h, a };
+}
+
+/** Kökten aralıklarla (yarım ses) ve harf adımlarıyla yazılmış notalar */
+export const yazDizi = (kok: Ad, iv: readonly number[], harfler: readonly number[]) => iv.map((x, i) => yukari(kok, harfler[i], x));
+export const GAM_HARF = [0, 1, 2, 3, 4, 5, 6];
+export const UCLU_HARF = [0, 2, 4];
+export const DORTLU_HARF = [0, 2, 4, 6];
+
+/** Diyez/bemol sayısı 0–6 olan majör tonlar */
+export const MAJOR_TONLAR: Ad[] = [
+  { h: 0, a: 0 }, { h: 4, a: 0 }, { h: 1, a: 0 }, { h: 5, a: 0 }, { h: 2, a: 0 }, { h: 6, a: 0 }, { h: 3, a: 1 },
+  { h: 3, a: 0 }, { h: 6, a: -1 }, { h: 2, a: -1 }, { h: 5, a: -1 }, { h: 1, a: -1 }, { h: 4, a: -1 },
+];
