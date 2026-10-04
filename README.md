@@ -13,6 +13,12 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | ![Popüler Şarkılar](docs/ekran/sarkilar.png) | ![Doğaçlama Çal](docs/ekran/dogaclama.png) |
 | **Tab oynatıcı** | **Müzik teorisi** |
 | ![Tab oynatıcı](docs/ekran/oynatici.png) | ![Teori](docs/ekran/teori.png) |
+| **Klavye Görselleştirme yolu** | **Sapta soru (CAGED)** |
+| ![Klavye yolu](docs/ekran/klavye-yolu.png) | ![Klavye adımı](docs/ekran/klavye-adim.png) |
+| **Ritim: dinle, seç, vur** | **Armoni dersleri** |
+| ![Ritim adımı](docs/ekran/ritim-adim.png) | ![Armoni](docs/ekran/armoni.png) |
+| **Profil: görevler, seri, başarımlar** | |
+| ![Profil](docs/ekran/profil.png) | |
 
 ## Highlights
 
@@ -20,9 +26,11 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 - **Music theory on every lesson** — scale formulas, intervals, chord construction, progressions and rhythm explained next to the tab
 - **Generated, verified tabs** — scale fingerings, arpeggio shapes, sequences, legato slurs and pick-stroke directions (alternate, sweep, economy) are computed from pitch data; an automated checker validates every bar's length and every hammer-on, pull-off and slide
 - **Multi-track tab player** — Guitar Pro / MusicXML / alphaTex playback with per-track mute, solo and volume, speed control, metronome, count-in, click-to-seek and drag-to-loop
-- **Songs & solos** — a curated library of famous songs and solos filtered by difficulty and technique, linked to Songsterr and to the courses that prepare for them
-- **Improvisation** — backing tracks (drums, bass, rhythm guitar) in seven styles, each with suggested scales shown on an interactive fretboard
-- **Practice tracking** — automatic practice timer per lesson, streaks, ranks, badges and course progress
+- **Theory practice paths** — Rhythm (70 steps), Fretboard Visualization (84) and Ear Training (60): questions are generated fresh on every attempt — notes, octaves, pentatonic, CAGED and 3NPS shapes on a clickable fretboard, chord diagrams, interval/chord/scale/progression recognition with synthesized guitar sound, and rhythm reading with tap-back scoring rendered in SMuFL notation
+- **Harmony course** — 5 sections, 10 chapters with reading cards, generated practice quizzes (correctly spelled scales, triads, modes, diatonic and seventh chords) and playable example tabs
+- **Songs & solos** — a song guide (38 ordered steps tied to course sections) and a library of 99 songs with medal levels, origin/type filters and sorting, linked to Songsterr
+- **Improvisation** — 56 backing tracks (drums, bass, rhythm guitar) in six genres, chords spelled from scale degrees, each with compatible scales on an interactive fretboard
+- **Game layer** — daily tasks, task-based streaks with streak shields, per-lesson medal tiers, 68 achievements with rarity and XP
 - **Desktop app with one-click updates** — the launcher pulls new versions, rebuilds when needed and opens the app
 - **Brand identity** — name, navy/orange palette and guitarist-silhouette logo drawn programmatically as SVG
 
@@ -41,14 +49,20 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 - **Müzik Bilgisi**: Her derste gam, aralık, akor ve ritim açıklaması; tab ile aynı veriden üretildiği için nota adları her zaman tabla uyuşur.
 - **Başlangıç rehberleri**: Sıfırdan başlayanlar ve başlangıç–orta seviye için kurslardan seçilmiş çalışma yolları; tablı derslerin arasında okuma adımları.
 - **Elektro ve akustik**: Teknik kursları ve şarkılar elektro ve akustik gitar için ayrı sayfalarda; seviyeye göre çalışma yolu seçici.
-- **Şarkı ve Sololar**: Popüler Şarkılar (zorluk ve tekniğe göre, Songsterr bağlantılı), Tabla Keşfet (çok kanallı tab oynatıcı) ve Doğaçlama Çal (7 eşlik kaydı ve önerilen gamlar).
+- **Şarkı ve Sololar**: Şarkı Rehberi (teknik bölümlerine bağlı 38 adım), Tüm Şarkılar (madalya seviyesi, köken, tür, arama ve sıralama), Tabla Keşfet (çok kanallı tab oynatıcı) ve Doğaçlama Çal (6 türde 56 eşlik kaydı ve önerilen gamlar).
 - **Tab oynatıcı**: Guitar Pro, MusicXML ve alphaTex; enstrüman bazında ses/mute/solo, hız, metronom, sayım, döngü, nota görünümü.
-- **Müzik teorisi**: 10 ders ve interaktif sap gezgini (gamlar, akorlar, aralıklar, Do-Re-Mi).
-- **Profil**: Otomatik çalışma süresi, seri, rütbe, rozetler ve kurs ilerlemesi.
+- **Müzik teorisi**: Ritim (70 adım), Klavye Görselleştirme (84 adım) ve Kulak Eğitimi (60 adım) pratik yolları; sorular her denemede yeniden üretilir. Armoni (Müzik Teorisi Dersleri): 5 bölüm, Eğitim / Pratik / Ek İnceleme kartları. Ayrıca 10 ders ve interaktif sap gezgini.
+- **Profil**: Günlük görevler (Egzersiz, Teori, Serbest Çalışma), seri ve seri kalkanı, ders madalyaları (Bronz I → Elmas IV), 68 başarım ve XP, kurs ilerlemesi.
 - **Araçlar**: Metronom ve nota bulma testi.
 
 ### Son güncellemeler
 
+- **Teori yolları**: Ritim (dinle, yazımı seç, geri vur), Klavye Görselleştirme (sapta tel, nota, oktav, pentatonik, CAGED, 3NPS) ve Kulak Eğitimi (aralık, akor türü, gam, akor yürüyüşü); adımlar sırayla açılır, sonuçlar kaydedilir
+- **Armoni**: 5 bölüm, 10 alt bölüm; Eğitim metinleri, her denemede yeni sorularla Pratik kartları (notalar harf adına göre doğru yazılır) ve çalınacak Ek İnceleme tabları
+- **Şarkı Rehberi** (38 adım) ve **Tüm Şarkılar** filtreleri: Bronz–Usta seviyeleri, Global/Türkçe, Riff/Solo, arama ve sıralama
+- **Doğaçlama Çal**: Rock, Blues, Metal, Pop, Funk ve Groove türlerinde 56 eşlik; akorlar tonun derecelerinden yazılır, akor şekilleri ve gamlar otomatik denetlenir
+- **Profil**: günlük görevler, seri ve seri kalkanı, ders madalya kademeleri ve 68 başarım
+- Kurs ve rehber derslerinde envanterle eşleşen adlar, bölüm sınavı satırları, ders hedefleri ve süreleri; tabların müzik ve gitar teorisi denetimi genişletildi
 - Çalmadan önceki **sayım** ekranda geri sayan rakamla görünüyor; **İptal**, **Hemen başla** ve **Sayımı kapat** düğmeleri var (Esc de iptal eder), sayım tercihi hatırlanıyor
 - Üst menü sadeleşti: **Gitar Çalış** altında Akustik (Teknik Egzersizler, Şarkılar) ve Elektro (Teknik Egzersizler, Şarkı ve Sololar) başlıkları; egzersizler bu sayfalarda
 - **Geri** ve **Ana sayfa** tuşları; logonun yanındaki başlık bulunulan bölümü gösterir

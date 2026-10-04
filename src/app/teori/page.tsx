@@ -18,7 +18,7 @@ export default async function TheoryPage() {
 
       <section id="yollar" className="scroll-mt-24 space-y-3">
         <h2 className="text-xl font-semibold">Pratik Yolları</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {yollar.map((y) => (
             <Link key={y.slug} href={`/teori/yol/${y.slug}`} className="rounded-xl border border-line bg-panel p-4 transition hover:border-accent">
               <p className="text-xs font-semibold uppercase tracking-wide text-accent">{y.etiket}</p>
@@ -26,6 +26,11 @@ export default async function TheoryPage() {
               <p className="text-sm text-muted">{y.yol ? `${y.yol.bolumler.length} bölüm · ${y.yol.adimlar.length} adım` : "İçerik paketi gerekli"}</p>
             </Link>
           ))}
+          <Link href="/calis/armoni" className="rounded-xl border border-line bg-panel p-4 transition hover:border-accent">
+            <p className="text-xs font-semibold uppercase tracking-wide text-accent">Müzik Teorisi Dersleri</p>
+            <h3 className="font-semibold">Armoni</h3>
+            <p className="text-sm text-muted">Eğitim, pratik ve ek inceleme kartları</p>
+          </Link>
         </div>
       </section>
 

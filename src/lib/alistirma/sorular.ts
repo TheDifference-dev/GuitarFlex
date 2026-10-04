@@ -7,7 +7,7 @@ import { akor, dizi, nota, simdi } from "@/lib/ses";
 import { pentaBox } from "@/content/dizi";
 import type { Alistirma } from "./tipler";
 import {
-  ACIK, AKOR_SEKLI, AKOR_TURU, ARALIK_ADI, GAM, MOD_IV, TEL_ADI, dogalMi, karistir, kisaAd, notaAdi, pc, perdeSes, rnd, romen, sec, secenekler,
+  ACIK, AKOR_SEKLI, AKOR_TURU, ARALIK_ADI, GAM, MOD_IV, TEL_ADI, dogalMi, karistir, kisaAd, notaAdi, tonKoku, pc, perdeSes, rnd, romen, sec, secenekler,
 } from "./muzik";
 import { ritimSorusu, type RitimSorusu } from "./ritim";
 import { armoniSorusu } from "./armoni";
@@ -176,15 +176,15 @@ function pentatonikSorusu(sekil: number | null, gorev: "kok" | "kokler"): Soru {
       tip: "secim",
       metin: `Minör pentatonik ${ad} sapta gösteriliyor. Hangi tonda?`,
       sap: { perde, noktalar: kutu.map((p) => ({ s: p.s, f: p.f, tur: "nota" as const })) },
-      secenekler: ops.map((o) => ({ id: String(o), ad: `${notaAdi(o)} minör` })),
+      secenekler: ops.map((o) => ({ id: String(o), ad: `${tonKoku(o, true)} minör` })),
       dogru: String(pc(kok)),
       ses: () => dizi(kutu.map((p) => p.m), undefined, 0.18),
-      aciklama: `Kök notalar: ${kokler.map((p) => `${p.s}. tel ${p.f}. perde`).join(", ")} → ${notaAdi(kok)} minör pentatonik.`,
+      aciklama: `Kök notalar: ${kokler.map((p) => `${p.s}. tel ${p.f}. perde`).join(", ")} → ${tonKoku(kok, true)} minör pentatonik.`,
     };
   }
   return {
     tip: "sap",
-    metin: `${notaAdi(kok)} minör pentatonik, ${ad}. Bütün kök (${kisaAd(kok)}) notalarını seç.`,
+    metin: `${tonKoku(kok, true)} minör pentatonik, ${ad}. Bütün kök (${kisaAd(kok)}) notalarını seç.`,
     sap: { perde, noktalar: kutu.map((p) => ({ s: p.s, f: p.f, tur: "nota" as const })) },
     hedef: kokler.map((p) => anahtar(p.s, p.f)),
     coklu: true,
@@ -213,7 +213,7 @@ function cagedSorusu(formAd: "C" | "A" | "G" | "E" | "D" | null, gorev: "kokler"
   const hi = Math.max(...notalar.map((p) => p.f));
   const perde: [number, number] = [Math.max(0, lo - 2), Math.max(hi + 3, lo + 7)];
   const kokMu = (p: { s: number; f: number }) => pc(perdeSes(p.s, p.f)) === kokPc;
-  const ad = `${notaAdi(kokPc)} majör`;
+  const ad = `${tonKoku(kokPc)} majör`;
   if (gorev === "kokler") {
     return {
       tip: "sap",
@@ -260,7 +260,7 @@ function ucNotaSorusu(modAd: string | null): Soru {
   const hi = Math.max(...notalar.map((p) => p.f));
   return {
     tip: "sap",
-    metin: `${notaAdi(kok)} ${mod} 3 nota/tel kalıbında eksik 3 notayı tamamla.`,
+    metin: `${tonKoku(kok, ["Dorian", "Phrygian", "Aeolian", "Locrian"].includes(mod))} ${mod} 3 nota/tel kalıbında eksik 3 notayı tamamla.`,
     sap: {
       perde: [Math.max(0, lo - 1), hi + 1],
       noktalar: notalar.filter((p) => !gizliMi(p)).map((p) => ({ s: p.s, f: p.f, tur: kokMu(p) ? ("kok" as const) : ("nota" as const), etiket: kokMu(p) ? "K" : undefined })),
@@ -290,12 +290,12 @@ function dereceSorusu(): Soru {
   const ops = secenekler(hedef.d, [1, 2, 3, 4, 5, 6]);
   return {
     tip: "secim",
-    metin: `K, ${notaAdi(kok)} majör gamının kökü. İşaretli nota gamın kaçıncı derecesi?`,
+    metin: `K, ${tonKoku(kok)} majör gamının kökü. İşaretli nota gamın kaçıncı derecesi?`,
     sap: { perde: [Math.max(0, f - 3), f + 6], noktalar: [{ s, f, tur: "kok", etiket: "K" }, { s: hedef.s, f: hedef.f, tur: "soru", etiket: "?" }] },
     secenekler: ops.map((o) => ({ id: String(o), ad: `${DERECE_AD[o]}. derece` })),
     dogru: String(hedef.d),
     ses: () => dizi([kok, perdeSes(hedef.s, hedef.f)]),
-    aciklama: `${notaAdi(perdeSes(hedef.s, hedef.f))}, ${notaAdi(kok)} majörün ${hedef.d + 1}. derecesi.`,
+    aciklama: `${notaAdi(perdeSes(hedef.s, hedef.f))}, ${tonKoku(kok)} majörün ${hedef.d + 1}. derecesi.`,
   };
 }
 

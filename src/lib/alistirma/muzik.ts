@@ -21,6 +21,12 @@ export function notaAdi(p: number, yazim?: "diyez" | "bemol"): string {
 }
 export const kisaAd = (p: number) => TR_D[pc(p)];
 
+// Ton adlarında yaygın yazım: majörde La♭, Mi♭, Si♭, Re♭; minörde Do#, Sol#, Mi♭, Si♭
+const MAJOR_TON = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => ([1, 3, 8, 10].includes(i) ? "bemol" : "diyez") as "diyez" | "bemol");
+const MINOR_TON = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => ([3, 10].includes(i) ? "bemol" : "diyez") as "diyez" | "bemol");
+/** Tonun kök adı: "La♭ (A♭)" gibi tek yazım */
+export const tonKoku = (p: number, minor = false) => notaAdi(p, (minor ? MINOR_TON : MAJOR_TON)[pc(p)]);
+
 export const TEL_ADI: Record<number, string> = { 1: "1. tel · ince Mi (E)", 2: "2. tel · Si (B)", 3: "3. tel · Sol (G)", 4: "4. tel · Re (D)", 5: "5. tel · La (A)", 6: "6. tel · kalın Mi (E)" };
 
 export const ARALIK_ADI: Record<number, string> = {
