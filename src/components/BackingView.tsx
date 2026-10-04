@@ -1,18 +1,36 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Lightbulb, Music } from "lucide-react";
 import FretboardExplorer from "./FretboardExplorer";
 import TabPlayer, { type TabSource } from "./TabPlayer";
 import type { Backing } from "@/content/dogaclama";
+import { addPracticeTime } from "@/lib/progress";
+import { SERBEST } from "@/lib/oyun";
 
 export default function BackingView({ backing }: { backing: Backing }) {
   const source = useMemo<TabSource>(() => ({ kind: "tex", tex: backing.tex }), [backing.tex]);
   const [scale, setScale] = useState(0);
   const s = backing.scales[scale];
+  // Eşlik çalarken geçen süre "Serbest Çalışma" görevine yazılır (5 sn'de bir)
+  const [caliyor, setCaliyor] = useState(false);
+  useEffect(() => {
+    if (!caliyor) return;
+    let bekleyen = 0;
+    const id = window.setInterval(() => {
+      if (++bekleyen >= 5) {
+        addPracticeTime(`${SERBEST}eslik/${backing.slug}`, bekleyen, backing.bpm, Number.MAX_SAFE_INTEGER);
+        bekleyen = 0;
+      }
+    }, 1000);
+    return () => {
+      window.clearInterval(id);
+      if (bekleyen) addPracticeTime(`${SERBEST}eslik/${backing.slug}`, bekleyen, backing.bpm, Number.MAX_SAFE_INTEGER);
+    };
+  }, [caliyor, backing.slug, backing.bpm]);
   return (
     <div className="space-y-6">
-      <TabPlayer source={source} />
+      <TabPlayer source={source} onPlayingChange={setCaliyor} />
       <section className="space-y-3 rounded-2xl border border-accent/40 bg-panel p-5">
         <h2 className="flex items-center gap-2 text-lg font-bold">
           <Music size={18} className="text-accent" /> Hangi gamla çalayım?

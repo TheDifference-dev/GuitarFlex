@@ -4,12 +4,14 @@ import Link from "next/link";
 import { formatDuration, resetProgress, useProgress } from "@/lib/progress";
 import { RANKS, badges, completedCount, keysProgress, rankFor } from "@/lib/ranks";
 import { ProgressBar, SummaryStrip } from "./ProgressWidgets";
+import OyunPaneli from "./OyunPaneli";
+import type { KursYapisi, OyunVeri } from "@/lib/oyun";
 
 const DAYS = 35;
 
 export type CourseInfo = { slug: string; title: string; icon?: string; keys: string[]; titles: Record<string, string> };
 
-export default function ProgressDashboard({ courses }: { courses: CourseInfo[] }) {
+export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { courses: CourseInfo[]; oyun?: OyunVeri; kurslar?: KursYapisi[] }) {
   const p = useProgress();
   const done = completedCount(p);
   const { current, next } = rankFor(done);
@@ -24,29 +26,33 @@ export default function ProgressDashboard({ courses }: { courses: CourseInfo[] }
   });
   const maxDay = Math.max(1, ...days.map((d) => d.seconds));
   const recent = [...p.sessions].reverse().slice(0, 10);
-  const titleOf = (key: string) => courses.find((c) => c.titles[key])?.titles[key] ?? key;
-  const hrefOf = (key: string) => `/calis/${key.split("/")[0]}/${encodeURIComponent(key.split("/").slice(1).join("/"))}`;
+  const serbest = (key: string) => key.startsWith("serbest:eslik/") && key.slice("serbest:eslik/".length);
+  const titleOf = (key: string) => (serbest(key) ? `Doğaçlama · ${serbest(key)}` : (courses.find((c) => c.titles[key])?.titles[key] ?? key));
+  const hrefOf = (key: string) =>
+    serbest(key) ? `/sarkilar/dogaclama/${serbest(key)}` : `/calis/${key.split("/")[0]}/${encodeURIComponent(key.split("/").slice(1).join("/"))}`;
 
   return (
     <div className="space-y-8">
-      <SummaryStrip />
+      {oyun ? <OyunPaneli oyun={oyun} kurslar={kurslar} /> : <SummaryStrip />}
 
-      <section className="rounded-xl border border-line bg-panel p-5">
-        <h2 className="font-semibold">Rütbe yolu</h2>
-        <ol className="mt-4 flex flex-wrap gap-2">
-          {RANKS.map((r) => (
-            <li
-              key={r.name}
-              className={`rounded-full border px-3 py-1 text-sm ${
-                r === current ? "border-accent bg-accent text-accent-ink" : done >= r.min ? "border-accent text-accent" : "border-line text-muted"
-              }`}
-            >
-              {r.name} <span className="opacity-70">({r.min})</span>
-            </li>
-          ))}
-        </ol>
-        {next && <ProgressBar value={done - current.min} max={next.min - current.min} />}
-      </section>
+      {oyun ? null : (
+        <section className="rounded-xl border border-line bg-panel p-5">
+          <h2 className="font-semibold">Rütbe yolu</h2>
+          <ol className="mt-4 flex flex-wrap gap-2">
+            {RANKS.map((r) => (
+              <li
+                key={r.name}
+                className={`rounded-full border px-3 py-1 text-sm ${
+                  r === current ? "border-accent bg-accent text-accent-ink" : done >= r.min ? "border-accent text-accent" : "border-line text-muted"
+                }`}
+              >
+                {r.name} <span className="opacity-70">({r.min})</span>
+              </li>
+            ))}
+          </ol>
+          {next && <ProgressBar value={done - current.min} max={next.min - current.min} />}
+        </section>
+      )}
 
       <section className="rounded-xl border border-line bg-panel p-5">
         <h2 className="font-semibold">Son {DAYS} gün</h2>
@@ -62,20 +68,22 @@ export default function ProgressDashboard({ courses }: { courses: CourseInfo[] }
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-3 font-semibold">Rozetler</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {badges(p, courses).map((b) => (
-            <div key={b.id} className={`flex gap-3 rounded-xl border border-line bg-panel p-4 ${b.earned ? "" : "opacity-40 grayscale"}`}>
-              <span className="text-2xl">{b.icon}</span>
-              <div>
-                <p className="font-semibold">{b.title}</p>
-                <p className="text-sm text-muted">{b.description}</p>
+      {oyun ? null : (
+        <section>
+          <h2 className="mb-3 font-semibold">Rozetler</h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {badges(p, courses).map((b) => (
+              <div key={b.id} className={`flex gap-3 rounded-xl border border-line bg-panel p-4 ${b.earned ? "" : "opacity-40 grayscale"}`}>
+                <span className="text-2xl">{b.icon}</span>
+                <div>
+                  <p className="font-semibold">{b.title}</p>
+                  <p className="text-sm text-muted">{b.description}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-3 font-semibold">Kurslar</h2>

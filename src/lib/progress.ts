@@ -18,6 +18,8 @@ export type Session = {
   exerciseId: string;
   seconds: number;
   bpm: number;
+  /** Oturumun başladığı saat (0–23); gece/sabah başarımları için */
+  saat?: number;
 };
 
 /** Teori yollarındaki (Ritim, Klavye, Kulak) bir adımın en iyi sonucu */
@@ -29,10 +31,12 @@ export type Progress = {
   quizBest: Record<string, number>;
   /** "<yol>/<kod>" → adım sonucu (ör. "klavye/2.3") */
   steps: Record<string, StepProgress>;
+  /** Gün (YYYY-MM-DD) → o gün geçilen teori adımı sayısı (günlük "Teori" görevi ve seri için) */
+  teori: Record<string, number>;
 };
 
 const KEY = "muzik.progress.v1";
-const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {}, steps: {} };
+const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {}, steps: {}, teori: {} };
 
 let cache: Progress | null = null;
 const listeners = new Set<() => void>();
@@ -94,7 +98,7 @@ export function logPractice(exerciseId: string, seconds: number, bpm: number, co
   write({
     ...p,
     exercises: { ...p.exercises, [exerciseId]: entry },
-    sessions: [...p.sessions, { date: today(), exerciseId, seconds, bpm }],
+    sessions: [...p.sessions, { date: today(), exerciseId, seconds, bpm, saat: new Date().getHours() }],
   });
 }
 
@@ -119,7 +123,7 @@ export function addPracticeTime(key: string, seconds: number, bpm: number, targe
   if (last && last.date === date && last.exerciseId === key) {
     sessions[sessions.length - 1] = { ...last, seconds: last.seconds + seconds, bpm: Math.max(last.bpm, bpm) };
   } else {
-    sessions.push({ date, exerciseId: key, seconds, bpm });
+    sessions.push({ date, exerciseId: key, seconds, bpm, saat: new Date().getHours() });
   }
   write({ ...p, exercises: { ...p.exercises, [key]: entry }, sessions });
 }
@@ -146,7 +150,8 @@ export function saveStep(key: string, score: number, passed: boolean) {
     attempts: (prev?.attempts ?? 0) + 1,
     at: new Date().toISOString(),
   };
-  write({ ...p, steps: { ...p.steps, [key]: entry } });
+  const gun = today();
+  write({ ...p, steps: { ...p.steps, [key]: entry }, teori: passed ? { ...p.teori, [gun]: (p.teori[gun] ?? 0) + 1 } : p.teori });
 }
 
 export function resetProgress() {
