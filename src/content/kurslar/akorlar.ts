@@ -112,7 +112,7 @@ const s5 = section(5, "Renkler", [
     ders("Tarama Kalıbı", 80, play(80, ["Em7", "G5/D", "Dsus4", "Cadd9"], "8"), "Farklı sırayla, tarama kalıbı.", "Akustik gitarda bu dizi çok dolgun duyulur.", "", 2),
   ]),
   chapter(P, 5, 2, "Bas Yürüyüşü", ["Slash akor (ör. D/F#): akorun bası kök dışında bir nota. Bas notaları adım adım ilerleyince akorlar arasında akıcı bir 'yürüyüş' oluşur."], [
-    ders("Sol'den İnen Bas", 70, play(70, ["G", "D/F#", "Em", "C"], "4"), "G – D/F# – Em – C: bas Sol – Fa# – Mi – Do.", "D/F#'de başparmak 6. teli basabilir ya da işaret parmağı kullanılır.", `Notalar: ${notes(["G", "D/F#", "Em", "C"])}.`),
+    ders("Sol'dan İnen Bas", 70, play(70, ["G", "D/F#", "Em", "C"], "4"), "G – D/F# – Em – C: bas Sol – Fa# – Mi – Do.", "D/F#'de başparmak 6. teli basabilir ya da işaret parmağı kullanılır.", `Notalar: ${notes(["G", "D/F#", "Em", "C"])}.`),
     ders("Do'dan İnen Bas", 70, play(70, ["C", "G/B", "Am", "Am/G"], "4"), "C – G/B – Am – Am/G: bas Do – Si – La – Sol.", "Her akorda sadece bas parmağı hareket eder.", `Notalar: ${notes(["C", "G/B", "Am", "Am/G"])}.`),
     ders("Kromatik İniş", 70, play(70, ["Am", "Am/G", "Am/F#", "Fmaj7/E"], "8"), "Am üzerinde bas La – Sol – Fa# – Mi diye iner.", "Üstteki akor neredeyse sabit; hareket basta.", "Bu iniş klasik bir 'hüzünlü' harekettir: minör akorun altında bas yarım ve tam seslerle iner.", 2),
   ]),

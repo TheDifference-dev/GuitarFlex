@@ -59,7 +59,7 @@ const s2 = section(2, "Yarım Ses Bend", [
 const s3 = section(3, "Tam Ses Bend", [
   chapter(P, 3, 0, "Referansla Tam Bend", ["Tam ses bend iki perde yukarıdaki notaya ulaşır. Rock ve blues sololarının en karakteristik hareketidir.", "Pentatonikte bend'lenen notalar: Re → Mi, Sol → La, Do → Re. Her biri gamın bir sonraki notasına ulaşır."], [
     ders("Re'den Mi'ye", 60, tex(60, [refBar("9.3", "7.3", F), refBar("9.3", "7.3", F), refBar("9.3", "7.3", F), refBar("9.3", "7.3", F)]), "Sol telinde 9. perde referans, 7. perdeden tam ses bend.", ["Yüzük parmağıyla bend, orta ve işaret parmağı arkadan iter.", "Bend'i başparmak sapın üstüne kanca gibi takılarak destekler."]),
-    ders("Sol'den La'ya", 60, tex(60, [refBar("10.2", "8.2", F), refBar("10.2", "8.2", F), refBar("10.1", "8.1", F), refBar("10.1", "8.1", F)]), "Si telinde Sol → La, ince Mi'de Do → Re.", "İnce tellerde bend daha kolay ama perdeyi aşmak da kolay; kulağını dinle."),
+    ders("Sol'dan La'ya", 60, tex(60, [refBar("10.2", "8.2", F), refBar("10.2", "8.2", F), refBar("10.1", "8.1", F), refBar("10.1", "8.1", F)]), "Si telinde Sol → La, ince Mi'de Do → Re.", "İnce tellerde bend daha kolay ama perdeyi aşmak da kolay; kulağını dinle."),
     ders("Dört Bend", 60, tex(60, [refBar("9.3", "7.3", F), refBar("10.2", "8.2", F), refBar("10.1", "8.1", F), refBar("12.2", "10.2", F)]), "Dört farklı tam ses bend.", "Hepsinin yüksekliği referansla aynı olmalı.", "", 2),
   ]),
   chapter(P, 3, 1, "Bend ve Bırakma", ["Bend–bırakma, notayı yükseltip geri indirerek 'ağlayan' bir ses verir."], [
