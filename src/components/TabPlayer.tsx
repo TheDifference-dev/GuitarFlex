@@ -178,6 +178,8 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
               barNumberColor: color("--accent", "#c00000"),
             },
           },
+          // Parmak numaraları (sol el 1–4, sağ el p-i-m-a) tab görünümünde de notaların üstünde görünsün
+          notation: { fingeringMode: at.FingeringMode.SingleNoteEffectBand },
           player: {
             playerMode: at.PlayerMode.EnabledSynthesizer,
             soundFont: abs("/alphatab/soundfont/sonivox.sf2"),
@@ -417,7 +419,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
           <input
             type="range"
             min={25}
-            max={150}
+            max={200}
             step={5}
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))}
