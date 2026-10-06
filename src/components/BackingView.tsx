@@ -31,8 +31,8 @@ export default function BackingView({ backing }: { backing: Backing }) {
   return (
     <div className="space-y-6">
       <TabPlayer source={source} onPlayingChange={setCaliyor} />
-      <section className="space-y-3 rounded-2xl border border-accent/40 bg-panel p-5">
-        <h2 className="flex items-center gap-2 text-lg font-bold">
+      <section className="space-y-3 card p-5">
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
           <Music size={18} className="text-accent" /> Hangi gamla çalayım?
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -41,7 +41,7 @@ export default function BackingView({ backing }: { backing: Backing }) {
               key={x.name}
               type="button"
               onClick={() => setScale(i)}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${i === scale ? "border-accent bg-accent/15 text-accent" : "border-line bg-bg hover:border-accent"}`}
+              className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold ${i === scale ? "border-accent bg-accent/15 text-accent" : "border-white/10 bg-white/[0.05] hover:bg-white/10"}`}
             >
               {x.name}
             </button>
@@ -50,8 +50,8 @@ export default function BackingView({ backing }: { backing: Backing }) {
         <p className="text-sm text-muted">{s.note}</p>
         <FretboardExplorer key={s.name} initialSet={s.setId} initialRoot={s.root} />
       </section>
-      <section className="rounded-2xl border border-line bg-panel p-5">
-        <h2 className="flex items-center gap-2 font-bold">
+      <section className="card p-5">
+        <h2 className="flex items-center gap-2 font-semibold">
           <Lightbulb size={18} className="text-accent" /> İpuçları
         </h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">

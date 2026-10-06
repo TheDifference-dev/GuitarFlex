@@ -21,19 +21,19 @@ export default async function BackingPage(props: PageProps<"/sarkilar/dogaclama/
     <div className="space-y-6">
       <SongsNav />
       <nav className="flex items-center gap-1 text-sm text-muted">
-        <Link href="/sarkilar/dogaclama" className="font-bold text-accent hover:underline">
+        <Link href="/sarkilar/dogaclama" className="font-semibold text-accent hover:underline">
           Doğaçlama Çal
         </Link>
         <ChevronRight size={14} /> {backing.title}
       </nav>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-accent">{backing.title}</h1>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{backing.title}</h1>
           <p className="mt-1 text-muted">
             {backing.style} · Ton: {backing.key} · {backing.chords}
           </p>
         </div>
-        <span className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm font-bold">{backing.bpm} BPM</span>
+        <span className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm font-semibold">{backing.bpm} BPM</span>
       </header>
       <BackingView backing={backing} />
     </div>

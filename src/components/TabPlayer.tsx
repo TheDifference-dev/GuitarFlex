@@ -173,7 +173,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
             resources: {
               mainGlyphColor: ink,
               secondaryGlyphColor: color("--muted", "#666666"),
-              staffLineColor: color("--muted", "#666666"),
+              staffLineColor: color("--sheet-line", "#666666"),
               barSeparatorColor: ink,
               barNumberColor: color("--accent", "#c00000"),
             },
@@ -368,19 +368,19 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
   };
 
   const bpm = Math.round((meta.tempo * speed) / 100);
-  const btn = "rounded-md border border-line px-2.5 py-1.5 text-sm disabled:opacity-40";
-  const on = "border-accent bg-accent text-accent-ink";
+  const btn = "rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm transition hover:bg-white/10 disabled:opacity-40";
+  const on = "border-accent/40 bg-accent/15 text-accent hover:bg-accent/20";
 
   return (
-    <div className="rounded-xl border border-line bg-panel">
+    <div className="card overflow-clip">
       {/* Ana araç çubuğu */}
-      <div className="sticky top-[57px] z-[5] space-y-3 rounded-t-xl border-b border-line bg-panel p-3">
+      <div className="glass sticky top-[57px] z-[5] space-y-3 border-b border-line p-3 sm:p-4">
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => apiRef.current?.playPause()}
             disabled={!playerReady}
-            className="min-w-28 rounded-lg bg-accent px-4 py-2 font-semibold text-accent-ink disabled:opacity-40"
+            className="btn-grad min-w-28 px-5 py-2 disabled:opacity-40"
             title="Çal / Duraklat (Boşluk)"
           >
             {playing ? "❚❚ Duraklat" : "▶ Çal"}
@@ -450,7 +450,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
           )}
 
           <span className="mx-1 h-5 w-px bg-line" />
-          <div className="flex overflow-hidden rounded-md border border-line">
+          <div className="flex gap-0.5 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5">
             {(
               [
                 ["tab", "Tab"],
@@ -458,7 +458,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
                 ["score", "Nota"],
               ] as const
             ).map(([v, label]) => (
-              <button key={v} type="button" onClick={() => setView(v)} className={`px-2.5 py-1.5 ${view === v ? "bg-accent text-accent-ink" : ""}`}>
+              <button key={v} type="button" onClick={() => setView(v)} className={`rounded-full px-3 py-1 transition ${view === v ? "bg-white/[0.14] text-text shadow-[0_1px_2px_rgb(0_0_0/0.5)]" : "text-muted hover:text-text"}`}>
                 {label}
               </button>
             ))}
@@ -499,7 +499,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
                 <button
                   type="button"
                   onClick={() => toggleMute(t.index)}
-                  className={`rounded px-1.5 text-xs font-bold ${muted.has(t.index) ? "bg-red-600 text-white" : "bg-line"}`}
+                  className={`rounded px-1.5 text-xs font-semibold ${muted.has(t.index) ? "bg-red-600 text-white" : "bg-line"}`}
                   title="Sessize al"
                 >
                   M
@@ -507,7 +507,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
                 <button
                   type="button"
                   onClick={() => toggleSolo(t.index)}
-                  className={`rounded px-1.5 text-xs font-bold ${solo.has(t.index) ? "bg-yellow-500 text-black" : "bg-line"}`}
+                  className={`rounded px-1.5 text-xs font-semibold ${solo.has(t.index) ? "bg-yellow-500 text-black" : "bg-line"}`}
                   title="Solo"
                 >
                   S
@@ -527,16 +527,16 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
         )}
       </div>
 
-      <div ref={viewportRef} className={`relative overflow-auto rounded-b-xl bg-[var(--sheet)] p-2 text-[var(--sheet-ink)] ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}>
+      <div ref={viewportRef} className={`relative overflow-auto bg-[var(--sheet)] p-2 text-[var(--sheet-ink)] ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}>
         {counting !== null && (
           <div className="sticky inset-x-0 top-0 z-10 flex justify-center p-2" role="status" aria-live="assertive">
-            <div className="flex items-center gap-4 rounded-2xl border border-accent bg-panel px-5 py-3 text-text shadow-2xl">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-muted">Sayım</span>
-              <span className="w-10 text-center text-4xl font-black tabular-nums text-accent">{counting}</span>
-              <button type="button" onClick={skipCountIn} className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-accent-ink" title="Beklemeden başla">
+            <div className="glass flex items-center gap-4 rounded-full border border-white/10 py-2 pl-6 pr-2 text-text shadow-[0_24px_60px_-12px_rgb(0_0_0/0.8)]">
+              <span className="text-xs font-semibold text-muted">Sayım</span>
+              <span className="text-grad w-10 text-center text-4xl font-bold tabular-nums">{counting}</span>
+              <button type="button" onClick={skipCountIn} className="btn-grad px-4 py-2 text-sm" title="Beklemeden başla">
                 Hemen başla
               </button>
-              <button type="button" onClick={cancelCountIn} className="rounded-lg border border-line px-3 py-2 text-sm font-bold" title="Sayımı iptal et (Esc)">
+              <button type="button" onClick={cancelCountIn} className="btn-soft px-4 py-2 text-sm" title="Sayımı iptal et (Esc)">
                 İptal ✕
               </button>
               <button

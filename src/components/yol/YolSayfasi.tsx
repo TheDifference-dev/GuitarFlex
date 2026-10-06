@@ -26,11 +26,11 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
           </Link>{" "}
           / {yol.ad}
         </nav>
-        <h1 className="text-3xl font-bold tracking-tight text-accent">{yol.ad}</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{yol.ad}</h1>
         <p className="text-muted">{yol.ozet}</p>
         <div className="flex items-center gap-3">
-          <div className="h-2 max-w-md flex-1 overflow-hidden rounded-full bg-panel">
-            <div className="h-full bg-accent" style={{ width: `${(gecilen / yol.adimlar.length) * 100}%` }} />
+          <div className="h-1.5 max-w-md flex-1 overflow-hidden rounded-full bg-white/10">
+            <div className="bar-grad h-full rounded-full" style={{ width: `${(gecilen / yol.adimlar.length) * 100}%` }} />
           </div>
           <span className="text-sm tabular-nums text-muted">
             {gecilen} / {yol.adimlar.length} adım
@@ -39,8 +39,8 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
       </header>
 
       {yol.modul.sekmeler.length ? (
-        <section className="space-y-3 rounded-2xl border border-line bg-panel p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-accent">Modül</p>
+        <section className="space-y-3 card p-5">
+          <p className="eyebrow">Modül</p>
           <h2 className="text-xl font-semibold">{yol.modul.ad}</h2>
           <div className="flex flex-wrap gap-2" role="tablist">
             {yol.modul.sekmeler.map((s, i) => (
@@ -50,7 +50,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                 role="tab"
                 aria-selected={i === sekme}
                 onClick={() => setSekme(i)}
-                className={`rounded-full border px-3 py-1 text-sm transition ${i === sekme ? "border-accent bg-accent text-accent-ink" : "border-line hover:border-accent"}`}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${i === sekme ? "border-transparent bg-text text-bg" : "border-white/10 bg-white/[0.05] hover:bg-white/10"}`}
               >
                 {s}
               </button>
@@ -99,11 +99,11 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                   </>
                 );
                 return ac ? (
-                  <Link key={a.kod} href={`/teori/yol/${yol.slug}/${a.kod}`} className={`rounded-xl border bg-panel p-3 transition hover:border-accent ${r?.passed ? "border-emerald-500/50" : "border-line"}`}>
+                  <Link key={a.kod} href={`/teori/yol/${yol.slug}/${a.kod}`} className={`card p-3 transition hover:border-white/15 ${r?.passed ? "border-emerald-500/40" : ""}`}>
                     {icerik}
                   </Link>
                 ) : (
-                  <div key={a.kod} className="rounded-xl border border-line bg-panel/50 p-3 opacity-60" title="Önceki adımı geçince açılır">
+                  <div key={a.kod} className="card p-3 opacity-50" title="Önceki adımı geçince açılır">
                     {icerik}
                   </div>
                 );

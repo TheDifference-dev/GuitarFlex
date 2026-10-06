@@ -36,14 +36,14 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
       {oyun ? <OyunPaneli oyun={oyun} kurslar={kurslar} /> : <SummaryStrip />}
 
       {oyun ? null : (
-        <section className="rounded-xl border border-line bg-panel p-5">
+        <section className="card p-5">
           <h2 className="font-semibold">Rütbe yolu</h2>
           <ol className="mt-4 flex flex-wrap gap-2">
             {RANKS.map((r) => (
               <li
                 key={r.name}
                 className={`rounded-full border px-3 py-1 text-sm ${
-                  r === current ? "border-accent bg-accent text-accent-ink" : done >= r.min ? "border-accent text-accent" : "border-line text-muted"
+                  r === current ? "border-transparent bg-[image:var(--grad)] text-white" : done >= r.min ? "border-accent/50 text-accent" : "border-line text-muted"
                 }`}
               >
                 {r.name} <span className="opacity-70">({r.min})</span>
@@ -54,7 +54,7 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
         </section>
       )}
 
-      <section className="rounded-xl border border-line bg-panel p-5">
+      <section className="card p-5">
         <h2 className="font-semibold">Son {DAYS} gün</h2>
         <div className="mt-4 grid grid-cols-7 gap-1.5 sm:grid-cols-[repeat(35,minmax(0,1fr))]">
           {days.map((d) => (
@@ -73,7 +73,7 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
           <h2 className="mb-3 font-semibold">Rozetler</h2>
           <div className="grid gap-3 sm:grid-cols-3">
             {badges(p, courses).map((b) => (
-              <div key={b.id} className={`flex gap-3 rounded-xl border border-line bg-panel p-4 ${b.earned ? "" : "opacity-40 grayscale"}`}>
+              <div key={b.id} className={`flex gap-3 card p-4 ${b.earned ? "" : "opacity-40 grayscale"}`}>
                 <span className="text-2xl">{b.icon}</span>
                 <div>
                   <p className="font-semibold">{b.title}</p>
@@ -91,7 +91,7 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
           {courses.map((t) => {
             const { done: d, total } = keysProgress(p, t.keys);
             return (
-              <Link key={t.slug} href={`/calis/${t.slug}`} className="rounded-xl border border-line bg-panel p-4 hover:border-accent">
+              <Link key={t.slug} href={`/calis/${t.slug}`} className="card p-4 hover:border-white/20">
                 <p className="font-medium">
                   {t.icon} {t.title}
                 </p>
@@ -102,7 +102,7 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
         </div>
       </section>
 
-      <section className="rounded-xl border border-line bg-panel p-5">
+      <section className="card p-5">
         <h2 className="font-semibold">Son çalışmalar</h2>
         {recent.length === 0 ? (
           <p className="mt-2 text-sm text-muted">Henüz kayıt yok. Bir egzersiz açıp çalışmaya başla.</p>

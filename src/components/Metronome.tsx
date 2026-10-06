@@ -55,9 +55,9 @@ export default function Metronome() {
   }, [running]);
 
   return (
-    <div className="space-y-5 rounded-xl border border-line bg-panel p-6">
+    <div className="space-y-5 card p-6">
       <div className="flex items-end gap-4">
-        <p className="text-6xl font-bold tabular-nums">{bpm}</p>
+        <p className="text-6xl font-semibold tabular-nums">{bpm}</p>
         <p className="pb-2 text-muted">BPM</p>
       </div>
       <input
@@ -82,7 +82,7 @@ export default function Metronome() {
         ))}
         <label className="ml-auto flex items-center gap-2 text-sm">
           Ölçü
-          <select value={beats} onChange={(e) => setBeats(Number(e.target.value))} className="rounded-md border border-line bg-panel px-2 py-1.5">
+          <select value={beats} onChange={(e) => setBeats(Number(e.target.value))} className="rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1.5">
             {[2, 3, 4, 5, 6, 7].map((n) => (
               <option key={n} value={n}>
                 {n}/4
@@ -99,7 +99,7 @@ export default function Metronome() {
       <button
         type="button"
         onClick={() => setRunning((r) => !r)}
-        className="w-full rounded-lg bg-accent py-3 text-lg font-semibold text-accent-ink"
+        className="btn-grad w-full py-3 text-lg"
       >
         {running ? "Durdur" : "Başlat"}
       </button>

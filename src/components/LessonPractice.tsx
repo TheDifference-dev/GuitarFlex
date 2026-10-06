@@ -94,28 +94,28 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
 
   return (
     <div className="space-y-4">
-      <div className={`flex flex-wrap items-center gap-4 rounded-2xl border bg-panel p-4 ${completed ? "border-green-500/60" : "border-line"}`}>
+      <div className={`card flex flex-wrap items-center gap-4 p-4 ${completed ? "border-emerald-500/40" : ""}`}>
         <button
           type="button"
           onClick={() => setRunning((r) => !r)}
-          className="flex items-center gap-2 rounded-xl border border-line bg-bg px-3 py-2 text-sm font-bold"
+          className="btn-soft px-4 py-2 text-sm"
           title={source ? "Sayaç, tab çalarken kendiliğinden çalışır" : "Sayacı başlat / durdur"}
         >
           {running ? <Pause size={16} /> : <Play size={16} />} {running ? "Sayacı durdur" : "Sayacı başlat"}
         </button>
         <div className="min-w-48 flex-1">
-          <div className="flex justify-between text-sm font-bold tabular-nums">
+          <div className="flex justify-between text-sm font-semibold tabular-nums">
             <span>
               {formatClock(shown)} / {formatClock(target)} dk
             </span>
             <span className="text-muted">Toplam çalışma: {formatClock(practiced)}</span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-line">
-            <div className={`h-full transition-all ${completed ? "bg-green-500" : "bg-accent"}`} style={{ width: `${(shown / target) * 100}%` }} />
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className={`h-full rounded-full transition-all ${completed ? "bg-emerald-500" : "bar-grad"}`} style={{ width: `${(shown / target) * 100}%` }} />
           </div>
         </div>
         {completed && (
-          <span className="flex items-center gap-1.5 text-sm font-bold text-green-400">
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
             <CheckCircle2 size={18} /> Tamamlandı
           </span>
         )}
@@ -125,7 +125,7 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
         <TabPlayer source={source} compact onBpmChange={setCurrentBpm} onPlayingChange={setRunning} />
       ) : reading ? null : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="rounded-2xl border border-dashed border-line p-6 text-sm text-muted">
+          <div className="rounded-3xl border border-dashed border-line p-6 text-sm text-muted">
             Bu dersin tabı henüz eklenmedi. Metronomla çalışıp sayacı elle başlatabilirsin.
           </div>
           <Metronome />

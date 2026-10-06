@@ -62,7 +62,7 @@ export default function NoteQuiz() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4">
-        <button type="button" onClick={start} className="rounded-lg bg-accent px-4 py-2 font-semibold text-accent-ink">
+        <button type="button" onClick={start} className="btn-grad px-5 py-2">
           {spot ? "Yeniden başla" : "Başla"}
         </button>
         <Stat label="Süre" value={`${left} sn`} />
@@ -71,7 +71,7 @@ export default function NoteQuiz() {
         <Stat label="Rekor" value={best} />
       </div>
 
-      <div className={`rounded-xl transition ${flash === "ok" ? "ring-4 ring-green-500/60" : flash === "bad" ? "ring-4 ring-red-500/60" : ""}`}>
+      <div className={`rounded-xl transition ${flash === "ok" ? "ring-4 ring-emerald-500/60" : flash === "bad" ? "ring-4 ring-red-500/60" : ""}`}>
         <Fretboard highlight={running ? spot : null} hideLabels />
       </div>
 
@@ -82,7 +82,7 @@ export default function NoteQuiz() {
             type="button"
             disabled={!running}
             onClick={() => answer(i)}
-            className="rounded-lg border border-line bg-panel py-3 font-semibold disabled:opacity-40"
+            className="btn-soft py-3 disabled:opacity-40"
           >
             {n}
             <span className="block text-xs font-normal text-muted">{SOLFEGE[i]}</span>
@@ -102,7 +102,7 @@ export default function NoteQuiz() {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <p className="text-xl font-semibold tabular-nums">{value}</p>
     </div>
   );

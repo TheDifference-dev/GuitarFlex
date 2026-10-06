@@ -99,31 +99,31 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
   }, [songs, q, madalya, koken, kind, course, sira, acilis]);
 
   const chip = (active: boolean) =>
-    `rounded-lg border px-3 py-1.5 text-sm font-semibold ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-accent"}`;
+    `rounded-full border px-3.5 py-1.5 text-sm font-semibold ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-white/20"}`;
   const adim = songs.filter((s) => s.rehber).sort((a, b) => a.rehber!.adim - b.rehber!.adim);
 
   const kart = (s: PopularSong) => (
-    <article key={`${s.artist}-${s.title}-${s.kind}`} className="flex flex-col rounded-2xl border border-line bg-panel p-4">
+    <article key={`${s.artist}-${s.title}-${s.kind}`} className="flex flex-col card p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h3 className="font-bold leading-tight">
+          <h3 className="font-semibold leading-tight">
             {s.title}
-            {s.yeni ? <span className="ml-2 rounded bg-accent px-1.5 py-0.5 align-middle text-[10px] font-black text-accent-ink">YENİ</span> : null}
+            {s.yeni ? <span className="ml-2 rounded-full bg-[image:var(--grad)] px-2 py-0.5 align-middle text-[10px] font-semibold text-white">Yeni</span> : null}
           </h3>
           <p className="text-sm text-muted">{s.artist}</p>
         </div>
-        <span className={`shrink-0 rounded-md border px-2 py-0.5 text-xs font-bold ${MADALYA_STYLE[madalyaOf(s)]}`}>
+        <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${MADALYA_STYLE[madalyaOf(s)]}`}>
           {METAL_IKON[madalyaOf(s)]} {madalyaOf(s)}
         </span>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="rounded-md bg-bg px-2 py-0.5 text-xs font-semibold uppercase text-accent">{s.kind}</span>
-        {s.bpm ? <span className="rounded-md bg-bg px-2 py-0.5 text-xs text-muted">{s.bpm} BPM</span> : null}
-        {s.koken ? <span className="rounded-md bg-bg px-2 py-0.5 text-xs uppercase text-muted">{s.koken}</span> : null}
+        <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent">{s.kind}</span>
+        {s.bpm ? <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-xs text-muted">{s.bpm} BPM</span> : null}
+        {s.koken ? <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-xs text-muted">{s.koken}</span> : null}
         {s.tags
           .filter((t) => !/BPM$/.test(t) && !["Riff", "Solo", "Türkçe"].includes(t))
           .map((t) => (
-            <span key={t} className="rounded-md bg-bg px-2 py-0.5 text-xs text-muted">
+            <span key={t} className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-xs text-muted">
               {t}
             </span>
           ))}
@@ -156,7 +156,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => acildi(anahtar(s))}
-        className="mt-4 flex items-center justify-center gap-2 self-stretch rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-ink hover:brightness-110"
+        className="btn-grad mt-4 self-stretch px-4 py-2 text-sm"
       >
         Songsterr&apos;de Aç <ExternalLink size={15} />
       </a>
@@ -185,10 +185,10 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
             {adim.map((s) => {
               const kilitli = puan < s.rehber!.puan;
               return (
-                <li key={anahtar(s)} className={`flex flex-wrap items-center gap-3 rounded-xl border border-line bg-panel p-3 ${kilitli ? "opacity-60" : ""}`}>
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-accent/50 bg-accent/10 text-sm font-black text-accent">{s.rehber!.adim}</span>
+                <li key={anahtar(s)} className={`flex flex-wrap items-center gap-3 card p-3 ${kilitli ? "opacity-60" : ""}`}>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[image:var(--grad)] text-sm font-semibold text-white">{s.rehber!.adim}</span>
                   <div className="min-w-48 flex-1">
-                    <p className="font-bold leading-tight">
+                    <p className="font-semibold leading-tight">
                       {s.title} <span className="font-normal text-muted">– {s.artist}</span>
                     </p>
                     <p className="text-xs text-muted">
@@ -213,7 +213,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => acildi(anahtar(s))}
-                      className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-accent-ink hover:brightness-110"
+                      className="btn-grad px-3.5 py-1.5 text-sm"
                     >
                       Aç <ExternalLink size={14} />
                     </a>
@@ -236,19 +236,19 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex min-w-60 flex-1 items-center gap-2 rounded-lg border border-line bg-panel px-3 py-1.5">
+            <label className="flex min-w-60 flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5">
               <Search size={16} className="text-muted" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Şarkı veya sanatçı ara..." className="w-full bg-transparent text-sm outline-none" />
             </label>
             {kokenVar ? (
-              <select value={koken} onChange={(e) => setKoken(e.target.value as typeof koken)} className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm" aria-label="Köken">
+              <select value={koken} onChange={(e) => setKoken(e.target.value as typeof koken)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Köken">
                 <option value="">Köken: Tümü</option>
                 <option value="Global">Global</option>
                 <option value="Türkçe">Türkçe</option>
               </select>
             ) : null}
             {turler.length > 1 ? (
-              <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm" aria-label="Tür">
+              <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Tür">
                 <option value="">Tür: Tümü</option>
                 {turler.map((t) => (
                   <option key={t} value={t}>
@@ -257,7 +257,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                 ))}
               </select>
             ) : null}
-            <select value={course} onChange={(e) => setCourse(e.target.value)} className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm" aria-label="Teknik">
+            <select value={course} onChange={(e) => setCourse(e.target.value)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Teknik">
               <option value="">Bütün teknikler</option>
               {Object.entries(courseTitles)
                 .filter(([slug]) => songs.some((s) => s.courses?.includes(slug)))
@@ -267,7 +267,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                   </option>
                 ))}
             </select>
-            <select value={sira} onChange={(e) => setSira(e.target.value as Siralama)} className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm" aria-label="Sıralama">
+            <select value={sira} onChange={(e) => setSira(e.target.value as Siralama)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Sıralama">
               {Object.entries(SIRALAMA).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}

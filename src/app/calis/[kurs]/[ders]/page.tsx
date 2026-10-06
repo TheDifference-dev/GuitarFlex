@@ -33,7 +33,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
   return (
     <div className="space-y-6">
       <nav className="flex flex-wrap items-center gap-1 text-sm text-muted">
-        <Link href={`/calis/${course.slug}`} className="font-bold text-accent hover:underline">
+        <Link href={`/calis/${course.slug}`} className="font-semibold text-accent hover:underline">
           {course.title}
         </Link>
         <ChevronRight size={14} /> Bölüm {lesson.section.number} – {lesson.section.title}
@@ -42,24 +42,24 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
 
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-accent">{lesson.title}</h1>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{lesson.title}</h1>
           {lesson.description && <p className="mt-1 max-w-3xl text-muted">{lesson.description}</p>}
         </div>
-        <div className="flex gap-2 text-sm font-bold">
+        <div className="flex gap-2 text-sm font-semibold">
           {(lesson.tex || lesson.tabFile) && (
-            <span className="rounded-lg border border-line bg-panel px-3 py-1.5">
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5">
               {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
             </span>
           )}
-          <span className="rounded-lg border border-accent/60 bg-accent/15 px-3 py-1.5 text-accent">Toplam: {lesson.minutes}dk</span>
+          <span className="rounded-full bg-accent/15 px-3.5 py-1.5 text-accent">Toplam: {lesson.minutes}dk</span>
         </div>
       </header>
 
       {!!lesson.body?.length && (
-        <article className="max-w-3xl space-y-3 rounded-2xl border border-line bg-panel p-6 leading-relaxed">
+        <article className="card max-w-3xl space-y-3 p-6 leading-relaxed sm:p-8">
           {lesson.body.map((para, i) =>
             para.startsWith("## ") ? (
-              <h2 key={i} className="pt-2 text-xl font-black first:pt-0">
+              <h2 key={i} className="pt-2 text-xl font-semibold first:pt-0">
                 {para.slice(3)}
               </h2>
             ) : (
@@ -84,8 +84,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
       {(theory.length > 0 || !!lesson.tips?.length) && (
         <div className="grid gap-4 md:grid-cols-2">
           {theory.length > 0 && (
-            <section className="rounded-2xl border border-accent/40 bg-panel p-5">
-              <h2 className="flex items-center gap-2 font-bold">
+            <section className="card p-5">
+              <h2 className="flex items-center gap-2 font-semibold">
                 <Music size={18} className="text-accent" /> Müzik Bilgisi
               </h2>
               <ul className="mt-2 space-y-2 text-sm text-muted">
@@ -96,8 +96,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
             </section>
           )}
           {!!lesson.tips?.length && (
-            <section className="rounded-2xl border border-line bg-panel p-5">
-              <h2 className="flex items-center gap-2 font-bold">
+            <section className="card p-5">
+              <h2 className="flex items-center gap-2 font-semibold">
                 <Lightbulb size={18} className="text-accent" /> İpuçları
               </h2>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
@@ -110,16 +110,16 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         </div>
       )}
 
-      <div className="flex justify-between gap-4 text-sm font-bold">
+      <div className="flex justify-between gap-4 text-sm font-semibold">
         {prev ? (
-          <Link href={href(prev.id)} className="flex items-center gap-1 rounded-xl border border-line bg-panel px-4 py-2 hover:border-accent">
+          <Link href={href(prev.id)} className="flex items-center gap-1 card px-4 py-2 hover:border-white/20">
             <ChevronLeft size={16} /> {prev.title}
           </Link>
         ) : (
           <span />
         )}
         {next && (
-          <Link href={href(next.id)} className="flex items-center gap-1 rounded-xl border border-line bg-panel px-4 py-2 hover:border-accent">
+          <Link href={href(next.id)} className="flex items-center gap-1 card px-4 py-2 hover:border-white/20">
             {next.title} <ChevronRight size={16} />
           </Link>
         )}

@@ -29,7 +29,7 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-black tracking-tight text-accent">Profil</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Profil</h1>
         <p className="mt-1 text-muted">Günlük görevlerin, serin, madalyaların, başarımların ve kurs ilerlemen. Şimdilik bu bilgisayarda saklanır.</p>
       </header>
       <ProgressDashboard courses={info} oyun={oyun} kurslar={kurslar} />

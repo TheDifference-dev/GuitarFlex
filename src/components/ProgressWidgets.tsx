@@ -19,8 +19,8 @@ export function SummaryStrip() {
 
 export function Tile({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-xl border border-line bg-panel p-4">
-      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+    <div className="card p-4">
+      <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-1 text-xl font-semibold">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </div>
@@ -37,8 +37,8 @@ export function ProgressBar({ value, max }: { value: number; max: number }) {
           {value}/{max}
         </span>
       </div>
-      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-line">
-        <div className="h-full bg-accent transition-all" style={{ width: `${pct}%` }} />
+      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className="bar-grad h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

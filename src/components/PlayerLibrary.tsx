@@ -70,7 +70,7 @@ export default function PlayerLibrary() {
 
   const filtered = (archive ?? []).filter((a) => a.path.toLocaleLowerCase("tr").includes(filter.toLocaleLowerCase("tr")));
   const item = (active: boolean) =>
-    `block w-full truncate rounded-md px-2 py-1.5 text-left text-sm ${active ? "bg-accent text-accent-ink" : "hover:bg-bg"}`;
+    `block w-full truncate rounded-lg px-2.5 py-1.5 text-left text-sm transition ${active ? "bg-accent/15 font-medium text-accent" : "hover:bg-white/[0.06]"}`;
 
   return (
     <div
@@ -90,13 +90,13 @@ export default function PlayerLibrary() {
       }}
     >
       {dragging && (
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-xl border-2 border-dashed border-accent bg-bg/80 text-lg font-semibold">
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-3xl border-2 border-dashed border-accent bg-bg/80 text-lg font-semibold">
           Tab dosyasını bırak
         </div>
       )}
 
       <aside className="space-y-5">
-        <label className="block cursor-pointer rounded-lg border border-dashed border-line p-4 text-center text-sm hover:border-accent">
+        <label className="block cursor-pointer rounded-2xl border border-dashed border-line p-4 text-center text-sm transition hover:border-white/20">
           <span className="font-semibold">Dosya aç</span>
           <span className="block text-xs text-muted">Guitar Pro, MusicXML, alphaTex · ya da sürükle-bırak</span>
           <input
@@ -112,7 +112,7 @@ export default function PlayerLibrary() {
         </label>
 
         <section>
-          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Örnek şarkılar</h2>
+          <h2 className="mb-1 text-xs font-semibold text-muted">Örnek şarkılar</h2>
           {SONGS.map((s) => (
             <button key={s.slug} type="button" onClick={() => select(`sarki=${s.slug}`)} className={item(current?.source === songSource && song?.slug === s.slug)}>
               {s.title} <span className="opacity-70">· {s.artist}</span>
@@ -121,7 +121,7 @@ export default function PlayerLibrary() {
         </section>
 
         <section>
-          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Arşivim</h2>
+          <h2 className="mb-1 text-xs font-semibold text-muted">Arşivim</h2>
           {archive === null ? (
             <p className="text-sm text-muted">Yükleniyor…</p>
           ) : archive.length === 0 ? (
@@ -135,7 +135,7 @@ export default function PlayerLibrary() {
                 placeholder={`${archive.length} dosyada ara…`}
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="mb-2 w-full rounded-md border border-line bg-panel px-2 py-1.5 text-sm"
+                className="mb-2 w-full rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1.5 text-sm"
               />
               <div className="max-h-[50vh] overflow-auto">
                 {filtered.map((a) => (
@@ -154,7 +154,7 @@ export default function PlayerLibrary() {
         {current ? (
           <>
             <header>
-              <h1 className="text-2xl font-bold tracking-tight text-accent">{current.title}</h1>
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{current.title}</h1>
               <p className="text-muted">{current.subtitle}</p>
             </header>
             <TabPlayer source={current.source} />

@@ -87,37 +87,38 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
     },
   ];
 
-  const iconBtn = "rounded-lg p-2 text-muted hover:bg-panel hover:text-text";
+  const iconBtn = "rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-text";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
-      <div ref={navRef} className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
+    <header className="glass sticky top-0 z-30 border-b border-white/[0.07]">
+      <div ref={navRef} className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center gap-2 px-4 py-2 sm:flex-nowrap sm:px-6">
         <div className="flex shrink-0 items-center gap-0.5">
           <button type="button" onClick={() => router.back()} className={iconBtn} title="Önceki sayfa" aria-label="Önceki sayfa">
             <ArrowLeft size={18} />
           </button>
-          <Link href="/" className={`${iconBtn} ${pathname === "/" ? "text-accent" : ""}`} title="Ana sayfa" aria-label="Ana sayfa">
+          <Link href="/" className={`${iconBtn} ${pathname === "/" ? "text-text" : ""}`} title="Ana sayfa" aria-label="Ana sayfa">
             <House size={18} />
           </Link>
         </div>
 
-        <Link href="/" className="mr-4 flex shrink-0 items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SITE.logo} alt="" width={40} height={40} className="rounded-lg" />
-          <span className="h-8 w-px bg-accent" />
-          <span className="leading-tight">
-            <span className="block text-xs font-semibold tracking-[0.2em] text-muted">{sectionName(pathname, subtitle)}</span>
-            <span className="block text-lg font-bold">
-              <span className="text-accent">Guitar</span>Flex
+        <Link href="/" className="mr-3 flex shrink-0 items-center gap-2.5">
+          <span className="ring-grad flex size-9 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={SITE.logo} alt="" width={32} height={32} className="size-full rounded-full border-2 border-bg object-cover" />
+          </span>
+          <span className="leading-none">
+            <span className="block text-[17px] font-bold tracking-tight">
+              <span className="text-grad">Guitar</span>Flex
             </span>
+            <span className="mt-1 block text-[11px] font-medium text-muted">{sectionName(pathname, subtitle)}</span>
           </span>
         </Link>
 
         <nav className="flex flex-1 flex-wrap items-center justify-center gap-1">
           {menus.map((m) => {
             const Icon = m.icon;
-            const cls = `flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap ${
-              m.active ? "bg-accent/15 text-accent" : "text-text hover:bg-panel"
+            const cls = `flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition ${
+              m.active ? "bg-white/[0.12] text-text" : "text-text/75 hover:bg-white/[0.07] hover:text-text"
             }`;
             if (!m.groups)
               return (
@@ -131,28 +132,32 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
                   <Icon size={16} /> {m.label} <ChevronDown size={14} className={`transition ${open === m.id ? "rotate-180" : ""}`} />
                 </button>
                 {open === m.id && (
-                  <div onClick={() => setOpen(null)} className="absolute left-1/2 top-full z-40 mt-2 w-72 -translate-x-1/2 rounded-2xl border border-line bg-panel p-2 shadow-2xl">
+                  <div onClick={() => setOpen(null)} className="glass absolute left-1/2 top-full z-40 mt-3 w-72 -translate-x-1/2 rounded-2xl border border-white/10 p-2 shadow-[0_24px_60px_-12px_rgb(0_0_0/0.8)]">
                     {m.banner && (
-                      <Link href={m.banner.href} className="mb-1 flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 p-3 hover:border-accent">
-                        <Compass size={20} className="shrink-0 text-accent" />
+                      <Link href={m.banner.href} className="mb-1 flex items-center gap-3 rounded-xl bg-white/[0.06] p-3 transition hover:bg-white/10">
+                        <span className="ring-grad flex size-9 shrink-0">
+                          <span className="flex size-full items-center justify-center rounded-full bg-panel">
+                            <Compass size={17} className="text-text" />
+                          </span>
+                        </span>
                         <span>
-                          <span className="block text-sm font-bold">{m.banner.title}</span>
+                          <span className="block text-sm font-semibold">{m.banner.title}</span>
                           <span className="block text-xs text-muted">{m.banner.text}</span>
                         </span>
                       </Link>
                     )}
                     {m.groups.map((g, gi) => (
                       <div key={g.title ?? gi} className={gi > 0 ? "mt-1 border-t border-line pt-1" : ""}>
-                        {g.title && <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-accent">{g.title}</p>}
+                        {g.title && <p className="px-3 pb-1 pt-2 text-xs font-semibold text-muted">{g.title}</p>}
                         {g.items.map((it) =>
                           it.href ? (
                             <Link
                               key={it.label}
                               href={it.href}
-                              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-semibold hover:bg-bg hover:text-accent ${pathname === it.href ? "text-accent" : ""}`}
+                              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-white/[0.08] ${pathname === it.href ? "text-accent" : ""}`}
                             >
                               {it.label}
-                              {it.note && <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-accent-ink">{it.note}</span>}
+                              {it.note && <span className="rounded-full bg-[image:var(--grad)] px-2 py-0.5 text-[10px] font-semibold text-white">{it.note}</span>}
                             </Link>
                           ) : (
                             <span key={it.label} className="flex justify-between gap-2 rounded-lg px-3 py-2 text-sm text-muted">
@@ -176,8 +181,8 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
           <Link href="/araclar" className={iconBtn} title="Araçlar">
             <Wrench size={18} />
           </Link>
-          <Link href="/profil" className="ml-1 flex items-center gap-1 rounded-xl border border-line bg-panel p-1.5" title="Profil">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-accent/20 text-accent">
+          <Link href="/profil" className="ring-grad ml-1 flex size-9" title="Profil" aria-label="Profil">
+            <span className="flex size-full items-center justify-center rounded-full border-2 border-bg bg-panel-2 text-text">
               <User size={16} />
             </span>
           </Link>

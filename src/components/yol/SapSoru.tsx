@@ -32,7 +32,7 @@ export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik }: 
   const perdeler = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-line bg-panel p-2">
+    <div className="overflow-x-auto card p-2">
       <svg viewBox={`0 0 ${W} ${H}`} className="mx-auto w-full" style={{ minWidth: Math.min(W, 640), maxWidth: W * 1.25 }} role="img" aria-label="Gitar sapı">
         {/* tel vurgusu */}
         {sap.tel ? <rect x={0} y={TEL_Y(sap.tel) - 11} width={W} height={22} rx={6} className="fill-[var(--accent)]" opacity={0.18} /> : null}
@@ -92,7 +92,7 @@ export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik }: 
                 <rect x={cx - (f === 0 ? 14 : fw / 2)} y={cy - 12} width={f === 0 ? 28 : fw} height={24} fill="transparent" />
                 {goster ? <circle cx={cx} cy={cy} r={10} className={sinif} /> : null}
                 {goster && etiket ? (
-                  <text x={cx} y={cy + 4} textAnchor="middle" className={`pointer-events-none text-[11px] font-bold ${p && (p.tur === "soru" || p.tur === "referans") && !(dogrular && (dogru || yanlis)) ? "fill-[var(--bg)]" : "fill-white"}`}>
+                  <text x={cx} y={cy + 4} textAnchor="middle" className={`pointer-events-none text-[11px] font-semibold ${p && (p.tur === "soru" || p.tur === "referans") && !(dogrular && (dogru || yanlis)) ? "fill-[var(--bg)]" : "fill-white"}`}>
                     {etiket}
                   </text>
                 ) : null}

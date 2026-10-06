@@ -8,7 +8,7 @@ export default function ToolsPage() {
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight text-accent">Araçlar</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Araçlar</h1>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">

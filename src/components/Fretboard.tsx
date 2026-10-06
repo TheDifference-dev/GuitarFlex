@@ -28,7 +28,7 @@ const yFor = (string: number) => TOP + (string - 1) * STRING_GAP;
 
 export default function Fretboard({ set, root = 0, label = "note", solfege = false, highlight, hideLabels, onPick }: Props) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-line bg-panel p-2">
+    <div className="overflow-x-auto card p-2">
       <svg viewBox={`0 0 ${W} ${H}`} className="min-w-[720px]" role="img" aria-label="Gitar sapı">
         {/* perde numaraları */}
         {Array.from({ length: FRETS + 1 }, (_, f) => (
@@ -98,7 +98,7 @@ export default function Fretboard({ set, root = 0, label = "note", solfege = fal
                     x={xFor(f)}
                     y={yFor(s) + 4}
                     textAnchor="middle"
-                    className={`pointer-events-none text-[10px] font-bold ${isHighlight || isRoot ? "fill-[var(--accent-ink)]" : "fill-[var(--bg)]"}`}
+                    className={`pointer-events-none text-[10px] font-semibold ${isHighlight || isRoot ? "fill-[var(--accent-ink)]" : "fill-[var(--bg)]"}`}
                   >
                     {text}
                   </text>

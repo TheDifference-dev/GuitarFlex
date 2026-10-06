@@ -16,14 +16,14 @@ export default function FretboardExplorer({ initialSet = "minor-penta", initialR
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3 text-sm">
-        <select value={root} onChange={(e) => setRoot(Number(e.target.value))} className="rounded-md border border-line bg-panel px-2 py-1.5">
+        <select value={root} onChange={(e) => setRoot(Number(e.target.value))} className="rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1.5">
           {NOTES.map((n, i) => (
             <option key={n} value={i}>
               {n} ({SOLFEGE[i]})
             </option>
           ))}
         </select>
-        <select value={setId} onChange={(e) => setSetId(e.target.value)} className="rounded-md border border-line bg-panel px-2 py-1.5">
+        <select value={setId} onChange={(e) => setSetId(e.target.value)} className="rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1.5">
           <optgroup label="Gamlar">
             {SCALES.map((s) => (
               <option key={s.id} value={s.id}>
@@ -39,13 +39,13 @@ export default function FretboardExplorer({ initialSet = "minor-penta", initialR
             ))}
           </optgroup>
         </select>
-        <div className="flex overflow-hidden rounded-md border border-line">
+        <div className="flex gap-0.5 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5">
           {(["note", "interval"] as const).map((l) => (
             <button
               key={l}
               type="button"
               onClick={() => setLabel(l)}
-              className={`px-3 py-1.5 ${label === l ? "bg-accent text-accent-ink" : ""}`}
+              className={`rounded-full px-3 py-1 transition ${label === l ? "bg-white/[0.14] text-text shadow-[0_1px_2px_rgb(0_0_0/0.5)]" : "text-muted hover:text-text"}`}
             >
               {l === "note" ? "Nota" : "Aralık"}
             </button>

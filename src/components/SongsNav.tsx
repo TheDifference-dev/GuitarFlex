@@ -15,7 +15,7 @@ export default function SongsNav() {
   const pathname = usePathname();
   return (
     <nav className="flex flex-wrap items-center gap-2">
-      <span className="mr-2 text-xs font-bold uppercase tracking-[0.2em] text-muted">Şarkı ve Sololar</span>
+      <span className="mr-2 text-xs font-semibold text-muted">Şarkı ve Sololar</span>
       {TABS.map((t) => {
         const Icon = t.icon;
         const active = t.match(pathname);
@@ -23,8 +23,8 @@ export default function SongsNav() {
           <Link
             key={t.href}
             href={t.href}
-            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-bold ${
-              active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-accent"
+            className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
+              active ? "border-accent/40 bg-accent/15 text-accent" : "border-white/10 bg-white/[0.05] hover:bg-white/10"
             }`}
           >
             <Icon size={15} /> {t.label}

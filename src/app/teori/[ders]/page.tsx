@@ -27,8 +27,8 @@ export default async function LessonPage(props: PageProps<"/teori/[ders]">) {
         / {lesson.title}
       </nav>
       <header>
-        <p className="text-sm font-semibold uppercase tracking-wide text-accent">Seviye {lesson.level}</p>
-        <h1 className="text-3xl font-bold tracking-tight text-accent">{lesson.title}</h1>
+        <p className="eyebrow">Seviye {lesson.level}</p>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{lesson.title}</h1>
         <p className="mt-1 text-muted">{lesson.summary}</p>
       </header>
 
@@ -39,7 +39,7 @@ export default async function LessonPage(props: PageProps<"/teori/[ders]">) {
       </div>
 
       {lesson.table && (
-        <div className="max-w-3xl overflow-x-auto rounded-xl border border-line bg-panel">
+        <div className="max-w-3xl overflow-x-auto card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line text-muted">
               <tr>

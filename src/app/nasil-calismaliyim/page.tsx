@@ -24,8 +24,8 @@ export default async function HowToPracticePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Çalışma Planı</p>
-        <h1 className="mt-1 text-3xl font-black tracking-tight text-accent">Gitarda hangi seviyedesin?</h1>
+        <p className="eyebrow">Çalışma Planı</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Gitarda hangi seviyedesin?</h1>
         <p className="mt-1 text-muted">Seviyeni seç, sana uygun çalışma yoluna yönlendirelim.</p>
       </header>
       <LevelPicker elektro={elektro} akustik={akustik} />
