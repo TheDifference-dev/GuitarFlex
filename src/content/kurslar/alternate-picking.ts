@@ -465,18 +465,18 @@ const s4 = section(4, "Ritim ve Kontrol", [
 const cell = (a: string, b: string, c: string, d: string) => [a, b, c, d];
 const s5 = section(5, "Tel Geçişi Ustalığı", [
   chapter(P, 5, 0, "Dış Pena (Outside)", [
-    "Kalın tel yukarı, ince tel aşağı vuruşla çalınırsa pena tel değiştirirken tellerin dışından dolaşır: dış pena.",
+    "Kalın tel aşağı, ince tel yukarı vuruşla çalınırsa pena tel değiştirirken tellerin dışından dolaşır: dış pena. Çoğu gitarist için daha rahattır; tel geçişine buradan başla.",
     "Notalar akorların kendi notalarından (arpej): Am = La–Do–Mi · F = Fa–La–Do · G = Sol–Si–Re · E = Mi–Sol#–Si.",
   ], [
-    { title: "Si–Sol Dış Pena", bpm: 70, description: "Si telindeki notalar aşağı, Sol telindekiler yukarı vuruş.", tips: ["Pena Sol telinin üzerinden atlarken hareket küçük kalsın."], tex: tex(70, cells(":8", [cell("8.2", "7.3", "5.2", "7.3"), cell("6.2", "7.3", "5.2", "7.3"), cell("8.2", "7.3", "5.2", "7.3"), cell("5.2", "4.3", "3.2", "4.3")])) },
-    { title: "Mi–Si: Am F G E", bpm: 60, minutes: 2, description: "İnce Mi aşağı, Si yukarı vuruş; dört akor.", tips: ["Pozisyon değişimini ölçü sonunda değil, son notayla birlikte hazırla."], tex: tex(60, cells(":16", [cell("12.1", "10.2", "8.1", "10.2"), cell("13.1", "10.2", "8.1", "10.2"), cell("15.1", "12.2", "10.1", "12.2"), cell("12.1", "9.2", "7.1", "9.2")])) },
-    { title: "Çıkan Pentatonik", bpm: 70, description: "2 nota/tel pentatonik, sadece çıkarak.", tips: ["Aşağı vuruşla başlayıp 2 nota/tel çalınca her tel geçişi dış pena olur."], tex: eighths(70, [...box1, ...box1, ...tabs(pentaBox2), ...tabs(pentaBox2)]) },
+    { title: "Sol–Si Dış Pena", bpm: 60, description: "Sol telindeki notalar aşağı, Si telindekiler yukarı vuruş; Am F G E.", tips: ["Pena Si telinin dışından dolaşıp Sol teline geri döner; hareketi küçük tut."], tex: tex(60, cells(":8", [cell("2.3", "5.2", "5.3", "5.2"), cell("5.3", "6.2", "2.3", "6.2"), cell("4.3", "8.2", "7.3", "8.2"), cell("1.3", "5.2", "4.3", "5.2")])) },
+    { title: "İnen Pentatonik", bpm: 70, description: "2 nota/tel pentatonik, sadece inerek.", tips: ["Aşağı vuruşla başlayıp 2 nota/tel inince her tel geçişi dış pena olur: kalın tel aşağı, ince tel yukarı."], tex: eighths(70, [...rev(box1), ...rev(box1), ...rev(tabs(pentaBox2)), ...rev(tabs(pentaBox2))]) },
   ]),
   chapter(P, 5, 1, "İç Pena (Inside)", [
-    "Kalın tel aşağı, ince tel yukarı vuruşla çalınırsa pena iki telin arasında çalışır: iç pena. Genellikle dış penadan zordur.",
+    "Kalın tel yukarı, ince tel aşağı vuruşla çalınırsa pena iki telin arasında çalışır: iç pena. Genellikle dış penadan zordur; pena hareketini küçük tut.",
   ], [
-    { title: "Sol–Si İç Pena", bpm: 60, description: "Sol telindeki notalar aşağı, Si telindekiler yukarı vuruş; Am F G E.", tips: ["Pena tellerin arasında 'sıkışmış' hissettirmesin: açıyı biraz eğ."], tex: tex(60, cells(":8", [cell("2.3", "5.2", "5.3", "5.2"), cell("5.3", "6.2", "2.3", "6.2"), cell("4.3", "8.2", "7.3", "8.2"), cell("1.3", "5.2", "4.3", "5.2")])) },
-    { title: "İnen Pentatonik", bpm: 70, description: "2 nota/tel pentatonik, sadece inerek.", tips: ["İnişte her tel geçişi iç pena olur."], tex: eighths(70, [...rev(box1), ...rev(box1), ...rev(tabs(pentaBox2)), ...rev(tabs(pentaBox2))]) },
+    { title: "Si–Sol İç Pena", bpm: 70, description: "Si telindeki notalar aşağı, Sol telindekiler yukarı vuruş.", tips: ["Pena iki telin arasında çalışır: Si teline aşağı, Sol teline yukarı vuruş; açıyı biraz eğ, 'sıkışmış' hissettirmesin."], tex: tex(70, cells(":8", [cell("8.2", "7.3", "5.2", "7.3"), cell("6.2", "7.3", "5.2", "7.3"), cell("8.2", "7.3", "5.2", "7.3"), cell("5.2", "4.3", "3.2", "4.3")])) },
+    { title: "Mi–Si: Am F G E", bpm: 60, minutes: 2, description: "İnce Mi aşağı, Si yukarı vuruş (iç pena); dört akor.", tips: ["Pozisyon değişimini ölçü sonunda değil, son notayla birlikte hazırla."], tex: tex(60, cells(":16", [cell("12.1", "10.2", "8.1", "10.2"), cell("13.1", "10.2", "8.1", "10.2"), cell("15.1", "12.2", "10.1", "12.2"), cell("12.1", "9.2", "7.1", "9.2")])) },
+    { title: "Çıkan Pentatonik", bpm: 70, description: "2 nota/tel pentatonik, sadece çıkarak.", tips: ["Aşağı vuruşla başlayıp 2 nota/tel çıkınca her tel geçişi iç pena olur: kalın tel yukarı, ince tel aşağı."], tex: eighths(70, [...box1, ...box1, ...tabs(pentaBox2), ...tabs(pentaBox2)]) },
     { title: "Karışık: 3 Nota/Tel", bpm: 70, minutes: 2, description: "3 nota/tel La minör: geçişler sırayla iç ve dış.", tips: ["Hangi geçişin iç hangisinin dış olduğunu fark et; zor olanı ayrıca çalış."], theory: ["Tek sayıda nota/tel çalınca pena yönü her telde değişir, geçişler de iç–dış diye sırayla gelir."], tex: eighths(70, upDown(a3)) },
   ]),
   chapter(P, 5, 2, "Tel Atlama", [
@@ -503,7 +503,7 @@ const s5 = section(5, "Tel Geçişi Ustalığı", [
     "Pedal tonu (org noktası): bir nota sabit kalırken melodi onun üstünde değişir. Barok müzikte ve metal riff'lerinde sık kullanılır.",
   ], [
     { title: "Açık Mi Pedalı", bpm: 70, description: "İnce Mi telinde melodi, her notanın arasında açık Mi.", tips: ["Tek telde çalıştığın için tel geçişi yok; odak sol el kaymalarında."], theory: ["Melodi La minör gamında iner ve çıkar: Mi, Re, Do, Si, La …"], tex: tex(70, [[12, 10, 8, 7], [5, 7, 8, 10], [12, 13, 12, 10], [8, 7, 8, 5]].map((b) => `:8 ${alt(b.flatMap((f) => [`${f}.1`, "0.1"])).join(" ")}`)) },
-    { title: "Mi Pedalı – İki Tel", bpm: 60, description: "Melodi 1. telde, pedal 2. telde (5. perde Mi).", tips: ["Her notada tel değişiyor: dış pena."], theory: ["Mi, La minörün 5. derecesidir (dominant). Mi pedalı sürekli bir gerilim yaratır ve La'ya dönüşü bekletir."], tex: tex(60, [[13, 12, 10, 8], [7, 8, 10, 12], [13, 15, 13, 12], [10, 8, 7, 8]].map((b) => `:8 ${alt(b.flatMap((f) => [`${f}.1`, "5.2"])).join(" ")}`)) },
+    { title: "Mi Pedalı – İki Tel", bpm: 60, description: "Melodi 1. telde, pedal 2. telde (5. perde Mi).", tips: ["Her notada tel değişiyor: 1. tel aşağı, 2. tel yukarı vuruş — iç pena."], theory: ["Mi, La minörün 5. derecesidir (dominant). Mi pedalı sürekli bir gerilim yaratır ve La'ya dönüşü bekletir."], tex: tex(60, [[13, 12, 10, 8], [7, 8, 10, 12], [13, 15, 13, 12], [10, 8, 7, 8]].map((b) => `:8 ${alt(b.flatMap((f) => [`${f}.1`, "5.2"])).join(" ")}`)) },
     { title: "Barok Pedal", bpm: 55, minutes: 2, description: "On altılıklarla La pedalı (2. tel, 10. perde) üzerinde çıkan melodi.", tips: ["Pedal notasını hafif çal, melodiyi öne çıkar."], theory: ["Bu kalıp Barok dönem keman ve klavsen eserlerinden tanıdık bir dokudur."], tex: tex(55, [[12, 13], [15, 13], [12, 10], [8, 10], [12, 13], [15, 17], [15, 13], [12, 13], [10, 12], [13, 12], [10, 8], [7, 8], [10, 12], [13, 12], [10, 8], [7, 5]].reduce<string[][]>((acc, pair, i) => {
       if (i % 4 === 0) acc.push([]);
       acc[acc.length - 1].push(...pair.flatMap((f) => [`${f}.1`, "10.2"]));
