@@ -2,7 +2,33 @@
 // Yerleşik kurslar src/content/kurslar/ içinde; kişisel içerik paketleri
 // ozel-kaynak/icerik/*.json dosyalarından aynı şekilde okunur (bkz. src/lib/courses.ts).
 
-export type Lesson = {
+// ── Müfredat etiketleri (Müfredat Spec v2.2 §4) ───────────────────────────────
+// Hepsi isteğe bağlıdır; etiketsiz içerik aynen çalışır. Etiketler kurs içindeki sırayı
+// belirlemez, yalnızca Seviye Yolu için üstüne eklenen bir katmandır.
+
+/** Seviye: L1 Başlangıç … L5 İleri */
+export type Level = "L1" | "L2" | "L3" | "L4" | "L5";
+
+/** Beceri ekseni: teknik, klavye (sap), ritim, teori/kulak */
+export type Axis = "technique" | "fretboard" | "rhythm" | "theory_ear";
+
+/** Alt bölüm ve derste ortak etiketler. Ders alanı varsa alt bölümünkünü ezer. */
+export type Tags = {
+  level?: Level;
+  /** Eksenler; ilk eleman ana eksen */
+  axes?: Axis[];
+  /** Beceri etiketleri: beceri-sozlugu.json anahtarları (ör. "F.pent_5boxes") */
+  skills?: string[];
+};
+
+/** Dersin türü: drill (varsayılan, kısa tek fikir) · etut (seviye sonu uzun parça) · okuma (tabsız adım)
+ *  · quickstudy (okuma + doğaçlama) · transkripsiyon (gizli tab, kulaktan) · kompozisyon · resital */
+export type LessonKind = "drill" | "etut" | "okuma" | "quickstudy" | "transkripsiyon" | "kompozisyon" | "resital";
+
+/** Etüt formunun parçası */
+export type FormPart = "intro" | "A" | "B" | "bridge" | "A2";
+
+export type Lesson = Tags & {
   id: string;
   title: string;
   bpm: number;
@@ -26,9 +52,29 @@ export type Lesson = {
   card?: "egitim" | "pratik" | "ek";
   /** Pratik kartı: soruların bulunduğu teori yolu adımı (ör. { yol: "armoni", kod: "1.1" }) */
   practice?: { yol: string; kod: string };
+  /** Dersin türü; verilmezse drill */
+  kind?: LessonKind;
+  /** Varyasyon: kaynak dersin id'si (ör. "Tersten" dersin asıl dersi) */
+  variantOf?: string;
+  /** Varyasyonun türü ("Tersten" dersler için reverse); verilirse `variantOf` zorunludur */
+  variant?: "reverse" | "inversion" | "permutation";
+  /** Rehberlerde kopya yerine kaynak ders: "<kurs-slug>#<ders-id>". Yüklenirken çözülür:
+   *  dersin kendi tex/tabFile/body/theory alanı yoksa kaynak dersten alınır (bkz. src/lib/courses.ts). */
+  ref?: string;
+  /** Yalnız etüt: form parçaları ve ölçü sayıları (ör. [{ part: "A", bars: 8 }, …]) */
+  form?: { part: FormPart; bars: number }[];
+  /** Yalnız etüt: üç tempo turu (BPM, artan sırada) */
+  tempoRounds?: [number, number, number];
+  /** quickstudy: porteden okunacak ölçü aralığı [başlangıç, bitiş] */
+  readBars?: [number, number];
+  /** quickstudy: akor şemasıyla doğaçlanacak ölçü aralığı [başlangıç, bitiş] */
+  improvBars?: [number, number];
+  /** transkripsiyon: tab gösterilmez, yalnız ses olarak çalınır */
+  hideTab?: boolean;
 };
 
-export type Chapter = {
+/** Alt bölüm; etiketleri (Tags) bütün derslerine geçerlidir, ders kendi etiketiyle ezebilir. */
+export type Chapter = Tags & {
   /** "1.0", "1.1" … */
   code: string;
   title: string;
