@@ -81,11 +81,11 @@ const s3 = section(3, "Günlük Rutin", [
 // Müfredat etiketleri (Spec v2.2 §4): alt bölüm → seviye, eksenler (ilki ana eksen), beceriler.
 // Kaynak: içerik paketi belgeler/mufredat/seviye-esleme.csv, "YERLESIK/kromatik-isinma" satırları.
 const ETIKET: Record<string, Tags> = {
-  "1.0": { level: "L1", axes: ["technique", "fretboard"], skills: ["T.chromatic_1234", "F.single_position", "F.position_shift"] }, // 1-2-3-4
+  "1.0": { level: "L1", axes: ["technique", "fretboard"], skills: ["T.chromatic_1234", "F.single_position"] }, // 1-2-3-4
   "1.1": { level: "L1", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Permütasyonlar
   "1.2": { level: "L2", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Örümcek
   "2.0": { level: "L2", axes: ["rhythm", "technique"], skills: ["R.sixteenth", "T.chromatic_1234"] }, // On Altılık Permütasyonlar
-  "2.1": { level: "L2", axes: ["fretboard", "rhythm"], skills: ["F.diagonal_shift", "R.triplet_8th"] }, // Çapraz Kromatik
+  "2.1": { level: "L2", axes: ["fretboard", "rhythm"], skills: ["F.position_shift", "R.triplet_8th"] }, // Çapraz Kromatik
   "2.2": { level: "L3", axes: ["technique"], skills: ["T.string_skip"] }, // Tel Atlama
   "3.0": { level: "L1", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Beş Dakikalık Isınma
   "3.1": { level: "L2", axes: ["fretboard"], skills: ["F.stretch"] }, // Esneme
