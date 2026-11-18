@@ -1,8 +1,8 @@
 // Kromatik Isınma — 3 bölüm, özgün egzersizler. Parmak sıraları (permütasyonlar) üretilir.
-import type { Course } from "../types.ts";
+import type { Course, Tags } from "../types.ts";
 import { strokes, tex } from "../tex.ts";
 import { measures } from "../dizi.ts";
-import { chapter, ders, section } from "./ortak.ts";
+import { chapter, ders, etiketle, section } from "./ortak.ts";
 
 const P = "kr";
 const UP = [6, 5, 4, 3, 2, 1];
@@ -78,6 +78,20 @@ const s3 = section(3, "Günlük Rutin", [
   ]),
 ]);
 
+// Müfredat etiketleri (Spec v2.2 §4): alt bölüm → seviye, eksenler (ilki ana eksen), beceriler.
+// Kaynak: içerik paketi belgeler/mufredat/seviye-esleme.csv, "YERLESIK/kromatik-isinma" satırları.
+const ETIKET: Record<string, Tags> = {
+  "1.0": { level: "L1", axes: ["technique", "fretboard"], skills: ["T.chromatic_1234", "F.single_position", "F.position_shift"] }, // 1-2-3-4
+  "1.1": { level: "L1", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Permütasyonlar
+  "1.2": { level: "L2", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Örümcek
+  "2.0": { level: "L2", axes: ["rhythm", "technique"], skills: ["R.sixteenth", "T.chromatic_1234"] }, // On Altılık Permütasyonlar
+  "2.1": { level: "L2", axes: ["fretboard", "rhythm"], skills: ["F.diagonal_shift", "R.triplet_8th"] }, // Çapraz Kromatik
+  "2.2": { level: "L3", axes: ["technique"], skills: ["T.string_skip"] }, // Tel Atlama
+  "3.0": { level: "L1", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Beş Dakikalık Isınma
+  "3.1": { level: "L2", axes: ["fretboard"], skills: ["F.stretch"] }, // Esneme
+  "3.2": { level: "L2", axes: ["rhythm", "technique"], skills: ["R.sixteenth", "T.chromatic_1234"] }, // Hız Merdiveni
+};
+
 export const kromatikCourse: Course = {
   slug: "kromatik-isinma",
   title: "Kromatik Isınma",
@@ -94,5 +108,5 @@ export const kromatikCourse: Course = {
     "Bölüm 2 – Koordinasyon: on altılık, çapraz kromatik, tel atlama.",
     "Bölüm 3 – Günlük rutin: ısınma, esneme, hız merdiveni.",
   ],
-  sections: [s1, s2, s3],
+  sections: etiketle([s1, s2, s3], ETIKET),
 };

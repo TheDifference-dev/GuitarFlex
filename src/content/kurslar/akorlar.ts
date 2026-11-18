@@ -1,8 +1,8 @@
 // Akorlar — 6 bölüm, özgün egzersizler. Akor notaları sözlükten hesaplanır.
-import type { Course } from "../types.ts";
+import type { Course, Tags } from "../types.ts";
 import { tex } from "../tex.ts";
 import { AKOR, akorNotalari } from "./diziler.ts";
-import { chapter, ders, section } from "./ortak.ts";
+import { chapter, ders, etiketle, section } from "./ortak.ts";
 
 const P = "ak";
 /** "1" birlik, "2" ikilik, "4" dörtlük, "8" sekizlik tarama kalıbı, "s" shuffle (uzun – kısa) */
@@ -150,6 +150,29 @@ const s6 = section(6, "Tonlar ve Diziler", [
   ]),
 ]);
 
+// Müfredat etiketleri (Spec v2.2 §4): alt bölüm → seviye, eksenler (ilki ana eksen), beceriler.
+// Kaynak: içerik paketi belgeler/mufredat/seviye-esleme.csv, "YERLESIK/akorlar" satırları.
+const ETIKET: Record<string, Tags> = {
+  "1.0": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // Em ve Am
+  "1.1": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // E, A ve D
+  "1.2": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // G, C ve D
+  "2.0": { level: "L2", axes: ["theory_ear", "technique"], skills: ["E.diatonic_chords", "T.open_chords"] }, // Sol Majör Dizisi
+  "2.1": { level: "L2", axes: ["theory_ear", "technique"], skills: ["E.diatonic_chords", "T.open_chords"] }, // La Minör Dizisi
+  "2.2": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // Hızlı Geçiş
+  "3.0": { level: "L2", axes: ["technique"], skills: ["T.barre_chord"] }, // F Akoru
+  "3.1": { level: "L2", axes: ["technique"], skills: ["T.barre_chord"] }, // Bm Akoru
+  "3.2": { level: "L2", axes: ["technique"], skills: ["T.barre_chord"] }, // Hareketli Barre
+  "4.0": { level: "L3", axes: ["theory_ear", "technique"], skills: ["E.seventh_chords"] }, // Dominant 7
+  "4.1": { level: "L3", axes: ["theory_ear", "technique"], skills: ["E.seventh_chords"] }, // Majör 7 ve Minör 7
+  "4.2": { level: "L2", axes: ["theory_ear"], skills: ["E.progressions"] }, // 12 Ölçü Blues
+  "5.0": { level: "L3", axes: ["theory_ear"], skills: ["E.sus_add"] }, // Sus Akorları
+  "5.1": { level: "L3", axes: ["theory_ear"], skills: ["E.sus_add"] }, // Add9 ve Rock G
+  "5.2": { level: "L2", axes: ["technique"], skills: ["T.bass_walk"] }, // Bas Yürüyüşü
+  "6.0": { level: "L2", axes: ["theory_ear"], skills: ["E.diatonic_chords", "E.progressions"] }, // Sol Majör Tonu
+  "6.1": { level: "L2", axes: ["theory_ear"], skills: ["E.diatonic_chords", "E.progressions"] }, // Do Majör Tonu
+  "6.2": { level: "L3", axes: ["theory_ear"], skills: ["E.minor_key", "E.progressions"] }, // La Minör Tonu
+};
+
 export const akorCourse: Course = {
   slug: "akorlar",
   title: "Akorlar",
@@ -169,5 +192,5 @@ export const akorCourse: Course = {
     "Bölüm 5 – Renkler: sus, add9, bas yürüyüşü.",
     "Bölüm 6 – Tonlar ve diziler.",
   ],
-  sections: [s1, s2, s3, s4, s5, s6],
+  sections: etiketle([s1, s2, s3, s4, s5, s6], ETIKET),
 };
