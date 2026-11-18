@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { BookText, ChevronDown, FileText, ListChecks, ListVideo, Lock, PlayCircle, Sparkles } from "lucide-react";
 import type { Course, Lesson, Section } from "@/content/types";
 import { lessonKey } from "@/content/courses";
+import { chapterLevels, isAcoustic } from "@/content/seviyeler";
+import SeviyeRozeti from "./SeviyeRozeti";
 import { useProgress, type Progress, type StepProgress } from "@/lib/progress";
 
 export function formatClock(seconds: number) {
@@ -43,12 +45,28 @@ function ExamRow({ section: s }: { section: Section }) {
   );
 }
 
+/** Adresteki "#bolum-<kod>" (ör. Seviye Yolu'ndan gelen bağlantı); sunucuda boş */
+const subscribeHash = (cb: () => void) => {
+  window.addEventListener("hashchange", cb);
+  return () => window.removeEventListener("hashchange", cb);
+};
+const readHash = () => window.location.hash;
+
 export default function CourseView({ course, image }: { course: Course; image?: string }) {
   const p = useProgress();
   const [tab, setTab] = useState<"egzersiz" | "rehber">("egzersiz");
   const firstOpen = course.sections.findIndex((s) => !sectionDone(p, course, s));
   const [selected, setSelected] = useState<number | null>(null);
-  const current = course.sections[selected ?? Math.max(0, firstOpen)] ?? course.sections[0];
+  const hash = useSyncExternalStore(subscribeHash, readHash, () => "");
+  const hashCode = hash.startsWith("#bolum-") ? decodeURIComponent(hash.slice(7)) : null;
+  const hashSection = hashCode ? course.sections.findIndex((s) => s.chapters.some((c) => c.code === hashCode)) : -1;
+  const current = course.sections[selected ?? (hashSection >= 0 ? hashSection : Math.max(0, firstOpen))] ?? course.sections[0];
+  const badges = !isAcoustic(course);
+
+  // Bağlantıyla gelinen alt bölüm başka bölümdeyse, bölüm açıldıktan sonra ona kaydır
+  useEffect(() => {
+    if (hashSection >= 0) document.getElementById(`bolum-${hashCode}`)?.scrollIntoView();
+  }, [hashCode, hashSection]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -183,6 +201,7 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                 <div className="flex items-center gap-3 border-b border-line/70 pb-3">
                   <span className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-semibold text-accent">{c.code}</span>
                   <h2 className="flex-1 text-lg font-semibold">{c.title}</h2>
+                  {badges && chapterLevels(c).map((lv) => <SeviyeRozeti key={lv} level={lv} />)}
                   <span className="text-sm font-medium text-muted">{total} dk</span>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -206,8 +225,16 @@ export default function CourseView({ course, image }: { course: Course; image?: 
                         <div className="relative">
                           <div className="flex items-start justify-between gap-2">
                             <h3 className="font-semibold leading-tight">{l.title}</h3>
-                            <span className="rounded-full bg-white/[0.07] p-1.5">
-                              <ListVideo size={14} />
+                            <span className="flex shrink-0 items-center gap-1.5">
+                              {/* Alt bölümünden farklı seviyedeki ders: seviyesi kartta yazar (rozet alt bölüm başlığında) */}
+                              {badges && l.level && l.level !== c.level && (
+                                <span className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-text/90" title="Dersin seviyesi">
+                                  {l.level}
+                                </span>
+                              )}
+                              <span className="rounded-full bg-white/[0.07] p-1.5">
+                                <ListVideo size={14} />
+                              </span>
                             </span>
                           </div>
                           {l.target && <p className="mt-2 text-xs font-medium text-muted">Hedef: <span className="text-accent">{l.target}</span></p>}

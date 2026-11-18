@@ -18,6 +18,7 @@ function sectionName(p: string, fallback: string) {
   if (p.startsWith("/teori") || p.startsWith("/calis/armoni")) return "Müzik Teorisi";
   if (p.startsWith("/araclar")) return "Araçlar";
   if (p.startsWith("/nasil-calismaliyim")) return "Çalışma Planı";
+  if (p.startsWith("/seviye")) return "Seviye Yolu";
   return fallback;
 }
 
@@ -42,7 +43,7 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
       id: "calis",
       label: "Gitar Çalış",
       icon: Guitar,
-      active: (["/calis", "/akustik", "/sarkilar", "/oynatici", "/nasil-calismaliyim"].some((p) => pathname.startsWith(p)) && !pathname.startsWith("/calis/armoni")) || pathname === "/",
+      active: (["/calis", "/akustik", "/sarkilar", "/oynatici", "/nasil-calismaliyim", "/seviye"].some((p) => pathname.startsWith(p)) && !pathname.startsWith("/calis/armoni")) || pathname === "/",
       banner: { href: "/nasil-calismaliyim", title: "Gitarda Nasıl Çalışmalıyım?", text: "Seviyeni seç, sana uygun yolu önerelim." },
       groups: [
         {
@@ -56,6 +57,7 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
           title: "Elektro Gitar",
           items: [
             { href: "/", label: "Teknik Egzersizler" },
+            { href: "/seviye", label: "Seviye Yolu", note: "Yeni" },
             { href: "/sarkilar", label: "Şarkı ve Sololar" },
           ],
         },

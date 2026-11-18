@@ -17,8 +17,10 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | ![Klavye yolu](docs/ekran/klavye-yolu.png) | ![Klavye adımı](docs/ekran/klavye-adim.png) |
 | **Ritim: dinle, seç, vur** | **Armoni dersleri** |
 | ![Ritim adımı](docs/ekran/ritim-adim.png) | ![Armoni](docs/ekran/armoni.png) |
-| **Profil: görevler, seri, başarımlar** | |
-| ![Profil](docs/ekran/profil.png) | |
+| **Profil: görevler, seri, başarımlar** | **Seviye Yolu** |
+| ![Profil](docs/ekran/profil.png) | ![Seviye Yolu](docs/ekran/seviye-yolu.png) |
+| **Seviye sayfası: eksenler ve bitirme koşulu** | |
+| ![Seviye sayfası](docs/ekran/seviye.png) | |
 
 ## Highlights
 
@@ -26,6 +28,7 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 - **Music theory on every lesson** — scale formulas, intervals, chord construction, progressions and rhythm explained next to the tab
 - **Generated, verified tabs** — scale fingerings, arpeggio shapes, sequences, legato slurs and pick-stroke directions (alternate, sweep, economy) are computed from pitch data and placed on the strings and fret ranges of a lesson plan, from open position to the 24th fret; an automated checker validates every bar's length, every hammer-on, pull-off and slide, chord tones and scale membership
 - **Multi-track tab player** — Guitar Pro / MusicXML / alphaTex playback with per-track mute, solo and volume, speed control, metronome, count-in, click-to-seek and drag-to-loop
+- **Level Path** — every electric-guitar chapter is tagged with a level (L1–L5), a skill axis and skills; five level pages gather them across all courses by axis (technique, fretboard, rhythm, theory/ear), ordered by skill prerequisites, with per-axis progress and the level completion goal
 - **Theory practice paths** — Rhythm (70 steps), Fretboard Visualization (84) and Ear Training (60): questions are generated fresh on every attempt — notes, octaves, pentatonic, CAGED and 3NPS shapes on a clickable fretboard, chord diagrams, interval/chord/scale/progression recognition with synthesized guitar sound, and rhythm reading with tap-back scoring rendered in SMuFL notation
 - **Harmony course** — 5 sections, 10 chapters with reading cards, generated practice quizzes (correctly spelled scales, triads, modes, diatonic and seventh chords) and playable example tabs
 - **Songs & solos** — a song guide (38 ordered steps tied to course sections) and a library of 99 songs with medal levels, origin/type filters and sorting, linked to Songsterr
@@ -53,11 +56,13 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 - **Şarkı ve Sololar**: Şarkı Rehberi (teknik bölümlerine bağlı 38 adım), Tüm Şarkılar (madalya seviyesi, köken, tür, arama ve sıralama), Tabla Keşfet (çok kanallı tab oynatıcı) ve Doğaçlama Çal (6 türde 56 eşlik kaydı ve önerilen gamlar).
 - **Tab oynatıcı**: Guitar Pro, MusicXML ve alphaTex; enstrüman bazında ses/mute/solo, hız, metronom, sayım, döngü, nota görünümü.
 - **Müzik teorisi**: Ritim (70 adım), Klavye Görselleştirme (84 adım) ve Kulak Eğitimi (60 adım) pratik yolları; sorular her denemede yeniden üretilir. Armoni (Müzik Teorisi Dersleri): 5 bölüm, Eğitim / Pratik / Ek İnceleme kartları. Ayrıca 10 ders ve interaktif sap gezgini.
+- **Seviye Yolu**: Elektro kursların alt bölümleri beş seviyede (L1 Başlangıç → L5 İleri) toplanır; her seviye teknik, klavye, ritim ve teori/kulak eksenlerine ayrılır, beceri önkoşullarına göre sıralanır, eksen başına ilerleme ve seviye bitirme koşulu gösterilir. Kurs sayfalarında seviye rozetleri.
 - **Profil**: Günlük görevler (Egzersiz, Teori, Serbest Çalışma), seri ve seri kalkanı, ders madalyaları (Bronz I → Elmas IV), 68 başarım ve XP, kurs ilerlemesi.
 - **Araçlar**: Metronom ve nota bulma testi.
 
 ### Son güncellemeler
 
+- **Seviye Yolu**: yeni Seviye Yolu sayfası (Gitar Çalış → Elektro Gitar). Beş seviyenin özet kartları ve her seviye için ayrı sayfa: kurslardaki o seviyeye ait alt bölümler teknik, klavye, ritim ve teori/kulak eksenlerine ayrılıyor, önce temel beceriler gelecek şekilde önkoşullara göre sıralanıyor; her satırda kurs, alt bölüm, ders sayısı ve tamamlanan dersler. Üstte eksen başına tablı ders ilerlemesi ve seviyeyi bitirme koşulu (tablı derslerin %70'i). Kilit yok. Kurs sayfalarında alt bölüm başlıklarında L1–L5 rozeti; rozete tıklayınca o seviyenin sayfası açılıyor. Ek kurs, Stil kursu, yol adımları ve seviye etütleri yakında
 - **Seviye ve beceri etiketleri**: elektro kursların, Akorlar'ın ve Kromatik Isınma'nın alt bölümleri artık bir seviye (L1–L5), bir ana eksen ve yan eksenler (teknik, klavye, ritim, teori/kulak) ve beceri etiketleri taşıyor. "Tersten" çalınan dersler, kaynak oldukları ileri derse bağlı. Tablar, ders adları ve ders sayıları olduğu gibi kaldı
 - **Müfredat altyapısı**: derslere ve alt bölümlere seviye (L1–L5), eksen (teknik, klavye, ritim, teori/kulak) ve beceri etiketleri için veri alanları; etüt, Quick Study, transkripsiyon, kompozisyon ve resital gibi yeni ders türlerinin şeması. Rehberler bir dersi kopyalamak yerine kaynak derse bağlanabiliyor; içerik denetimi yeni alanları da doğruluyor
 - **Yeni tasarım: Apple karanlık mod × Instagram gradyanı** — neredeyse siyah zemin, üstte turuncu–pembe–mor ışık; buzlu cam üst çubuk ve menüler; ince kenarlı, hafif yükseltilmiş kartlar; gradyan hap düğmeler; Instagram hikâye halkası gibi ilerleme halkaları ve avatar. Yazı tipi Apple cihazlarda San Francisco, diğerlerinde Inter; başlıklar sıkı harf aralıklı, büyük harf etiketler kalktı. Üst çubuk telefonda sarar
