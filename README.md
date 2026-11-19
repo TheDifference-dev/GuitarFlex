@@ -63,6 +63,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Müzisyenlik ek kursu L3**: funk ve ghost nota, minör ton, harmonik minör, triad çevrimleri, double stop, blues armonisi, nota ve akor şeması okuma, akor sesiyle doğaçlama
 - **Müzisyenlik ek kursu (L1–L2)**: ritim ve nota okuma, eşlikle çalma, senkop, shuffle, oktav, majör gam, pentatonik doğaçlama, dinamik
 - **Seviye Yolu**: yeni Seviye Yolu sayfası (Gitar Çalış → Elektro Gitar). Beş seviyenin özet kartları ve her seviye için ayrı sayfa: kurslardaki o seviyeye ait alt bölümler teknik, klavye, ritim ve teori/kulak eksenlerine ayrılıyor, önce temel beceriler gelecek şekilde önkoşullara göre sıralanıyor; her satırda kurs, alt bölüm, ders sayısı ve tamamlanan dersler. Üstte eksen başına tablı ders ilerlemesi ve seviyeyi bitirme koşulu (tablı derslerin %70'i). Kilit yok. Kurs sayfalarında alt bölüm başlıklarında L1–L5 rozeti; rozete tıklayınca o seviyenin sayfası açılıyor. Ek kurs, Stil kursu, yol adımları ve seviye etütleri yakında
 - **Seviye ve beceri etiketleri**: elektro kursların, Akorlar'ın ve Kromatik Isınma'nın alt bölümleri artık bir seviye (L1–L5), bir ana eksen ve yan eksenler (teknik, klavye, ritim, teori/kulak) ve beceri etiketleri taşıyor. "Tersten" çalınan dersler, kaynak oldukları ileri derse bağlı. Tablar, ders adları ve ders sayıları olduğu gibi kaldı
