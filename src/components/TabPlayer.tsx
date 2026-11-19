@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { noteName } from "@/lib/music";
+import type { Stave } from "@/content/types";
 
 // alphaTab tarayıcıya klasik bir <script> olarak yüklenir (public/alphatab, bkz. scripts/copy-alphatab.mjs).
 // Böylece web worker ve font dosyalarını kendi yolundan bulur; bundler ayarı gerekmez.
@@ -38,6 +39,8 @@ export type TabSource =
   | { kind: "file"; data: ArrayBuffer; name: string };
 
 type View = "tab" | "score-tab" | "score";
+/** Ders alanı `stave` → oynatıcının ilk görünümü (verilmezse tab) */
+const STAVE_VIEW: Record<Stave, View> = { score: "score", tab: "tab", both: "score-tab" };
 type TrackInfo = { index: number; name: string; percussion: boolean; tuning: string };
 
 type Props = {
@@ -46,6 +49,8 @@ type Props = {
   compact?: boolean;
   onBpmChange?: (bpm: number) => void;
   onPlayingChange?: (playing: boolean) => void;
+  /** İlk görünüm: "score" yalnız nota (porte okuma: tab gizli, görünüm düğmeleri kapalı), "tab", "both" (nota + tab) */
+  stave?: Stave;
 };
 
 const SPEEDS = [50, 75, 100];
@@ -98,7 +103,7 @@ export default function TabPlayer(props: Props) {
   return <Player key={id} {...props} />;
 }
 
-function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props) {
+function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
@@ -129,7 +134,9 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
   const [loop, setLoop] = useState(compact);
   const [zoom, setZoom] = useState(100);
   const [horizontal, setHorizontal] = useState(false);
-  const [view, setView] = useState<View>("tab");
+  const [view, setView] = useState<View>(stave ? STAVE_VIEW[stave] : "tab");
+  /** Porte okuma: yalnız nota gösterilir, tab'a geçilemez */
+  const scoreOnly = stave === "score";
 
   // Callback'leri ve görünüm ayarlarını ref'te tut: değişmeleri player'ı yeniden kurmasın.
   const callbacks = useRef({ onBpmChange, onPlayingChange });
@@ -450,19 +457,25 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange }: Props
           )}
 
           <span className="mx-1 h-5 w-px bg-line" />
-          <div className="flex gap-0.5 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5">
-            {(
-              [
-                ["tab", "Tab"],
-                ["score-tab", "Nota+Tab"],
-                ["score", "Nota"],
-              ] as const
-            ).map(([v, label]) => (
-              <button key={v} type="button" onClick={() => setView(v)} className={`rounded-full px-3 py-1 transition ${view === v ? "bg-white/[0.14] text-text shadow-[0_1px_2px_rgb(0_0_0/0.5)]" : "text-muted hover:text-text"}`}>
-                {label}
-              </button>
-            ))}
-          </div>
+          {scoreOnly ? (
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1" title="Porte okuma dersi: tab gizli, notayı porteden oku">
+              Yalnız nota
+            </span>
+          ) : (
+            <div className="flex gap-0.5 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5">
+              {(
+                [
+                  ["tab", "Tab"],
+                  ["score-tab", "Nota+Tab"],
+                  ["score", "Nota"],
+                ] as const
+              ).map(([v, label]) => (
+                <button key={v} type="button" onClick={() => setView(v)} className={`rounded-full px-3 py-1 transition ${view === v ? "bg-white/[0.14] text-text shadow-[0_1px_2px_rgb(0_0_0/0.5)]" : "text-muted hover:text-text"}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
           {!compact && (
             <button type="button" onClick={() => setHorizontal((x) => !x)} className={`${btn} ${horizontal ? on : ""}`} title="Tek satırda kaydır">
               Yatay

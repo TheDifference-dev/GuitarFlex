@@ -6,6 +6,7 @@ import TabPlayer, { type TabSource } from "./TabPlayer";
 import Metronome from "./Metronome";
 import { formatClock } from "./CourseView";
 import { addPracticeTime, useProgress } from "@/lib/progress";
+import type { Stave } from "@/content/types";
 
 type Props = {
   progressKey: string;
@@ -16,12 +17,14 @@ type Props = {
   tabUrl?: string;
   /** Tabsız okuma adımı: metin sayfada gösterilir, burada sadece sayaç kalır */
   reading?: boolean;
+  /** Oynatıcının görünümü (ders alanı `stave`): "score" porte okuma, tab gizli */
+  stave?: Stave;
 };
 
 const SAVE_EVERY = 5;
 
 /** Ders ekranı: tab oynatıcı + hedef süre sayacı. Çalma süresi otomatik kaydedilir. */
-export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading }: Props) {
+export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading, stave }: Props) {
   const progress = useProgress();
   const saved = progress.exercises[progressKey];
   const target = minutes * 60;
@@ -122,7 +125,7 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
       </div>
 
       {source ? (
-        <TabPlayer source={source} compact onBpmChange={setCurrentBpm} onPlayingChange={setRunning} />
+        <TabPlayer source={source} compact stave={stave} onBpmChange={setCurrentBpm} onPlayingChange={setRunning} />
       ) : reading ? null : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="rounded-3xl border border-dashed border-line p-6 text-sm text-muted">

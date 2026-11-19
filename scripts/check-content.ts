@@ -100,13 +100,14 @@ for (const item of items) {
 }
 
 // ── Müfredat alanları (Spec v2.2 §4): level, axes, skills, kind, variant, ref, form, tempoRounds,
-// readBars, improvBars, hideTab. Etiketsiz içerikte hiçbir şey yazdırmaz.
+// readBars, improvBars, hideTab, stave. Etiketsiz içerikte hiçbir şey yazdırmaz.
 const LEVELS = new Set(["L1", "L2", "L3", "L4", "L5"]);
 const AXES = new Set(["technique", "fretboard", "rhythm", "theory_ear"]);
 const KINDS = new Set(["drill", "etut", "okuma", "quickstudy", "transkripsiyon", "kompozisyon", "resital"]);
 const VARIANTS = new Set(["reverse", "inversion", "permutation"]);
 const FORM_PARTS = new Set(["intro", "A", "B", "bridge", "A2"]);
-const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab"] as const;
+const STAVES = new Set(["score", "tab", "both"]);
+const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave"] as const;
 
 // Beceri sözlüğü: kişisel içerik köklerinde belgeler/mufredat/beceri-sozlugu.json (ilk bulunan)
 let skillKeys: Set<string> | null = null;
@@ -204,6 +205,14 @@ function lessonProblems(r: Row): { problems: string[]; warnings: string[] } {
     else if ((v as number[])[0] > (v as number[])[1]) p.push(`${k} başlangıcı bitişten büyük: ${JSON.stringify(v)}`);
   }
   if (l.hideTab !== undefined && typeof l.hideTab !== "boolean") p.push(`hideTab true/false olmalı: ${JSON.stringify(l.hideTab)}`);
+  // stave (İP6): oynatıcı görünümü. Tabsız derste anlamsız; hideTab (yalnız ses) ile birlikte görünüm verilmez
+  if (l.stave !== undefined) {
+    if (!STAVES.has(l.stave as string)) p.push(`stave geçersiz: ${JSON.stringify(l.stave)} ("score", "tab" ya da "both" olmalı)`);
+    else {
+      if (!l.tex && !l.tabFile && !l.ref) w.push("stave verilmiş ama dersin tabı yok");
+      if (l.hideTab) w.push(`hideTab ile stave "${l.stave}" birlikte verilmemeli (transkripsiyon dersi yalnız ses olarak çalınır)`);
+    }
+  }
   return { problems: p, warnings: w };
 }
 

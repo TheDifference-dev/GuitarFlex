@@ -79,6 +79,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         minutes={lesson.minutes}
         tex={lesson.tex}
         tabUrl={assetUrl(lesson.tabFile)}
+        stave={lesson.stave}
       />
 
       {(theory.length > 0 || !!lesson.tips?.length) && (

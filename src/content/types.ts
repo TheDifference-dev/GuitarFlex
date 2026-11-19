@@ -71,7 +71,14 @@ export type Lesson = Tags & {
   improvBars?: [number, number];
   /** transkripsiyon: tab gösterilmez, yalnız ses olarak çalınır */
   hideTab?: boolean;
+  /** Tab oynatıcının görünümü (Spec v2.2 §4, İP6'da eklendi): "score" yalnız nota — porte okuma dersleri; tab gizlidir,
+   *  görünüm düğmeleri kapanır · "tab" yalnız tab · "both" nota + tab (ör. ritim okuma). Verilmezse bugünkü varsayılan
+   *  görünüm (tab; öğrenci düğmelerle değiştirebilir). */
+  stave?: Stave;
 };
+
+/** Tab oynatıcı görünümü: yalnız nota, yalnız tab ya da ikisi birlikte */
+export type Stave = "score" | "tab" | "both";
 
 /** Alt bölüm; etiketleri (Tags) bütün derslerine geçerlidir, ders kendi etiketiyle ezebilir. */
 export type Chapter = Tags & {
