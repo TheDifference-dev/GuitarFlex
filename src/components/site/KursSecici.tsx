@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { kursSimgesi } from "@/lib/simge";
+import UygulamaSimgesi from "./UygulamaSimgesi";
 
 export type SeciciKurs = { slug: string; title: string; ders: number; grup: string };
 
@@ -54,11 +56,13 @@ export default function KursSecici({ baslik, slug, kurslar }: { baslik: string; 
                     aria-selected={k.slug === slug}
                     className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-ink/[0.08] ${k.slug === slug ? "text-accent" : ""}`}
                   >
-                    <span className="flex min-w-0 items-center gap-2">
-                      {k.slug === slug ? <Check size={14} className="shrink-0" /> : <span className="w-3.5 shrink-0" />}
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <UygulamaSimgesi simge={kursSimgesi(k.slug)} boyut={24} />
                       <span className="truncate">{k.title}</span>
                     </span>
-                    <span className="shrink-0 text-xs tabular-nums text-muted">{k.ders} ders</span>
+                    <span className="flex shrink-0 items-center gap-1.5 text-xs tabular-nums text-muted">
+                      {k.ders} ders {k.slug === slug ? <Check size={14} className="text-accent" /> : <span className="w-3.5" />}
+                    </span>
                   </Link>
                 ))}
             </div>

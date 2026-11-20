@@ -118,7 +118,6 @@ export const economyCourse: Course = {
   title: "Economy Picking",
   description: "Tel geçişlerinde pena yönünü koruyarak hız.",
   kind: "technique",
-  icon: "↯",
   guide: [
     "## Economy picking nedir?",
     CORE,

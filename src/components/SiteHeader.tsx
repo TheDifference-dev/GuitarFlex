@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { ChevronDown, ChevronLeft, Menu as MenuIcon, User, X } from "lucide-react";
 import { SITE } from "@/config/site";
+import UygulamaSimgesi from "./site/UygulamaSimgesi";
+import { kursSimgesi, yerSimgesi, type SimgeTanim } from "@/lib/simge";
 
 type Bag = { href: string; label: string };
 type Sutun = { baslik: string; items: Bag[] };
@@ -14,8 +16,8 @@ type Menu = {
   /** Üst bağlantının gittiği bölüm sayfası */
   href: string;
   active: (p: string) => boolean;
-  /** Mega menünün ilk sütunu: büyük bağlantılar */
-  buyuk: Bag[];
+  /** Mega menünün ilk sütunu: uygulama simgeli büyük bağlantılar */
+  buyuk: (Bag & { simge: SimgeTanim })[];
   sutunlar: Sutun[];
 };
 
@@ -27,10 +29,10 @@ const MENULER: Menu[] = [
     href: "/kurslar",
     active: (p) => ["/calis", "/akustik", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
     buyuk: [
-      { href: "/elektro", label: "Elektro Gitar" },
-      { href: "/akustik", label: "Akustik Gitar" },
-      { href: "/seviye", label: "Seviye Yolu" },
-      { href: "/kurslar", label: "Tüm Kurslar" },
+      { href: "/elektro", label: "Elektro Gitar", simge: yerSimgesi("elektro") },
+      { href: "/akustik", label: "Akustik Gitar", simge: yerSimgesi("akustik") },
+      { href: "/seviye", label: "Seviye Yolu", simge: yerSimgesi("seviye") },
+      { href: "/kurslar", label: "Tüm Kurslar", simge: yerSimgesi("kurslar") },
     ],
     sutunlar: [
       {
@@ -66,8 +68,8 @@ const MENULER: Menu[] = [
     href: "/teori",
     active: (p) => p.startsWith("/teori") || p.startsWith("/calis/armoni"),
     buyuk: [
-      { href: "/teori", label: "Müzik Teorisi" },
-      { href: "/calis/armoni", label: "Armoni" },
+      { href: "/teori", label: "Müzik Teorisi", simge: yerSimgesi("teori") },
+      { href: "/calis/armoni", label: "Armoni", simge: kursSimgesi("armoni") },
     ],
     sutunlar: [
       {
@@ -95,8 +97,8 @@ const MENULER: Menu[] = [
     href: "/kutuphane",
     active: (p) => p.startsWith("/kutuphane") || p.startsWith("/sarkilar") || p.startsWith("/oynatici"),
     buyuk: [
-      { href: "/kutuphane", label: "Şarkı Kütüphanesi" },
-      { href: "/sarkilar", label: "Popüler Şarkılar" },
+      { href: "/kutuphane", label: "Şarkı Kütüphanesi", simge: yerSimgesi("kutuphane") },
+      { href: "/sarkilar", label: "Popüler Şarkılar", simge: yerSimgesi("sarkilar") },
     ],
     sutunlar: [
       {
@@ -114,7 +116,11 @@ const MENULER: Menu[] = [
     label: "Araçlar",
     href: "/araclar",
     active: (p) => p.startsWith("/araclar"),
-    buyuk: [{ href: "/araclar", label: "Araçlar" }],
+    buyuk: [
+      { href: "/araclar#metronom", label: "Metronom", simge: yerSimgesi("metronom") },
+      { href: "/araclar#nota-testi", label: "Nota Testi", simge: yerSimgesi("nota-testi") },
+      { href: "/teori#sap", label: "Sap Gezgini", simge: yerSimgesi("sap-gezgini") },
+    ],
     sutunlar: [
       {
         baslik: "Pratik araçları",
@@ -131,7 +137,7 @@ const MENULER: Menu[] = [
     label: "Profil",
     href: "/profil",
     active: (p) => p.startsWith("/profil") || p.startsWith("/marka"),
-    buyuk: [{ href: "/profil", label: "Profil" }],
+    buyuk: [{ href: "/profil", label: "Profil", simge: yerSimgesi("profil") }],
     sutunlar: [
       {
         baslik: "İlerleme",
@@ -293,8 +299,8 @@ export default function SiteHeader() {
                           <ul className="space-y-2.5">
                             {m.buyuk.map((b) => (
                               <li key={b.href + b.label}>
-                                <Link href={b.href} className="inline-block rounded-md font-[family-name:var(--font-display)] text-[24px] font-semibold leading-[1.1667] tracking-[0.009em] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-4">
-                                  {b.label}
+                                <Link href={b.href} className="inline-flex items-center gap-3 rounded-md font-[family-name:var(--font-display)] text-[24px] font-semibold leading-[1.1667] tracking-[0.009em] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-4">
+                                  <UygulamaSimgesi simge={b.simge} boyut={32} /> {b.label}
                                 </Link>
                               </li>
                             ))}

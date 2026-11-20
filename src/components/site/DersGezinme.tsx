@@ -9,6 +9,8 @@ import { anahatDersleri, dersBitti } from "@/lib/katalog-ilerleme";
 import { useProgress } from "@/lib/progress";
 import Cekmece from "./Cekmece";
 import Kirinti from "./Kirinti";
+import UygulamaSimgesi from "./UygulamaSimgesi";
+import { dersSimgesi, kursSimgesi } from "@/lib/simge";
 
 type Komsu = { id: string; title: string; adim?: string } | undefined;
 
@@ -95,8 +97,8 @@ export function DersUstGezinme({ anahat, dersId }: { anahat: KursAnahat; dersId:
         acik={acik}
         kapat={kapat}
         baslik={
-          <Link href={`/calis/${anahat.slug}`} className="hover:text-accent">
-            {anahat.title}
+          <Link href={`/calis/${anahat.slug}`} className="flex items-center gap-2.5 hover:text-accent">
+            <UygulamaSimgesi simge={kursSimgesi(anahat.slug)} boyut={32} /> {anahat.title}
           </Link>
         }
       >
@@ -146,11 +148,16 @@ function DersListesi({ anahat, dersId, kapat }: { anahat: KursAnahat; dersId: st
                           aria-current={bu ? "page" : undefined}
                           className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition ${bu ? "bg-accent/15 font-semibold text-accent" : "hover:bg-ink/[0.06]"}`}
                         >
-                          <span className={`flex size-4 shrink-0 items-center justify-center rounded-full ${bitti ? "bg-ok text-ok-ink" : bu ? "" : "border border-ink/20"}`}>
-                            {bitti ? <Check size={10} /> : bu ? <PlayCircle size={16} /> : null}
-                          </span>
+                          <UygulamaSimgesi simge={dersSimgesi(d.tur, anahat.slug)} boyut={24} />
                           <span className="min-w-0 flex-1 truncate">{d.title}</span>
                           {d.adim && <span className="shrink-0 text-[10px] font-semibold text-accent">Pratik</span>}
+                          {bitti ? (
+                            <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-ok text-ok-ink">
+                              <Check size={10} aria-label="Tamamlandı" />
+                            </span>
+                          ) : bu ? (
+                            <PlayCircle size={16} className="shrink-0" aria-hidden />
+                          ) : null}
                         </Link>
                       </li>
                     );

@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Compass, Map, Mic2, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { CourseKind, SiteTexts } from "@/content/types";
 import { useProgress, type Progress } from "@/lib/progress";
 import { Bant, HapBag, MetinBag, SayfaBasi } from "./site/Vitrin";
+import UygulamaSimgesi from "./site/UygulamaSimgesi";
+import { kursSimgesi, yerSimgesi, type SimgeTanim } from "@/lib/simge";
 
 export type CourseSummary = {
   slug: string;
   title: string;
   description: string;
   kind: CourseKind;
-  image?: string;
-  icon?: string;
   status?: string;
   keys: string[];
 };
@@ -25,7 +25,6 @@ export function coursePercent(p: Progress, keys: string[]) {
 /** Teknik egzersiz merkezi: rehberler, akor yolu kartı, kurs kartları ve şarkı bağlantıları (elektro ya da akustik) */
 export default function HomeView({ texts, courses, songs = "elektro", eyebrow }: { texts: SiteTexts; courses: CourseSummary[]; songs?: "elektro" | "akustik"; eyebrow?: string }) {
   const p = useProgress();
-  const guideIcons = [BookOpen, Map];
   const songCards = songs === "akustik" ? acousticSongCards(texts.chordCard.slug) : SONG_CARDS;
   const renderCard = (c: CourseSummary) => {
     const pct = coursePercent(p, c.keys);
@@ -33,13 +32,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
     const card = (
       <div className={`card group/kart flex h-full flex-col overflow-hidden transition duration-300 ${disabled ? "opacity-70" : "hover:-translate-y-0.5 hover:border-ink/15"}`}>
         <div className="relative h-44 overflow-hidden">
-          {c.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={c.image} alt="" className="absolute inset-0 size-full object-cover transition duration-500 group-hover/kart:scale-[1.03]" />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-panel-2 text-6xl">{c.icon ?? "🎸"}</div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-panel via-panel/40 to-transparent" />
+          <UygulamaSimgesi simge={kursSimgesi(c.slug)} boyut={96} className="absolute left-5 top-5 transition duration-300 group-hover/kart:scale-[1.04]" />
           <ProgressRing pct={pct} className="absolute right-4 top-4" />
           {disabled && (
             <span className="glass absolute right-20 top-5 rounded-full border border-ink/10 px-3 py-1 text-xs font-semibold">Yakında</span>
@@ -78,6 +71,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
     <div>
       {/* Sayfa başı: ortalı dev başlık, rehber ve tüm kurslara geçiş */}
       <SayfaBasi
+        simge={yerSimgesi(songs === "akustik" ? "akustik" : "elektro")}
         kirinti={[{ label: bolum }, { label: "Teknik Egzersizler" }]}
         ust={bolum}
         baslik={songs === "akustik" ? "Akustik Gitar Teknikleri" : "Gitar Teknik Egzersizleri"}
@@ -103,13 +97,10 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
           <h2 className="baslik-orta mt-2">{texts.hero.title}</h2>
           <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-muted">{texts.hero.text}</p>
           <div className={`mt-7 grid gap-3 ${texts.hero.guides.length > 1 ? "sm:grid-cols-2" : ""}`}>
-            {texts.hero.guides.map((g, i) => {
-              const Icon = guideIcons[i % guideIcons.length];
+            {texts.hero.guides.map((g) => {
               return (
                 <Link key={g.slug} href={`/calis/${g.slug}`} className="group flex items-center gap-4 rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-4 transition hover:bg-ink/[0.08]">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                    <Icon size={19} />
-                  </span>
+                  <UygulamaSimgesi simge={kursSimgesi(g.slug)} boyut={44} />
                   <span className="flex-1">
                     <span className="block font-semibold leading-tight">{g.title}</span>
                     <span className="mt-1 block text-xs leading-relaxed text-muted">{g.text}</span>
@@ -149,11 +140,9 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
       <section>
         <h2 className="baslik-orta mb-6">{songs === "akustik" ? "Şarkılar" : "Şarkı ve Sololar"}</h2>
         <div className="grid gap-5 md:grid-cols-3">
-          {songCards.map(({ href, title, text, icon: Icon }) => (
+          {songCards.map(({ href, title, text, simge }) => (
             <Link key={href} href={href} className="card group flex gap-4 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                <Icon size={22} />
-              </span>
+              <UygulamaSimgesi simge={simge} boyut={44} />
               <span>
                 <span className="flex items-center gap-1 text-lg font-semibold">
                   {title} <ArrowRight size={16} className="opacity-0 transition group-hover:opacity-100" />
@@ -169,15 +158,17 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
   );
 }
 
-const SONG_CARDS = [
-  { href: "/sarkilar", title: "Popüler Şarkılar", text: "Ünlü şarkı ve sololar zorluğa göre; tablar Songsterr'de açılır.", icon: Star },
-  { href: "/oynatici", title: "Tabla Keşfet", text: "Kendi Guitar Pro arşivini ve örnek şarkıları çok kanallı oynatıcıda çal.", icon: Compass },
-  { href: "/sarkilar/dogaclama", title: "Doğaçlama Çal", text: "Davul, bas ve gitar eşliğinde önerilen gamlarla solo çal.", icon: Mic2 },
+type SarkiKarti = { href: string; title: string; text: string; simge: SimgeTanim };
+
+const SONG_CARDS: SarkiKarti[] = [
+  { href: "/sarkilar", title: "Popüler Şarkılar", text: "Ünlü şarkı ve sololar zorluğa göre; tablar Songsterr'de açılır.", simge: yerSimgesi("sarkilar") },
+  { href: "/oynatici", title: "Tabla Keşfet", text: "Kendi Guitar Pro arşivini ve örnek şarkıları çok kanallı oynatıcıda çal.", simge: yerSimgesi("oynatici") },
+  { href: "/sarkilar/dogaclama", title: "Doğaçlama Çal", text: "Davul, bas ve gitar eşliğinde önerilen gamlarla solo çal.", simge: yerSimgesi("dogaclama") },
 ];
 
-const acousticSongCards = (chordSlug: string) => [
-  { href: "/akustik/sarkilar", title: "Akustik Şarkılar", text: "Akorlarla çalınan şarkılar zorluğa göre; tablar Songsterr'de açılır.", icon: Star },
-  { href: `/calis/${chordSlug}`, title: "Akorları Çal", text: "Şarkılara hazırlık: akorlar, geçişler ve ritim kalıpları.", icon: Compass },
+const acousticSongCards = (chordSlug: string): SarkiKarti[] => [
+  { href: "/akustik/sarkilar", title: "Akustik Şarkılar", text: "Akorlarla çalınan şarkılar zorluğa göre; tablar Songsterr'de açılır.", simge: yerSimgesi("sarkilar") },
+  { href: `/calis/${chordSlug}`, title: "Akorları Çal", text: "Şarkılara hazırlık: akorlar, geçişler ve ritim kalıpları.", simge: kursSimgesi(chordSlug) },
 ];
 
 /** İlerleme halkası: dolu kısım vurgu renginde (siyah / açık gri), yüzde ortada */

@@ -22,7 +22,6 @@ const beginnerGuide: Course = {
   title: "Sıfırdan Başlangıç Rehberi",
   description: "Gitara sıfırdan başla: ısınma, ilk akorlar, ritim ve pena temelleri.",
   kind: "guide",
-  icon: "🧭",
   guide: [
     "## Bu rehber kimin için?",
     "Gitara yeni başlayanlar için adım adım bir yol. Her dersi hedef süresi kadar çal, ders tamamlansın, sonra bir sonrakine geç.",
@@ -53,7 +52,6 @@ const intermediateGuide: Course = {
   title: "Başlangıç-Orta Rehberi",
   description: "Akorlar, ritim ve temel teknikler arasında hedefine göre ilerle.",
   kind: "guide",
-  icon: "🗺",
   guide: ["## Bu rehber kimin için?", "Temel akorları ve pena hareketini bilen, düzenli bir çalışma planı arayanlar için."],
   sections: [
     { number: 1, title: "Ritim ve Akorlar", exam: true, chapters: [

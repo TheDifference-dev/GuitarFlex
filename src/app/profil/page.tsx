@@ -15,7 +15,6 @@ export default async function ProfilePage() {
     return {
       slug: c.slug,
       title: c.title,
-      icon: c.icon,
       keys: lessons.map((l) => lessonKey(c.slug, l.id)),
       titles: Object.fromEntries(lessons.map((l) => [lessonKey(c.slug, l.id), `${c.title} · ${l.title}`])),
     };

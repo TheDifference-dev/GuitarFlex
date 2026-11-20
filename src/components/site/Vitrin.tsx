@@ -4,6 +4,8 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import Kirinti, { type KirintiHalka } from "./Kirinti";
+import type { SimgeTanim } from "@/lib/simge";
+import UygulamaSimgesi from "./UygulamaSimgesi";
 
 export type BantTonu = "beyaz" | "gri" | "koyu" | "uzay";
 
@@ -76,8 +78,11 @@ export function SayfaBasi({
   ek,
   className = "",
   bas = true,
+  simge,
 }: {
   baslik: ReactNode;
+  /** Başlığın üstündeki uygulama simgesi */
+  simge?: SimgeTanim;
   /** Başlık üstündeki küçük etiket */
   ust?: ReactNode;
   /** Kısa alt başlık */
@@ -100,6 +105,7 @@ export function SayfaBasi({
     <Bant ton={ton} bas={bas} className={`${sol ? "pb-10 pt-8" : "pb-16 pt-14"} ${className}`}>
       {kirinti && <Kirinti halkalar={kirinti} className={sol ? "mb-6" : "mb-8 justify-center"} />}
       <div className={sol ? "" : "mx-auto max-w-[980px] text-center"}>
+        {simge && <UygulamaSimgesi simge={simge} boyut={96} className="mb-6" />}
         {ust && <p className="text-[17px] font-semibold text-muted sm:text-[19px]">{ust}</p>}
         <h1 className={`${bs} ${ust ? "mt-2" : ""} text-balance`}>{baslik}</h1>
         {alt && <p className={`${sol ? "alt-baslik-kucuk" : "alt-baslik"} mt-2 text-pretty ${sol ? "max-w-3xl text-muted" : "mx-auto max-w-[760px]"}`}>{alt}</p>}

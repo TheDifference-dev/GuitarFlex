@@ -3,6 +3,7 @@ import { MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import { notFound } from "next/navigation";
 import { getYol, yolOzeti, YOLLAR } from "@/lib/yollar";
 import YolSayfasi from "@/components/yol/YolSayfasi";
+import { yolSimgesi } from "@/lib/simge";
 
 export async function generateMetadata(props: PageProps<"/teori/yol/[yol]">): Promise<Metadata> {
   const { yol } = await props.params;
@@ -16,7 +17,7 @@ export default async function YolPage(props: PageProps<"/teori/yol/[yol]">) {
   const yol = await getYol(slug);
   if (!yol) {
     return (
-      <SayfaBasi kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: tanim.ad }]} baslik={tanim.ad} alt="Bu yolun adımları kişisel içerik paketinde. Paket bulunamadı.">
+      <SayfaBasi simge={yolSimgesi(slug)} kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: tanim.ad }]} baslik={tanim.ad} alt="Bu yolun adımları kişisel içerik paketinde. Paket bulunamadı.">
         <MetinBag href="/teori" buyuk>
           Müzik Teorisi
         </MetinBag>

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Guitar, Music } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import UygulamaSimgesi from "./site/UygulamaSimgesi";
+import { seviyeSimgesi, yerSimgesi } from "@/lib/simge";
 
 export type LevelOption = { title: string; text: string; href: string };
 
@@ -16,16 +18,16 @@ export default function LevelPicker({ elektro, akustik }: { elektro: LevelOption
     <div className="space-y-4">
       <div className="flex gap-1 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-1">
         <button type="button" className={tabCls(tab === "elektro")} onClick={() => setTab("elektro")}>
-          <Guitar size={16} /> Elektro gitar
+          <UygulamaSimgesi simge={yerSimgesi("elektro")} boyut={24} /> Elektro gitar
         </button>
         <button type="button" className={tabCls(tab === "akustik")} onClick={() => setTab("akustik")}>
-          <Music size={16} /> Akustik gitar
+          <UygulamaSimgesi simge={yerSimgesi("akustik")} boyut={24} /> Akustik gitar
         </button>
       </div>
       <div className="space-y-3">
         {options.map((o, i) => (
           <Link key={o.title} href={o.href} className="group flex items-center gap-4 card p-5 transition hover:border-ink/20">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-ink">{i + 1}</span>
+            <UygulamaSimgesi simge={seviyeSimgesi(i * 2 + 1)} boyut={44} />
             <span className="flex-1">
               <span className="block font-semibold">{o.title}</span>
               <span className="mt-0.5 block text-sm text-muted">{o.text}</span>

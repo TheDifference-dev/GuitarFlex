@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SayfaBasi } from "@/components/site/Vitrin";
+import { yerSimgesi } from "@/lib/simge";
 import { notFound } from "next/navigation";
 import { THEORY, getLesson } from "@/content/theory";
 import FretboardExplorer from "@/components/FretboardExplorer";
@@ -20,7 +21,7 @@ export default async function LessonPage(props: PageProps<"/teori/[ders]">) {
 
   return (
     <article className="space-y-6">
-      <SayfaBasi kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: lesson.title }]} ust={`Seviye ${lesson.level}`} baslik={lesson.title} alt={lesson.summary} boyut="buyuk" />
+      <SayfaBasi simge={yerSimgesi("teori-dersi")} kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: lesson.title }]} ust={`Seviye ${lesson.level}`} baslik={lesson.title} alt={lesson.summary} boyut="buyuk" />
 
       <div className="mx-auto max-w-[760px] space-y-4 text-[19px] leading-relaxed">
         {lesson.body.map((p) => (

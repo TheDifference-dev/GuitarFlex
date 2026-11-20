@@ -1,18 +1,20 @@
 import AnaSayfa, { type Doseme, type OneCikanSarki, type SeviyeBasamagi, type TeoriYolu } from "@/components/site/AnaSayfa";
 import { BACKINGS } from "@/content/dogaclama";
 import { LEVELS, SEVIYE } from "@/content/seviyeler";
-import { assetUrl, getCourses } from "@/lib/courses";
+import { getCourses } from "@/lib/courses";
 import { kursAnahatti, kursKarti } from "@/lib/katalog";
 import { getLibrary } from "@/lib/kutuphane";
 import { getOyun } from "@/lib/oyun-veri";
+import { kisaAd, kursSimgesi, yerSimgesi, yolSimgesi } from "@/lib/simge";
 import { getYol, YOLLAR } from "@/lib/yollar";
+import type { IzgaraOgesi } from "@/components/site/SimgeIzgarasi";
 
 /** Öne çıkan kurslar: başlangıç rehberleri, akor yolu ve yeni eklenen kurslar (pakette yoksa atlanır) */
 const ONE_CIKAN = ["sifirdan-baslangic-rehberi", "baslangic-orta-rehberi", "akustik-baslangic-rehberi", "akor-yolu", "hybrid-picking", "gf-stiller"];
 
 export default async function Home() {
   const [courses, library, oyun] = await Promise.all([getCourses(), getLibrary(), getOyun()]);
-  const kartlar = courses.map((c) => kursKarti(c, assetUrl(c.image)));
+  const kartlar = courses.map((c) => kursKarti(c));
   const kart = (slug: string) => kartlar.find((k) => k.slug === slug);
   const aile = (a: string) => kartlar.filter((k) => k.aile === a);
   const dersSay = (ks: typeof kartlar) => ks.reduce((n, k) => n + k.ders, 0);
@@ -28,7 +30,7 @@ export default async function Home() {
     {
       baslik: "Teoriyi sapta gör.",
       metin: "Ritim, klavye, kulak ve okuma: kısa adımlarla ilerleyen pratik yolları.",
-      ikon: "teori",
+      simge: yerSimgesi("teori"),
       ton: "koyu",
       gorsel: "yollar",
       baglar: [
@@ -40,7 +42,7 @@ export default async function Home() {
       baslik: "Elektro Gitar",
       metin: "Başlangıç rehberleri, akor yolu ve teknik kursları.",
       not: `${elektro.length} kurs · ${dersSay(elektro)} ders`,
-      ikon: "elektro",
+      simge: yerSimgesi("elektro"),
       ton: "gri",
       baglar: [
         { href: "/elektro", label: "Başlayın" },
@@ -51,7 +53,7 @@ export default async function Home() {
       baslik: "Akustik Gitar",
       metin: "Duruş, ilk akorlar, geçişler ve akustik teknikler.",
       not: `${akustik.length} kurs · ${dersSay(akustik)} ders`,
-      ikon: "akustik",
+      simge: yerSimgesi("akustik"),
       ton: "gri",
       baglar: [
         { href: "/akustik", label: "Başlayın" },
@@ -62,7 +64,7 @@ export default async function Home() {
       baslik: "Stiller",
       metin: stiller?.description ?? "Blues, rock, funk, metal ve cazın ritim hissi ve cümle dili.",
       not: stiller ? `${stiller.bolum} bölüm · ${stiller.ders} ders` : undefined,
-      ikon: "stil",
+      simge: kursSimgesi("gf-stiller"),
       ton: "koyu",
       baglar: [
         { href: stiller ? "/calis/gf-stiller" : "/kurslar", label: "Başlayın" },
@@ -73,7 +75,7 @@ export default async function Home() {
       baslik: "Müzisyenlik",
       metin: ekler?.description ?? "Okuma, eşlikle çalma, ritim hissi ve ton.",
       not: ekler ? `${ekler.bolum} bölüm · ${ekler.ders} ders` : undefined,
-      ikon: "muzisyen",
+      simge: kursSimgesi("gf-ekler"),
       ton: "koyu",
       baglar: [
         { href: ekler ? "/calis/gf-ekler" : "/kurslar", label: "Başlayın" },
@@ -84,7 +86,7 @@ export default async function Home() {
       baslik: "Doğaçlama",
       metin: "Davul, bas ve ritim gitarı eşliğinde önerilen gamlarla solo çal.",
       not: `${BACKINGS.length} eşlik kaydı`,
-      ikon: "dogaclama",
+      simge: yerSimgesi("dogaclama"),
       ton: "gri",
       baglar: [
         { href: "/sarkilar/dogaclama", label: "Çalın" },
@@ -94,7 +96,7 @@ export default async function Home() {
     {
       baslik: "Araçlar",
       metin: "Metronom ve nota bulma testiyle her gün birkaç dakika.",
-      ikon: "araclar",
+      simge: yerSimgesi("metronom"),
       ton: "gri",
       baglar: [
         { href: "/araclar#metronom", label: "Metronom" },
@@ -105,7 +107,7 @@ export default async function Home() {
       baslik: "CAGED Sistemi",
       metin: "Beş açık akor şekli, tek klavye haritası. Kök notaları her yerde bul.",
       not: "Klavye Görselleştirme yolunda",
-      ikon: "caged",
+      simge: yerSimgesi("caged"),
       ton: "koyu",
       gorsel: "caged",
       baglar: [
@@ -120,7 +122,7 @@ export default async function Home() {
     await Promise.all(
       YOLLAR.map(async (y): Promise<TeoriYolu | null> => {
         const yol = await getYol(y.slug);
-        return yol ? { href: `/teori/yol/${y.slug}`, ad: y.ad, etiket: y.etiket, not: `${yol.bolumler.length} bölüm · ${yol.adimlar.length} adım` } : null;
+        return yol ? { slug: y.slug, href: `/teori/yol/${y.slug}`, ad: y.ad, etiket: y.etiket, not: `${yol.bolumler.length} bölüm · ${yol.adimlar.length} adım` } : null;
       }),
     )
   ).filter((y): y is TeoriYolu => !!y);
@@ -131,8 +133,24 @@ export default async function Home() {
     .slice(0, 4)
     .map((s) => ({ slug: s.slug, title: s.title, genre: s.genre, bpm: s.bpm, key: s.key }));
 
+  // Simge ızgarası (ana ekran gibi): bütün kurslar, teori yolları, kütüphane ve araçlar
+  const izgara: IzgaraOgesi[] = [
+    ...kartlar.filter((k) => !k.status).map((k) => ({ href: `/calis/${k.slug}`, ad: kisaAd(k.slug, k.title), simge: kursSimgesi(k.slug) })),
+    ...yollar.map((y) => ({ href: y.href, ad: kisaAd(`yol:${y.slug}`, y.ad), simge: yolSimgesi(y.slug) })),
+    { href: "/kurslar", ad: "Tüm Kurslar", simge: yerSimgesi("kurslar") },
+    { href: "/seviye", ad: "Seviye Yolu", simge: yerSimgesi("seviye") },
+    { href: "/kutuphane", ad: "Kütüphane", simge: yerSimgesi("kutuphane") },
+    { href: "/sarkilar", ad: "Popüler Şarkılar", simge: yerSimgesi("sarkilar") },
+    { href: "/sarkilar/dogaclama", ad: "Doğaçlama", simge: yerSimgesi("dogaclama") },
+    { href: "/oynatici", ad: "Oynatıcı", simge: yerSimgesi("oynatici") },
+    { href: "/araclar#metronom", ad: "Metronom", simge: yerSimgesi("metronom") },
+    { href: "/araclar#nota-testi", ad: "Nota Testi", simge: yerSimgesi("nota-testi") },
+    { href: "/teori#sap", ad: "Sap Gezgini", simge: yerSimgesi("sap-gezgini") },
+  ];
+
   return (
     <AnaSayfa
+      izgara={izgara}
       kartlar={kartlar}
       anahatlar={courses.map(kursAnahatti)}
       dosemeler={dosemeler}

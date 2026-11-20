@@ -5,7 +5,6 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { ExternalLink, Search } from "lucide-react";
 import { MADALYALAR, songUrl, type Madalya, type PopularSong } from "@/content/sarkilar";
 import { useProgress } from "@/lib/progress";
-import { METAL_IKON } from "@/lib/oyun";
 
 type Props = { songs: PopularSong[]; courseTitles: Record<string, string>; rehber?: boolean };
 type Siralama = "sik" | "kolay" | "zor" | "yeni" | "isim";
@@ -113,7 +112,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
           <p className="text-sm text-muted">{s.artist}</p>
         </div>
         <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${MADALYA_STYLE[madalyaOf(s)]}`}>
-          {METAL_IKON[madalyaOf(s)]} {madalyaOf(s)}
+          {madalyaOf(s)}
         </span>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -192,7 +191,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                       {s.title} <span className="font-normal text-muted">– {s.artist}</span>
                     </p>
                     <p className="text-xs text-muted">
-                      <span className="uppercase">{s.kind}</span> · {METAL_IKON[madalyaOf(s)]} {madalyaOf(s)} ({s.rehber!.seviye}) · {s.koken} · Hazırlık:{" "}
+                      <span className="uppercase">{s.kind}</span> · {madalyaOf(s)} ({s.rehber!.seviye}) · {s.koken} · Hazırlık:{" "}
                       {s.rehber!.bolumler.map((b, i) => (
                         <span key={b.ad}>
                           {i > 0 && ", "}
@@ -230,7 +229,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
             </button>
             {MADALYALAR.filter((m) => songs.some((s) => madalyaOf(s) === m)).map((m) => (
               <button key={m} type="button" className={chip(madalya === m)} onClick={() => setMadalya(m)}>
-                {METAL_IKON[m]} {m} ({songs.filter((s) => madalyaOf(s) === m).length})
+                {m} ({songs.filter((s) => madalyaOf(s) === m).length})
               </button>
             ))}
           </div>

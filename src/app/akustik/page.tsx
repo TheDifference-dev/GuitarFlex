@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import HomeView, { type CourseSummary } from "@/components/HomeView";
 import { flatLessons, lessonKey } from "@/content/courses";
-import { assetUrl, getCourses, getSiteTexts } from "@/lib/courses";
+import { getCourses, getSiteTexts } from "@/lib/courses";
 
 export const metadata: Metadata = { title: "Akustik Gitar" };
 
@@ -15,8 +15,6 @@ export default async function AcousticPage() {
     title: c.cardTitle ?? c.title,
     description: c.description,
     kind: c.kind,
-    image: assetUrl(c.image),
-    icon: c.icon,
     status: c.status,
     keys: flatLessons(c).map((l) => lessonKey(c.slug, l.id)),
   }));

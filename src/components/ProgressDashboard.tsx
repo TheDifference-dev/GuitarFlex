@@ -6,10 +6,12 @@ import { RANKS, badges, completedCount, keysProgress, rankFor } from "@/lib/rank
 import { ProgressBar, SummaryStrip } from "./ProgressWidgets";
 import OyunPaneli from "./OyunPaneli";
 import type { KursYapisi, OyunVeri } from "@/lib/oyun";
+import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
+import { kursSimgesi, rozetSimgesi } from "@/lib/simge";
 
 const DAYS = 35;
 
-export type CourseInfo = { slug: string; title: string; icon?: string; keys: string[]; titles: Record<string, string> };
+export type CourseInfo = { slug: string; title: string; keys: string[]; titles: Record<string, string> };
 
 export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { courses: CourseInfo[]; oyun?: OyunVeri; kurslar?: KursYapisi[] }) {
   const p = useProgress();
@@ -74,7 +76,7 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
           <div className="grid gap-3 sm:grid-cols-3">
             {badges(p, courses).map((b) => (
               <div key={b.id} className={`flex gap-3 card p-4 ${b.earned ? "" : "opacity-40 grayscale"}`}>
-                <span className="text-2xl">{b.icon}</span>
+                <UygulamaSimgesi simge={rozetSimgesi(b.id)} boyut={44} />
                 <div>
                   <p className="font-semibold">{b.title}</p>
                   <p className="text-sm text-muted">{b.description}</p>
@@ -92,8 +94,8 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
             const { done: d, total } = keysProgress(p, t.keys);
             return (
               <Link key={t.slug} href={`/calis/${t.slug}`} className="card p-4 hover:border-ink/20">
-                <p className="font-medium">
-                  {t.icon} {t.title}
+                <p className="flex items-center gap-2.5 font-medium">
+                  <UygulamaSimgesi simge={kursSimgesi(t.slug)} boyut={32} /> {t.title}
                 </p>
                 <ProgressBar value={d} max={total} />
               </Link>

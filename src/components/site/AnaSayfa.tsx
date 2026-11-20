@@ -2,20 +2,24 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { BookOpen, Check, Flame, Grid3x3, Guitar, Mic2, Music2, Music4, Palette, Timer, Trophy } from "lucide-react";
+import { Check, Flame, Trophy } from "lucide-react";
 import { dersAdresi, type KursAnahat, type KursKarti } from "@/lib/katalog";
 import { anahatDersleri, dersBitti, kartIlerleme, siradakiDers, sonCalisilan } from "@/lib/katalog-ilerleme";
 import { gorevler, gunler, seri, type OyunVeri } from "@/lib/oyun";
 import { formatDuration, streak, today, totalSeconds, useProgress } from "@/lib/progress";
 import type { Level } from "@/content/types";
+import { seviyeSimgesi, turSimgesi, yolSimgesi, type SimgeTanim } from "@/lib/simge";
 import KursKartiKucuk from "./KursKartiKucuk";
+import SimgeIzgarasi, { type IzgaraOgesi } from "./SimgeIzgarasi";
+import UygulamaSimgesi from "./UygulamaSimgesi";
 import { Bant, BolumBasi, DosemeAna, HapBag, Kahraman, MetinBag } from "./Vitrin";
 
 export type Doseme = {
   baslik: string;
   metin: string;
   not?: string;
-  ikon: "elektro" | "akustik" | "stil" | "muzisyen" | "dogaclama" | "araclar" | "teori" | "caged";
+  /** Görsel alanındaki uygulama simgesi */
+  simge: SimgeTanim;
   /** Döşemenin zemini: siyah ya da açık gri */
   ton: "koyu" | "gri";
   /** İlki birincil, ikincisi ikincil hap düğme */
@@ -25,16 +29,14 @@ export type Doseme = {
 };
 export type OneCikanSarki = { slug: string; title: string; genre: string; bpm: number; key: string };
 export type SeviyeBasamagi = { level: Level; ad: string; etut: string };
-export type TeoriYolu = { href: string; ad: string; etiket: string; not: string };
-
-const IKON = { elektro: Guitar, akustik: Music2, stil: Palette, muzisyen: Music4, dogaclama: Mic2, araclar: Timer, teori: BookOpen, caged: Grid3x3 } as const;
+export type TeoriYolu = { slug: string; href: string; ad: string; etiket: string; not: string };
 
 /** Seviye Yolu basamakları: açık uzay grisinden siyaha (beyaz yazı her basamakta AA) */
 const BASAMAK = ["#636366", "#48484a", "#3a3a3c", "#2c2c2e", "#1d1d1f"];
 
 /**
- * Ana sayfa (apple.com ana sayfasının düzeniyle): üstte günlük görev şeridi, ardından aralarında 12 px boşluk olan
- * üç kahraman bandı — kaldığın yerden devam et / kapak (siyah), Seviye Yolu (açık gri), Şarkı Kütüphanesi (siyah) —
+ * Ana sayfa (apple.com ana sayfasının düzeniyle): üstte günlük görev şeridi, ilk kahraman bandının altında simge ızgarası
+ * (kurslara hızlı erişim), ardından aralarında 12 px boşluk olan üç kahraman bandı — kaldığın yerden devam et / kapak (siyah), Seviye Yolu (açık gri), Şarkı Kütüphanesi (siyah) —
  * ve iki sütunlu döşemeler (teori yolları, elektro, akustik, stiller, müzisyenlik, doğaçlama, araçlar, CAGED).
  */
 export default function AnaSayfa({
@@ -48,7 +50,10 @@ export default function AnaSayfa({
   yollar,
   sifirdan,
   oyun,
+  izgara,
 }: {
+  /** Simge ızgarası: kurslar, teori yolları ve araçlar */
+  izgara: IzgaraOgesi[];
   kartlar: KursKarti[];
   anahatlar: KursAnahat[];
   dosemeler: Doseme[];
@@ -133,8 +138,16 @@ export default function AnaSayfa({
         </Kahraman>
       )}
 
+      {/* Simge ızgarası: bütün kurslar, teori yolları ve araçlar (ana ekran gibi) */}
+      {izgara.length > 0 && (
+        <Bant ton="beyaz" className="!py-14">
+          <SimgeIzgarasi ogeler={izgara} etiket="Kurslar ve araçlar" />
+        </Bant>
+      )}
+
       {/* (b) Seviye Yolu — açık gri */}
       <Kahraman
+        className="!mt-0"
         ton="gri"
         baslik="Seviye Yolu"
         alt="Beş seviye, tek yol. Kilit yok."
@@ -155,7 +168,9 @@ export default function AnaSayfa({
                 className="group flex flex-col justify-between rounded-[var(--radius-card)] p-5 text-left text-white shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08)] transition hover:brightness-125"
                 style={{ minHeight: `${11 + i * 2.75}rem`, background: BASAMAK[i] }}
               >
-                <span className="text-[13px] font-semibold tabular-nums text-white/85">{s.level}</span>
+                <span className="flex items-center gap-2 text-[13px] font-semibold tabular-nums text-white/85">
+                  <UygulamaSimgesi simge={seviyeSimgesi(s.level)} boyut={32} /> {s.level}
+                </span>
                 <span>
                   <span className="block font-[family-name:var(--font-display)] text-[21px] font-semibold leading-tight">{s.ad}</span>
                   <span className="mt-1 block text-xs text-white/85">{s.etut}</span>
@@ -182,10 +197,10 @@ export default function AnaSayfa({
       >
         {sarkilar.length > 0 && (
           <ul className="mb-14 grid w-full max-w-[1024px] grid-cols-4 gap-3 text-left">
-            {sarkilar.map((s, i) => (
+            {sarkilar.map((s) => (
               <li key={s.slug}>
                 <Link href={`/kutuphane/${s.slug}`} className="group flex h-full flex-col rounded-[var(--radius-card)] bg-panel p-5 transition hover:bg-panel-2">
-                  <Dalga tohum={i} />
+                  <UygulamaSimgesi simge={turSimgesi(s.genre)} boyut={60} />
                   <span className="mt-6 text-xs font-semibold text-muted">{s.genre}</span>
                   <span className="mt-1 text-[19px] font-semibold leading-tight">{s.title}</span>
                   <span className="mt-1 text-sm text-muted">
@@ -261,7 +276,8 @@ function DosemeGorseli({ d, yollar }: { d: Doseme; yollar: TeoriYolu[] }) {
         {yollar.map((y) => (
           <li key={y.href} className={yollar.length % 2 && y === yollar[yollar.length - 1] ? "col-span-2" : ""}>
             <Link href={y.href} className="group flex h-full items-center justify-between gap-3 rounded-[var(--radius-card)] bg-panel px-4 py-3 transition hover:bg-panel-2">
-              <span className="min-w-0">
+              <UygulamaSimgesi simge={yolSimgesi(y.slug)} boyut={44} />
+              <span className="min-w-0 flex-1">
                 <span className="block text-[17px] font-semibold leading-tight">{y.ad}</span>
                 <span className="block text-xs text-muted">{y.not}</span>
               </span>
@@ -289,12 +305,9 @@ function DosemeGorseli({ d, yollar }: { d: Doseme; yollar: TeoriYolu[] }) {
         {d.not && <p className="mt-6 text-sm text-muted">{d.not}</p>}
       </div>
     );
-  const Ikon = IKON[d.ikon];
   return (
     <div className="mb-12 flex flex-col items-center">
-      <span className="simge-kutu size-[152px] rounded-[34px]">
-        <Ikon size={72} strokeWidth={1.5} aria-hidden />
-      </span>
+      <UygulamaSimgesi simge={d.simge} boyut={152} />
       {d.not && <p className="mt-5 text-sm text-muted">{d.not}</p>}
     </div>
   );
@@ -310,18 +323,6 @@ function IlerlemeCubugu({ tamam, toplam, yuzde }: { tamam: number; toplam: numbe
         %{yuzde} · {tamam}/{toplam} ders · {toplam - tamam} kaldı
       </p>
     </div>
-  );
-}
-
-/** Şarkı döşemesindeki küçük ses dalgası (süs) */
-function Dalga({ tohum }: { tohum: number }) {
-  const boylar = Array.from({ length: 18 }, (_, i) => 0.25 + 0.75 * Math.abs(Math.sin((i + 1) * (1.7 + tohum * 0.6))));
-  return (
-    <span aria-hidden className="flex h-10 items-end gap-[3px]">
-      {boylar.map((b, i) => (
-        <span key={i} className="w-[3px] rounded-full bg-accent/85" style={{ height: `${Math.round(b * 100)}%` }} />
-      ))}
-    </span>
   );
 }
 

@@ -115,7 +115,6 @@ export const bendVibratoCourse: Course = {
   title: "Bend & Vibrato",
   description: "Doğru perdeye bend ve notaya can veren vibrato.",
   kind: "technique",
-  icon: "〰",
   guide: [
     "## Bend ve vibrato nedir?",
     "Bend, teli perdeye dik yönde iterek notanın perdesini yükseltmektir. Vibrato ise notanın perdesini hafifçe ve düzenli olarak inceltip kalınlaştırmaktır. İkisi birlikte gitarın 'şarkı söylemesini' sağlar.",

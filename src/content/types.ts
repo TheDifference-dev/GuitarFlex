@@ -130,6 +130,7 @@ export type Course = {
   kind: CourseKind;
   /** Kart ve ders kartlarının arka plan görseli: /marka/... ya da ozel-kaynak'a göre yol */
   image?: string;
+  /** Kullanılmıyor (eski içerik paketlerindeki emoji simge): kursun simgesi slug'a göre src/lib/simge.ts'ten gelir */
   icon?: string;
   status?: "yakinda";
   videos?: { title: string; channel?: string; url?: string }[];

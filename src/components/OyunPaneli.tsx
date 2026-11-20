@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Check, Flame, Shield, Trophy } from "lucide-react";
+import { Check } from "lucide-react";
+import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
+import { basarimSimgesi, madalyaSimgesi, yerSimgesi } from "@/lib/simge";
 import { today, useProgress } from "@/lib/progress";
-import { KADEMELER, METAL_IKON, dersKademesi, gorevler, gunler, kademeMetali, olculer, seri, type KursYapisi, type OyunVeri } from "@/lib/oyun";
+import { KADEMELER, dersKademesi, gorevler, gunler, kademeMetali, olculer, seri, type KursYapisi, type OyunVeri } from "@/lib/oyun";
 
 const KATEGORI: Record<string, string> = {
   streak: "Seri",
@@ -48,10 +50,10 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Kutu ikon={<Flame size={18} className="text-accent" />} etiket="Seri" deger={`${s.seri} gün`} not={`Rekor: ${s.rekor} gün`} />
-        <Kutu ikon={<Shield size={18} className="text-accent" />} etiket="Seri Kalkanı" deger={`${s.kalkan} / ${kural.kalkanMaks}`} not={s.kullanilan ? `${s.kullanilan} kez seriyi korudu` : `Üç görevi ${kural.kalkanGun} günde tamamla`} />
-        <Kutu ikon={<Check size={18} className="text-ok" />} etiket="Bugünkü görevler" deger={`${tamamSayi} / ${bugun.length}`} not={s.bugunTamam ? "Seri bugün korundu" : "Seri için en az 1 görev"} />
-        <Kutu ikon={<Trophy size={18} className="text-accent" />} etiket="Başarım puanı" deger={`${xp} XP`} not={`${kazanilan.length} / ${oyun.basarimlar.length} başarım`} />
+        <Kutu ikon={<UygulamaSimgesi simge={yerSimgesi("seri")} boyut={24} />} etiket="Seri" deger={`${s.seri} gün`} not={`Rekor: ${s.rekor} gün`} />
+        <Kutu ikon={<UygulamaSimgesi simge={yerSimgesi("kalkan")} boyut={24} />} etiket="Seri Kalkanı" deger={`${s.kalkan} / ${kural.kalkanMaks}`} not={s.kullanilan ? `${s.kullanilan} kez seriyi korudu` : `Üç görevi ${kural.kalkanGun} günde tamamla`} />
+        <Kutu ikon={<UygulamaSimgesi simge={yerSimgesi("gorev")} boyut={24} />} etiket="Bugünkü görevler" deger={`${tamamSayi} / ${bugun.length}`} not={s.bugunTamam ? "Seri bugün korundu" : "Seri için en az 1 görev"} />
+        <Kutu ikon={<UygulamaSimgesi simge={yerSimgesi("puan")} boyut={24} />} etiket="Başarım puanı" deger={`${xp} XP`} not={`${kazanilan.length} / ${oyun.basarimlar.length} başarım`} />
       </div>
 
       <section className="card p-5">
@@ -88,8 +90,8 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
         <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
           {Object.entries(metalSayi).map(([m, n]) => (
             <div key={m} className="rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-3 text-center">
-              <p className="text-2xl">{METAL_IKON[m]}</p>
-              <p className="text-sm font-semibold">{m}</p>
+              <UygulamaSimgesi simge={madalyaSimgesi(m)} boyut={44} />
+              <p className="mt-2 text-sm font-semibold">{m}</p>
               <p className="text-xs tabular-nums text-muted">{n} ders</p>
             </div>
           ))}
@@ -126,7 +128,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
             const ok = deger >= b.esik;
             return (
               <div key={b.ad} className={`flex gap-3 card p-4 ${ok ? "border-accent/50" : "opacity-60"}`}>
-                <span className={`text-2xl ${ok ? "" : "grayscale"}`}>{b.ikon}</span>
+                <UygulamaSimgesi simge={basarimSimgesi(b.olcu)} boyut={44} className={ok ? "" : "grayscale"} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-semibold leading-tight">{b.ad}</p>

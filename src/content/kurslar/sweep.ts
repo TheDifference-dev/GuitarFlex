@@ -168,7 +168,6 @@ export const sweepCourse: Course = {
   title: "Sweep Picking",
   description: "Tek pena hareketiyle tellerin üzerinden hızlı arpejler.",
   kind: "technique",
-  icon: "≋",
   guide: [
     "## Sweep picking nedir?",
     "Arpejin notaları farklı tellerdeyken pena her teli ayrı ayrı vurmaz: tek bir aşağı (ya da yukarı) hareketle tellerin üzerinden 'süpürür'. Sol el ise her notayı sırayla basıp kaldırır, böylece notalar akor gibi değil tek tek duyulur.",

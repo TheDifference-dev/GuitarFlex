@@ -168,7 +168,6 @@ export const ritimCourse: Course = {
   title: "Ritim & Strumming",
   description: "Sağ el ritim kalıpları, susturulmuş vuruşlar, senkop.",
   kind: "technique",
-  icon: "🥁",
   guide: [
     "## Ritim gitarı nedir?",
     "Şarkının zemini. İyi bir ritim gitaristi akorları doğru zamanda, doğru dinamikle ve hiç durmayan bir sağ el salınımıyla çalar.",

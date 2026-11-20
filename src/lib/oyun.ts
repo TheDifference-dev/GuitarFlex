@@ -4,7 +4,7 @@
 import type { Progress } from "./progress";
 import { today } from "./progress";
 
-export type Basarim = { ikon: string; ad: string; kategori: string; aciklama: string; nadirlik: string; xp: number; olcu: string; esik: number };
+export type Basarim = { ikon?: string; ad: string; kategori: string; aciklama: string; nadirlik: string; xp: number; olcu: string; esik: number };
 export type OyunVeri = {
   basarimlar: Basarim[];
   gorevler: { egzersizDk: number; serbestDk: number; teoriAdim: number; kalkanGun: number; kalkanMaks: number; oyMaks: number };
@@ -18,7 +18,6 @@ export const SERBEST = "serbest:";
 const METALLER = ["Bronz", "Gümüş", "Altın", "Platin", "Elmas"] as const;
 /** 0 Eğitilmedi, 1–20 Bronz I … Elmas IV, 21 Usta */
 export const KADEMELER = ["Eğitilmedi", ...METALLER.flatMap((m) => ["I", "II", "III", "IV"].map((r) => `${m} ${r}`)), "Usta"];
-export const METAL_IKON: Record<string, string> = { Bronz: "🥉", Gümüş: "🥈", Altın: "🥇", Platin: "⚪", Elmas: "💎", Usta: "👑" };
 
 /**
  * Bir dersin kademesi: hedef süre her dolduğunda bir kademe (1× hedef = Bronz I … 20× = Elmas IV).

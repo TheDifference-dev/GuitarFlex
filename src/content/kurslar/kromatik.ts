@@ -97,7 +97,6 @@ export const kromatikCourse: Course = {
   title: "Kromatik Isınma",
   description: "Parmak bağımsızlığı ve her çalışmadan önce ısınma.",
   kind: "technique",
-  icon: "🔥",
   guide: [
     "## Kromatik ısınma nedir?",
     ...CORE,

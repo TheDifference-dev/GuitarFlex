@@ -25,7 +25,7 @@ export function keysProgress(p: Progress, keys: string[]) {
   return { done, total: keys.length };
 }
 
-export type Badge = { id: string; icon: string; title: string; description: string; earned: boolean };
+export type Badge = { id: string; title: string; description: string; earned: boolean };
 
 export function badges(p: Progress, courses: { keys: string[] }[] = []): Badge[] {
   const done = completedCount(p);
@@ -39,15 +39,15 @@ export function badges(p: Progress, courses: { keys: string[] }[] = []): Badge[]
   const longest = longestStreak(p);
 
   return [
-    { id: "ilk-adim", icon: "🎸", title: "İlk Adım", description: "İlk çalışmanı kaydet.", earned: p.sessions.length > 0 },
-    { id: "uc-gun", icon: "🔥", title: "Isınıyor", description: "3 gün üst üste çalış.", earned: Math.max(s, longest) >= 3 },
-    { id: "yedi-gun", icon: "📅", title: "Haftalık Seri", description: "7 gün üst üste çalış.", earned: Math.max(s, longest) >= 7 },
-    { id: "bir-saat", icon: "⏱", title: "Bir Saat", description: "Toplam 60 dakika çalış.", earned: secs >= 3600 },
-    { id: "on-saat", icon: "🏋", title: "On Saat", description: "Toplam 10 saat çalış.", earned: secs >= 36000 },
-    { id: "on-egzersiz", icon: "✅", title: "Onluk", description: "10 egzersizi tamamla.", earned: done >= 10 },
-    { id: "teknik-ustasi", icon: "🏅", title: "Teknik Ustası", description: "Bir kursun tüm derslerini bitir.", earned: fullTechniques >= 1 },
-    { id: "hizli", icon: "⚡", title: "Hız Treni", description: "Herhangi bir egzersizde 140 BPM'e ulaş.", earned: best >= 140 },
-    { id: "kulak", icon: "🎯", title: "Sap Hakimi", description: "Nota bulma testinde 20 doğru yap.", earned: (p.quizBest["nota-bulma"] ?? 0) >= 20 },
+    { id: "ilk-adim", title: "İlk Adım", description: "İlk çalışmanı kaydet.", earned: p.sessions.length > 0 },
+    { id: "uc-gun", title: "Isınıyor", description: "3 gün üst üste çalış.", earned: Math.max(s, longest) >= 3 },
+    { id: "yedi-gun", title: "Haftalık Seri", description: "7 gün üst üste çalış.", earned: Math.max(s, longest) >= 7 },
+    { id: "bir-saat", title: "Bir Saat", description: "Toplam 60 dakika çalış.", earned: secs >= 3600 },
+    { id: "on-saat", title: "On Saat", description: "Toplam 10 saat çalış.", earned: secs >= 36000 },
+    { id: "on-egzersiz", title: "Onluk", description: "10 egzersizi tamamla.", earned: done >= 10 },
+    { id: "teknik-ustasi", title: "Teknik Ustası", description: "Bir kursun tüm derslerini bitir.", earned: fullTechniques >= 1 },
+    { id: "hizli", title: "Hız Treni", description: "Herhangi bir egzersizde 140 BPM'e ulaş.", earned: best >= 140 },
+    { id: "kulak", title: "Sap Hakimi", description: "Nota bulma testinde 20 doğru yap.", earned: (p.quizBest["nota-bulma"] ?? 0) >= 20 },
   ];
 }
 

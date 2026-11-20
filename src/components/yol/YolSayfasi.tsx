@@ -8,6 +8,8 @@ import { useProgress } from "@/lib/progress";
 import { MODUL_METIN } from "@/content/yol-modulleri";
 import CagedTablosu from "./CagedTablosu";
 import { SayfaBasi } from "../site/Vitrin";
+import UygulamaSimgesi from "../site/UygulamaSimgesi";
+import { yerSimgesi, yolSimgesi } from "@/lib/simge";
 
 // Teori yolu: bölümler ve sırayla açılan adımlar. Bir adım, önceki adım geçilince açılır; iskelet dışı ek
 // bölümlerin (serbest) ilk adımı her zaman açıktır.
@@ -29,6 +31,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
     <div className="space-y-8">
       <SayfaBasi
         kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: yol.ad }]}
+        simge={yolSimgesi(yol.slug)}
         ust="Pratik Yolu"
         baslik={yol.ad}
         alt={yol.ozet}
@@ -91,20 +94,23 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                 const r = sonuc(a.kod);
                 const ac = acik(i);
                 const icerik = (
-                  <>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-xs font-semibold text-accent">
-                        {a.kod}
-                        {a.kontrol ? " · Kontrol" : ""}
+                  <div className="flex items-start gap-3">
+                    <UygulamaSimgesi simge={a.kontrol ? yerSimgesi("gorev") : yolSimgesi(yol.slug)} boyut={32} className="mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs font-semibold text-accent">
+                          {a.kod}
+                          {a.kontrol ? " · Kontrol" : ""}
+                        </p>
+                        {r?.passed ? <Check size={16} className="text-ok" /> : !ac ? <Lock size={14} className="text-muted" /> : null}
+                      </div>
+                      <h3 className="font-semibold">{a.ad}</h3>
+                      <p className="text-xs text-muted">
+                        {a.soru} soru · Geçme %{a.gecme.dogruluk}
+                        {r ? ` · En iyi %${r.best}` : ""}
                       </p>
-                      {r?.passed ? <Check size={16} className="text-ok" /> : !ac ? <Lock size={14} className="text-muted" /> : null}
                     </div>
-                    <h3 className="font-semibold">{a.ad}</h3>
-                    <p className="text-xs text-muted">
-                      {a.soru} soru · Geçme %{a.gecme.dogruluk}
-                      {r ? ` · En iyi %${r.best}` : ""}
-                    </p>
-                  </>
+                  </div>
                 );
                 return ac ? (
                   <Link key={a.kod} href={`/teori/yol/${yol.slug}/${a.kod}`} className={`card p-3 transition hover:border-ink/15 ${r?.passed ? "border-ok/40" : ""}`}>

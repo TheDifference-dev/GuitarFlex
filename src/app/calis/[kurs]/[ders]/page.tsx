@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Lightbulb, Music } from "lucide-react";
 import LessonPractice from "@/components/LessonPractice";
 import { Bant } from "@/components/site/Vitrin";
 import { DersAltGezinme, DersUstGezinme } from "@/components/site/DersGezinme";
+import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { kursAnahatti } from "@/lib/katalog";
+import { DERS_TURU_ADI, dersSimgesi, dersTuru, yerSimgesi } from "@/lib/simge";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { assetUrl, getCourse } from "@/lib/courses";
 import { gitarProgrami } from "@/lib/gitarTonu";
@@ -39,10 +40,13 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
       </div>
 
       <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 pt-4">
-        <div className="min-w-0">
-          <p className="text-[17px] font-semibold text-muted">{course.cardTitle ?? course.title}</p>
-          <h1 className="baslik-orta mt-1 text-balance !text-[clamp(2rem,1.5rem+1.6vw,3rem)]">{lesson.title}</h1>
-          {lesson.description && <p className="mt-3 max-w-3xl text-pretty text-[19px] leading-snug text-muted">{lesson.description}</p>}
+        <div className="flex min-w-0 items-start gap-5">
+          <UygulamaSimgesi simge={dersSimgesi(dersTuru(lesson), course.slug)} boyut={60} etiket={DERS_TURU_ADI[dersTuru(lesson) ?? "drill"]} className="mt-1" />
+          <div className="min-w-0">
+            <p className="text-[17px] font-semibold text-muted">{course.cardTitle ?? course.title}</p>
+            <h1 className="baslik-orta mt-1 text-balance !text-[clamp(2rem,1.5rem+1.6vw,3rem)]">{lesson.title}</h1>
+            {lesson.description && <p className="mt-3 max-w-3xl text-pretty text-[19px] leading-snug text-muted">{lesson.description}</p>}
+          </div>
         </div>
         <div className="flex gap-2 text-sm">
           {(lesson.tex || lesson.tabFile) && (
@@ -93,8 +97,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         <div className="grid gap-4 md:grid-cols-2">
           {theory.length > 0 && (
             <section className="card p-6">
-              <h2 className="flex items-center gap-2 text-[21px] font-semibold">
-                <Music size={18} className="text-accent" /> Müzik Bilgisi
+              <h2 className="flex items-center gap-2.5 text-[21px] font-semibold">
+                <UygulamaSimgesi simge={yerSimgesi("muzik-bilgisi")} boyut={32} /> Müzik Bilgisi
               </h2>
               <ul className="mt-2 space-y-2 text-sm text-muted">
                 {theory.map((t) => (
@@ -105,8 +109,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
           )}
           {!!lesson.tips?.length && (
             <section className="card p-6">
-              <h2 className="flex items-center gap-2 text-[21px] font-semibold">
-                <Lightbulb size={18} className="text-accent" /> İpuçları
+              <h2 className="flex items-center gap-2.5 text-[21px] font-semibold">
+                <UygulamaSimgesi simge={yerSimgesi("ipucu")} boyut={32} /> İpuçları
               </h2>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
                 {lesson.tips.map((t) => (

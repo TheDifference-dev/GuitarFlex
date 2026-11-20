@@ -178,7 +178,6 @@ export const akorCourse: Course = {
   title: "Akorlar",
   description: "Açık akorlar, barre akorlar ve hızlı geçişler.",
   kind: "technique",
-  icon: "♫",
   guide: [
     "## Akor nedir?",
     "Aynı anda çalınan en az üç nota. Akorlar gamın notaları üzerine üçlü aralıklarla kurulur; majör, minör, 7'li ve sus akorlar bu yapının çeşitleridir.",

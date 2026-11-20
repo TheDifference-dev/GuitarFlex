@@ -17,6 +17,8 @@ import {
 } from "@/content/seviyeler";
 import { useProgress, type Progress } from "@/lib/progress";
 import { Bant, HapBag, MetinBag, SayfaBasi } from "./site/Vitrin";
+import UygulamaSimgesi from "./site/UygulamaSimgesi";
+import { kursSimgesi, seviyeSimgesi, yerSimgesi, yolSimgesi } from "@/lib/simge";
 
 // Seviye Yolu (Müfredat Spec v2.2 §10). Veri sunucuda kurulur (src/lib/seviye.ts);
 // ilerleme tarayıcıdaki kayıttan (localStorage) burada sayılır. Kilit yok, yalnız öneri ve ilerleme.
@@ -64,7 +66,8 @@ export function SeviyeKartlari({ items }: { items: SeviyeOzeti[] }) {
         return (
           <Link key={s.level} href={`/seviye/${s.level}`} className="card group flex flex-col p-5 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-3xl font-bold tracking-tight">
+              <span className="flex items-center gap-3 text-3xl font-bold tracking-tight">
+                <UygulamaSimgesi simge={seviyeSimgesi(s.level)} boyut={44} />
                 <span className="text-accent">{s.level}</span>
               </span>
               {ok && (
@@ -130,10 +133,12 @@ function Satir({ row, p }: { row: SeviyeSatiri; p: Progress }) {
       href={row.href}
       className={`card flex items-center gap-3 px-4 py-3 transition hover:border-ink/15 hover:bg-panel-2 ${complete ? "border-ok/40" : ""}`}
     >
-      <span className="w-10 shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-center text-xs font-semibold text-accent">{row.code}</span>
+      <UygulamaSimgesi simge={kursSimgesi(row.course)} boyut={32} />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold">{row.title}</span>
-        <span className="block truncate text-xs text-muted">{row.courseTitle}</span>
+        <span className="block truncate text-xs text-muted">
+          <span className="font-semibold tabular-nums">{row.code}</span> · {row.courseTitle}
+        </span>
       </span>
       <span className="w-24 shrink-0 text-right text-xs font-medium tabular-nums text-muted">
         <span className={complete ? "text-ok" : "text-text"}>{n}</span> / {row.lessons.length} ders
@@ -152,7 +157,9 @@ function Gruplar({ groups, p, bos }: { groups: SeviyeGrubu[]; p: Progress; bos: 
         return (
           <section key={g.axis} id={`eksen-${g.axis}`} className="scroll-mt-24 space-y-2">
             <div className="flex items-baseline gap-3 border-b border-line/70 pb-2">
-              <h3 className="flex-1 text-lg font-semibold">{EKSEN[g.axis]}</h3>
+              <h3 className="flex flex-1 items-center gap-2.5 text-lg font-semibold">
+                <UygulamaSimgesi simge={yerSimgesi(g.axis)} boyut={32} /> {EKSEN[g.axis]}
+              </h3>
               <span className="text-sm font-medium tabular-nums text-muted">
                 {g.rows.length} alt bölüm · {count(p, lessons)} / {lessons.length} ders
               </span>
@@ -203,6 +210,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
     <div>
       <SayfaBasi
         kirinti={[{ href: "/seviye", label: "Seviye Yolu" }, { label: `${level} ${meta.ad}` }]}
+        simge={seviyeSimgesi(level)}
         ust={`Seviye Yolu · ${level}`}
         baslik={meta.ad}
         alt={meta.tanim}
@@ -298,8 +306,10 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
               const bolumler = [...new Set(y.adimlar.map((a) => a.bolum))];
               return (
                 <Link key={y.slug} href={`/teori/yol/${y.slug}`} className="card p-4 transition hover:border-ink/15 hover:bg-panel-2">
-                  <p className="flex items-baseline justify-between text-sm font-semibold">
-                    {y.ad}
+                  <p className="flex items-center justify-between gap-2 text-sm font-semibold">
+                    <span className="flex items-center gap-2.5">
+                      <UygulamaSimgesi simge={yolSimgesi(y.slug)} boyut={32} /> {y.ad}
+                    </span>
                     <span className="tabular-nums text-muted">
                       <span className={n === steps.length ? "text-ok" : "text-text"}>{n}</span> / {steps.length} adım
                     </span>

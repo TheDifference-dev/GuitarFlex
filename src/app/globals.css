@@ -2,8 +2,8 @@
 
 /* ── TASARIM SİSTEMİ: apple.com dili · yalnız beyaz, siyah ve uzay grisi ─────────────────
    Uygulamanın bütün renk ve yerleşim değerleri buradaki değişkenlerden gelir. Bileşenler
-   değişkenlerin adlarını kullanır, renk değeri yazmaz. Renkli tek öğeler durum renkleridir
-   (yeşil başarı, kırmızı hata); vurgu da siyah / uzay grisidir.
+   değişkenlerin adlarını kullanır, renk değeri yazmaz. Renkli öğeler yalnız uygulama simgeleri
+   (--simge-*) ve durum renkleridir (yeşil başarı, kırmızı hata); vurgu da siyah / uzay grisidir.
 
    Palet
      beyaz #FFFFFF · açık gri #F5F5F7 · çizgi #D2D2D7 · ikincil metin #6E6E73 · metin #1D1D1F
@@ -34,6 +34,9 @@
      --gnav      global gezinme ve mega menü zemini (yarı saydam koyu, buzlu)
      --uzay      uzay grisi yüzey             --altbilgi-yazi  alt bilgi yazısı
      --nav-h     üst gezinme çubuğunun yüksekliği (yapışkan öğeler bunun altına oturur)
+   Uygulama simgeleri (uygulamanın tek renkli öğeleri; tek simge türü)
+     --simge-<renk> / --simge-<renk>-2  zemin üst / alt tonu: kirmizi turuncu sari yesil nane camgobegi mavi civit mor pembe kahve gri
+     --simge-glif (beyaz)  --simge-kenar (zeminden ayıran ince iç çizgi)
    Ölçüler
      --radius-card (18 px)  --radius-control  --shadow-pop (açılır menü)  --shadow-seg
    Mod: sistem tercihine uyar (prefers-color-scheme). İleride bir seçici eklenirse
@@ -90,6 +93,34 @@
   --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.18), 0 0 0 1px rgb(0 0 0 / 0.05);
   --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.04);
   --scroll-thumb: #c7c7cc;
+
+  /* Uygulama simgeleri: zemin üst / alt tonu. İki modda aynı değerler; hepsi beyaz glifle ≥ 3:1 */
+  --simge-kirmizi: #ff4a40;
+  --simge-kirmizi-2: #e5281d;
+  --simge-turuncu: #ea6f00;
+  --simge-turuncu-2: #d45c00;
+  --simge-sari: #bf8900;
+  --simge-sari-2: #a87400;
+  --simge-yesil: #27a147;
+  --simge-yesil-2: #1d8f3c;
+  --simge-nane: #0a9f90;
+  --simge-nane-2: #078a7e;
+  --simge-camgobegi: #1a98be;
+  --simge-camgobegi-2: #0f83a8;
+  --simge-mavi: #1f8bff;
+  --simge-mavi-2: #0a6fe0;
+  --simge-civit: #6866e0;
+  --simge-civit-2: #4f4cc9;
+  --simge-mor: #b660e6;
+  --simge-mor-2: #9a41cf;
+  --simge-pembe: #ff4069;
+  --simge-pembe-2: #e3214d;
+  --simge-kahve: #a98a64;
+  --simge-kahve-2: #8a6d4a;
+  --simge-gri: #8e8e93;
+  --simge-gri-2: #6e6e73;
+  --simge-glif: #ffffff;
+  --simge-kenar: rgb(0 0 0 / 0.08);
 }
 
 /* Koyu mod: siyah zemin, uzay grisi kartlar */
@@ -132,6 +163,7 @@
     --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
     --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.4);
     --scroll-thumb: #545458;
+    --simge-kenar: rgb(255 255 255 / 0.14);
   }
 }
 :root[data-mod="koyu"] {
@@ -172,6 +204,7 @@
   --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
   --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.4);
   --scroll-thumb: #545458;
+  --simge-kenar: rgb(255 255 255 / 0.14);
 }
 
 @theme inline {
@@ -403,6 +436,7 @@ select option {
     --primary-hover: #e8e8ed;
     --nota-ikincil: #86868b;
     --seg: #636366;
+    --simge-kenar: rgb(255 255 255 / 0.14);
     color: var(--text);
   }
   .bant-koyu {
@@ -532,14 +566,93 @@ select option {
     background: var(--vitrin);
   }
 
-  /* Uygulama simgesi gibi görsel: uzay grisi zemin, beyaz simge */
-  .simge-kutu {
-    display: flex;
+  /* Uygulama simgesi (tek simge türü; bkz. components/site/UygulamaSimgesi.tsx): yuvarlatılmış kare, dolu renk,
+     üstten alta çok hafif ton geçişi, beyaz glif. Gölge yok; zeminden yarım pikselli iç çizgiyle ayrılır. */
+  .uyg-simge {
+    display: inline-flex;
+    flex: none;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
-    background: linear-gradient(180deg, #48484a 0%, #2c2c2e 55%, #1c1c1e 100%);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+    border-radius: 22.5%;
+    color: var(--simge-glif);
+    background: linear-gradient(180deg, var(--s1, var(--simge-gri)), var(--s2, var(--simge-gri-2)));
+    box-shadow: inset 0 0 0 0.5px var(--simge-kenar);
+  }
+  .uyg-simge[data-renk="kirmizi"] {
+    --s1: var(--simge-kirmizi);
+    --s2: var(--simge-kirmizi-2);
+  }
+  .uyg-simge[data-renk="turuncu"] {
+    --s1: var(--simge-turuncu);
+    --s2: var(--simge-turuncu-2);
+  }
+  .uyg-simge[data-renk="sari"] {
+    --s1: var(--simge-sari);
+    --s2: var(--simge-sari-2);
+  }
+  .uyg-simge[data-renk="yesil"] {
+    --s1: var(--simge-yesil);
+    --s2: var(--simge-yesil-2);
+  }
+  .uyg-simge[data-renk="nane"] {
+    --s1: var(--simge-nane);
+    --s2: var(--simge-nane-2);
+  }
+  .uyg-simge[data-renk="camgobegi"] {
+    --s1: var(--simge-camgobegi);
+    --s2: var(--simge-camgobegi-2);
+  }
+  .uyg-simge[data-renk="mavi"] {
+    --s1: var(--simge-mavi);
+    --s2: var(--simge-mavi-2);
+  }
+  .uyg-simge[data-renk="civit"] {
+    --s1: var(--simge-civit);
+    --s2: var(--simge-civit-2);
+  }
+  .uyg-simge[data-renk="mor"] {
+    --s1: var(--simge-mor);
+    --s2: var(--simge-mor-2);
+  }
+  .uyg-simge[data-renk="pembe"] {
+    --s1: var(--simge-pembe);
+    --s2: var(--simge-pembe-2);
+  }
+  .uyg-simge[data-renk="kahve"] {
+    --s1: var(--simge-kahve);
+    --s2: var(--simge-kahve-2);
+  }
+  .uyg-simge[data-renk="gri"] {
+    --s1: var(--simge-gri);
+    --s2: var(--simge-gri-2);
+  }
+  /* Simge ızgarası (ana ekran gibi): 8 sütun, simgenin altında kısa ad */
+  .simge-izgara {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 28px 8px;
+  }
+  .simge-izgara a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .simge-izgara a .uyg-simge {
+    transition: transform 0.2s ease;
+  }
+  .simge-izgara a:hover .uyg-simge {
+    transform: scale(1.06);
+  }
+  .simge-izgara a:active .uyg-simge {
+    transform: scale(0.96);
+    filter: brightness(0.85);
   }
 
   /* Mega menü: tam genişlikte açılır panel, yumuşak açılma */
@@ -612,9 +725,20 @@ select option {
   .mega-perde {
     animation: none;
   }
+  .simge-izgara a .uyg-simge {
+    transition: none;
+  }
 }
 
 /* Sayfanın son bandı açık gri ise aynı zemindeki alt bilgiden ince bir çizgiyle ayrılır */
 body:has(main > :last-child > .bant-gri:last-child, main > .bant-gri:last-child) > footer {
   border-top: 1px solid var(--line);
+}
+
+/* Süper elips köşe (destekleyen tarayıcılarda): uygulama simgesi köşesinin sürekli eğrisi */
+@supports (corner-shape: squircle) {
+  .uyg-simge {
+    corner-shape: superellipse(1.6);
+    border-radius: 28%;
+  }
 }

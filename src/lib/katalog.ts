@@ -2,6 +2,7 @@
 // küçük özetler üretir. Sunucuda da istemcide de çalışır (fs yok).
 import type { Course, Lesson } from "@/content/types";
 import { flatLessons, lessonKey } from "@/content/courses";
+import { dersTuru, type DersTuru } from "./simge";
 
 /** Katalogdaki grup (GuitarBear'deki "teknik seçici" sırasına benzer): rehberler, akor yolu, elektro teknikler,
  *  ek kurslar, akustik teknikler, müzik teorisi */
@@ -52,8 +53,6 @@ export type KursKarti = {
   description: string;
   grup: KursGrubu;
   aile: KursAilesi;
-  image?: string;
-  icon?: string;
   status?: string;
   bolum: number;
   ders: number;
@@ -65,7 +64,7 @@ export type KursKarti = {
   adimlar: string[];
 };
 
-export function kursKarti(c: Course, image?: string): KursKarti {
+export function kursKarti(c: Course): KursKarti {
   const dersler = flatLessons(c);
   return {
     slug: c.slug,
@@ -73,9 +72,6 @@ export function kursKarti(c: Course, image?: string): KursKarti {
     description: c.description,
     grup: kursGrubu(c),
     aile: kursAilesi(c),
-    image,
-    // Simge bir karakter (emoji, ok) olmalı; "book" gibi ad yazılmışsa varsayılan simge kullanılır
-    icon: c.icon && !/^[a-z-]+$/i.test(c.icon) ? c.icon : c.kind === "theory" ? "📖" : undefined,
     status: c.status,
     bolum: c.sections.length,
     ders: dersler.length,
@@ -93,7 +89,7 @@ export type KursAnahat = {
   bolumler: {
     number: number;
     title: string;
-    altlar: { code: string; title: string; dersler: { id: string; title: string; adim?: string }[] }[];
+    altlar: { code: string; title: string; dersler: { id: string; title: string; adim?: string; tur?: DersTuru }[] }[];
   }[];
 };
 
@@ -110,7 +106,8 @@ export function kursAnahatti(c: Course): KursAnahat {
         title: ch.title,
         dersler: ch.lessons.map((l) => {
           const adim = adimAnahtari(l);
-          return adim ? { id: l.id, title: l.title, adim } : { id: l.id, title: l.title };
+          const tur = dersTuru(l);
+          return { id: l.id, title: l.title, ...(adim ? { adim } : {}), ...(tur ? { tur } : {}) };
         }),
       })),
     })),

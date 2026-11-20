@@ -2,6 +2,8 @@
 import type { Metadata } from "next";
 import { SITE } from "@/config/site";
 import { Bant, SayfaBasi } from "@/components/site/Vitrin";
+import UygulamaSimgesi, { type SimgeBoyutu } from "@/components/site/UygulamaSimgesi";
+import { RENK_ADI, SIMGE_DOKUMU, SIMGE_RENKLERI, kursSimgesi } from "@/lib/simge";
 
 export const metadata: Metadata = { title: "Marka" };
 
@@ -26,6 +28,8 @@ const USES = [
   { what: "Masaüstü uygulaması", where: "desktop/icon.png (512) · desktop/icon.ico (16–256)" },
   { what: "Kapak", where: "/marka/kapak.svg · kapak.png (1600×900) · kapak-kare.png (1080×1080)" },
 ];
+
+const BOYUTLAR: SimgeBoyutu[] = [152, 96, 60, 44, 32, 24];
 
 export default function BrandPage() {
   return (
@@ -65,7 +69,48 @@ export default function BrandPage() {
         </ul>
       </Bant>
 
-      <Bant ton="beyaz">
+      <Bant ton="beyaz" id="simgeler" className="scroll-mt-12">
+        <h2 className="baslik-orta mb-3 text-center">Uygulama simgeleri</h2>
+        <p className="mx-auto mb-10 max-w-[760px] text-center text-muted">
+          Uygulamadaki tek simge türü: yuvarlatılmış kare, dolu renk zemin, ortada beyaz çizgi glif. Her kursun, ders türünün, yolun ve aracın simgesi sabittir;{" "}
+          {SIMGE_DOKUMU.reduce((n, g) => n + g.simgeler.length, 0)} eşleme, {SIMGE_RENKLERI.length} renk.
+        </p>
+        <div className="mx-auto max-w-[1100px] space-y-10">
+          <div className="flex flex-wrap items-end justify-center gap-8">
+            {BOYUTLAR.map((b) => (
+              <figure key={b} className="flex flex-col items-center gap-2">
+                <UygulamaSimgesi simge={kursSimgesi("bend-vibrato")} boyut={b} />
+                <figcaption className="font-mono text-xs text-muted">{b} px</figcaption>
+              </figure>
+            ))}
+          </div>
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-4" aria-label="Simge renkleri">
+            {SIMGE_RENKLERI.map((r) => (
+              <li key={r} className="flex w-16 flex-col items-center gap-1.5 text-xs">
+                <UygulamaSimgesi simge={{ glif: "nota", renk: r }} boyut={44} />
+                {RENK_ADI[r]}
+              </li>
+            ))}
+          </ul>
+          {SIMGE_DOKUMU.map((g) => (
+            <section key={g.baslik}>
+              <h3 className="mb-4 text-[21px] font-semibold">
+                {g.baslik} <span className="text-sm font-medium text-muted">{g.simgeler.length}</span>
+              </h3>
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] gap-x-2 gap-y-5">
+                {g.simgeler.map((x) => (
+                  <li key={x.ad} className="flex flex-col items-center gap-1.5 text-center text-xs leading-tight">
+                    <UygulamaSimgesi simge={x.simge} boyut={60} />
+                    <span className="break-words">{x.ad}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </Bant>
+
+      <Bant ton="gri">
         <h2 className="baslik-orta mb-8 text-center">Renk paleti</h2>
         <div className="mx-auto grid max-w-[1100px] gap-10 md:grid-cols-3">
           {PALETTE.map((p) => (

@@ -119,7 +119,6 @@ export const palmMuteCourse: Course = {
   title: "Palm Mute",
   description: "Avuç içiyle susturarak vurucu rock ve metal ritimleri.",
   kind: "technique",
-  icon: "✋",
   guide: [
     "## Palm mute nedir?",
     "Sağ elin avuç içi kenarını köprünün hemen önüne, tellere hafifçe koyarak çalmak. Ses kısalır ve kalınlaşır; rock, punk ve metal ritimlerinin temel sesidir.",

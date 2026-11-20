@@ -589,7 +589,6 @@ export const alternatePickingCourse: Course = {
   title: "Alternate Picking",
   description: "Aşağı-yukarı pena hareketiyle hız ve doğruluk kazan.",
   kind: "technique",
-  icon: "⇅",
   guide: [
     "## Alternate Picking nedir?",
     "Her notayı bir öncekinin tersi yönde çalmak: aşağı, yukarı, aşağı, yukarı. Ritim ne olursa olsun pena eli bir saat sarkacı gibi düzenli salınır; vuruşlar aşağı, aralar yukarı düşer.",

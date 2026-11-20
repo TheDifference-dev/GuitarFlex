@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
-import { BookText, Check, ChevronDown, FileText, ListChecks, ListTree, ListVideo, PlayCircle, Sparkles } from "lucide-react";
+import { BookText, Check, ChevronDown, FileText, ListTree, ListVideo, PlayCircle, Sparkles } from "lucide-react";
 import type { Course, Lesson, Section } from "@/content/types";
 import { lessonKey } from "@/content/courses";
 import { chapterLevels, isAcoustic } from "@/content/seviyeler";
@@ -11,6 +11,8 @@ import Cekmece from "./site/Cekmece";
 import Kirinti from "./site/Kirinti";
 import { Bant, Eylemler, HapBag } from "./site/Vitrin";
 import KursSecici, { type SeciciKurs } from "./site/KursSecici";
+import UygulamaSimgesi from "./site/UygulamaSimgesi";
+import { DERS_TURU_ADI, dersSimgesi, dersTuru, kursSimgesi } from "@/lib/simge";
 import { AILE_ADI, AILE_ADRESI, type KursAilesi } from "@/lib/katalog";
 import { useProgress, type Progress, type StepProgress } from "@/lib/progress";
 
@@ -57,7 +59,7 @@ const subscribeHash = (cb: () => void) => {
 };
 const readHash = () => window.location.hash;
 
-export default function CourseView({ course, image, kurslar = [], aile }: { course: Course; image?: string; kurslar?: SeciciKurs[]; aile: KursAilesi }) {
+export default function CourseView({ course, kurslar = [], aile }: { course: Course; kurslar?: SeciciKurs[]; aile: KursAilesi }) {
   const p = useProgress();
   const [tab, setTab] = useState<"egzersiz" | "rehber">("egzersiz");
   const [cekmece, setCekmece] = useState(false);
@@ -205,6 +207,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
       <Bant ton="beyaz" bas className="pb-12 pt-10">
         <Kirinti halkalar={[{ href: AILE_ADRESI[aile], label: AILE_ADI[aile] }, { label: course.cardTitle ?? course.title }]} className="mb-8 justify-center" />
         <div className="mx-auto max-w-[980px] text-center">
+          <UygulamaSimgesi simge={kursSimgesi(course.slug)} boyut={96} className="mb-6" />
           <p className="text-[17px] font-semibold text-muted sm:text-[19px]">{AILE_ADI[aile]}</p>
           <div className="mt-2 flex justify-center">
             {kurslar.length > 1 ? <KursSecici baslik={course.title} slug={course.slug} kurslar={kurslar} /> : <h1 className="baslik-buyuk text-balance">{course.title}</h1>}
@@ -254,7 +257,15 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
           <ChevronDown size={16} className="shrink-0 text-muted" />
         </button>
       </div>
-      <Cekmece acik={cekmece} kapat={kapatCekmece} baslik={course.title}>
+      <Cekmece
+        acik={cekmece}
+        kapat={kapatCekmece}
+        baslik={
+          <span className="flex items-center gap-2.5">
+            <UygulamaSimgesi simge={kursSimgesi(course.slug)} boyut={32} /> {course.title}
+          </span>
+        }
+      >
         {panel(true)}
       </Cekmece>
 
@@ -306,7 +317,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                     const ep = p.exercises[lessonKey(course.slug, l.id)];
                     const target = l.minutes * 60;
                     const done = Math.min(ep?.totalSeconds ?? 0, target);
-                    if (l.practice) return <PratikKarti key={l.id} lesson={l} sonuc={p.steps[`${l.practice.yol}/${l.practice.kod}`]} image={image} />;
+                    if (l.practice) return <PratikKarti key={l.id} lesson={l} sonuc={p.steps[`${l.practice.yol}/${l.practice.kod}`]} />;
                     return (
                       <Link
                         key={l.id}
@@ -316,13 +327,10 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                         {siradaki?.l === l && (
                           <span className="absolute left-3 top-0 z-10 rounded-b-lg bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-ink">Sıradaki</span>
                         )}
-                        {image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={image} alt="" className="absolute inset-0 size-full object-cover opacity-25" />
-                        ) : null}
                         <div className="relative">
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-semibold leading-tight">{l.title}</h3>
+                          <div className="flex items-start gap-3">
+                            <UygulamaSimgesi simge={dersSimgesi(dersTuru(l), course.slug)} boyut={32} etiket={DERS_TURU_ADI[dersTuru(l) ?? "drill"]} />
+                            <h3 className="min-w-0 flex-1 font-semibold leading-tight">{l.title}</h3>
                             <span className="flex shrink-0 items-center gap-1.5">
                               {/* Alt bölümünden farklı seviyedeki ders: seviyesi kartta yazar (rozet alt bölüm başlığında) */}
                               {badges && l.level && l.level !== c.level && (
@@ -330,9 +338,6 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                                   {l.level}
                                 </span>
                               )}
-                              <span className="rounded-full bg-ink/[0.07] p-1.5">
-                                <ListVideo size={14} />
-                              </span>
                             </span>
                           </div>
                           {l.target && <p className="mt-2 text-xs font-medium text-muted">Hedef: <span className="text-accent">{l.target}</span></p>}
@@ -370,22 +375,16 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
 const KART = { egitim: "Eğitim", pratik: "Pratik", ek: "Ek İnceleme" } as const;
 
 /** Teori dersindeki Pratik kartı: soruları teori yolu adımında çözülür, sonucu oradan gelir */
-function PratikKarti({ lesson: l, sonuc, image }: { lesson: Lesson; sonuc?: StepProgress; image?: string }) {
+function PratikKarti({ lesson: l, sonuc }: { lesson: Lesson; sonuc?: StepProgress }) {
   return (
     <Link
       href={`/teori/yol/${l.practice!.yol}/${encodeURIComponent(l.practice!.kod)}`}
       className={`card group relative block overflow-hidden p-4 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15 ${sonuc?.passed ? "border-ok/40" : ""}`}
     >
-      {image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="absolute inset-0 size-full object-cover opacity-25" />
-      ) : null}
       <div className="relative">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold leading-tight">{l.title}</h3>
-          <span className="rounded-full bg-ink/[0.07] p-1.5">
-            <ListChecks size={14} />
-          </span>
+        <div className="flex items-start gap-3">
+          <UygulamaSimgesi simge={dersSimgesi("pratik")} boyut={32} etiket={DERS_TURU_ADI.pratik} />
+          <h3 className="min-w-0 flex-1 font-semibold leading-tight">{l.title}</h3>
         </div>
         {l.target && <p className="mt-2 text-xs font-medium text-muted">Rozet: <span className="text-accent">{l.target}</span></p>}
         <p className={`${l.target ? "mt-4" : "mt-10"} text-right text-sm font-semibold tabular-nums`}>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Lightbulb, Music } from "lucide-react";
+import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
+import { yerSimgesi } from "@/lib/simge";
 import FretboardExplorer from "./FretboardExplorer";
 import TabPlayer, { type TabSource } from "./TabPlayer";
 import type { Backing } from "@/content/dogaclama";
@@ -32,8 +33,8 @@ export default function BackingView({ backing }: { backing: Backing }) {
     <div className="space-y-6">
       <TabPlayer source={source} onPlayingChange={setCaliyor} />
       <section className="space-y-3 card p-5">
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <Music size={18} className="text-accent" /> Hangi gamla çalayım?
+        <h2 className="flex items-center gap-2.5 text-lg font-semibold">
+          <UygulamaSimgesi simge={yerSimgesi("muzik-bilgisi")} boyut={32} /> Hangi gamla çalayım?
         </h2>
         <div className="flex flex-wrap gap-2">
           {backing.scales.map((x, i) => (
@@ -51,8 +52,8 @@ export default function BackingView({ backing }: { backing: Backing }) {
         <FretboardExplorer key={s.name} initialSet={s.setId} initialRoot={s.root} />
       </section>
       <section className="card p-5">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <Lightbulb size={18} className="text-accent" /> İpuçları
+        <h2 className="flex items-center gap-2.5 font-semibold">
+          <UygulamaSimgesi simge={yerSimgesi("ipucu")} boyut={32} /> İpuçları
         </h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
           {backing.tips.map((t) => (

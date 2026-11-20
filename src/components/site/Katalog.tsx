@@ -6,9 +6,11 @@ import { ArrowRight, Search } from "lucide-react";
 import { GRUP_ADI, type KursAilesi, type KursGrubu, type KursKarti } from "@/lib/katalog";
 import { kartIlerleme } from "@/lib/katalog-ilerleme";
 import { useProgress } from "@/lib/progress";
+import { yolSimgesi } from "@/lib/simge";
 import KursKartiKucuk from "./KursKartiKucuk";
+import UygulamaSimgesi from "./UygulamaSimgesi";
 
-export type YolKarti = { href: string; etiket: string; ad: string; not: string };
+export type YolKarti = { slug: string; href: string; etiket: string; ad: string; not: string };
 
 const AILELER: [KursAilesi | "", string][] = [
   ["", "Tümü"],
@@ -106,6 +108,7 @@ export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yol
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {yollar.map((y) => (
               <Link key={y.href} href={y.href} className="card group flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:border-ink/15">
+                <UygulamaSimgesi simge={yolSimgesi(y.slug)} boyut={44} />
                 <span className="min-w-0 flex-1">
                   <span className="eyebrow">{y.etiket}</span>
                   <span className="block font-semibold">{y.ad}</span>

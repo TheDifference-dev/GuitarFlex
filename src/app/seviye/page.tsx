@@ -3,6 +3,7 @@ import { Bant, HapBag, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import { SeviyeKartlari, type SeviyeOzeti } from "@/components/SeviyeYolu";
 import { LEVELS } from "@/content/seviyeler";
 import { getSeviyeYolu } from "@/lib/seviye";
+import { yerSimgesi } from "@/lib/simge";
 
 export const metadata: Metadata = { title: "Seviye Yolu" };
 
@@ -23,6 +24,7 @@ export default async function SeviyeYoluPage() {
   return (
     <div>
       <SayfaBasi
+        simge={yerSimgesi("seviye")}
         kirinti={[{ href: "/elektro", label: "Elektro Gitar" }, { label: "Seviye Yolu" }]}
         baslik="Seviye Yolu"
         alt="Beş seviye, tek yol. Bir seviyenin teknik, klavye, ritim ve teori derslerini birlikte çalış."
