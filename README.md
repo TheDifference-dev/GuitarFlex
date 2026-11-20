@@ -1,5 +1,7 @@
 # GuitarFlex — Gitar Akademisi
 
+![GuitarFlex](public/marka/kapak.png)
+
 **GuitarFlex** is a guitar academy I designed and built: a desktop app (Electron) and a website (Next.js) running from a single codebase.
 It takes a player from the first chord to neoclassical sweep arpeggios through 12 structured technique courses, explains the music theory
 behind every exercise, and adds a songs & solos library, backing tracks for improvisation and a Songsterr-style multi-track tab player.
@@ -71,6 +73,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Yeni simge ve kapak görseli**: lacivert zemin üzerinde tek kesikli elektro gitar çalan özgün gitarist figürü; masaüstü kısayolu, pencere, site simgesi ve açılış ekranı yenilendi. Marka sayfasında kapak, simge boyutları ve renk paleti (lacivert, uzay grisi, beyaz)
 - **Yeni site düzeni**: ana sayfada kaldığın yerden devam, günlük görevler ve seri, kategori kartları, devam ettiğin kurslar, öne çıkanlar ve kütüphaneden parçalar. Yeni Kurs Kataloğu (gruplara, duruma ve ada göre süzme; her kartta bölüm, ders, süre ve ilerleme). Kurs sayfasında kurs seçici, ilerleme şeridi, mevcut bölüm ve Devam et düğmesi, sıradaki ders vurgusu. Ders sayfasında kırıntı, bütün kursu gösteren ders listesi çekmecesi, önceki/sonraki ders (Alt + ←/→). Telefonda hamburger menü ve yapışkan bölüm çubuğu. Eski ana sayfa artık Elektro Gitar sayfası. Hiçbir içerik kilitli değil: kurs bölümlerindeki ve Şarkı Rehberi'ndeki kilitler kalktı. Tabda akor adı, parmak numarası ve kısım yazıları üst üste binmiyor; mikserde bas ve klavye için ayrı simgeler
 - **Şarkı Kütüphanesi** (yeni sekme, Yarışma'nın yerine): kurşun gitar, ritim gitar, bas ve davullu 12 çok enstrümanlı şarkı; pop, klasik, reggae, blues, fingerstyle, country, rock, funk, Türk halk müziği tarzı, bossa nova, metal ve caz, L1'den L5'e. Hepsi GuitarFlex'in özgün parçası ya da kamu malı ezgilerin (Neşe Marşı, Greensleeves) kendi düzenlemesi. Arama, tür, zorluk, ton, tempo ve enstrüman filtreleri; liste ya da kart görünümü. Şarkı sayfasında mikserli oynatıcı, form ve kısımlar, akorlar, teknikler ve çalışma ipuçları. Piyano, org ve yaylılar notayla gösteriliyor
 - **Yarışma bölümü kaldırıldı**
