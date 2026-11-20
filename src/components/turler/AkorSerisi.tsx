@@ -39,7 +39,7 @@ export default function AkorSerisi({ chords, ob, ilkOlcu = 1, aktif }: { chords:
         {chords.map((c, i) => (
           <span
             key={i}
-            className={`rounded-lg border px-2.5 py-1 text-sm font-semibold tabular-nums transition ${aktif === i ? "border-accent bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.04]"}`}
+            className={`rounded-lg border px-2.5 py-1 text-sm font-semibold tabular-nums transition ${aktif === i ? "border-accent bg-accent text-accent-ink" : "border-ink/10 bg-ink/[0.04]"}`}
           >
             <span className="mr-1.5 text-xs text-muted">{ilkOlcu + i}</span>
             {c}

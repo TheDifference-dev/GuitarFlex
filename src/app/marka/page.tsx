@@ -5,10 +5,11 @@ import { Bant, SayfaBasi } from "@/components/site/Vitrin";
 
 export const metadata: Metadata = { title: "Marka" };
 
+/** Renk paleti: yalnız beyaz, uzay grisi ve siyah (globals.css değişkenleriyle aynı değerler) */
 const PALETTE = [
-  { group: "Lacivert", colors: ["#0A2A5E", "#1F3A93"] },
-  { group: "Uzay grisi", colors: ["#1C1C1E", "#2C2C2E", "#3A3A3C", "#6E6E73"] },
-  { group: "Beyaz", colors: ["#FFFFFF", "#F5F5F7"] },
+  { group: "Beyaz", colors: [{ c: "#FFFFFF", ad: "Zemin" }, { c: "#F5F5F7", ad: "Açık gri" }, { c: "#D2D2D7", ad: "Çizgi" }] },
+  { group: "Uzay grisi", colors: [{ c: "#48484A", ad: "Uzay grisi 3" }, { c: "#3A3A3C", ad: "Uzay grisi 2" }, { c: "#2C2C2E", ad: "Uzay grisi 1" }, { c: "#8E8E93", ad: "Gitar" }] },
+  { group: "Siyah", colors: [{ c: "#000000", ad: "Siyah" }, { c: "#1D1D1F", ad: "Metin" }, { c: "#6E6E73", ad: "İkincil metin" }] },
 ];
 
 const ICON_SIZES = [
@@ -32,7 +33,7 @@ export default function BrandPage() {
       <SayfaBasi
         kirinti={[{ label: "Marka" }]}
         baslik="Marka"
-        alt="Sade, geometrik çizgilerle özgün bir elektro gitarist ve tek kesikli bir gitar. Lacivert zemin, beyaz figür, uzay grisi gitar."
+        alt="Sade, geometrik çizgilerle özgün bir elektro gitarist ve tek kesikli bir gitar. Siyahtan uzay grisine zemin, beyaz figür, orta gri gitar."
         ek={
           <img src="/marka/kapak.png" alt={`${SITE.name} — Gitar akademisi`} width={1600} height={900} className="mx-auto mt-12 block h-auto w-full max-w-[1100px] rounded-[var(--radius-tile)]" />
         }
@@ -71,10 +72,11 @@ export default function BrandPage() {
             <div key={p.group}>
               <h3 className="mb-3 text-center text-[21px] font-semibold">{p.group}</h3>
               <div className="flex flex-wrap justify-center gap-3">
-                {p.colors.map((c) => (
+                {p.colors.map(({ c, ad }) => (
                   <div key={c} className="w-28 overflow-hidden rounded-xl border border-line">
                     <div className="h-14" style={{ background: c }} />
-                    <p className="bg-panel px-2 py-1 font-mono text-xs">{c}</p>
+                    <p className="bg-panel px-2 pt-1 text-xs font-semibold">{ad}</p>
+                    <p className="bg-panel px-2 pb-1 font-mono text-xs text-muted">{c}</p>
                   </div>
                 ))}
               </div>

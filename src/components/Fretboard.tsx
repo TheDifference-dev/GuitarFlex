@@ -89,7 +89,7 @@ export default function Fretboard({ set, root = 0, label = "note", solfege = fal
                       : isRoot
                         ? "fill-[var(--accent)]"
                         : shown
-                          ? "fill-[var(--text)]"
+                          ? "fill-[var(--nota-ikincil)]"
                           : "fill-transparent hover:fill-[var(--line)]"
                   }
                 />

@@ -213,7 +213,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
           <Eylemler>
             {siradaki ? (
               <HapBag href={dersHref(siradaki.l)} title={siradaki.l.title} className="max-w-full">
-                <span className="shrink-0">{tamam ? "Devam et" : "Başla"}:</span>
+                <span className="shrink-0">{tamam ? "Devam Edin" : "Başlayın"}:</span>
                 <span className="min-w-0 truncate sm:max-w-[18rem]">{siradaki.l.title}</span>
               </HapBag>
             ) : (

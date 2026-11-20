@@ -21,15 +21,29 @@ export default async function Home() {
   const stiller = kart("gf-stiller");
   const ekler = kart("gf-ekler");
 
-  // Ana sayfanın altındaki iki sütunlu döşemeler
+  const klavye = YOLLAR.some((y) => y.slug === "klavye");
+
+  // Ana sayfanın altındaki iki sütunlu döşemeler (apple.com gibi siyah / açık gri, satır satır çapraz)
   const dosemeler: Doseme[] = [
+    {
+      baslik: "Teoriyi sapta gör.",
+      metin: "Ritim, klavye, kulak ve okuma: kısa adımlarla ilerleyen pratik yolları.",
+      ikon: "teori",
+      ton: "koyu",
+      gorsel: "yollar",
+      baglar: [
+        { href: "/teori", label: "Daha Fazla Bilgi" },
+        { href: kart("armoni") ? "/calis/armoni" : "/teori#dersler", label: "Armoni Dersleri" },
+      ],
+    },
     {
       baslik: "Elektro Gitar",
       metin: "Başlangıç rehberleri, akor yolu ve teknik kursları.",
       not: `${elektro.length} kurs · ${dersSay(elektro)} ders`,
       ikon: "elektro",
+      ton: "gri",
       baglar: [
-        { href: "/elektro", label: "Başla" },
+        { href: "/elektro", label: "Başlayın" },
         { href: "/seviye", label: "Seviye Yolu" },
       ],
     },
@@ -38,8 +52,9 @@ export default async function Home() {
       metin: "Duruş, ilk akorlar, geçişler ve akustik teknikler.",
       not: `${akustik.length} kurs · ${dersSay(akustik)} ders`,
       ikon: "akustik",
+      ton: "gri",
       baglar: [
-        { href: "/akustik", label: "Başla" },
+        { href: "/akustik", label: "Başlayın" },
         { href: "/akustik/sarkilar", label: "Şarkılar" },
       ],
     },
@@ -48,32 +63,54 @@ export default async function Home() {
       metin: stiller?.description ?? "Blues, rock, funk, metal ve cazın ritim hissi ve cümle dili.",
       not: stiller ? `${stiller.bolum} bölüm · ${stiller.ders} ders` : undefined,
       ikon: "stil",
-      baglar: [{ href: stiller ? "/calis/gf-stiller" : "/kurslar", label: "Stillere başla" }],
+      ton: "koyu",
+      baglar: [
+        { href: stiller ? "/calis/gf-stiller" : "/kurslar", label: "Başlayın" },
+        { href: "/kurslar", label: "Kurs Kataloğu" },
+      ],
     },
     {
       baslik: "Müzisyenlik",
       metin: ekler?.description ?? "Okuma, eşlikle çalma, ritim hissi ve ton.",
       not: ekler ? `${ekler.bolum} bölüm · ${ekler.ders} ders` : undefined,
       ikon: "muzisyen",
-      baglar: [{ href: ekler ? "/calis/gf-ekler" : "/kurslar", label: "Müzisyenliğe başla" }],
+      ton: "koyu",
+      baglar: [
+        { href: ekler ? "/calis/gf-ekler" : "/kurslar", label: "Başlayın" },
+        { href: "/nasil-calismaliyim", label: "Nasıl Çalışmalı?" },
+      ],
     },
     {
       baslik: "Doğaçlama",
       metin: "Davul, bas ve ritim gitarı eşliğinde önerilen gamlarla solo çal.",
       not: `${BACKINGS.length} eşlik kaydı`,
       ikon: "dogaclama",
+      ton: "gri",
       baglar: [
-        { href: "/sarkilar/dogaclama", label: "Eşlik seç" },
-        { href: "/oynatici", label: "Tabla keşfet" },
+        { href: "/sarkilar/dogaclama", label: "Çalın" },
+        { href: "/oynatici", label: "Tabla Keşfedin" },
       ],
     },
     {
       baslik: "Araçlar",
       metin: "Metronom ve nota bulma testiyle her gün birkaç dakika.",
       ikon: "araclar",
+      ton: "gri",
       baglar: [
         { href: "/araclar#metronom", label: "Metronom" },
-        { href: "/araclar#nota-testi", label: "Nota testi" },
+        { href: "/araclar#nota-testi", label: "Nota Testi" },
+      ],
+    },
+    {
+      baslik: "CAGED Sistemi",
+      metin: "Beş açık akor şekli, tek klavye haritası. Kök notaları her yerde bul.",
+      not: "Klavye Görselleştirme yolunda",
+      ikon: "caged",
+      ton: "koyu",
+      gorsel: "caged",
+      baglar: [
+        { href: klavye ? "/teori/yol/klavye" : "/teori", label: "Daha Fazla Bilgi" },
+        { href: "/teori#sap", label: "Sap Gezgini" },
       ],
     },
   ];
@@ -104,7 +141,6 @@ export default async function Home() {
       sarkiSayisi={library.length}
       seviyeler={seviyeler}
       yollar={yollar}
-      armoni={!!kart("armoni")}
       sifirdan={!!kart("sifirdan-baslangic-rehberi")}
       oyun={oyun}
     />

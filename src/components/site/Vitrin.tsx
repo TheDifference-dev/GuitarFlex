@@ -1,5 +1,6 @@
 // apple.com tasarım dilinden ilhamla ortak yapı taşları: tam genişlikte bantlar, dev başlıklı sayfa başı,
-// "Başla ›" metin bağlantıları ve büyük döşemeler. Renkler globals.css'teki değişkenlerden gelir.
+// kahraman bantları, hap düğmeler, "Daha fazla bilgi ›" metin bağlantıları ve döşemeler. Renkler globals.css'teki
+// değişkenlerden gelir (yalnız beyaz, siyah ve uzay grisi).
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import Kirinti, { type KirintiHalka } from "./Kirinti";
@@ -21,7 +22,7 @@ export function Bant({
   );
 }
 
-/** "Daha fazla bilgi ›" biçiminde lacivert metin bağlantı */
+/** "Daha fazla bilgi ›" biçiminde metin bağlantı: metin renginde, üzerine gelince altı çizili */
 export function MetinBag({
   href,
   children,
@@ -37,7 +38,7 @@ export function MetinBag({
   geri?: boolean;
 }) {
   return (
-    <Link href={href} className={`metin-bag ${buyuk ? "text-[19px] sm:text-[21px]" : "text-[17px]"} ${className}`}>
+    <Link href={href} className={`metin-bag ${buyuk ? "text-[19px]" : "text-[17px]"} ${className}`}>
       {geri && <span aria-hidden>‹</span>}
       {children}
       {!geri && <span aria-hidden>›</span>}
@@ -45,10 +46,10 @@ export function MetinBag({
   );
 }
 
-/** Hap biçimli birincil düğme (bağlantı) */
+/** Hap düğme (bağlantı), apple.com ölçüsünde: padding 8 px 15 px, 14 px. Birincil dolu, ikincil kenarlıklı. */
 export function HapBag({ href, children, className = "", ikincil = false, title }: { href: string; children: ReactNode; className?: string; ikincil?: boolean; title?: string }) {
   return (
-    <Link href={href} title={title} className={`${ikincil ? "btn-secondary" : "btn-primary"} px-[22px] py-[11px] text-[17px] font-normal ${className}`}>
+    <Link href={href} title={title} className={`${ikincil ? "btn-secondary" : "btn-primary"} px-[15px] py-2 text-[14px] leading-[1.2857] ${className}`}>
       {children}
     </Link>
   );
@@ -56,7 +57,7 @@ export function HapBag({ href, children, className = "", ikincil = false, title 
 
 /** Başlık altındaki bağlantı/düğme sırası */
 export function Eylemler({ children, className = "", sol = false }: { children: ReactNode; className?: string; sol?: boolean }) {
-  return <div className={`mt-6 flex flex-wrap items-center gap-x-7 gap-y-3 ${sol ? "" : "justify-center"} ${className}`}>{children}</div>;
+  return <div className={`mt-[18px] flex flex-wrap items-center gap-x-[14px] gap-y-3 ${sol ? "" : "justify-center"} ${className}`}>{children}</div>;
 }
 
 /**
@@ -96,12 +97,12 @@ export function SayfaBasi({
 }) {
   const bs = boyut === "dev" ? "baslik-dev" : boyut === "buyuk" ? "baslik-buyuk" : "baslik-orta";
   return (
-    <Bant ton={ton} bas={bas} className={`${sol ? "pb-10 pt-8" : "pb-14 pt-10 sm:pb-16"} ${className}`}>
+    <Bant ton={ton} bas={bas} className={`${sol ? "pb-10 pt-8" : "pb-16 pt-14"} ${className}`}>
       {kirinti && <Kirinti halkalar={kirinti} className={sol ? "mb-6" : "mb-8 justify-center"} />}
       <div className={sol ? "" : "mx-auto max-w-[980px] text-center"}>
-        {ust && <p className={`text-[17px] font-semibold ${ton === "koyu" || ton === "uzay" ? "text-accent" : "text-muted"} sm:text-[19px]`}>{ust}</p>}
+        {ust && <p className="text-[17px] font-semibold text-muted sm:text-[19px]">{ust}</p>}
         <h1 className={`${bs} ${ust ? "mt-2" : ""} text-balance`}>{baslik}</h1>
-        {alt && <p className={`alt-baslik mt-4 text-pretty text-muted ${sol ? "max-w-3xl" : "mx-auto max-w-[760px]"}`}>{alt}</p>}
+        {alt && <p className={`${sol ? "alt-baslik-kucuk" : "alt-baslik"} mt-2 text-pretty ${sol ? "max-w-3xl text-muted" : "mx-auto max-w-[760px]"}`}>{alt}</p>}
         {children && <Eylemler sol={sol}>{children}</Eylemler>}
       </div>
       {ek}
@@ -131,8 +132,74 @@ export function BolumBasi({ baslik, alt, children, sol = false, className = "" }
   return (
     <div className={`${sol ? "" : "mx-auto max-w-[820px] text-center"} mb-10 ${className}`}>
       <h2 className="baslik-orta text-balance">{baslik}</h2>
-      {alt && <p className="mt-3 text-pretty text-[19px] leading-snug text-muted">{alt}</p>}
+      {alt && <p className="alt-baslik-kucuk mt-2 text-pretty text-muted">{alt}</p>}
       {children && <Eylemler sol={sol} className="mt-4">{children}</Eylemler>}
     </div>
+  );
+}
+
+/**
+ * Kahraman bandı (apple.com ana sayfasının ilk blokları): tam genişlik, ~692 px yükseklik, ortalı 56 px başlık
+ * bandın üstünden 56 px aşağıda, 28 px alt başlık, yan yana iki hap düğme; alt yarı görsel alanı (`children`).
+ * Ardışık kahraman bantları arasında 12 px beyaz boşluk kalır.
+ */
+export function Kahraman({
+  ton,
+  baslik,
+  ust,
+  alt,
+  eylemler,
+  children,
+  className = "",
+  bas = false,
+  baslikDuzey = "h2",
+}: {
+  ton: "koyu" | "gri";
+  baslik: ReactNode;
+  ust?: ReactNode;
+  alt?: ReactNode;
+  /** Hap düğmeler */
+  eylemler?: ReactNode;
+  /** Görsel alanı */
+  children?: ReactNode;
+  className?: string;
+  bas?: boolean;
+  baslikDuzey?: "h1" | "h2";
+}) {
+  const Baslik = baslikDuzey;
+  return (
+    <section className={`kahraman ${ton === "koyu" ? "bant-koyu" : "bant-gri"} ${bas ? "bant-bas" : ""} ${className}`}>
+      <div className="mx-auto max-w-[980px]">
+        {ust && <p className="mb-1.5 text-[17px] font-semibold text-muted">{ust}</p>}
+        <Baslik className="baslik-kahraman text-balance">{baslik}</Baslik>
+        {alt && <p className="alt-baslik mx-auto mt-1.5 max-w-[760px] text-pretty">{alt}</p>}
+        {eylemler && <Eylemler className="mt-[18px]">{eylemler}</Eylemler>}
+      </div>
+      <div className="flex w-full flex-1 flex-col items-center justify-end">{children}</div>
+    </section>
+  );
+}
+
+/** Ana sayfa döşemesi (2 sütunlu ızgarada): 580 px yükseklik, ortalı 40 px başlık, 21 px alt başlık, iki hap düğme, altta görsel */
+export function DosemeAna({
+  ton,
+  baslik,
+  alt,
+  eylemler,
+  children,
+}: {
+  ton: "koyu" | "gri";
+  baslik: ReactNode;
+  alt?: ReactNode;
+  eylemler?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <li className={`doseme-ana ${ton === "koyu" ? "bant-koyu" : ""}`}>
+      <h2 className="baslik-orta text-balance">{baslik}</h2>
+      {alt && <p className="alt-baslik-kucuk mx-auto mt-1.5 max-w-[30rem] text-pretty">{alt}</p>}
+      {eylemler && <Eylemler className="mt-[18px]">{eylemler}</Eylemler>}
+      <div className="flex w-full flex-1 flex-col items-center justify-end">{children}</div>
+    </li>
   );
 }

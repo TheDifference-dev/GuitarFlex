@@ -684,7 +684,7 @@ function Player({
   const multiTrack = tracks.length > 1 && mutedTracks === undefined && !audioOnly;
   const showParts = !!parts?.length && !barRange && meta.bars > 0;
   const btn = "inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-ink/[0.04] px-3 py-1.5 text-sm transition hover:bg-ink/10 disabled:opacity-40";
-  const on = "border-accent/40 bg-accent/15 text-accent hover:bg-accent/20";
+  const on = "!border-accent !bg-accent !text-accent-ink hover:!bg-accent/85";
   const iconBtn = "inline-flex h-8 w-8 items-center justify-center rounded-full border border-ink/10 bg-ink/[0.04] text-sm transition hover:bg-ink/10 disabled:opacity-40";
   const shownTrack = tracks.find((t) => t.index === shown);
 

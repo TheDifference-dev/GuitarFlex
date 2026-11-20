@@ -13,7 +13,7 @@ export default async function TheoryPage() {
   return (
     <div>
       <SayfaBasi kirinti={[{ label: "Müzik Teorisi" }]} baslik="Müzik Teorisi" alt="Gitarcının ihtiyaç duyduğu teori, sap üzerinde görerek.">
-        <HapBag href="#yollar">Pratik yolları</HapBag>
+        <HapBag href="#yollar">Pratik Yolları</HapBag>
         <MetinBag href="/calis/armoni" buyuk>
           Armoni
         </MetinBag>

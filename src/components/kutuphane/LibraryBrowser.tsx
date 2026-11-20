@@ -109,7 +109,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
       return n;
     });
   const chip = (active: boolean) =>
-    `rounded-full border px-3 py-1 text-sm font-semibold transition ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-ink/20"}`;
+    `rounded-full border px-3 py-1 text-sm font-semibold transition ${active ? "border-accent bg-accent text-accent-ink" : "border-line bg-panel hover:border-ink/20"}`;
   const say = (f: (s: LibrarySummary) => boolean) => songs.filter(f).length;
 
   const ekstra = (s: LibrarySummary) => s.tracks.filter((t) => !["lead", "rhythm", "bass", "drums"].includes(t.role)).map((t) => ROL_ADI[t.role]);

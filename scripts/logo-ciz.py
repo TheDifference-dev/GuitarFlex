@@ -6,8 +6,8 @@ import math, os
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public", "marka")
 
-NAVY = "#0b1838"      # koyu lacivert
-NAVY2 = "#13275a"     # lacivert
+NAVY = "#1c1c1e"      # koyu uzay grisi
+NAVY2 = "#2c2c2e"     # uzay grisi
 DEEP = "#020308"      # siyah (silüet)
 ORANGE = "#f47216"    # turuncu
 ORANGE2 = "#ffa047"   # açık turuncu
@@ -111,7 +111,7 @@ def placed(fill, outline, x=20, y=10, s=1.0):
 PICK = "M120 230 C70 182 16 122 16 64 C16 26 62 10 120 10 C178 10 224 26 224 64 C224 122 170 182 120 230 Z"
 
 variants = {
-    # 1) Sahne ışığı: lacivert zemin, arkadan turuncu ışık, koyu silüet
+    # 1) Sahne ışığı: uzay grisi zemin, arkadan turuncu ışık, koyu silüet
     "sahne": svg(
         '<defs><radialGradient id="spot" cx="50%" cy="42%" r="62%">'
         f'<stop offset="0" stop-color="{ORANGE2}"/><stop offset="0.28" stop-color="{ORANGE}"/>'
@@ -119,7 +119,7 @@ variants = {
         '<rect width="240" height="240" rx="40" fill="url(#spot)"/>'
         f'<ellipse cx="120" cy="226" rx="96" ry="7" fill="{DEEP}" opacity="0.7"/>'
         + placed(DEEP, ORANGE, 20, 8)),
-    # 2) Gün batımı: lacivert zemin, turuncu güneş, koyu silüet
+    # 2) Gün batımı: uzay grisi zemin, turuncu güneş, koyu silüet
     "gunbatimi": svg(
         f'<rect width="240" height="240" rx="40" fill="{NAVY}"/>'
         f'<circle cx="120" cy="104" r="78" fill="{ORANGE}"/>'

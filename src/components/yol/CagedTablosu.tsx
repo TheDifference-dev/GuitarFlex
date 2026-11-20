@@ -57,12 +57,12 @@ function CagedKutusu({ s }: { s: CagedSekil }) {
           );
         if (f === 0)
           return (
-            <circle key={i} cx={tx(i)} cy={UST - 14} r={4.5} fill="none" strokeWidth={1.4} className={kok.has(i) ? "stroke-[var(--accent)]" : "stroke-[var(--text)]"} />
+            <circle key={i} cx={tx(i)} cy={UST - 14} r={4.5} fill="none" strokeWidth={1.4} className={kok.has(i) ? "stroke-[var(--accent)]" : "stroke-[var(--nota-ikincil)]"} />
           );
         if (barreTel(i) && !kok.has(i)) return null;
         return (
           <g key={i}>
-            <circle cx={tx(i)} cy={py(f)} r={8} className={kok.has(i) ? "fill-[var(--accent)]" : "fill-[var(--text)]"} />
+            <circle cx={tx(i)} cy={py(f)} r={8} className={kok.has(i) ? "fill-[var(--accent)]" : "fill-[var(--nota-ikincil)]"} />
             {parmak[i] ? (
               <text x={tx(i)} y={py(f) + 3.5} textAnchor="middle" className="fill-[var(--bg)] text-[10px] font-semibold">
                 {parmak[i]}
@@ -162,7 +162,7 @@ export default function CagedTablosu() {
           <span className="inline-block size-3 rounded-full bg-[var(--accent)]" /> kök nota
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-full bg-[var(--text)]" /> diğer akor sesleri
+          <span className="inline-block size-3 rounded-full bg-[var(--nota-ikincil)]" /> diğer akor sesleri
         </span>
         <span>Daire içindeki sayı parmak: 1 işaret, 2 orta, 3 yüzük, 4 serçe · ○ açık tel · ✕ çalınmaz · perdeler kalın Mi → ince Mi</span>
       </div>

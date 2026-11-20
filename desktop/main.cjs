@@ -92,9 +92,9 @@ function splash() {
   try {
     logo = `<img src="data:image/svg+xml;base64,${fs.readFileSync(LOGO_SVG).toString("base64")}" width="120" height="120" style="border-radius:24px">`;
   } catch {}
-  const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#0A2A5E;color:#ffffff;font-family:system-ui,sans-serif">
-<div style="text-align:center">${logo}<div style="font-size:30px;font-weight:700;margin-top:16px">${APP_NAME}</div>
-<p id="durum" style="color:#a3b0cf;max-width:520px;margin:12px auto 0">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;color:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif">
+<div style="text-align:center">${logo}<div style="font-size:30px;font-weight:600;letter-spacing:-0.4px;margin-top:16px">${APP_NAME}</div>
+<p id="durum" style="color:#A1A1A6;max-width:520px;margin:12px auto 0">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
 }
 
@@ -174,7 +174,7 @@ async function createWindow() {
     minWidth: 900,
     minHeight: 600,
     // Açılış zemini sistem moduna uysun (sayfa yüklenene kadar görünen renk)
-    backgroundColor: nativeTheme.shouldUseDarkColors ? "#1C1C1E" : "#FFFFFF",
+    backgroundColor: nativeTheme.shouldUseDarkColors ? "#000000" : "#FFFFFF",
     title: APP_NAME,
     icon: fs.existsSync(ICON) ? ICON : undefined,
     autoHideMenuBar: false,

@@ -17,7 +17,7 @@ const KATEGORI: Record<string, string> = {
   membership: "Üyelik",
   practice: "Pratik",
 };
-// Nadirlik: gri → lacivert kademeli vurgu
+// Nadirlik: açık gri → siyah kademeli vurgu
 const NADIRLIK: Record<string, string> = {
   YAYGIN: "border-line text-muted",
   NADİR: "border-text/60 text-text",
@@ -114,7 +114,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
               key={k || "hepsi"}
               type="button"
               onClick={() => setKat(k)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${kat === k ? "border-accent bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
+              className={`rounded-full border px-3 py-1 text-xs font-semibold ${kat === k ? "border-accent bg-accent text-accent-ink" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
             >
               {k ? (KATEGORI[k] ?? k) : "Tümü"}
             </button>

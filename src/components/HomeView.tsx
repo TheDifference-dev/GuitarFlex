@@ -83,7 +83,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
         baslik={songs === "akustik" ? "Akustik Gitar Teknikleri" : "Gitar Teknik Egzersizleri"}
         alt="Bir rehberle sırayla ilerle ya da istediğin tekniğe doğrudan geç. Hiçbir ders kilitli değil."
       >
-        {texts.hero.guides[0] && <HapBag href={`/calis/${texts.hero.guides[0].slug}`}>Rehberle başla</HapBag>}
+        {texts.hero.guides[0] && <HapBag href={`/calis/${texts.hero.guides[0].slug}`}>Rehberle Başlayın</HapBag>}
         <MetinBag href="/kurslar" buyuk>
           Tüm kurslar
         </MetinBag>
@@ -180,7 +180,7 @@ const acousticSongCards = (chordSlug: string) => [
   { href: `/calis/${chordSlug}`, title: "Akorları Çal", text: "Şarkılara hazırlık: akorlar, geçişler ve ritim kalıpları.", icon: Compass },
 ];
 
-/** İlerleme halkası: dolu kısım lacivert, yüzde ortada */
+/** İlerleme halkası: dolu kısım vurgu renginde (siyah / açık gri), yüzde ortada */
 function ProgressRing({ pct, className = "" }: { pct: number; className?: string }) {
   const r = 20;
   const c = 2 * Math.PI * r;

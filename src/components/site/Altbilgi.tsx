@@ -50,18 +50,28 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
   },
 ];
 
+/** Alt satırdaki küçük yardımcı bağlantılar (apple.com'daki yasal bağlantılar satırı gibi) */
+const ALT_BAGLAR = [
+  { href: "/", label: "Ana Sayfa" },
+  { href: "/nasil-calismaliyim", label: "Nasıl Çalışmalıyım?" },
+  { href: "/profil", label: "İlerleme" },
+  { href: "/marka", label: "Marka" },
+];
+
+/** Alt bilgi (apple.com gibi): açık gri zemin, 12 px gri yazı; kısa not, site haritası, telif satırı */
 export default function Altbilgi() {
   return (
-    <footer className="uzay-kapsam bg-[var(--uzay)] text-xs leading-[1.33] text-muted">
-      <div className="mx-auto max-w-[1100px] px-5 pb-6 pt-8 sm:px-6">
-        <p className="border-b border-line pb-4">
-          {SITE.name} kişisel bir gitar akademisidir. İlerlemen bu bilgisayarda saklanır; hiçbir ders kilitli değildir.
+    <footer className="bg-[var(--band)] text-[12px] leading-4 tracking-[-0.01em] text-[var(--altbilgi-yazi)]">
+      <div className="mx-auto max-w-[1024px] px-[22px] pb-5 pt-[17px]">
+        <p className="border-b border-line pb-[11px] pt-[3px]">
+          {SITE.name} kişisel bir gitar akademisidir. İlerlemen bu bilgisayarda saklanır; hiçbir ders kilitli değildir. Şarkı
+          kütüphanesindeki parçalar özgün ya da kamu malı düzenlemelerdir.
         </p>
-        <nav aria-label="Site haritası" className="grid grid-cols-2 gap-x-6 gap-y-6 pt-6 sm:grid-cols-3 lg:grid-cols-5">
+        <nav aria-label="Site haritası" className="grid grid-cols-5 gap-x-5 pt-5">
           {SUTUNLAR.map((s) => (
             <div key={s.baslik}>
-              <h2 className="mb-2.5 text-xs font-semibold tracking-normal text-heading">{s.baslik}</h2>
-              <ul className="space-y-2">
+              <h2 className="mb-[0.8em] font-sans text-[12px] font-semibold leading-4 tracking-[-0.01em] text-heading">{s.baslik}</h2>
+              <ul className="space-y-[0.6em]">
                 {s.items.map((b) => (
                   <li key={b.href + b.label}>
                     <Link href={b.href} className="rounded transition hover:text-text hover:underline">
@@ -73,21 +83,18 @@ export default function Altbilgi() {
             </div>
           ))}
         </nav>
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
-          <p>
-            <span className="font-semibold text-text/90">{SITE.name}</span> · {SITE.footer}
-          </p>
-          <p className="flex gap-3">
-            <Link href="/marka" className="rounded hover:text-text hover:underline">
-              Marka
-            </Link>
-            <span aria-hidden className="text-line">
-              |
-            </span>
-            <Link href="/" className="rounded hover:text-text hover:underline">
-              Ana sayfa
-            </Link>
-          </p>
+        <div className="mt-8 flex flex-wrap items-center gap-x-[30px] gap-y-2 border-t border-line pt-[15px]">
+          <p>Telif Hakkı © 2026 {SITE.name}. Kişisel kullanım.</p>
+          <ul className="flex flex-wrap items-center">
+            {ALT_BAGLAR.map((b, i) => (
+              <li key={b.href} className={i ? "ml-[7px] border-l border-line pl-[7px] leading-3" : "leading-3"}>
+                <Link href={b.href} className="rounded hover:text-text hover:underline">
+                  {b.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="ml-auto">Türkiye · Türkçe</p>
         </div>
       </div>
     </footer>

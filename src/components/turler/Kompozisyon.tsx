@@ -181,7 +181,7 @@ export default function Kompozisyon({ tex, chords, bpm, title, progressKey, onPl
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => setNoktali((x) => !x)} className={`rounded-full border px-3 py-1 ${noktali ? "border-accent/40 bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.04]"}`}>
+            <button type="button" onClick={() => setNoktali((x) => !x)} className={`rounded-full border px-3 py-1 ${noktali ? "border-accent bg-accent text-accent-ink" : "border-ink/10 bg-ink/[0.04]"}`}>
               Noktalı
             </button>
             <button type="button" onClick={() => ekle("r")} className="btn-secondary px-3 py-1 text-sm">

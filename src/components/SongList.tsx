@@ -99,7 +99,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
   }, [songs, q, madalya, koken, kind, course, sira, acilis]);
 
   const chip = (active: boolean) =>
-    `rounded-full border px-3.5 py-1.5 text-sm font-semibold ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-ink/20"}`;
+    `rounded-full border px-3.5 py-1.5 text-sm font-semibold ${active ? "border-accent bg-accent text-accent-ink" : "border-line bg-panel hover:border-ink/20"}`;
   const adim = songs.filter((s) => s.rehber).sort((a, b) => a.rehber!.adim - b.rehber!.adim);
 
   const kart = (s: PopularSong) => (

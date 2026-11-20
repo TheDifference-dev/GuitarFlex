@@ -27,7 +27,7 @@ const SIRA: KursGrubu[] = ["rehber", "akor", "elektro", "ek", "akustik", "teori"
 
 const kucult = (s: string) => s.toLocaleLowerCase("tr");
 const chip = (on: boolean) =>
-  `rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${on ? "border-accent/40 bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`;
+  `rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${on ? "border-accent bg-accent text-accent-ink" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`;
 
 /** Kurs kataloğu: bütün kurslar gruplarıyla, bölüme, duruma ve ada göre süzülür */
 export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yollar: YolKarti[] }) {

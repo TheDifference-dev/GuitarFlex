@@ -1,9 +1,14 @@
 @import "tailwindcss";
 
-/* ── TASARIM SİSTEMİ: Apple sadeliği · beyaz + lacivert, uzay grisi metin ─────────────
-   Uygulamanın bütün renk ve yerleşim değerleri buradaki değişkenlerden gelir. Başka bir
-   tasarıma geçmek için yalnız bu blokları (açık ve koyu) değiştirmek yeter; bileşenler
-   değişkenlerin adlarını kullanır, renk değeri yazmaz.
+/* ── TASARIM SİSTEMİ: apple.com dili · yalnız beyaz, siyah ve uzay grisi ─────────────────
+   Uygulamanın bütün renk ve yerleşim değerleri buradaki değişkenlerden gelir. Bileşenler
+   değişkenlerin adlarını kullanır, renk değeri yazmaz. Renkli tek öğeler durum renkleridir
+   (yeşil başarı, kırmızı hata); vurgu da siyah / uzay grisidir.
+
+   Palet
+     beyaz #FFFFFF · açık gri #F5F5F7 · çizgi #D2D2D7 · ikincil metin #6E6E73 · metin #1D1D1F
+     uzay grisi #2C2C2E / #3A3A3C / #48484A · siyah #000000
+     koyu mod: zemin #000000 · kartlar #1C1C1E / #2C2C2E · metin #F5F5F7
 
    Zeminler (katmanlar; gölge yerine zemin farkı)
      --bg        sayfa                  --panel     kart / grup kutusu
@@ -11,26 +16,26 @@
      --line      ince ayraç ve kenarlık
      --ink       yarı saydam dolgu tabanı (bg-ink/5, border-ink/10 …): açıkta koyu, koyuda açık
      --elevated  açılır panel (ayarlar, menü) zemini
-     --seg       segment kontrolünde seçili parça     --header    üst çubuk (buzlu)
+     --seg       segment kontrolünde seçili parça     --header    yapışkan yerel çubuk (buzlu)
    Yazı
-     --text      birincil yazı (uzay grisi)           --heading   başlık yazısı (bir ton koyu)
-     --muted     ikincil yazı
-   Uzay grisi
-     --uzay      üst çubuk, alt bilgi ve uzay grisi vitrin bandının zemini; .uzay-kapsam içinde
-                 yazı ve vurgu açık tonlara döner (lacivert vurgu açık laciverte)
-   Vurgu (tek vurgu rengi: lacivert)
-     --accent    bağlantı, seçili öğe, simge          --accent-ink  --accent zemini üstündeki yazı
+     --text      birincil yazı (#1D1D1F)              --heading   başlık yazısı
+     --muted     ikincil yazı (#6E6E73)
+   Vurgu (siyah / uzay grisi; koyu zeminde açık gri)
+     --accent    seçili öğe, ilerleme, odak, simge    --accent-ink  --accent zemini üstündeki yazı
      --primary   dolu birincil düğme zemini           --primary-ink / --primary-hover
+     --nota-ikincil  sap çizimlerinde kök dışındaki sesler (kök notalar --accent)
    Durum (ölçülü)
      --ok --warn --bad (+ -ink: o renk zemin olduğunda üstündeki yazı)
    Tab kağıdı (alphaTab)
-     --sheet  --sheet-ink  --sheet-line  --sheet-muted  --sheet-cursor
-   Bantlar (apple.com gibi tam genişlikte, sırayla beyaz / açık gri bölümler)
-     --band      gri bant zemini            --panel-on-band  gri bant içindeki kart zemini
-     --vitrin    lacivert vitrin bandı (iki modda da koyu; içinde yazı ve vurgu açık tonlara döner)
+     --sheet  --sheet-ink  --sheet-line  --sheet-muted  --sheet-cursor (imleç)  --sheet-highlight (çalınan nota)
+   Bantlar (apple.com gibi tam genişlikte, beyaz / açık gri / siyah bölümler)
+     --band      açık gri bant zemini       --panel-on-band  gri bant içindeki kart zemini
+     --vitrin    siyah vitrin bandı (iki modda da siyah; içinde yazı ve vurgu açık tonlara döner)
+     --gnav      global gezinme ve mega menü zemini (yarı saydam koyu, buzlu)
+     --uzay      uzay grisi yüzey             --altbilgi-yazi  alt bilgi yazısı
      --nav-h     üst gezinme çubuğunun yüksekliği (yapışkan öğeler bunun altına oturur)
    Ölçüler
-     --radius-card  --radius-control  --shadow-pop (açılır menü)  --shadow-seg
+     --radius-card (18 px)  --radius-control  --shadow-pop (açılır menü)  --shadow-seg
    Mod: sistem tercihine uyar (prefers-color-scheme). İleride bir seçici eklenirse
    html[data-mod="acik" | "koyu"] sistemi geçersiz kılar.
    ─────────────────────────────────────────────────────────────────────────── */
@@ -38,31 +43,32 @@
   color-scheme: light;
   --bg: #ffffff;
   --panel: #f5f5f7;
-  --panel-2: #ebebf0;
-  --line: #e3e3e8;
-  --ink: #1c1c1e;
+  --panel-2: #e8e8ed;
+  --line: #d2d2d7;
+  --ink: #1d1d1f;
   --seg: #ffffff;
   --elevated: #ffffff;
-  --header: rgb(255 255 255 / 0.82);
+  --header: rgb(255 255 255 / 0.8);
 
-  /* Yazı: uzay grisi (başlıklar bir ton koyu) */
-  --text: #3a3a3c;
-  --heading: #2c2c2e;
+  --text: #1d1d1f;
+  --heading: #1d1d1f;
   --muted: #6e6e73;
 
-  /* Uzay grisi yüzeyler: üst çubuk, alt bilgi ve vitrin bandı (iki modda da) */
+  --gnav: rgb(29 29 31 / 0.8);
   --uzay: #2c2c2e;
-
+  --vitrin: #000000;
   --band: #f5f5f7;
   --panel-on-band: #ffffff;
-  --vitrin: #0b1f4f;
+  --panel-2-on-band: #e8e8ed;
+  --altbilgi-yazi: rgb(0 0 0 / 0.56);
   --nav-h: 3rem;
 
-  --accent: #1f3a93;
+  --accent: #1d1d1f;
   --accent-ink: #ffffff;
-  --primary: #1f3a93;
+  --primary: #1d1d1f;
   --primary-ink: #ffffff;
-  --primary-hover: #182f7a;
+  --primary-hover: #424245;
+  --nota-ikincil: #6e6e73;
 
   --ok: #1e7a37;
   --ok-ink: #ffffff;
@@ -74,89 +80,96 @@
   --sheet: #ffffff;
   --sheet-ink: #1d1d1f;
   --sheet-line: #aeaeb2;
-  --sheet-muted: #636366;
-  --sheet-cursor: #1f3a93;
+  --sheet-muted: #6e6e73;
+  --sheet-cursor: #1d1d1f;
+  --sheet-highlight: #86868b;
 
-  --radius-card: 1.25rem;
-  --radius-tile: 1.75rem;
+  --radius-card: 18px;
+  --radius-tile: 18px;
   --radius-control: 0.625rem;
   --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.18), 0 0 0 1px rgb(0 0 0 / 0.05);
   --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.04);
   --scroll-thumb: #c7c7cc;
 }
 
-/* Koyu mod: uzay grisi + lacivert */
+/* Koyu mod: siyah zemin, uzay grisi kartlar */
 @media (prefers-color-scheme: dark) {
   :root:not([data-mod="acik"]) {
     color-scheme: dark;
-    --bg: #1c1c1e;
-    --panel: #2c2c2e;
-    --panel-2: #3a3a3c;
-    --line: #3a3a3c;
+    --bg: #000000;
+    --panel: #1c1c1e;
+    --panel-2: #2c2c2e;
+    --line: #424245;
     --ink: #ffffff;
     --seg: #636366;
-    --elevated: #3a3a3c;
-    --header: rgb(28 28 30 / 0.82);
+    --elevated: #2c2c2e;
+    --header: rgb(0 0 0 / 0.78);
     --text: #f5f5f7;
-    --heading: #ffffff;
-    --muted: #aeaeb2;
-    --band: #131315;
+    --heading: #f5f5f7;
+    --muted: #a1a1a6;
+    --band: #161617;
     --panel-on-band: #2c2c2e;
-    --vitrin: #0b1f4f;
-    --accent: #8fa9ff;
-    --accent-ink: #0a1a45;
-    --primary: #2f54c4;
-    --primary-ink: #ffffff;
-    --primary-hover: #3a60d4;
+    --panel-2-on-band: #3a3a3c;
+    --altbilgi-yazi: rgb(255 255 255 / 0.56);
+    --accent: #f5f5f7;
+    --accent-ink: #1d1d1f;
+    --primary: #ffffff;
+    --primary-ink: #1d1d1f;
+    --primary-hover: #e8e8ed;
+    --nota-ikincil: #86868b;
     --ok: #32d74b;
     --ok-ink: #04230c;
     --warn: #ffb340;
     --warn-ink: #2b1700;
     --bad: #ff6961;
     --bad-ink: #2b0300;
-    --sheet: #232325;
-    --sheet-ink: #f2f2f7;
-    --sheet-line: #6c6c70;
-    --sheet-muted: #aeaeb2;
-    --sheet-cursor: #8fa9ff;
-    --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.06);
+    --sheet: #1c1c1e;
+    --sheet-ink: #f5f5f7;
+    --sheet-line: #636366;
+    --sheet-muted: #a1a1a6;
+    --sheet-cursor: #f5f5f7;
+    --sheet-highlight: #98989d;
+    --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
     --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.4);
     --scroll-thumb: #545458;
   }
 }
 :root[data-mod="koyu"] {
   color-scheme: dark;
-  --bg: #1c1c1e;
-  --panel: #2c2c2e;
-  --panel-2: #3a3a3c;
-  --line: #3a3a3c;
+  --bg: #000000;
+  --panel: #1c1c1e;
+  --panel-2: #2c2c2e;
+  --line: #424245;
   --ink: #ffffff;
   --seg: #636366;
-  --elevated: #3a3a3c;
-  --header: rgb(28 28 30 / 0.82);
+  --elevated: #2c2c2e;
+  --header: rgb(0 0 0 / 0.78);
   --text: #f5f5f7;
-  --heading: #ffffff;
-  --muted: #aeaeb2;
-  --band: #131315;
+  --heading: #f5f5f7;
+  --muted: #a1a1a6;
+  --band: #161617;
   --panel-on-band: #2c2c2e;
-  --vitrin: #0b1f4f;
-  --accent: #8fa9ff;
-  --accent-ink: #0a1a45;
-  --primary: #2f54c4;
-  --primary-ink: #ffffff;
-  --primary-hover: #3a60d4;
+  --panel-2-on-band: #3a3a3c;
+  --altbilgi-yazi: rgb(255 255 255 / 0.56);
+  --accent: #f5f5f7;
+  --accent-ink: #1d1d1f;
+  --primary: #ffffff;
+  --primary-ink: #1d1d1f;
+  --primary-hover: #e8e8ed;
+  --nota-ikincil: #86868b;
   --ok: #32d74b;
   --ok-ink: #04230c;
   --warn: #ffb340;
   --warn-ink: #2b1700;
   --bad: #ff6961;
   --bad-ink: #2b0300;
-  --sheet: #232325;
-  --sheet-ink: #f2f2f7;
-  --sheet-line: #6c6c70;
-  --sheet-muted: #aeaeb2;
-  --sheet-cursor: #8fa9ff;
-  --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --sheet: #1c1c1e;
+  --sheet-ink: #f5f5f7;
+  --sheet-line: #636366;
+  --sheet-muted: #a1a1a6;
+  --sheet-cursor: #f5f5f7;
+  --sheet-highlight: #98989d;
+  --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
   --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.4);
   --scroll-thumb: #545458;
 }
@@ -183,17 +196,15 @@
   --color-bad: var(--bad);
   --color-bad-ink: var(--bad-ink);
   --color-band: var(--band);
-  /* Sistem yazı tipi: Apple cihazlarda San Francisco, diğerlerinde Inter (optik boyutlu) */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", var(--font-inter), Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", var(--font-inter), Inter, "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  /* apple.com yazı tipi yığını: SF Pro (Text gövdede, Display başlıklarda); bulunmayan sistemlerde
+     Inter (optik boyutlu, SF'ye en yakın), sonra Helvetica / Arial */
+  --font-sans: "SF Pro Text", "SF Pro Icons", -apple-system, BlinkMacSystemFont, "Helvetica Neue", var(--font-inter), Inter, Helvetica, Arial, sans-serif;
+  --font-display: "SF Pro Display", "SF Pro Icons", -apple-system, BlinkMacSystemFont, "Helvetica Neue", var(--font-inter), Inter, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", var(--font-geist-mono), Menlo, Consolas, monospace;
 }
 
 html {
   background: var(--bg);
-}
-
-html {
   /* Tam genişlikteki bantlar dikey kaydırma çubuğu kadar taşabilir; yatay kaydırma çıkmasın */
   overflow-x: clip;
 }
@@ -201,16 +212,16 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  /* apple.com gövde yazısı: 17 px, hafif sıkı */
+  /* apple.com gövde yazısı: 17 px, satır 25 px, harf aralığı -0.374 px */
   font-size: 17px;
-  line-height: 1.47;
-  letter-spacing: -0.012em;
+  line-height: 1.4705882353;
+  letter-spacing: -0.022em;
   font-optical-sizing: auto;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
 }
 
-/* Başlıklar: Display kesimi, büyük başlıklarda sıkı harf aralığı */
+/* Başlıklar: Display kesimi */
 h1,
 h2,
 h3 {
@@ -225,19 +236,19 @@ h3 {
 }
 h1,
 h2 {
-  letter-spacing: -0.022em;
+  letter-spacing: -0.005em;
 }
 h3 {
-  letter-spacing: -0.012em;
+  letter-spacing: 0.004em;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
-/* Odak halkası: klavyeyle gezinmede her denetimde görünür */
+/* Odak halkası: klavyeyle gezinmede her denetimde görünür (vurgu rengi: siyah / açık gri) */
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -279,58 +290,72 @@ select option {
 
 /* ── Ortak yüzeyler ve düğmeler ─────────────────────────────────────── */
 @layer components {
-  /* Buzlu katman: üst çubuk, açılır menüler, yapışkan araç çubukları */
+  /* Buzlu katman: yerel gezinme, açılır menüler, yapışkan araç çubukları */
   .glass {
     background: var(--header);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
   }
-  /* Kart: zeminden bir ton farklı katman, gölgesiz; kenar neredeyse görünmez (durum renkleri için yer tutar) */
+  /* Global gezinme (apple.com): yarı saydam koyu zemin, doygunluk 1.8, bulanıklık 20 px */
+  .gnav {
+    background: var(--gnav);
+    -webkit-backdrop-filter: saturate(1.8) blur(20px);
+    backdrop-filter: saturate(1.8) blur(20px);
+  }
+  /* Kart: zeminden bir ton farklı katman, 18 px köşe, gölgesiz; kenar neredeyse görünmez (durum renkleri için yer tutar) */
   .card {
     background: var(--panel);
-    border: 1px solid color-mix(in srgb, var(--ink) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ink) 4%, transparent);
     border-radius: var(--radius-card);
   }
-  /* Birincil düğme: dolu lacivert, hap biçimi */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: 999px;
-    background: var(--primary);
-    color: var(--primary-ink);
-    font-weight: 600;
-    transition:
-      background-color 0.15s ease,
-      transform 0.15s ease;
-  }
-  .btn-primary:hover {
-    background: var(--primary-hover);
-  }
-  .btn-primary:active {
-    transform: scale(0.98);
-  }
-  /* İkincil düğme: gri dolgu */
+  /* Hap düğmeler (apple.com): border-radius 980 px, yazı kalınlığı 400.
+     Birincil: dolu (açık zeminde siyah, koyu zeminde beyaz). İkincil: 1 px kenarlıklı, şeffaf. */
+  .btn-primary,
   .btn-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--ink) 7%, transparent);
-    color: var(--text);
-    font-weight: 600;
-    transition: background-color 0.15s ease;
+    border-radius: 980px;
+    border: 1px solid var(--primary);
+    font-weight: 400;
+    letter-spacing: -0.016em;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.15s ease;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: var(--primary-ink);
+  }
+  .btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--primary);
   }
   .btn-secondary:hover {
-    background: color-mix(in srgb, var(--ink) 12%, transparent);
+    background: var(--primary);
+    color: var(--primary-ink);
+  }
+  .btn-primary:active,
+  .btn-secondary:active {
+    transform: scale(0.98);
+  }
+  .btn-primary:disabled,
+  .btn-secondary:disabled {
+    opacity: 0.4;
+    transform: none;
   }
   /* İlerleme çubuğu dolgusu */
   .bar-fill {
-    background: var(--primary);
+    background: var(--accent);
   }
-  /* ── apple.com dili: bantlar, dev başlıklar, metin bağlantılar, döşemeler ── */
+  /* ── apple.com dili: bantlar, kahraman bantları, döşemeler, metin bağlantılar ── */
 
   /* Bant: sayfa kabının dışına taşan, tam genişlikte bölüm (içerik kabın içinde kalır) */
   .bant {
@@ -353,49 +378,42 @@ select option {
   .bant-gri {
     background: var(--band);
     --panel: var(--panel-on-band);
+    --panel-2: var(--panel-2-on-band);
   }
-  /* Uzay grisi kapsam: üst çubuk, alt bilgi, uzay grisi bant. Renk değişkenleri koyu zemine göre döner. */
+  /* Koyu kapsam: siyah vitrin bandı, uzay grisi bant, global gezinme. Renk değişkenleri koyu zemine göre döner. */
+  .bant-koyu,
   .uzay-kapsam {
     color-scheme: dark;
-    --bg: var(--uzay);
-    --band: #242426;
-    --panel: rgb(255 255 255 / 0.07);
-    --panel-2: rgb(255 255 255 / 0.12);
-    --panel-on-band: rgb(255 255 255 / 0.07);
-    --elevated: #3a3a3c;
-    --header: rgb(44 44 46 / 0.86);
-    --line: rgb(255 255 255 / 0.14);
+    --band: #161617;
+    --panel: #1c1c1e;
+    --panel-2: #2c2c2e;
+    --panel-on-band: #2c2c2e;
+    --panel-2-on-band: #3a3a3c;
+    --elevated: #2c2c2e;
+    --header: rgb(0 0 0 / 0.78);
+    --line: rgb(255 255 255 / 0.16);
     --ink: #ffffff;
     --text: #f5f5f7;
-    --heading: #ffffff;
-    --muted: #aeaeb2;
-    --accent: #a9bfff;
-    --accent-ink: #0a1a45;
-    --primary: #2f54c4;
-    --primary-ink: #ffffff;
-    --primary-hover: #3a60d4;
+    --heading: #f5f5f7;
+    --muted: #a1a1a6;
+    --accent: #f5f5f7;
+    --accent-ink: #1d1d1f;
+    --primary: #ffffff;
+    --primary-ink: #1d1d1f;
+    --primary-hover: #e8e8ed;
+    --nota-ikincil: #86868b;
     --seg: #636366;
     color: var(--text);
   }
+  .bant-koyu {
+    --bg: var(--vitrin);
+    background: var(--vitrin);
+  }
+  .uzay-kapsam {
+    --bg: var(--uzay);
+  }
   .bant-uzay {
     background: var(--uzay);
-  }
-  /* Lacivert vitrin bandı: içindeki bütün renk değişkenleri açık tonlara döner */
-  .bant-koyu {
-    color-scheme: dark;
-    background: radial-gradient(120% 90% at 50% 0%, #17337d 0%, var(--vitrin) 55%, #0c1530 100%);
-    --text: #f5f5f7;
-    --heading: #ffffff;
-    --muted: #b8c1db;
-    --accent: #a9bfff;
-    --ink: #ffffff;
-    --line: rgb(255 255 255 / 0.14);
-    --panel: rgb(255 255 255 / 0.08);
-    --panel-2: rgb(255 255 255 / 0.12);
-    --primary: #ffffff;
-    --primary-ink: #0b1f4f;
-    --primary-hover: #e6ebf7;
-    color: var(--text);
   }
   /* Yalnız tam genişlik (zemin vermeden) */
   .tam {
@@ -410,42 +428,67 @@ select option {
     --panel: var(--panel-on-band);
   }
 
-  /* Dev başlık (ana başlık 48–80 px), büyük başlık ve alt başlık */
-  .baslik-dev {
+  /* Kahraman bandı (apple.com ana sayfasının ilk blokları): tam genişlik, ~692 px, başlık üstten 56 px,
+     altında iki hap düğme, alt yarı görsel alanı. Ardışık bantlar arasında 12 px beyaz boşluk. */
+  .kahraman {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    min-height: 692px;
+    margin-inline: calc(50% - 50vw);
+    padding: 56px calc(50vw - 50%) 0;
+    text-align: center;
+  }
+  .kahraman + .kahraman {
+    margin-top: 12px;
+  }
+
+  /* Başlıklar: kahraman 56 px, sayfa başı 56 px, bölüm 48 px, döşeme 40 px; alt başlıklar 28 / 21 px */
+  .baslik-dev,
+  .baslik-kahraman {
     font-family: var(--font-display);
-    font-size: clamp(2.75rem, 2rem + 3.2vw, 5rem);
-    line-height: 1.05;
+    font-size: 56px;
+    line-height: 1.0714285714;
     font-weight: 600;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.28px;
   }
   .baslik-buyuk {
     font-family: var(--font-display);
-    font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3.5rem);
-    line-height: 1.07;
+    font-size: 48px;
+    line-height: 1.0834933333;
     font-weight: 600;
-    letter-spacing: -0.028em;
+    letter-spacing: -0.003em;
   }
   .baslik-orta {
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+    font-size: 40px;
     line-height: 1.1;
     font-weight: 600;
-    letter-spacing: -0.024em;
+    letter-spacing: 0;
   }
   .alt-baslik {
     font-family: var(--font-display);
-    font-size: clamp(1.1875rem, 1rem + 0.6vw, 1.75rem);
-    line-height: 1.2;
+    font-size: 28px;
+    line-height: 1.1428571429;
     font-weight: 400;
-    letter-spacing: -0.012em;
+    letter-spacing: 0.007em;
+  }
+  .alt-baslik-kucuk {
+    font-family: var(--font-display);
+    font-size: 21px;
+    line-height: 1.1904761905;
+    font-weight: 400;
+    letter-spacing: 0.011em;
   }
 
-  /* Metin bağlantı: "Başla ›" — lacivert, çizgisiz; üzerine gelince altı çizili */
+  /* Metin bağlantı: "Daha fazla bilgi ›" — metin renginde; üzerine gelince altı çizili (renk tek başına anlam taşımaz) */
   .metin-bag {
     display: inline-flex;
     align-items: baseline;
     gap: 0.2em;
-    color: var(--accent);
+    color: var(--text);
     font-weight: 400;
     border-radius: 0.375rem;
   }
@@ -454,7 +497,7 @@ select option {
     text-underline-offset: 0.18em;
   }
 
-  /* Döşeme: büyük yuvarlatılmış kart; başlık + kısa metin + bağlantı, altında görsel alanı */
+  /* Döşeme: başlık + kısa metin + bağlantılar, altında görsel alanı */
   .doseme {
     position: relative;
     display: flex;
@@ -465,14 +508,37 @@ select option {
     background: var(--panel);
     border-radius: var(--radius-tile);
   }
+  /* Ana sayfa döşeme ızgarası: 2 sütun, döşeme 580 px yüksek, kenarlarda ve aralarda 12 px */
+  .doseme-izgara {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-inline: calc(50% - 50vw);
+    padding: 12px;
+  }
+  .doseme-ana {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    height: 580px;
+    padding: 53px 2rem 0;
+    text-align: center;
+    background: var(--band);
+    --panel: var(--panel-on-band);
+  }
+  .doseme-ana.bant-koyu {
+    background: var(--vitrin);
+  }
 
-  /* Uygulama simgesi gibi görsel: lacivert zemin, beyaz simge */
+  /* Uygulama simgesi gibi görsel: uzay grisi zemin, beyaz simge */
   .simge-kutu {
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    background: linear-gradient(160deg, #2a4fbf 0%, #1f3a93 45%, #0b1f4f 100%);
+    background: linear-gradient(180deg, #48484a 0%, #2c2c2e 55%, #1c1c1e 100%);
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
   }
 
@@ -495,19 +561,20 @@ select option {
 
 /* alphaTab: seçili ölçü, seçim ve çalma imleci */
 .at-cursor-bar {
-  background: color-mix(in srgb, var(--sheet-cursor) 12%, transparent);
+  background: color-mix(in srgb, var(--sheet-cursor) 7%, transparent);
 }
 .at-selection div {
-  background: color-mix(in srgb, var(--sheet-cursor) 14%, transparent);
+  background: color-mix(in srgb, var(--sheet-cursor) 9%, transparent);
 }
 .at-cursor-beat {
   background: var(--sheet-cursor);
   width: 3px;
   border-radius: 2px;
 }
+/* Çalınan notalar: notadan ayrışan orta gri (renk yerine ton farkı) */
 .at-highlight * {
-  fill: var(--sheet-cursor);
-  stroke: var(--sheet-cursor);
+  fill: var(--sheet-highlight);
+  stroke: var(--sheet-highlight);
 }
 
 /* Ritim yazımı (teori yolları) için SMuFL nota yazı tipi */
@@ -545,4 +612,9 @@ select option {
   .mega-perde {
     animation: none;
   }
+}
+
+/* Sayfanın son bandı açık gri ise aynı zemindeki alt bilgiden ince bir çizgiyle ayrılır */
+body:has(main > :last-child > .bant-gri:last-child, main > .bant-gri:last-child) > footer {
+  border-top: 1px solid var(--line);
 }

@@ -202,12 +202,14 @@ export default function SiteHeader() {
   };
 
   const acikMenu = MENULER.find((m) => m.id === open);
-  const ikonBtn = "flex size-8 items-center justify-center rounded-full text-text/80 transition hover:bg-ink/[0.07] hover:text-text";
+  const ikonBtn = "flex size-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/[0.08] hover:text-white";
 
   return (
     <>
       <header
-        className={`uzay-kapsam sticky top-0 z-40 ${acikMenu ? "bg-bg" : "glass"} border-b border-black/20`}
+        // Açık mega menüde çubuk bulanıklığı kaldırılır (sabit konumlu panel çubuğa göre değil, pencereye göre yerleşsin);
+        // arkadaki sayfayı perde bulanıklaştırır.
+        className={`uzay-kapsam sticky top-0 z-40 ${acikMenu ? "bg-[var(--gnav)]" : "gnav"}`}
         onMouseLeave={() => {
           temizle();
           zaman.current = setTimeout(() => setOpen(null), 180);
@@ -219,24 +221,24 @@ export default function SiteHeader() {
           if (open && hedef?.closest("[data-menu]")?.getAttribute("data-menu") !== open) setOpen(null);
         }}
       >
-        <nav aria-label="Ana gezinme" className="mx-auto flex h-12 max-w-[1100px] items-center gap-1 px-3 sm:px-5">
+        <nav aria-label="Ana gezinme" className="mx-auto flex h-12 max-w-[1024px] items-center gap-1 px-4">
           <button type="button" onClick={() => router.back()} className={ikonBtn} title="Önceki sayfa" aria-label="Önceki sayfa">
             <ChevronLeft size={18} />
           </button>
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2 rounded-lg px-1.5 py-1 text-[15px] font-semibold tracking-tight text-text"
+            className="flex shrink-0 items-center gap-2 rounded-lg px-1.5 py-1 text-[14px] font-semibold tracking-[-0.01em] text-white/90 transition hover:text-white"
             aria-label={`${SITE.name} ana sayfa`}
             aria-current={pathname === "/" ? "page" : undefined}
             onMouseEnter={() => open && setOpen(null)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={SITE.logo} alt="" width={22} height={22} className="size-[22px] rounded-[6px]" />
+            <img src={SITE.logo} alt="" width={20} height={20} className="size-5 rounded-[5px]" />
             <span className="hidden sm:inline">{SITE.name}</span>
           </Link>
 
-          {/* Masaüstü: ortalanmış kısa bağlantılar */}
-          <ul className="mx-auto hidden items-center gap-1 lg:flex xl:gap-3">
+          {/* Masaüstü: çubuk boyunca eşit aralıklı kısa bağlantılar (apple.com gibi) */}
+          <ul className="mx-8 hidden flex-1 items-center justify-between lg:flex">
             {MENULER.map((m, i) => {
               const aktif = m.active(pathname);
               const acik = open === m.id;
@@ -256,7 +258,7 @@ export default function SiteHeader() {
                     onClick={() => setOpen(null)}
                     onKeyDown={(e) => ustTus(i, e)}
                     aria-current={aktif ? "page" : undefined}
-                    className={`rounded-md px-2.5 py-1.5 text-[13px] transition ${acik || aktif ? "text-text" : "text-text/80 hover:text-text"} ${aktif ? "font-semibold" : ""}`}
+                    className={`rounded-md px-2 py-1.5 text-[12px] tracking-[-0.01em] transition ${acik || aktif ? "text-white" : "text-white/80 hover:text-white"} ${aktif ? "font-semibold" : ""}`}
                   >
                     {m.label}
                   </Link>
@@ -271,7 +273,7 @@ export default function SiteHeader() {
                       setOpen(ac ? m.id : null);
                       if (ac) requestAnimationFrame(() => panel.current[m.id]?.querySelector<HTMLAnchorElement>("a[href]")?.focus());
                     }}
-                    className="-ml-1.5 flex size-5 items-center justify-center rounded text-muted opacity-0 focus-visible:opacity-100"
+                    className="-ml-1.5 flex size-5 items-center justify-center rounded text-white/80 opacity-0 focus-visible:opacity-100"
                   >
                     <ChevronDown size={12} className={`transition ${acik ? "rotate-180" : ""}`} />
                   </button>
@@ -283,15 +285,15 @@ export default function SiteHeader() {
                       }}
                       onKeyDown={(e) => panelTus(m.id, e)}
                       onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(null)}
-                      className="mega fixed inset-x-0 top-12 z-40 border-b border-line bg-bg"
+                      className="mega gnav fixed inset-x-0 top-12 z-40"
                     >
-                      <div className="mx-auto grid max-w-[1100px] grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))] gap-10 px-8 pb-14 pt-9 xl:px-12">
+                      <div className="mx-auto grid max-w-[1024px] grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))] gap-11 px-6 pb-[84px] pt-10">
                         <div>
-                          <p className="mb-3 text-xs text-muted">Keşfet: {m.label}</p>
-                          <ul className="space-y-2">
+                          <p className="mb-3.5 text-[12px] leading-4 text-[#aeaeb2]">Keşfedin: {m.label}</p>
+                          <ul className="space-y-2.5">
                             {m.buyuk.map((b) => (
                               <li key={b.href + b.label}>
-                                <Link href={b.href} className="baslik-orta inline-block rounded-md !text-[26px] !leading-tight text-text transition hover:text-accent">
+                                <Link href={b.href} className="inline-block rounded-md font-[family-name:var(--font-display)] text-[24px] font-semibold leading-[1.1667] tracking-[0.009em] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-4">
                                   {b.label}
                                 </Link>
                               </li>
@@ -300,11 +302,11 @@ export default function SiteHeader() {
                         </div>
                         {m.sutunlar.map((s) => (
                           <div key={s.baslik}>
-                            <p className="mb-3 text-xs text-muted">{s.baslik}</p>
-                            <ul className="space-y-2">
+                            <p className="mb-3.5 text-[12px] leading-4 text-[#aeaeb2]">{s.baslik}</p>
+                            <ul className="space-y-2.5">
                               {s.items.map((b) => (
                                 <li key={b.href + b.label}>
-                                  <Link href={b.href} className="inline-block rounded text-[13px] font-semibold text-text/90 transition hover:text-accent">
+                                  <Link href={b.href} className="inline-block rounded text-[12px] font-semibold leading-[1.34] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-2">
                                     {b.label}
                                   </Link>
                                 </li>
@@ -323,7 +325,7 @@ export default function SiteHeader() {
           <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
             <Link
               href="/profil"
-              className={`${ikonBtn} ${pathname.startsWith("/profil") ? "text-accent" : ""}`}
+              className={`${ikonBtn} ${pathname.startsWith("/profil") ? "!text-white" : ""}`}
               title="Profil"
               aria-label="Profil"
               onMouseEnter={() => open && setOpen(null)}
@@ -348,7 +350,7 @@ export default function SiteHeader() {
         {mobil && (
           <div
             id="mobil-menu"
-            className="max-h-[calc(100dvh-3rem)] overflow-y-auto border-t border-line bg-bg px-6 pb-8 pt-4 lg:hidden"
+            className="max-h-[calc(100dvh-3rem)] overflow-y-auto border-t border-line bg-[#1d1d1f] px-6 pb-8 pt-4 lg:hidden"
             onClick={(e) => (e.target as HTMLElement).closest("a") && setMobil(false)}
           >
             <div className="mx-auto grid max-w-xl gap-6">
@@ -371,8 +373,8 @@ export default function SiteHeader() {
           </div>
         )}
       </header>
-      {/* Mega menü açıkken sayfa hafifçe bulanıklaşır */}
-      {acikMenu && <div aria-hidden className="mega-perde fixed inset-0 top-12 z-30 hidden bg-black/20 backdrop-blur-md lg:block" onMouseEnter={() => setOpen(null)} />}
+      {/* Mega menü açıkken sayfa bulanıklaşır ve hafifçe kararır (çubuğun arkası da: çubuk o sırada kendisi bulanıklaştırmaz) */}
+      {acikMenu && <div aria-hidden className="mega-perde fixed inset-0 z-30 hidden bg-black/25 backdrop-blur-[20px] lg:block" onMouseEnter={() => setOpen(null)} />}
     </>
   );
 }

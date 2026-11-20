@@ -27,7 +27,7 @@ export default async function CatalogPage() {
         baslik="Tüm Kurslar"
         alt={`${kartlar.length} kurs, ${ders} ders. Hiçbiri kilitli değil: bir rehberle sırayla ilerle ya da istediğin tekniğe doğrudan geç.`}
       >
-        <HapBag href="/nasil-calismaliyim">Seviyeni seç</HapBag>
+        <HapBag href="/nasil-calismaliyim">Seviyenizi Bulun</HapBag>
         <MetinBag href="/seviye" buyuk>
           Seviye Yolu
         </MetinBag>

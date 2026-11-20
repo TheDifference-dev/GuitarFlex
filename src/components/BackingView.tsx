@@ -41,7 +41,7 @@ export default function BackingView({ backing }: { backing: Backing }) {
               key={x.name}
               type="button"
               onClick={() => setScale(i)}
-              className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold ${i === scale ? "border-accent bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
+              className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold ${i === scale ? "border-accent bg-accent text-accent-ink" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
             >
               {x.name}
             </button>

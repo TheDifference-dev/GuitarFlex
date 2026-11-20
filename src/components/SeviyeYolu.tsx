@@ -212,7 +212,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
             {prev} {SEVIYE[prev].ad}
           </MetinBag>
         )}
-        <HapBag href="#eksen-technique">Derslere geç</HapBag>
+        <HapBag href="#eksen-technique">Derslere Geçin</HapBag>
         {next && (
           <MetinBag href={`/seviye/${next}`} buyuk>
             {next} {SEVIYE[next].ad}
