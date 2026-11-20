@@ -25,6 +25,8 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | ![Quick Study](docs/ekran/quick-study.png) | ![Transkripsiyon](docs/ekran/transkripsiyon.png) |
 | **Şarkı Kütüphanesi** | **Şarkı sayfası: mikser** |
 | ![Şarkı Kütüphanesi](docs/ekran/kutuphane.png) | ![Şarkı sayfası](docs/ekran/kutuphane-sarki.png) |
+| **Kurs kataloğu** | **Ders listesi çekmecesi** |
+| ![Kurs kataloğu](docs/ekran/katalog.png) | ![Ders listesi](docs/ekran/ders-listesi.png) |
 
 ## Highlights
 
@@ -69,6 +71,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Yeni site düzeni**: ana sayfada kaldığın yerden devam, günlük görevler ve seri, kategori kartları, devam ettiğin kurslar, öne çıkanlar ve kütüphaneden parçalar. Yeni Kurs Kataloğu (gruplara, duruma ve ada göre süzme; her kartta bölüm, ders, süre ve ilerleme). Kurs sayfasında kurs seçici, ilerleme şeridi, mevcut bölüm ve Devam et düğmesi, sıradaki ders vurgusu. Ders sayfasında kırıntı, bütün kursu gösteren ders listesi çekmecesi, önceki/sonraki ders (Alt + ←/→). Telefonda hamburger menü ve yapışkan bölüm çubuğu. Eski ana sayfa artık Elektro Gitar sayfası. Hiçbir içerik kilitli değil: kurs bölümlerindeki ve Şarkı Rehberi'ndeki kilitler kalktı. Tabda akor adı, parmak numarası ve kısım yazıları üst üste binmiyor; mikserde bas ve klavye için ayrı simgeler
 - **Şarkı Kütüphanesi** (yeni sekme, Yarışma'nın yerine): kurşun gitar, ritim gitar, bas ve davullu 12 çok enstrümanlı şarkı; pop, klasik, reggae, blues, fingerstyle, country, rock, funk, Türk halk müziği tarzı, bossa nova, metal ve caz, L1'den L5'e. Hepsi GuitarFlex'in özgün parçası ya da kamu malı ezgilerin (Neşe Marşı, Greensleeves) kendi düzenlemesi. Arama, tür, zorluk, ton, tempo ve enstrüman filtreleri; liste ya da kart görünümü. Şarkı sayfasında mikserli oynatıcı, form ve kısımlar, akorlar, teknikler ve çalışma ipuçları. Piyano, org ve yaylılar notayla gösteriliyor
 - **Yarışma bölümü kaldırıldı**
 - **Yeni tab oynatıcı**: ilerleme çubuğunda tıkla-git ve kısım sınırları, ölçü sayacı, hız %25–150, ölçü ya da seçili aralık döngüsü (taba sürükle ya da Shift+tık), kısım düğmeleri (A, A′, B, C) ile tek tıkla kısım döngüsü, kademeli hızlanma (her turda hız artar), metronom her vuruş ya da yalnız ölçü başı, sayım. Ayarlar panelinde Tab / Nota+Tab / Nota, sayfa ya da yatay yerleşim, yakınlaştırma, imleç takibi, çalan notaları gösteren sap paneli ve klavye kısayolları (boşluk, ←/→, L, ↑/↓, M). Çok enstrümanlı tablarda mikser: ses, solo, sessiz, tabı gösterilen enstrüman. Tabın altında ritim (sap, kiriş, üçleme) görünüyor; akor adları pena ve parmak işaretleriyle çakışmıyor. Yeni ses bankası GeneralUser GS (temiz, overdrive, distortion gitar sesi dersin ton bilgisinden seçiliyor; hafif Sonivox seçeneği duruyor)
