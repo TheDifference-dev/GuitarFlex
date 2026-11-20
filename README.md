@@ -19,8 +19,10 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | ![Ritim adımı](docs/ekran/ritim-adim.png) | ![Armoni](docs/ekran/armoni.png) |
 | **Profil: görevler, seri, başarımlar** | **Seviye Yolu** |
 | ![Profil](docs/ekran/profil.png) | ![Seviye Yolu](docs/ekran/seviye-yolu.png) |
-| **Seviye sayfası: eksenler ve bitirme koşulu** | |
+| **Seviye sayfası: eksenler ve bitirme koşulu** | **Uzun egzersiz: dört kısım, 20–30 ölçü** |
 | ![Seviye sayfası](docs/ekran/seviye.png) | ![Uzun egzersiz](docs/ekran/uzun-egzersiz.png) |
+| **Quick Study: dinle, incele, eşlikle çal** | **Transkripsiyon: duyduğunu sapta işaretle** |
+| ![Quick Study](docs/ekran/quick-study.png) | ![Transkripsiyon](docs/ekran/transkripsiyon.png) |
 
 ## Highlights
 
@@ -65,6 +67,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Yeni ders türleri: Quick Study, transkripsiyon, kompozisyon**: Müzisyenlik ek kursuna 31 ders. Quick Study'de 12 ölçülük parça üç adımda çalışılıyor: dinle, 3 dakika incele, eşlikle çal (6 ölçü okuma + 6 ölçü doğaçlama). Transkripsiyonda tab gizli, yalnız ses çalıyor; duyduğun notaları sapta işaretleyip kontrol ediyorsun. Kompozisyonda akor yürüyüşü ve kurallarla kendi 8 ölçünü yazıyorsun; geri bildirim notaları akora göre adlandırıyor (F üstünde Si♭, A# değil). Melodik cümle dersleri 24 ölçüye çıktı (motif, çeşitleme, uygulama, birleştirme)
 - **Palm Mute kursu yeniden yazıldı (yeni egzersiz standardının ilk kursu)**: 17 özgün çalışma, her biri 20–30 ölçü (eskiden 8–12). Her egzersiz dört kısımdan oluşuyor: temel kalıp, çeşitleme, uygulama (riff ve power chord yürüyüşleri) ve birleştirme; on altılık ile üçleme hücreleri, sus ve aksan çeşitleri, pozisyon değişimi. Ders metninde "Bu çalışmada", kısım rehberi, odak döngüsü ve tempo planı var. Rehberlerdeki Palm Mute dersleri olduğu gibi kaldı
 - **Stiller ek kursu**: blues, rock, funk, metal, caz comping, bossa nova, bebop ve füzyon (36 ders)
 - **Okuma yolu ve yeni yol adımları**: porte ve ritim okuma, akor şeması; kulaktan melodi ve akor kökü; ikincil dominant, ii–V–I, akor-gam; triad çevrimi ve drop 2
