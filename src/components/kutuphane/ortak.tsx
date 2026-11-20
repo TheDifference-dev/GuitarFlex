@@ -1,5 +1,6 @@
 // Şarkı Kütüphanesi: sunucu ve tarayıcıda ortak küçük parçalar (rol adları, süre biçimi, seviye etiketi)
-import type { Level, LibraryTrackRole } from "@/content/types";
+import type { Level, LibraryTrack, LibraryTrackRole } from "@/content/types";
+import { enstruman } from "@/lib/enstruman";
 import { SEVIYE } from "@/content/seviyeler";
 
 export const ROL_ADI: Record<LibraryTrackRole, string> = {
@@ -10,7 +11,13 @@ export const ROL_ADI: Record<LibraryTrackRole, string> = {
   keys: "Piyano",
   strings: "Yaylılar",
   organ: "Org",
+  brass: "Bakır üflemeli",
+  woodwind: "Tahta üflemeli",
 };
+
+/** Kütüphane track'inin enstrümanı: kayıttaki GM programından (yoksa rolden) aile, ad ve simge */
+const ROL_PROGRAM: Record<LibraryTrackRole, number> = { lead: 27, rhythm: 27, bass: 33, drums: -1, keys: 0, strings: 48, organ: 16, brass: 56, woodwind: 65 };
+export const izEnstrumani = (t: LibraryTrack) => enstruman(t.program ?? ROL_PROGRAM[t.role], t.role === "drums", t.name);
 export const sure = (sn: number) => `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, "0")}`;
 
 const LEVEL_STYLE: Record<Level, string> = {

@@ -35,6 +35,18 @@ function freePort() {
   });
 }
 
+// Pencere her açılışta aynı adreste (http://127.0.0.1:47823) açılır: tarayıcı depolaması (ilerleme, ayarlar, "Benim
+// dosyalarım" IndexedDB'si) adrese bağlıdır, rastgele port her açılışta boş bir depo demekti. Port doluysa rastgele port.
+const SABIT_PORT = 47823;
+function appPort() {
+  return new Promise((resolve) => {
+    const srv = net.createServer();
+    srv.unref();
+    srv.once("error", () => freePort().then(resolve, () => resolve(0)));
+    srv.listen(SABIT_PORT, "127.0.0.1", () => srv.close(() => resolve(SABIT_PORT)));
+  });
+}
+
 function waitForServer(url, timeoutMs = 180000) {
   const started = Date.now();
   return new Promise((resolve, reject) => {
@@ -212,7 +224,7 @@ async function createWindow() {
     setStatus(PROD ? "Açılıyor…" : "Geliştirme modunda açılıyor… (bir dakika kadar sürebilir)");
   }
 
-  const port = await freePort();
+  const port = await appPort();
   baseUrl = `http://127.0.0.1:${port}`;
   startServer(port);
   try {

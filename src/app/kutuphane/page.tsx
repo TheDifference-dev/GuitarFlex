@@ -12,7 +12,7 @@ export default async function LibraryPage() {
       <SayfaBasi
         kirinti={[{ label: "Şarkı Kütüphanesi" }]}
         baslik="Şarkı Kütüphanesi"
-        alt="Kurşun gitar, ritim gitarı, bas ve davullu çok track'li parçalar: GuitarFlex'in özgün şarkıları ve kamu malı ezgilerin düzenlemeleri."
+        alt="Gitar, bas, davul, klavye, yaylı ve üflemeli çok track'li parçalar: GuitarFlex'in özgün şarkıları, kamu malı ezgilerin düzenlemeleri ve kendi Guitar Pro dosyaların."
       >
         <MetinBag href="/sarkilar" buyuk>
           Popüler şarkılar
@@ -25,14 +25,8 @@ export default async function LibraryPage() {
         </MetinBag>
       </SayfaBasi>
       <Bant ton="gri" className="pt-12">
-        <p className="mx-auto mb-8 max-w-[760px] text-center text-muted">
-          Türe, zorluğa, tona, tempoya ya da enstrümana göre süz; şarkıyı açınca tab oynatıcı, form ve çalışma ipuçları gelir.
-        </p>
-        {songs.length ? (
-          <LibraryBrowser songs={songs} />
-        ) : (
-          <p className="card p-6 text-muted">Kütüphane içeriği bulunamadı (içerik paketinde icerik/kutuphane.json yok).</p>
-        )}
+        {!songs.length && <p className="card mb-5 p-4 text-sm text-muted">GuitarFlex şarkıları bulunamadı (içerik paketinde icerik/kutuphane.json yok); kendi dosyalarını yine ekleyebilirsin.</p>}
+        <LibraryBrowser songs={songs} />
       </Bant>
     </div>
   );

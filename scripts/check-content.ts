@@ -285,9 +285,9 @@ if (taggedChapters || taggedLessons) {
 
 // ── Şarkı Kütüphanesi (İP10b): icerik/kutuphane.json. Her tex alphaTab ile okunur (ölçü uzunlukları, track'ler arası ölçü
 // sayısı, bağlar: check()); track sayısı ve adları, zorunlu alanlar, kısımların tabı tam kaplaması, ölçü sayısı denetlenir.
-const GENRES = new Set(["Blues", "Rock", "Funk", "Metal", "Pop", "Caz", "Bossa Nova", "Reggae", "Country", "Fingerstyle", "Türk Halk Müziği", "Klasik"]);
+const GENRES = new Set(["Blues", "Rock", "Funk", "Metal", "Pop", "Caz", "Bossa Nova", "Reggae", "Country", "Fingerstyle", "Türk Halk Müziği", "Klasik", "Soul", "Ska", "Latin"]);
 const SOURCES = new Set(["Özgün (GuitarFlex)", "Geleneksel / kamu malı, düzenleme: GuitarFlex"]);
-const ROLES = new Set(["lead", "rhythm", "bass", "drums", "keys", "strings", "organ"]);
+const ROLES = new Set(["lead", "rhythm", "bass", "drums", "keys", "strings", "organ", "brass", "woodwind"]);
 let librarySongs = 0;
 const librarySlugs = new Set<string>();
 for (const root of PRIVATE_ROOTS) {
@@ -347,6 +347,9 @@ for (const root of PRIVATE_ROOTS) {
           score.tracks.forEach((t, i) => {
             if (t.name !== s.tracks[i].name) p.push(`track ${i + 1} adı tex'te "${t.name}", kayıtta "${s.tracks[i].name}"`);
             if ((s.tracks[i].role === "drums") !== t.isPercussion) p.push(`track ${i + 1}: davul rolü ile perküsyon track'i uyuşmuyor`);
+            // General MIDI programı kayıtta varsa tex'teki \\instrument ile aynı olmalı (uygulama simge ve aileyi buradan bulur)
+            const prog = s.tracks[i].program;
+            if (prog !== undefined && (t.isPercussion || prog !== t.playbackInfo.program)) p.push(`track ${i + 1}: program kayıtta ${prog}, tex'te ${t.isPercussion ? "perküsyon" : t.playbackInfo.program}`);
           });
         if (score.masterBars.length !== s.bars) p.push(`tex ${score.masterBars.length} ölçü, bars ${s.bars}`);
         const mb = score.masterBars[0];

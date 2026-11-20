@@ -8,6 +8,7 @@ import { useOynaticiAyarlari, type OynaticiAyarlari } from "./oynatici/ayarlar";
 import AyarPaneli from "./oynatici/AyarPaneli";
 import Mikser, { type MikserIzi } from "./oynatici/Mikser";
 import SapPaneli, { type SapNotasi } from "./oynatici/SapPaneli";
+import { mikserOku, mikserYaz } from "@/lib/kutuphane-yerel";
 
 // alphaTab tarayıcıya klasik bir <script> olarak yüklenir (public/alphatab, bkz. scripts/copy-alphatab.mjs).
 // Böylece web worker ve font dosyalarını kendi yolundan bulur; bundler ayarı gerekmez.
@@ -85,6 +86,8 @@ type Props = {
   parts?: LessonPart[];
   /** Tabda `\instrument` yoksa gitar track'lerinin General MIDI programı (ör. 27 temiz, 29 overdrive, 30 distortion) */
   guitarProgram?: number;
+  /** Verilirse mikser (ana ses, track ses/pan/solo/sessiz) bu anahtarla bu bilgisayarda saklanır (ör. "s:<slug>", "d:<id>") */
+  mikserKaydi?: string;
 };
 
 const SPEEDS = [50, 75, 100];
@@ -92,6 +95,11 @@ const MIN_SPEED = 25;
 const MAX_SPEED = 150;
 /** alphaTex'te `\instrument` verilmezse alphaTab'ın kullandığı program (çelik telli akustik) */
 const ALPHATEX_DEFAULT_PROGRAM = 25;
+
+/** Mikser pan (−100 … 100) → track'in MIDI pan değeri (alphaTab balance 0–16, 8 orta); MIDI üretiminde okunur */
+function setBalance(track: any, pan: number) {
+  track.playbackInfo.balance = Math.round(((pan + 100) / 200) * 16);
+}
 
 function formatTime(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -137,6 +145,7 @@ function Player({
   initialLoop,
   parts,
   guitarProgram,
+  mikserKaydi,
   bank,
 }: Props & { bank: OynaticiAyarlari["sesBankasi"] }) {
   const playerId = useId();
@@ -157,6 +166,10 @@ function Player({
   const [muted, setMuted] = useState<Set<number>>(new Set());
   const [solo, setSolo] = useState<Set<number>>(new Set());
   const [volumes, setVolumes] = useState<Record<number, number>>({});
+  /** Pan (−100 … 100) ve ana ses (%): mikserKaydi ile saklanır */
+  const [pans, setPans] = useState<Record<number, number>>({});
+  const [master, setMaster] = useState(100);
+  const mikserRef = useRef(mikserKaydi);
   const [position, setPosition] = useState({ current: 0, end: 0, tick: 0, endTick: 0 });
   const [currentBar, setCurrentBar] = useState(0);
   const [range, setRange] = useState<Range | null>(null);
@@ -284,6 +297,16 @@ function Player({
             for (const t of score.tracks) {
               if (!t.staves[0]?.isPercussion && t.playbackInfo.program === ALPHATEX_DEFAULT_PROGRAM) t.playbackInfo.program = program;
             }
+          }
+          // Saklı mikser: pan MIDI'ye yazılır (üretimden önce); ses/solo/sessiz oynatıcı hazır olunca uygulanır
+          const kayit = mikserRef.current ? mikserOku(mikserRef.current, score.tracks.length) : null;
+          if (kayit) {
+            for (const t of score.tracks) if (kayit.pan[t.index] !== undefined) setBalance(t, kayit.pan[t.index]);
+            setPans(kayit.pan);
+            setVolumes(kayit.ses);
+            setMuted(new Set(kayit.sessiz));
+            setSolo(new Set(kayit.solo));
+            setMaster(kayit.ana);
           }
           callbacks.current.onScore?.(score);
           setMeta({ title: score.title, artist: score.artist, tempo: score.tempo, bars: score.masterBars.length, barStarts: score.masterBars.map((m: any) => m.start) });
@@ -548,6 +571,29 @@ function Player({
     }
   }, [barClicks, playerReady]);
 
+  // Saklı mikser ayarlarını oynatıcıya uygula (ses bankası yüklenince) ve değiştikçe sakla
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api?.score || !playerReady || !mikserRef.current) return;
+    for (const t of api.score.tracks) {
+      if (volumes[t.index] !== undefined) api.changeTrackVolume([t], volumes[t.index] / 100);
+      if (mutedTracks === undefined) {
+        api.changeTrackMute([t], muted.has(t.index));
+        api.changeTrackSolo([t], solo.has(t.index));
+      }
+    }
+    // Yalnız ilk hazır oluşta; sonraki değişiklikleri düğmeler doğrudan uygular
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerReady]);
+  useEffect(() => {
+    const api = apiRef.current;
+    if (api) api.masterVolume = master / 100;
+  }, [master, playerReady]);
+  useEffect(() => {
+    if (!mikserRef.current || !tracks.length) return;
+    mikserYaz(mikserRef.current, { izSayisi: tracks.length, ana: master, ses: volumes, pan: pans, sessiz: [...muted], solo: [...solo] });
+  }, [tracks.length, master, volumes, pans, muted, solo]);
+
   // Dışarıdan verilen sessiz track'ler (ör. Quick Study'de "eşlikle çal": gitar susar, eşlik çalar)
   const mutedKey = mutedTracks?.join(",");
   useEffect(() => {
@@ -653,6 +699,44 @@ function Player({
     const api = apiRef.current;
     setVolumes((v) => ({ ...v, [i]: value }));
     api?.changeTrackVolume([api.score.tracks[i]], value / 100);
+  };
+
+  // Pan: track'in MIDI pan değeri (0–16) değişir, MIDI yeniden üretilir (çalıyorsa kaldığı yerden sürer)
+  const panTimer = useRef(0);
+  const changePan = (i: number, value: number) => {
+    const api = apiRef.current;
+    setPans((p) => ({ ...p, [i]: value }));
+    const t = api?.score?.tracks[i];
+    if (!t) return;
+    setBalance(t, value);
+    window.clearTimeout(panTimer.current);
+    panTimer.current = window.setTimeout(() => {
+      if (apiRef.current !== api || !api.score) return;
+      const wasPlaying = api.playerState === 1;
+      const tick = api.tickPosition;
+      const keepRange = api.playbackRange;
+      api.loadMidiForScore();
+      if (keepRange) api.playbackRange = keepRange;
+      api.tickPosition = tick;
+      if (wasPlaying) {
+        skipNext.current = true;
+        api.countInVolume = 0;
+        api.play();
+        api.countInVolume = playback.current.countIn ? 1 : 0;
+      }
+    }, 250);
+  };
+  /** Play-along: yalnız i susar (soloları kaldırır); zaten öyleyse bütün track'ler açılır */
+  const muteOnly = (i: number) => {
+    const api = apiRef.current;
+    const already = muted.has(i) && muted.size === 1 && solo.size === 0;
+    const next = already ? new Set<number>() : new Set([i]);
+    setMuted(next);
+    setSolo(new Set());
+    for (const t of api?.score?.tracks ?? []) {
+      api.changeTrackSolo([t], false);
+      api.changeTrackMute([t], next.has(t.index));
+    }
   };
 
   // İlerleme çubuğu: tıkla-git ve sürükle
@@ -941,7 +1025,23 @@ function Player({
 
       {multiTrack && panel === "mikser" && (
         <div className="border-b border-line bg-ink/[0.02] p-3 sm:p-4">
-          <Mikser izler={tracks} gosterilen={shown} sessiz={muted} solo={solo} ses={volumes} onGoster={setShown} onSessiz={toggleMute} onSolo={toggleSolo} onSes={changeVolume} />
+          <Mikser
+            izler={tracks}
+            gosterilen={shown}
+            sessiz={muted}
+            solo={solo}
+            ses={volumes}
+            onGoster={setShown}
+            onSessiz={toggleMute}
+            onSolo={toggleSolo}
+            onSes={changeVolume}
+            pan={pans}
+            onPan={changePan}
+            ana={master}
+            onAna={setMaster}
+            onYalnizBunuSustur={muteOnly}
+            hatirlaniyor={!!mikserKaydi}
+          />
         </div>
       )}
 

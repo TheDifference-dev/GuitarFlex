@@ -156,16 +156,16 @@ export type SiteTexts = {
 // ezgilerin GuitarFlex düzenlemeleri bulunur; telifli şarkı tabı, notası ya da sözü yoktur.
 
 export type LibraryGenre =
-  | "Blues" | "Rock" | "Funk" | "Metal" | "Pop" | "Caz" | "Bossa Nova" | "Reggae" | "Country" | "Fingerstyle" | "Türk Halk Müziği" | "Klasik";
+  | "Blues" | "Rock" | "Funk" | "Metal" | "Pop" | "Caz" | "Bossa Nova" | "Reggae" | "Country" | "Fingerstyle" | "Türk Halk Müziği" | "Klasik" | "Soul" | "Ska" | "Latin";
 
 /** Kaynak: özgün parça ya da kamu malı ezginin düzenlemesi */
 export type LibrarySource = "Özgün (GuitarFlex)" | "Geleneksel / kamu malı, düzenleme: GuitarFlex";
 
-/** Track'in parçadaki işi: kurşun/solo gitar, ritim gitar, bas, davul, piyano, yaylılar, org */
-export type LibraryTrackRole = "lead" | "rhythm" | "bass" | "drums" | "keys" | "strings" | "organ";
+/** Track'in parçadaki işi: kurşun/solo gitar, ritim gitar, bas, davul/perküsyon, piyano, yaylılar, org, bakır ve tahta üflemeliler */
+export type LibraryTrackRole = "lead" | "rhythm" | "bass" | "drums" | "keys" | "strings" | "organ" | "brass" | "woodwind";
 
 /** Track: tex'teki sırayla (0'dan); `instrument` görünen enstrüman adıdır */
-export type LibraryTrack = { name: string; role: LibraryTrackRole; instrument: string };
+export type LibraryTrack = { name: string; role: LibraryTrackRole; instrument: string; /** General MIDI programı (0–127); davul/perküsyonda yok */ program?: number };
 
 /** Şarkının kısmı (giriş, kıta, nakarat, solo …): yazılı ölçü aralığı (1'den, kapsayıcı), tekrar sayısı ve akorları */
 export type LibraryPart = { name: string; bars: [number, number]; repeat?: number; chords: string[]; focus?: string };
