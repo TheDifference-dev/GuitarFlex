@@ -85,14 +85,14 @@ function stopServer() {
 
 const APP_NAME = "GuitarFlex";
 const ICON = path.join(__dirname, process.platform === "win32" ? "icon.ico" : "icon.png");
-const LOGO_SVG = path.join(ROOT, "public", "marka", "sahne.svg");
+const LOGO_SVG = path.join(ROOT, "public", "marka", "simge.svg");
 
 function splash() {
   let logo = "";
   try {
     logo = `<img src="data:image/svg+xml;base64,${fs.readFileSync(LOGO_SVG).toString("base64")}" width="120" height="120" style="border-radius:24px">`;
   } catch {}
-  const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#0b1c4a;color:#ffffff;font-family:system-ui,sans-serif">
+  const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#0A2A5E;color:#ffffff;font-family:system-ui,sans-serif">
 <div style="text-align:center">${logo}<div style="font-size:30px;font-weight:700;margin-top:16px">${APP_NAME}</div>
 <p id="durum" style="color:#a3b0cf;max-width:520px;margin:12px auto 0">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
