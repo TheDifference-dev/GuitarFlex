@@ -4,6 +4,7 @@ import "./globals.css";
 import { SITE } from "@/config/site";
 import SiteHeader from "@/components/SiteHeader";
 import Altbilgi from "@/components/site/Altbilgi";
+import SiteKabugu from "@/components/SiteKabugu";
 
 // Apple cihazlarda San Francisco kullanılır (globals.css); diğerlerinde Inter, optik boyutlu (başlıkta "Display" kesimi)
 const inter = Inter({
@@ -29,10 +30,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="tr" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <SiteHeader />
-        {/* Sayfa kabı: bantlar (.bant) bu kabın dışına tam genişlikte taşar */}
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-20 pt-8 sm:px-6">{children}</main>
-        <Altbilgi />
+        {/* Küçük pencereler (/metronom/mini) gezinme ve alt bilgi olmadan açılır */}
+        <SiteKabugu ust={<SiteHeader />} alt={<Altbilgi />}>
+          {children}
+        </SiteKabugu>
       </body>
     </html>
   );

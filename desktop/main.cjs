@@ -13,6 +13,7 @@ const http = require("node:http");
 const net = require("node:net");
 const path = require("node:path");
 const fs = require("node:fs");
+const metronomMini = require("./metronom-mini.cjs");
 
 const ROOT = path.join(__dirname, "..");
 const AUTO_UPDATE = process.argv.includes("--guncelle");
@@ -98,6 +99,8 @@ function stopServer() {
 const APP_NAME = "GuitarFlex";
 const ICON = path.join(__dirname, process.platform === "win32" ? "icon.ico" : "icon.png");
 const LOGO_SVG = path.join(ROOT, "public", "marka", "simge.svg");
+// Güvenli köprü: window.guitarflexMasaustu (küçük metronom penceresi)
+const PRELOAD = path.join(__dirname, "preload.cjs");
 
 function splash() {
   let logo = "";
@@ -179,7 +182,8 @@ function buildMenu() {
   ]);
 }
 
-async function createWindow() {
+// yeniden: sunucu zaten çalışırken (ör. küçük metronomdan "ana pencereye dön") ana pencereyi yeniden aç
+async function createWindow(yeniden = false) {
   win = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -190,7 +194,7 @@ async function createWindow() {
     title: APP_NAME,
     icon: fs.existsSync(ICON) ? ICON : undefined,
     autoHideMenuBar: false,
-    webPreferences: { contextIsolation: true, sandbox: true },
+    webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, preload: PRELOAD },
   });
   Menu.setApplicationMenu(buildMenu());
 
@@ -205,6 +209,16 @@ async function createWindow() {
       shell.openExternal(url);
     }
   });
+
+  // Ana pencere kapatılınca küçük metronom açık kalabilir; kapanan pencereye dokunulmasın
+  const buPencere = win;
+  win.on("closed", () => {
+    if (win === buPencere) win = null;
+  });
+  if (yeniden && baseUrl) {
+    await win.loadURL(baseUrl + "/araclar");
+    return;
+  }
 
   await win.loadURL(splash());
 
@@ -237,19 +251,28 @@ async function createWindow() {
   }
 }
 
+/** Ana pencereyi öne getirir; kapatılmışsa (küçük metronom açıkken) yeniden açar */
+function anaPencereyiAc() {
+  if (win && !win.isDestroyed()) {
+    if (win.isMinimized()) win.restore();
+    win.show();
+    win.focus();
+  } else if (baseUrl) {
+    createWindow(true);
+  }
+}
+
 app.setName(APP_NAME);
 if (process.platform === "win32") app.setAppUserModelId("com.guitarflex.app");
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (win) {
-      if (win.isMinimized()) win.restore();
-      win.focus();
-    }
+  app.on("second-instance", anaPencereyiAc);
+  app.whenReady().then(() => {
+    metronomMini.kur({ adres: () => baseUrl, anaPencereyiAc, ikon: fs.existsSync(ICON) ? ICON : undefined, preload: PRELOAD });
+    return createWindow();
   });
-  app.whenReady().then(createWindow);
   app.on("before-quit", () => {
     app.isQuitting = true;
     stopServer();

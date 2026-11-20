@@ -1,0 +1,55 @@
+/* Küçük metronom penceresi: her şey em ile ölçülür, yazı boyutu pencere boyutuyla büyür.
+   280×170'te ~12.8 px, 560×340'ta ~25 px. */
+.kok {
+  font-size: clamp(11px, min(4.6vw, 7.6vh), 30px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Masaüstü (Electron, çerçevesiz pencere): üst şerit pencereyi sürükler */
+.surukle {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+.surukleme {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.bpm {
+  font-size: 2.9em;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.nokta {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  transition: background-color 60ms linear, transform 60ms linear;
+}
+.nokta[data-bas="1"] {
+  width: 0.95em;
+  height: 0.95em;
+  outline: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  outline-offset: 1px;
+}
+.nokta[data-yanik="1"] {
+  background: var(--accent);
+  transform: scale(1.15);
+}
+.nokta[data-yanik="1"][data-bas="1"] {
+  background: var(--primary);
+  box-shadow: 0 0 0.6em color-mix(in srgb, var(--primary) 70%, transparent);
+}
+
+.aralik {
+  width: 100%;
+  height: 1.2em;
+  accent-color: var(--primary);
+}
