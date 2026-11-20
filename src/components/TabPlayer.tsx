@@ -183,6 +183,8 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
               staffLineColor: color("--sheet-line", "#666666"),
               barSeparatorColor: ink,
               barNumberColor: color("--accent", "#c00000"),
+              // Sayfa başındaki akor diyagramları (\chord) alphaTab'da "score info" rengiyle çizilir; varsayılanı siyah.
+              scoreInfoColor: ink,
             },
           },
           // Parmak numaraları (sol el 1–4, sağ el p-i-m-a) tab görünümünde de notaların üstünde görünsün

@@ -57,12 +57,13 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 - **Tab oynatıcı**: Guitar Pro, MusicXML ve alphaTex; enstrüman bazında ses/mute/solo, hız, metronom, sayım, döngü, nota görünümü.
 - **Müzik teorisi**: Ritim (70 adım), Klavye Görselleştirme (84 adım) ve Kulak Eğitimi (60 adım) pratik yolları; sorular her denemede yeniden üretilir. Armoni (Müzik Teorisi Dersleri): 5 bölüm, Eğitim / Pratik / Ek İnceleme kartları. Ayrıca 10 ders ve interaktif sap gezgini.
 - **Seviye Yolu**: Elektro kursların alt bölümleri beş seviyede (L1 Başlangıç → L5 İleri) toplanır; her seviye teknik, klavye, ritim ve teori/kulak eksenlerine ayrılır, beceri önkoşullarına göre sıralanır, eksen başına ilerleme ve seviye bitirme koşulu gösterilir. Kurs sayfalarında seviye rozetleri.
-- **Müzisyenlik (Ek Kurs)**: Teknik kursların dışında kalan beceriler kısa derslerle: ritim ve porte okuma (porte derslerinde tab gizli, yalnız nota), Doğaçlama Çal eşlikleriyle çalma, senkop ve shuffle, oktavlar, majör gam pozisyonları, pentatonik soru-cevap, dinamik ve ton. Seviye Yolu'nda her seviyenin Ek kurs listesinde.
+- **Müzisyenlik (Ek Kurs)**: Teknik kursların dışında kalan beceriler kısa derslerle: ritim ve porte okuma (porte derslerinde tab gizli, yalnız nota), Doğaçlama Çal eşlikleriyle çalma, senkop ve shuffle, oktavlar, majör gam pozisyonları, pentatonik soru-cevap, dinamik ve ton; ileri seviyelerde funk, triad çevrimleri, drop 2/drop 3, ii–V–I ve kılavuz sesler, aksak ölçü, poliritim, altered, tritone ikamesi, akor-gam ve değişimler üzerinde doğaçlama (L1–L5, 148 ders). Seviye Yolu'nda her seviyenin Ek kurs listesinde.
 - **Profil**: Günlük görevler (Egzersiz, Teori, Serbest Çalışma), seri ve seri kalkanı, ders madalyaları (Bronz I → Elmas IV), 68 başarım ve XP, kurs ilerlemesi.
 - **Araçlar**: Metronom ve nota bulma testi.
 
 ### Son güncellemeler
 
+- **Müzisyenlik ek kursu L5**: aksak ölçü, poliritim, modal interchange, altered, simetrik gamlar, tritone ikamesi, akor-gam, gerilimli dizilişler, değişimler üzerinde doğaçlama; akor diyagramları koyu temada görünür
 - **Müzisyenlik ek kursu L4**: CAGED, harmonik ve melodik minör, drop 2/drop 3, 7'li arpejler, ikincil dominantlar, ii–V–I, kılavuz sesler, gerilimler, armonikler, ritim cümleleri, modal doğaçlama
 - **Müzisyenlik ek kursu L3**: funk ve ghost nota, minör ton, harmonik minör, triad çevrimleri, double stop, blues armonisi, nota ve akor şeması okuma, akor sesiyle doğaçlama
 - **Müzisyenlik ek kursu (L1–L2)**: ritim ve nota okuma, eşlikle çalma, senkop, shuffle, oktav, majör gam, pentatonik doğaçlama, dinamik
