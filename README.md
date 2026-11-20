@@ -20,7 +20,7 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | **Profil: görevler, seri, başarımlar** | **Seviye Yolu** |
 | ![Profil](docs/ekran/profil.png) | ![Seviye Yolu](docs/ekran/seviye-yolu.png) |
 | **Seviye sayfası: eksenler ve bitirme koşulu** | |
-| ![Seviye sayfası](docs/ekran/seviye.png) | |
+| ![Seviye sayfası](docs/ekran/seviye.png) | ![Uzun egzersiz](docs/ekran/uzun-egzersiz.png) |
 
 ## Highlights
 
@@ -65,6 +65,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Palm Mute kursu yeniden yazıldı (yeni egzersiz standardının ilk kursu)**: 17 özgün çalışma, her biri 20–30 ölçü (eskiden 8–12). Her egzersiz dört kısımdan oluşuyor: temel kalıp, çeşitleme, uygulama (riff ve power chord yürüyüşleri) ve birleştirme; on altılık ile üçleme hücreleri, sus ve aksan çeşitleri, pozisyon değişimi. Ders metninde "Bu çalışmada", kısım rehberi, odak döngüsü ve tempo planı var. Rehberlerdeki Palm Mute dersleri olduğu gibi kaldı
 - **Stiller ek kursu**: blues, rock, funk, metal, caz comping, bossa nova, bebop ve füzyon (36 ders)
 - **Okuma yolu ve yeni yol adımları**: porte ve ritim okuma, akor şeması; kulaktan melodi ve akor kökü; ikincil dominant, ii–V–I, akor-gam; triad çevrimi ve drop 2
 - **Müzisyenlik ek kursu L5**: aksak ölçü, poliritim, modal interchange, altered, simetrik gamlar, tritone ikamesi, akor-gam, gerilimli dizilişler, değişimler üzerinde doğaçlama; akor diyagramları koyu temada görünür
