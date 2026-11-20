@@ -24,7 +24,7 @@ const ICON_SIZES = [
 
 const USES = [
   { what: "Uygulama simgesi", where: "/marka/simge.svg · simge-512.png" },
-  { what: "Küçük boyutlar (16–48 px)", where: "/marka/simge-kucuk.svg · üst çubuk logosu ve sekme simgesi" },
+  { what: "Küçük boyutlar (16–48 px)", where: "/marka/simge-kucuk.svg · üst çubuk logosu · sekme simgesi src/app/icon.png" },
   { what: "Masaüstü uygulaması", where: "desktop/icon.png (512) · desktop/icon.ico (16–256)" },
   { what: "Kapak", where: "/marka/kapak.svg · kapak.png (1600×900) · kapak-kare.png (1080×1080)" },
 ];
@@ -37,7 +37,7 @@ export default function BrandPage() {
       <SayfaBasi
         kirinti={[{ label: "Marka" }]}
         baslik="Marka"
-        alt="Yüzsüz, dolu beyaz bir siluet: çizgi film oranlarında, öne eğilip geniş duruşla solo atan özgün bir gitarist ve tek kesikli bir elektro gitar. Siyahtan uzay grisine zemin, beyaz figür, orta gri gitar."
+        alt="Arda Uğur'un kendi fotoğrafından yaptığı siyah-beyaz karakalem gitarist çizimi. Siyahtan uzay grisine zemin, beyaz ve uzay grisi yazı."
         ek={
           <img src="/marka/kapak.png" alt={`${SITE.name} — Gitar akademisi`} width={1600} height={900} className="mx-auto mt-12 block h-auto w-full max-w-[1100px] rounded-[var(--radius-tile)]" />
         }
