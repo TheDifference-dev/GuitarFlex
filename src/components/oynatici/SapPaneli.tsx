@@ -40,17 +40,17 @@ export default function SapPaneli({ akort, notalar, etiket }: Props) {
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={notalar.length ? `Çalan: ${notalar.map((n) => `${n.tel}. tel ${n.olu ? "x" : n.perde}`).join(", ")}` : "Çalan nota yok"}>
         {MARKERS.filter((f) => f <= perdeSayisi).map((f) => (
-          <circle key={f} cx={x(f)} cy={UST + ((telSayisi - 1) * ARA) / 2} r={4} className="fill-white/10" />
+          <circle key={f} cx={x(f)} cy={UST + ((telSayisi - 1) * ARA) / 2} r={4} className="fill-ink/10" />
         ))}
         {perdeSayisi >= 12 && (
           <>
-            <circle cx={x(12)} cy={UST + ARA * 1.5} r={4} className="fill-white/10" />
-            <circle cx={x(12)} cy={UST + (telSayisi - 2.5) * ARA} r={4} className="fill-white/10" />
+            <circle cx={x(12)} cy={UST + ARA * 1.5} r={4} className="fill-ink/10" />
+            <circle cx={x(12)} cy={UST + (telSayisi - 2.5) * ARA} r={4} className="fill-ink/10" />
           </>
         )}
         {Array.from({ length: perdeSayisi + 1 }, (_, f) => (
           <g key={f}>
-            <line x1={SOL + (f + 1) * pw} x2={SOL + (f + 1) * pw} y1={UST} y2={UST + (telSayisi - 1) * ARA} className="stroke-white/25" strokeWidth={f === 0 ? 4 : 1.2} />
+            <line x1={SOL + (f + 1) * pw} x2={SOL + (f + 1) * pw} y1={UST} y2={UST + (telSayisi - 1) * ARA} className="stroke-ink/25" strokeWidth={f === 0 ? 4 : 1.2} />
             {f > 0 && (
               <text x={x(f)} y={H - 4} textAnchor="middle" className="fill-[var(--muted)] text-[10px]">
                 {f}
@@ -62,7 +62,7 @@ export default function SapPaneli({ akort, notalar, etiket }: Props) {
           const tel = telSayisi - i;
           return (
             <g key={tel}>
-              <line x1={SOL} x2={W - SAG} y1={y(tel)} y2={y(tel)} className="stroke-white/45" strokeWidth={0.7 + (telSayisi - i) * 0.25} />
+              <line x1={SOL} x2={W - SAG} y1={y(tel)} y2={y(tel)} className="stroke-ink/45" strokeWidth={0.7 + (telSayisi - i) * 0.25} />
               <text x={12} y={y(tel) + 3.5} textAnchor="middle" className="fill-[var(--muted)] text-[10px] font-semibold">
                 {akort[i] !== undefined ? noteName(akort[i]) : ""}
               </text>
@@ -77,21 +77,14 @@ export default function SapPaneli({ akort, notalar, etiket }: Props) {
               </text>
             ) : (
               <>
-                <circle cx={x(n.perde)} cy={y(n.tel)} r={8} fill="url(#gf-sap-grad)" />
-                <text x={x(n.perde)} y={y(n.tel) + 3.5} textAnchor="middle" className="pointer-events-none fill-white text-[9.5px] font-bold">
+                <circle cx={x(n.perde)} cy={y(n.tel)} r={8} className="fill-primary" />
+                <text x={x(n.perde)} y={y(n.tel) + 3.5} textAnchor="middle" className="pointer-events-none fill-primary-ink text-[9.5px] font-bold">
                   {akort[telSayisi - n.tel] !== undefined ? noteName(akort[telSayisi - n.tel] + n.perde) : n.perde}
                 </text>
               </>
             )}
           </g>
         ))}
-        <defs>
-          <linearGradient id="gf-sap-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ff9f0a" />
-            <stop offset="50%" stopColor="#ff375f" />
-            <stop offset="100%" stopColor="#bf5af2" />
-          </linearGradient>
-        </defs>
       </svg>
     </div>
   );

@@ -19,7 +19,7 @@ export default function ImprovPage() {
         </p>
         <nav className="mt-4 flex flex-wrap gap-2">
           {TURLER.map((t) => (
-            <a key={t} href={`#${t.toLocaleLowerCase("tr")}`} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm font-medium transition hover:bg-white/10">
+            <a key={t} href={`#${t.toLocaleLowerCase("tr")}`} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm font-medium transition hover:bg-ink/10">
               {IKON[t]} {t} <span className="text-muted">{BACKINGS.filter((b) => b.tur === t).length}</span>
             </a>
           ))}
@@ -32,7 +32,7 @@ export default function ImprovPage() {
           </h2>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {BACKINGS.filter((b) => b.tur === t).map((b) => (
-              <Link key={b.slug} href={`/sarkilar/dogaclama/${b.slug}`} className="group card p-5 transition hover:border-white/20">
+              <Link key={b.slug} href={`/sarkilar/dogaclama/${b.slug}`} className="group card p-5 transition hover:border-ink/20">
                 <div className="flex items-center justify-between">
                   <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent">{b.style}</span>
                   <span className="text-sm font-semibold text-muted">{b.bpm} BPM</span>

@@ -27,7 +27,7 @@ export default function SongsNav() {
             key={t.href}
             href={t.href}
             className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold ${
-              active ? "border-accent/40 bg-accent/15 text-accent" : "border-white/10 bg-white/[0.05] hover:bg-white/10"
+              active ? "border-accent/40 bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"
             }`}
           >
             <Icon size={15} /> {t.label}

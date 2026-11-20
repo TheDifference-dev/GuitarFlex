@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Bell, BookOpen, ChevronDown, Compass, Guitar, House, LayoutGrid, Library, Menu as MenuIcon, User, Wrench, X } from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronDown, Compass, Guitar, House, LayoutGrid, Library, Menu as MenuIcon, User, Wrench, X } from "lucide-react";
 import { SITE } from "@/config/site";
 
 type MenuItem = { href?: string; label: string; note?: string };
@@ -43,7 +43,6 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
   }, []);
 
   const menus: Menu[] = [
-    { id: "profil", label: "Profil", icon: User, href: "/profil", active: pathname.startsWith("/profil") },
     {
       id: "calis",
       label: "Gitar Çalış",
@@ -54,15 +53,15 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
         {
           title: "Akustik Gitar",
           items: [
-            { href: "/akustik", label: "Teknik Egzersizler", note: "Yeni" },
-            { href: "/akustik/sarkilar", label: "Şarkılar", note: "Yeni" },
+            { href: "/akustik", label: "Teknik Egzersizler" },
+            { href: "/akustik/sarkilar", label: "Şarkılar" },
           ],
         },
         {
           title: "Elektro Gitar",
           items: [
             { href: "/elektro", label: "Teknik Egzersizler" },
-            { href: "/seviye", label: "Seviye Yolu", note: "Yeni" },
+            { href: "/seviye", label: "Seviye Yolu" },
             { href: "/sarkilar", label: "Şarkı ve Sololar" },
           ],
         },
@@ -71,7 +70,7 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
     },
     {
       id: "teori",
-      label: "Müzik Teorisi",
+      label: "Teori",
       icon: BookOpen,
       active: pathname.startsWith("/teori") || pathname.startsWith("/calis/armoni"),
       groups: [
@@ -87,13 +86,13 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
         { items: [{ href: "/teori", label: "Teori ana sayfası" }] },
       ],
     },
-    { id: "kutuphane", label: "Şarkı Kütüphanesi", icon: Library, href: "/kutuphane", active: pathname.startsWith("/kutuphane") },
+    { id: "kutuphane", label: "Kütüphane", icon: Library, href: "/kutuphane", active: pathname.startsWith("/kutuphane") },
   ];
 
-  const iconBtn = "rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-text";
+  const iconBtn = "rounded-full p-2 text-muted transition hover:bg-ink/10 hover:text-text";
 
   return (
-    <header className="glass sticky top-0 z-30 border-b border-white/[0.07]">
+    <header className="glass sticky top-0 z-30 border-b border-line">
       <div ref={navRef} className="mx-auto flex min-h-14 max-w-7xl flex-nowrap items-center gap-1 px-3 py-2 sm:gap-2 sm:px-6">
         <div className="flex shrink-0 items-center gap-0.5">
           <button type="button" onClick={() => router.back()} className={iconBtn} title="Önceki sayfa" aria-label="Önceki sayfa">
@@ -105,13 +104,13 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
         </div>
 
         <Link href="/" className="mr-1 flex min-w-0 shrink-0 items-center gap-2.5 sm:mr-3">
-          <span className="ring-grad flex size-9 shrink-0">
+          <span className="flex size-9 shrink-0 overflow-hidden rounded-[10px] border border-line bg-panel">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={SITE.logo} alt="" width={32} height={32} className="size-full rounded-full border-2 border-bg object-cover" />
+            <img src={SITE.logo} alt="" width={36} height={36} className="size-full object-cover" />
           </span>
           <span className="leading-none">
             <span className="block text-[17px] font-bold tracking-tight">
-              <span className="text-grad">Guitar</span>Flex
+              {SITE.name}
             </span>
             <span className="mt-1 block text-[11px] font-medium text-muted">{sectionName(pathname, subtitle)}</span>
           </span>
@@ -122,7 +121,7 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
           {menus.map((m) => {
             const Icon = m.icon;
             const cls = `flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition ${
-              m.active ? "bg-white/[0.12] text-text" : "text-text/75 hover:bg-white/[0.07] hover:text-text"
+              m.active ? "bg-ink/[0.08] text-text" : "text-text/80 hover:bg-ink/[0.05] hover:text-text"
             }`;
             if (!m.groups)
               return (
@@ -136,13 +135,11 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
                   <Icon size={16} /> {m.label} <ChevronDown size={14} className={`transition ${open === m.id ? "rotate-180" : ""}`} />
                 </button>
                 {open === m.id && (
-                  <div onClick={() => setOpen(null)} className="glass absolute left-1/2 top-full z-40 mt-3 w-72 -translate-x-1/2 rounded-2xl border border-white/10 p-2 shadow-[0_24px_60px_-12px_rgb(0_0_0/0.8)]">
+                  <div onClick={() => setOpen(null)} className="bg-elevated absolute left-1/2 top-full z-40 mt-3 w-72 -translate-x-1/2 rounded-2xl border border-ink/10 p-2 shadow-[var(--shadow-pop)]">
                     {m.banner && (
-                      <Link href={m.banner.href} className="mb-1 flex items-center gap-3 rounded-xl bg-white/[0.06] p-3 transition hover:bg-white/10">
-                        <span className="ring-grad flex size-9 shrink-0">
-                          <span className="flex size-full items-center justify-center rounded-full bg-panel">
-                            <Compass size={17} className="text-text" />
-                          </span>
+                      <Link href={m.banner.href} className="mb-1 flex items-center gap-3 rounded-xl bg-ink/[0.06] p-3 transition hover:bg-ink/10">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-accent/10 text-accent">
+                          <Compass size={17} />
                         </span>
                         <span>
                           <span className="block text-sm font-semibold">{m.banner.title}</span>
@@ -158,10 +155,10 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
                             <Link
                               key={it.label}
                               href={it.href}
-                              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-white/[0.08] ${pathname === it.href ? "text-accent" : ""}`}
+                              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-ink/[0.08] ${pathname === it.href ? "text-accent" : ""}`}
                             >
                               {it.label}
-                              {it.note && <span className="rounded-full bg-[image:var(--grad)] px-2 py-0.5 text-[10px] font-semibold text-white">{it.note}</span>}
+                              {it.note && <span className="text-xs font-medium text-accent">{it.note}</span>}
                             </Link>
                           ) : (
                             <span key={it.label} className="flex justify-between gap-2 rounded-lg px-3 py-2 text-sm text-muted">
@@ -179,16 +176,11 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1">
-          <button type="button" className={`${iconBtn} hidden sm:block`} title="Bildirimler">
-            <Bell size={18} />
-          </button>
           <Link href="/araclar" className={`${iconBtn} hidden sm:block`} title="Araçlar">
             <Wrench size={18} />
           </Link>
-          <Link href="/profil" className="ring-grad ml-1 flex size-9" title="Profil" aria-label="Profil">
-            <span className="flex size-full items-center justify-center rounded-full border-2 border-bg bg-panel-2 text-text">
-              <User size={16} />
-            </span>
+          <Link href="/profil" className={`ml-1 flex size-9 items-center justify-center rounded-full transition hover:bg-ink/15 ${pathname.startsWith("/profil") ? "bg-accent/10 text-accent" : "bg-ink/[0.07] text-text"}`} title="Profil" aria-label="Profil">
+            <User size={17} />
           </Link>
           <button
             type="button"
@@ -206,25 +198,25 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
 
       {/* Mobil (hamburger) menü: bütün menü grupları alt alta; GuitarBear'deki gibi "Profilini Gör" ve araçlar da burada */}
       {mobil && (
-        <div id="mobil-menu" className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-white/[0.07] px-3 pb-5 pt-2 lg:hidden" onClick={(e) => (e.target as HTMLElement).closest("a") && setMobil(false)}>
+        <div id="mobil-menu" className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-ink/[0.07] px-3 pb-5 pt-2 lg:hidden" onClick={(e) => (e.target as HTMLElement).closest("a") && setMobil(false)}>
           <div className="mx-auto grid max-w-xl gap-1">
             <div className="grid grid-cols-2 gap-2 py-2">
-              <Link href="/profil" className="flex items-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2.5 text-sm font-semibold">
+              <Link href="/profil" className="flex items-center gap-2 rounded-xl bg-ink/[0.06] px-3 py-2.5 text-sm font-semibold">
                 <User size={16} /> Profilini Gör
               </Link>
-              <Link href="/kurslar" className="flex items-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2.5 text-sm font-semibold">
+              <Link href="/kurslar" className="flex items-center gap-2 rounded-xl bg-ink/[0.06] px-3 py-2.5 text-sm font-semibold">
                 <LayoutGrid size={16} /> Tüm Kurslar
               </Link>
             </div>
             {menus
               .filter((m) => m.groups)
               .map((m) => (
-                <div key={m.id} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-2">
+                <div key={m.id} className="rounded-2xl border border-ink/[0.07] bg-ink/[0.03] p-2">
                   <p className="flex items-center gap-2 px-2 pb-1 pt-1 text-sm font-semibold">
                     <m.icon size={16} className="text-accent" /> {m.label}
                   </p>
                   {m.banner && (
-                    <Link href={m.banner.href} className="mb-1 flex items-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2 text-sm font-medium">
+                    <Link href={m.banner.href} className="mb-1 flex items-center gap-2 rounded-xl bg-ink/[0.06] px-3 py-2 text-sm font-medium">
                       <Compass size={15} /> {m.banner.title}
                     </Link>
                   )}
@@ -233,9 +225,9 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
                       {g.title && <p className="px-3 pb-0.5 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted">{g.title}</p>}
                       {g.items.map((it) =>
                         it.href ? (
-                          <Link key={it.label} href={it.href} className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium hover:bg-white/[0.08] ${pathname === it.href ? "text-accent" : ""}`}>
+                          <Link key={it.label} href={it.href} className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium hover:bg-ink/[0.08] ${pathname === it.href ? "text-accent" : ""}`}>
                             {it.label}
-                            {it.note && <span className="rounded-full bg-[image:var(--grad)] px-2 py-0.5 text-[10px] font-semibold text-white">{it.note}</span>}
+                            {it.note && <span className="text-xs font-medium text-accent">{it.note}</span>}
                           </Link>
                         ) : null,
                       )}
@@ -244,10 +236,10 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
                 </div>
               ))}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <Link href="/kutuphane" className="flex items-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2.5 text-sm font-semibold">
+              <Link href="/kutuphane" className="flex items-center gap-2 rounded-xl bg-ink/[0.06] px-3 py-2.5 text-sm font-semibold">
                 <Library size={16} /> Şarkı Kütüphanesi
               </Link>
-              <Link href="/araclar" className="flex items-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2.5 text-sm font-semibold">
+              <Link href="/araclar" className="flex items-center gap-2 rounded-xl bg-ink/[0.06] px-3 py-2.5 text-sm font-semibold">
                 <Wrench size={16} /> Araçlar
               </Link>
             </div>

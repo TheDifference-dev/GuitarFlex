@@ -43,7 +43,7 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
               <li
                 key={r.name}
                 className={`rounded-full border px-3 py-1 text-sm ${
-                  r === current ? "border-transparent bg-[image:var(--grad)] text-white" : done >= r.min ? "border-accent/50 text-accent" : "border-line text-muted"
+                  r === current ? "border-transparent bg-primary text-primary-ink" : done >= r.min ? "border-accent/50 text-accent" : "border-line text-muted"
                 }`}
               >
                 {r.name} <span className="opacity-70">({r.min})</span>
@@ -91,7 +91,7 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
           {courses.map((t) => {
             const { done: d, total } = keysProgress(p, t.keys);
             return (
-              <Link key={t.slug} href={`/calis/${t.slug}`} className="card p-4 hover:border-white/20">
+              <Link key={t.slug} href={`/calis/${t.slug}`} className="card p-4 hover:border-ink/20">
                 <p className="font-medium">
                   {t.icon} {t.title}
                 </p>

@@ -169,28 +169,28 @@ export default function Kompozisyon({ tex, chords, bpm, title, progressKey, onPl
           spellCheck={false}
           placeholder=":8 5.2 7.3 5.3 7.4 :4 5.3 r | :8 6.2 5.2 5.3 7.4 :4 5.3 r | …"
           aria-label="alphaTex"
-          className="w-full rounded-2xl border border-white/10 bg-[var(--sheet)] p-3 font-mono text-sm leading-relaxed"
+          className="w-full rounded-2xl border border-ink/10 bg-[var(--sheet)] p-3 font-mono text-sm leading-relaxed"
         />
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted">Sap girişi · süre</span>
-            <div className="flex gap-0.5 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5">
+            <div className="flex gap-0.5 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-0.5">
               {SURELER.map((d) => (
-                <button key={d} type="button" onClick={() => setSure(d)} className={`rounded-full px-3 py-1 transition ${sure === d ? "bg-white/[0.14] text-text" : "text-muted hover:text-text"}`} title={`1/${d}`}>
+                <button key={d} type="button" onClick={() => setSure(d)} className={`rounded-full px-3 py-1 transition ${sure === d ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`} title={`1/${d}`}>
                   {d === 1 ? "birlik" : d === 2 ? "ikilik" : d === 4 ? "dörtlük" : d === 8 ? "sekizlik" : "16'lık"}
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => setNoktali((x) => !x)} className={`rounded-full border px-3 py-1 ${noktali ? "border-accent/40 bg-accent/15 text-accent" : "border-white/10 bg-white/[0.04]"}`}>
+            <button type="button" onClick={() => setNoktali((x) => !x)} className={`rounded-full border px-3 py-1 ${noktali ? "border-accent/40 bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.04]"}`}>
               Noktalı
             </button>
-            <button type="button" onClick={() => ekle("r")} className="btn-soft px-3 py-1 text-sm">
+            <button type="button" onClick={() => ekle("r")} className="btn-secondary px-3 py-1 text-sm">
               Sus
             </button>
-            <button type="button" onClick={() => ekle("|")} className="btn-soft px-3 py-1 text-sm">
+            <button type="button" onClick={() => ekle("|")} className="btn-secondary px-3 py-1 text-sm">
               Ölçü sonu |
             </button>
-            <button type="button" onClick={geriAl} disabled={!metin.trim()} className="btn-soft px-3 py-1 text-sm">
+            <button type="button" onClick={geriAl} disabled={!metin.trim()} className="btn-secondary px-3 py-1 text-sm">
               <Undo2 size={14} /> Geri al
             </button>
           </div>
@@ -200,7 +200,7 @@ export default function Kompozisyon({ tex, chords, bpm, title, progressKey, onPl
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            className="btn-grad px-4 py-2 text-sm"
+            className="btn-primary px-4 py-2 text-sm"
             disabled={!metin.trim()}
             onClick={async () => {
               const g = await kontrol();
@@ -210,34 +210,34 @@ export default function Kompozisyon({ tex, chords, bpm, title, progressKey, onPl
           >
             <Headphones size={16} /> Dinle ve kontrol et
           </button>
-          <button type="button" className="btn-soft px-4 py-2 text-sm" disabled={!metin.trim()} onClick={async () => setGeri(await kontrol())}>
+          <button type="button" className="btn-secondary px-4 py-2 text-sm" disabled={!metin.trim()} onClick={async () => setGeri(await kontrol())}>
             <CheckCircle2 size={16} /> Yalnız kontrol et
           </button>
-          <button type="button" className="btn-soft px-4 py-2 text-sm" disabled={!metin.trim()} onClick={kaydet}>
+          <button type="button" className="btn-secondary px-4 py-2 text-sm" disabled={!metin.trim()} onClick={kaydet}>
             <Archive size={16} /> Arşivime kaydet
           </button>
         </div>
         {mesaj && (
-          <p className="text-sm text-emerald-400" role="status">
+          <p className="text-sm text-ok" role="status">
             {mesaj}
           </p>
         )}
 
         {geri?.hata && (
-          <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200" role="alert">
+          <p className="rounded-2xl border border-bad/40 bg-bad/10 p-3 text-sm text-bad" role="alert">
             alphaTex okunamadı: {geri.hata}
           </p>
         )}
         {geri && !geri.hata && (
-          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4" role="status">
+          <div className="space-y-3 rounded-2xl border border-ink/10 bg-ink/[0.03] p-4" role="status">
             <p className="text-lg font-semibold">
-              Ölçü toplamı: <span className="text-grad">{dolu}/{chords.length} dolu</span> · Güçlü vuruşlarda akor sesi:{" "}
-              <span className="text-grad">
+              Ölçü toplamı: <span className="text-accent">{dolu}/{chords.length} dolu</span> · Güçlü vuruşlarda akor sesi:{" "}
+              <span className="text-accent">
                 %{oran} ({geri.gucluAkor}/{geri.gucluToplam})
               </span>
             </p>
             {geri.olcuSay !== chords.length && (
-              <p className="text-sm text-amber-200">
+              <p className="text-sm text-warn">
                 {geri.olcuSay} ölçü yazdın; yürüyüş {chords.length} ölçü. {geri.olcuSay < chords.length ? "Eksik ölçüler dinlerken sus olarak çalınır." : "Fazla ölçüler çalınmaz."}
               </p>
             )}
@@ -255,15 +255,15 @@ export default function Kompozisyon({ tex, chords, bpm, title, progressKey, onPl
                   {geri.olculer.map((o) => {
                     const tam = Math.abs(o.toplam - o.olmali) < 1e-6;
                     return (
-                      <tr key={o.no} className="border-t border-white/[0.06]">
+                      <tr key={o.no} className="border-t border-ink/[0.06]">
                         <td className="py-1.5 pr-3 font-semibold">{o.no}</td>
                         <td className="py-1.5 pr-3">{o.akor}</td>
-                        <td className={`py-1.5 pr-3 ${tam ? "text-emerald-400" : "text-rose-300"}`}>
+                        <td className={`py-1.5 pr-3 ${tam ? "text-ok" : "text-bad"}`}>
                           {surDort(o.toplam)} / {surDort(o.olmali)} {tam ? "✓" : o.toplam < o.olmali ? "eksik" : "fazla"}
                         </td>
                         <td className="py-1.5">
                           {o.guclu.map((g, i) => (
-                            <span key={i} className={`mr-2 ${g.ad === "–" ? "text-muted" : g.ok ? "text-emerald-400" : "text-rose-300"}`}>
+                            <span key={i} className={`mr-2 ${g.ad === "–" ? "text-muted" : g.ok ? "text-ok" : "text-bad"}`}>
                               {g.ad}
                             </span>
                           ))}
@@ -281,7 +281,7 @@ export default function Kompozisyon({ tex, chords, bpm, title, progressKey, onPl
       </section>
 
       <section className="card space-y-3 p-5">
-        <button type="button" onClick={() => setOrnek((x) => !x)} className="btn-soft px-4 py-2 text-sm">
+        <button type="button" onClick={() => setOrnek((x) => !x)} className="btn-secondary px-4 py-2 text-sm">
           <Eye size={16} /> {ornek ? "Örnek çözümü gizle" : "Örnek çözümü göster"}
         </button>
         {ornek && <TabPlayer source={ornekKaynak} compact stave="both" mutedTracks={[]} initialLoop={false} onPlayingChange={onPlayingChange} />}

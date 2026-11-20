@@ -54,7 +54,7 @@ export default function LibrarySongView({ song }: { song: LibrarySong }) {
                 <span className="min-w-0">
                   <span className="flex flex-wrap gap-1">
                     {p.chords.map((c) => (
-                      <span key={c} className="rounded-md bg-white/[0.07] px-1.5 py-0.5 font-mono text-xs">
+                      <span key={c} className="rounded-md bg-ink/[0.07] px-1.5 py-0.5 font-mono text-xs">
                         {c}
                       </span>
                     ))}
@@ -73,7 +73,7 @@ export default function LibrarySongView({ song }: { song: LibrarySong }) {
             </h2>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {song.chords.map((c) => (
-                <span key={c} className="rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1 font-mono text-sm font-semibold">
+                <span key={c} className="rounded-lg border border-ink/10 bg-ink/[0.05] px-2.5 py-1 font-mono text-sm font-semibold">
                   {c}
                 </span>
               ))}

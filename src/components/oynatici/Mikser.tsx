@@ -59,7 +59,7 @@ export default function Mikser({ izler, gosterilen, sessiz, solo, ses, onGoster,
         return (
           <div
             key={iz.index}
-            className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border px-2.5 py-1.5 sm:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)_auto] ${gosterilen === iz.index ? "border-accent/50 bg-accent/[0.07]" : "border-white/[0.07] bg-white/[0.03]"} ${kapali ? "opacity-60" : ""}`}
+            className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border px-2.5 py-1.5 sm:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)_auto] ${gosterilen === iz.index ? "border-accent/50 bg-accent/[0.07]" : "border-ink/[0.07] bg-ink/[0.03]"} ${kapali ? "opacity-60" : ""}`}
           >
             <button
               type="button"
@@ -90,7 +90,7 @@ export default function Mikser({ izler, gosterilen, sessiz, solo, ses, onGoster,
               <button
                 type="button"
                 onClick={() => onSolo(iz.index)}
-                className={`h-7 w-7 rounded-lg text-xs font-bold transition ${solo.has(iz.index) ? "bg-amber-400 text-black" : "bg-white/[0.07] text-muted hover:bg-white/[0.12] hover:text-text"}`}
+                className={`h-7 w-7 rounded-lg text-xs font-bold transition ${solo.has(iz.index) ? "bg-warn text-warn-ink" : "bg-ink/[0.07] text-muted hover:bg-ink/[0.12] hover:text-text"}`}
                 title="Solo: yalnız bu track (ve diğer solo track'ler) çalar"
                 aria-pressed={solo.has(iz.index)}
               >
@@ -99,7 +99,7 @@ export default function Mikser({ izler, gosterilen, sessiz, solo, ses, onGoster,
               <button
                 type="button"
                 onClick={() => onSessiz(iz.index)}
-                className={`h-7 w-7 rounded-lg text-xs font-bold transition ${sessiz.has(iz.index) ? "bg-rose-500 text-white" : "bg-white/[0.07] text-muted hover:bg-white/[0.12] hover:text-text"}`}
+                className={`h-7 w-7 rounded-lg text-xs font-bold transition ${sessiz.has(iz.index) ? "bg-bad text-bad-ink" : "bg-ink/[0.07] text-muted hover:bg-ink/[0.12] hover:text-text"}`}
                 title="Sessiz"
                 aria-pressed={sessiz.has(iz.index)}
               >

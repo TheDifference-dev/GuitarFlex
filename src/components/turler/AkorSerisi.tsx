@@ -39,14 +39,14 @@ export default function AkorSerisi({ chords, ob, ilkOlcu = 1, aktif }: { chords:
         {chords.map((c, i) => (
           <span
             key={i}
-            className={`rounded-lg border px-2.5 py-1 text-sm font-semibold tabular-nums transition ${aktif === i ? "border-accent bg-accent/15 text-accent" : "border-white/10 bg-white/[0.04]"}`}
+            className={`rounded-lg border px-2.5 py-1 text-sm font-semibold tabular-nums transition ${aktif === i ? "border-accent bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.04]"}`}
           >
             <span className="mr-1.5 text-xs text-muted">{ilkOlcu + i}</span>
             {c}
           </span>
         ))}
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3">
+      <div className="overflow-x-auto rounded-2xl border border-ink/[0.08] bg-ink/[0.02] p-3">
         <AkorSemasi sema={sema} ilk={ilkOlcu} />
       </div>
       {diyagramlar.length > 0 && (

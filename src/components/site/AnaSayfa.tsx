@@ -60,7 +60,6 @@ export default function AnaSayfa({
       <section className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         {/* Kaldığın yerden devam et */}
         <div className="card relative overflow-hidden p-6 sm:p-8">
-          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[radial-gradient(circle,rgb(255_55_95/0.22),transparent_65%)]" />
           {devam ? (
             <>
               <p className="eyebrow">Kaldığın yerden devam et</p>
@@ -79,15 +78,15 @@ export default function AnaSayfa({
               {devam.k && <IlerlemeCubugu {...kartIlerleme(p, devam.k)} />}
               <div className="mt-6 flex flex-wrap gap-3">
                 {devam.hedef ? (
-                  <Link href={dersAdresi(devam.a.slug, devam.hedef.id)} className="btn-grad px-6 py-3 text-[15px]">
+                  <Link href={dersAdresi(devam.a.slug, devam.hedef.id)} className="btn-primary px-6 py-3 text-[15px]">
                     <PlayCircle size={17} /> Derse devam et
                   </Link>
                 ) : (
-                  <Link href="/kurslar" className="btn-grad px-6 py-3 text-[15px]">
+                  <Link href="/kurslar" className="btn-primary px-6 py-3 text-[15px]">
                     Yeni bir kurs seç <ArrowRight size={16} />
                   </Link>
                 )}
-                <Link href={`/calis/${devam.a.slug}`} className="btn-soft px-5 py-3 text-[15px]">
+                <Link href={`/calis/${devam.a.slug}`} className="btn-secondary px-5 py-3 text-[15px]">
                   Kursa git
                 </Link>
               </div>
@@ -98,10 +97,10 @@ export default function AnaSayfa({
               <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Bugün gitarla ne çalışalım?</h1>
               <p className="mt-2 max-w-xl text-muted">Seviyeni söyle, sana uygun yolu önerelim ya da bir başlangıç rehberiyle hemen başla. Hiçbir ders kilitli değil.</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href="/nasil-calismaliyim" className="btn-grad px-6 py-3 text-[15px]">
+                <Link href="/nasil-calismaliyim" className="btn-primary px-6 py-3 text-[15px]">
                   <Compass size={17} /> Seviyemi seç
                 </Link>
-                <Link href={kart.has("sifirdan-baslangic-rehberi") ? "/calis/sifirdan-baslangic-rehberi" : "/kurslar"} className="btn-soft px-5 py-3 text-[15px]">
+                <Link href={kart.has("sifirdan-baslangic-rehberi") ? "/calis/sifirdan-baslangic-rehberi" : "/kurslar"} className="btn-secondary px-5 py-3 text-[15px]">
                   Sıfırdan başla
                 </Link>
               </div>
@@ -114,11 +113,9 @@ export default function AnaSayfa({
       </section>
 
       {/* Gitarda Nasıl Çalışmalıyım? */}
-      <Link href="/nasil-calismaliyim" className="card group flex items-center gap-4 p-4 transition hover:border-white/15 sm:p-5">
-        <span className="ring-grad flex size-11 shrink-0">
-          <span className="flex size-full items-center justify-center rounded-full bg-panel">
-            <Compass size={19} />
-          </span>
+      <Link href="/nasil-calismaliyim" className="card group flex items-center gap-4 p-4 transition hover:border-ink/15 sm:p-5">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+          <Compass size={19} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-semibold">Gitarda Nasıl Çalışmalıyım?</span>
@@ -134,8 +131,8 @@ export default function AnaSayfa({
           {kategoriler.map((c) => {
             const Ikon = IKON[c.ikon];
             return (
-              <Link key={c.href} href={c.href} className="card group flex gap-4 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-white/15">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[image:var(--grad)] text-white shadow-[0_8px_20px_-8px_rgb(255_55_95/0.6)]">
+              <Link key={c.href} href={c.href} className="card group flex gap-4 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
                   <Ikon size={22} />
                 </span>
                 <span className="min-w-0">
@@ -180,7 +177,7 @@ export default function AnaSayfa({
           <BolumBasligi baslik="Şarkı Kütüphanesinden" href="/kutuphane" bag="Kütüphane" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {sarkilar.map((s) => (
-              <Link key={s.slug} href={`/kutuphane/${s.slug}`} className="card group p-4 transition hover:-translate-y-0.5 hover:border-white/15">
+              <Link key={s.slug} href={`/kutuphane/${s.slug}`} className="card group p-4 transition hover:-translate-y-0.5 hover:border-ink/15">
                 <span className="eyebrow">{s.genre}</span>
                 <span className="mt-1 block font-semibold leading-tight">{s.title}</span>
                 <span className="mt-1 block text-xs text-muted">
@@ -217,8 +214,8 @@ function IlerlemeCubugu({ tamam, toplam, yuzde }: { tamam: number; toplam: numbe
           {tamam}/{toplam} · {toplam - tamam} kaldı
         </span>
       </div>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
-        <div className="bar-grad h-full rounded-full" style={{ width: `${yuzde}%` }} />
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/10">
+        <div className="bar-fill h-full rounded-full" style={{ width: `${yuzde}%` }} />
       </div>
     </div>
   );
@@ -235,7 +232,7 @@ function Bugun({ oyun }: { oyun?: OyunVeri }) {
           <Sayac etiket="Seri" deger={`${streak(p.sessions)} gün`} />
           <Sayac etiket="Toplam" deger={formatDuration(totalSeconds(p.sessions))} />
         </div>
-        <Link href="/profil" className="btn-soft justify-self-start px-4 py-2 text-sm">
+        <Link href="/profil" className="btn-secondary justify-self-start px-4 py-2 text-sm">
           Profilini gör
         </Link>
       </div>
@@ -247,25 +244,25 @@ function Bugun({ oyun }: { oyun?: OyunVeri }) {
     <div className="card flex flex-col p-6 sm:p-7">
       <div className="flex items-center justify-between gap-3">
         <p className="eyebrow">Günlük görevler</p>
-        <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-xs font-semibold tabular-nums">
+        <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 text-xs font-semibold tabular-nums">
           {tamam}/{gv.length}
         </span>
       </div>
       <ul className="mt-3 space-y-2.5">
         {gv.map((g) => (
           <li key={g.ad}>
-            <Link href={g.href} className="group block rounded-xl px-1 py-0.5 transition hover:bg-white/[0.04]">
+            <Link href={g.href} className="group block rounded-xl px-1 py-0.5 transition hover:bg-ink/[0.04]">
               <span className="flex items-center justify-between gap-2 text-sm font-semibold">
                 <span className="flex items-center gap-2">
-                  <span className={`flex size-5 items-center justify-center rounded-full ${g.tamam ? "bg-emerald-500 text-black" : "bg-white/10"}`}>{g.tamam && <Check size={12} />}</span>
+                  <span className={`flex size-5 items-center justify-center rounded-full ${g.tamam ? "bg-ok text-ok-ink" : "bg-ink/10"}`}>{g.tamam && <Check size={12} />}</span>
                   {g.ad}
                 </span>
                 <span className="text-xs font-medium tabular-nums text-muted">
                   {Math.min(g.deger, g.hedef)}/{g.hedef} {g.birim}
                 </span>
               </span>
-              <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-white/10">
-                <span className={`block h-full rounded-full ${g.tamam ? "bg-emerald-500" : "bar-grad"}`} style={{ width: `${Math.min(100, (g.deger / g.hedef) * 100)}%` }} />
+              <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-ink/10">
+                <span className={`block h-full rounded-full ${g.tamam ? "bg-ok" : "bar-fill"}`} style={{ width: `${Math.min(100, (g.deger / g.hedef) * 100)}%` }} />
               </span>
             </Link>
           </li>
@@ -289,7 +286,7 @@ function Bugun({ oyun }: { oyun?: OyunVeri }) {
 
 function Sayac({ etiket, deger }: { etiket: string; deger: string }) {
   return (
-    <div className="rounded-2xl bg-white/[0.04] p-3">
+    <div className="rounded-2xl bg-ink/[0.04] p-3">
       <p className="text-xs font-medium text-muted">{etiket}</p>
       <p className="mt-0.5 text-lg font-semibold">{deger}</p>
     </div>

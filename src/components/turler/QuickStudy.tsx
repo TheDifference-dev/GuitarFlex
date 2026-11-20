@@ -71,28 +71,28 @@ export default function QuickStudy({ tex, chords, readBars, improvBars, onPlayin
           const aktif = adim === i;
           const bitti = i < adim || (i === 0 && dinlendi);
           return (
-            <li key={a.ad} className={`card p-4 transition ${aktif ? "border-accent/50 shadow-[0_0_0_1px_rgb(255_55_95/0.25)]" : "opacity-80"}`}>
+            <li key={a.ad} className={`card p-4 transition ${aktif ? "border-accent/50" : "opacity-80"}`}>
               <button type="button" onClick={() => git(i)} className="flex w-full items-center gap-2 text-left font-semibold">
-                <span className={`flex size-7 items-center justify-center rounded-full text-sm ${aktif ? "btn-grad p-0" : bitti ? "bg-emerald-500/20 text-emerald-400" : "bg-white/10"}`}>
+                <span className={`flex size-7 items-center justify-center rounded-full text-sm ${aktif ? "btn-primary p-0" : bitti ? "bg-ok/20 text-ok" : "bg-ink/10"}`}>
                   {bitti && !aktif ? <Check size={15} /> : i + 1}
                 </span>
                 <Ikon size={16} className={aktif ? "text-accent" : "text-muted"} /> {a.ad}
               </button>
               <p className="mt-1.5 text-sm text-muted">{a.metin}</p>
               {i === 0 && aktif && (
-                <button type="button" onClick={() => git(1)} className="btn-soft mt-3 px-3 py-1.5 text-sm">
+                <button type="button" onClick={() => git(1)} className="btn-secondary mt-3 px-3 py-1.5 text-sm">
                   {dinlendi ? "Dinledim, incelemeye geç" : "İncelemeye geç"} <SkipForward size={14} />
                 </button>
               )}
               {i === 1 && aktif && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-grad text-3xl font-bold tabular-nums" aria-live="polite">
+                  <span className="text-accent text-3xl font-bold tabular-nums" aria-live="polite">
                     {formatClock(kalan)}
                   </span>
-                  <button type="button" onClick={() => setSayiyor((x) => !x)} className="btn-soft px-3 py-1.5 text-sm">
+                  <button type="button" onClick={() => setSayiyor((x) => !x)} className="btn-secondary px-3 py-1.5 text-sm">
                     {sayiyor ? <Pause size={14} /> : <Play size={14} />} {sayiyor ? "Duraklat" : "Devam"}
                   </button>
-                  <button type="button" onClick={() => git(2)} className="btn-soft px-3 py-1.5 text-sm" title="İncelemeyi atla">
+                  <button type="button" onClick={() => git(2)} className="btn-secondary px-3 py-1.5 text-sm" title="İncelemeyi atla">
                     Atla <SkipForward size={14} />
                   </button>
                 </div>
@@ -106,7 +106,7 @@ export default function QuickStudy({ tex, chords, readBars, improvBars, onPlayin
       <section className="space-y-2">
         <h2 className="flex flex-wrap items-center gap-2 font-semibold">
           Okuma · ölçü {readBars[0]}–{readBars[1]}
-          <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-0.5 text-xs font-semibold text-muted">Yalnız porte</span>
+          <span className="rounded-full border border-ink/10 bg-ink/[0.05] px-2.5 py-0.5 text-xs font-semibold text-muted">Yalnız porte</span>
           {!dogaclamada && bar !== null && <span className="text-xs text-muted">Şu an: ölçü {bar + 1}</span>}
         </h2>
         <TabPlayer
@@ -129,7 +129,7 @@ export default function QuickStudy({ tex, chords, readBars, improvBars, onPlayin
       <section className={`card space-y-3 p-5 transition ${dogaclamada ? "border-accent/50" : ""}`}>
         <h2 className="flex flex-wrap items-center gap-2 font-semibold">
           Doğaçlama · ölçü {improvBars[0]}–{improvBars[1]}
-          <span className="btn-grad px-2.5 py-0.5 text-xs">Doğaçla</span>
+          <span className="btn-primary px-2.5 py-0.5 text-xs">Doğaçla</span>
           {dogaclamada && (
             <span className="text-sm text-accent" aria-live="polite">
               Şu an: ölçü {bar! + 1} · {chords[bar!]}
@@ -138,7 +138,7 @@ export default function QuickStudy({ tex, chords, readBars, improvBars, onPlayin
         </h2>
         <p className="text-sm text-muted">Tab yok: akorlara bakarak kendi cümleni çal. Her akorun 1. vuruşunda akorun bir sesini hedefle.</p>
         <AkorSerisi chords={chords.slice(improvBars[0] - 1, improvBars[1])} ob={ob} ilkOlcu={improvBars[0]} aktif={dogaclamada ? bar! - (improvBars[0] - 1) : null} />
-        <button type="button" onClick={() => setOrnek((x) => !x)} className="btn-soft px-3 py-1.5 text-sm" title="Dinlemedeki örnek doğaçlamanın notası">
+        <button type="button" onClick={() => setOrnek((x) => !x)} className="btn-secondary px-3 py-1.5 text-sm" title="Dinlemedeki örnek doğaçlamanın notası">
           <Eye size={14} /> {ornek ? "Örnek doğaçlamayı gizle" : "Örnek doğaçlamayı notada göster"}
         </button>
       </section>

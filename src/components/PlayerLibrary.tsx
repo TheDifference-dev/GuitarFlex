@@ -70,7 +70,7 @@ export default function PlayerLibrary() {
 
   const filtered = (archive ?? []).filter((a) => a.path.toLocaleLowerCase("tr").includes(filter.toLocaleLowerCase("tr")));
   const item = (active: boolean) =>
-    `block w-full truncate rounded-lg px-2.5 py-1.5 text-left text-sm transition ${active ? "bg-accent/15 font-medium text-accent" : "hover:bg-white/[0.06]"}`;
+    `block w-full truncate rounded-lg px-2.5 py-1.5 text-left text-sm transition ${active ? "bg-accent/15 font-medium text-accent" : "hover:bg-ink/[0.06]"}`;
 
   return (
     <div
@@ -96,7 +96,7 @@ export default function PlayerLibrary() {
       )}
 
       <aside className="space-y-5">
-        <label className="block cursor-pointer rounded-2xl border border-dashed border-line p-4 text-center text-sm transition hover:border-white/20">
+        <label className="block cursor-pointer rounded-2xl border border-dashed border-line p-4 text-center text-sm transition hover:border-ink/20">
           <span className="font-semibold">Dosya aç</span>
           <span className="block text-xs text-muted">Guitar Pro, MusicXML, alphaTex · ya da sürükle-bırak</span>
           <input
@@ -135,7 +135,7 @@ export default function PlayerLibrary() {
                 placeholder={`${archive.length} dosyada ara…`}
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="mb-2 w-full rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1.5 text-sm"
+                className="mb-2 w-full rounded-lg border border-ink/10 bg-ink/[0.05] px-2.5 py-1.5 text-sm"
               />
               <div className="max-h-[50vh] overflow-auto">
                 {filtered.map((a) => (

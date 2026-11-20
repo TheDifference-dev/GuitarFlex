@@ -14,11 +14,12 @@ export const ROL_ADI: Record<LibraryTrackRole, string> = {
 export const sure = (sn: number) => `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, "0")}`;
 
 const LEVEL_STYLE: Record<Level, string> = {
-  L1: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-  L2: "border-sky-400/30 bg-sky-400/10 text-sky-300",
-  L3: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-  L4: "border-orange-400/30 bg-orange-400/10 text-orange-300",
-  L5: "border-rose-400/30 bg-rose-400/10 text-rose-300",
+  // Sade: seviye rengi yok, yalnız yazı; zorlaştıkça vurgu artar
+  L1: "border-line text-muted",
+  L2: "border-line text-muted",
+  L3: "border-line text-text",
+  L4: "border-accent/40 text-accent",
+  L5: "border-accent/70 text-accent",
 };
 export function SeviyeEtiketi({ level }: { level: Level }) {
   return (

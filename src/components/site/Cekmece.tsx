@@ -20,13 +20,13 @@ export default function Cekmece({ acik, kapat, baslik, children, taraf = "sol" }
   if (!acik) return null;
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-      <button type="button" aria-label="Kapat" onClick={kapat} className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+      <button type="button" aria-label="Kapat" onClick={kapat} className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
       <div
-        className={`absolute top-0 flex h-full w-[min(26rem,92vw)] flex-col border-white/10 bg-panel shadow-[0_0_60px_rgb(0_0_0/0.7)] ${taraf === "sol" ? "left-0 border-r" : "right-0 border-l"}`}
+        className={`absolute top-0 flex h-full w-[min(26rem,92vw)] flex-col border-ink/10 bg-panel shadow-[var(--shadow-pop)] ${taraf === "sol" ? "left-0 border-r" : "right-0 border-l"}`}
       >
         <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
           <div className="min-w-0 font-semibold">{baslik}</div>
-          <button type="button" onClick={kapat} className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-text" aria-label="Kapat">
+          <button type="button" onClick={kapat} className="rounded-full p-2 text-muted transition hover:bg-ink/10 hover:text-text" aria-label="Kapat">
             <X size={18} />
           </button>
         </div>

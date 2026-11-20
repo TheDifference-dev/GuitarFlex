@@ -31,14 +31,14 @@ function sectionDone(p: Progress, course: Course, s: Section) {
 function ExamRow({ section: s }: { section: Section }) {
   const tiers = s.examTiers ?? [];
   return (
-    <div className="mt-1.5 rounded-xl bg-white/[0.04] px-2.5 py-2 text-xs" title="Sınava girmek istediğin kademeyi ve BPM'i seç">
+    <div className="mt-1.5 rounded-xl bg-ink/[0.04] px-2.5 py-2 text-xs" title="Sınava girmek istediğin kademeyi ve BPM'i seç">
       <span className="flex items-center gap-1.5 font-semibold text-accent">
         <Sparkles size={12} className="shrink-0" /> {s.examName ?? "Sınav"}
       </span>
       {!!tiers.length && (
         <span className="mt-1 flex flex-wrap gap-1">
           {tiers.map((bpm, i) => (
-            <span key={i} className="rounded-full bg-white/[0.06] px-2 py-0.5 font-medium tabular-nums text-muted">
+            <span key={i} className="rounded-full bg-ink/[0.06] px-2 py-0.5 font-medium tabular-nums text-muted">
               {s.examTierNames?.[i] ? `${s.examTierNames[i]} ` : ""}
               <span className="text-text">{bpm}</span>
             </span>
@@ -84,7 +84,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
   /** Sol panel (masaüstü) ve mobil çekmecedeki içerik: Egzersiz/Rehber, eğitim videoları, bölümler ve alt bölümler */
   const panel = (mobil: boolean) => (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-1 rounded-full border border-white/[0.08] bg-white/[0.05] p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-1">
         {(
           [
             ["egzersiz", "Egzersiz", FileText],
@@ -98,7 +98,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
               setTab(id);
               if (mobil) setCekmece(false);
             }}
-            className={`flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold transition ${tab === id ? "bg-white/[0.14] text-text shadow-[0_1px_2px_rgb(0_0_0/0.5)]" : "text-muted hover:text-text"}`}
+            className={`flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold transition ${tab === id ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`}
           >
             <Icon size={15} /> {label}
           </button>
@@ -136,7 +136,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
             const dersler = s.chapters.flatMap((c) => c.lessons);
             const dk = Math.round(dersler.reduce((n, l) => n + (l.practice ? 0 : l.minutes), 0));
             return (
-              <div key={s.number} className={active ? "rounded-2xl bg-white/[0.05]" : ""}>
+              <div key={s.number} className={active ? "rounded-2xl bg-ink/[0.05]" : ""}>
                 <button
                   type="button"
                   onClick={() => {
@@ -148,7 +148,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                   className={`flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-sm font-semibold ${active ? "text-accent" : ""}`}
                 >
                   <span
-                    className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] ${bitti ? "bg-emerald-500 text-black" : active ? "bg-[image:var(--grad)] text-white" : "bg-white/10 text-text"}`}
+                    className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] ${bitti ? "bg-ok text-ok-ink" : active ? "bg-primary text-primary-ink" : "bg-ink/10 text-text"}`}
                   >
                     {bitti ? <Check size={12} /> : s.number}
                   </span>
@@ -174,7 +174,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                           setTab("egzersiz");
                           if (mobil) setCekmece(false);
                         }}
-                        className={`flex items-center gap-2 rounded-lg px-2 py-1 text-xs transition ${done ? "text-emerald-400" : "text-text/90"} hover:bg-white/[0.06]`}
+                        className={`flex items-center gap-2 rounded-lg px-2 py-1 text-xs transition ${done ? "text-ok" : "text-text/90"} hover:bg-ink/[0.06]`}
                       >
                         <span className="w-7 shrink-0 font-semibold">{c.code}</span>
                         <span className="flex-1 truncate">{c.title}</span>
@@ -215,8 +215,8 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                 {tamam}/{hepsi.length} · {hepsi.length - tamam} kaldı
               </span>
             </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div className="bar-grad h-full rounded-full" style={{ width: `${yuzde}%` }} />
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/10">
+              <div className="bar-fill h-full rounded-full" style={{ width: `${yuzde}%` }} />
             </div>
           </div>
           {siradaki && (
@@ -225,13 +225,13 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
             </p>
           )}
           {siradaki ? (
-            <Link href={dersHref(siradaki.l)} className="btn-grad w-full min-w-0 px-5 py-2.5 text-sm sm:w-auto" title={siradaki.l.title}>
+            <Link href={dersHref(siradaki.l)} className="btn-primary w-full min-w-0 px-5 py-2.5 text-sm sm:w-auto" title={siradaki.l.title}>
               <PlayCircle size={16} className="shrink-0" />
               <span className="shrink-0 whitespace-nowrap">{tamam ? "Devam et" : "Başla"}:</span>
               <span className="min-w-0 truncate sm:max-w-[14rem]">{siradaki.l.title}</span>
             </Link>
           ) : (
-            <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3.5 py-2 text-sm font-semibold text-emerald-400">
+            <span className="flex items-center gap-1.5 rounded-full bg-ok/15 px-3.5 py-2 text-sm font-semibold text-ok">
               <Check size={16} /> Kurs tamamlandı
             </span>
           )}
@@ -239,7 +239,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
       </header>
 
       {/* Mobil: bölüm seçimi yapışkan çubukta, liste çekmecede */}
-      <div className="sticky top-[3.6rem] z-20 -mx-4 border-y border-white/[0.07] bg-bg/85 px-4 py-2 sm:-mx-6 sm:px-6 backdrop-blur lg:hidden">
+      <div className="sticky top-[3.6rem] z-20 -mx-4 border-y border-ink/[0.07] bg-bg/85 px-4 py-2 sm:-mx-6 sm:px-6 backdrop-blur lg:hidden">
         <button type="button" onClick={() => setCekmece(true)} className="flex w-full items-center gap-2 text-left text-sm font-semibold">
           <ListTree size={16} className="shrink-0 text-accent" />
           <span className="min-w-0 flex-1 truncate">
@@ -306,28 +306,26 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                       <Link
                         key={l.id}
                         href={`/calis/${course.slug}/${encodeURIComponent(l.id)}`}
-                        className={`card group relative block overflow-hidden p-4 transition duration-300 hover:-translate-y-0.5 hover:border-white/15 ${ep?.completed ? "border-emerald-500/40" : siradaki?.l === l ? "border-accent/60 pt-7 shadow-[0_0_0_1px_rgb(255_55_95/0.35)]" : ""}`}
+                        className={`card group relative block overflow-hidden p-4 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15 ${ep?.completed ? "border-ok/40" : siradaki?.l === l ? "border-accent/60 pt-7" : ""}`}
                       >
                         {siradaki?.l === l && (
-                          <span className="absolute left-3 top-0 z-10 rounded-b-lg bg-[image:var(--grad)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Sıradaki</span>
+                          <span className="absolute left-3 top-0 z-10 rounded-b-lg bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-ink">Sıradaki</span>
                         )}
                         {image ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={image} alt="" className="absolute inset-0 size-full object-cover opacity-25" />
-                        ) : (
-                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgb(255_55_95/0.14),transparent_55%)]" />
-                        )}
+                        ) : null}
                         <div className="relative">
                           <div className="flex items-start justify-between gap-2">
                             <h3 className="font-semibold leading-tight">{l.title}</h3>
                             <span className="flex shrink-0 items-center gap-1.5">
                               {/* Alt bölümünden farklı seviyedeki ders: seviyesi kartta yazar (rozet alt bölüm başlığında) */}
                               {badges && l.level && l.level !== c.level && (
-                                <span className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-text/90" title="Dersin seviyesi">
+                                <span className="rounded-full border border-ink/10 bg-ink/[0.06] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-text/90" title="Dersin seviyesi">
                                   {l.level}
                                 </span>
                               )}
-                              <span className="rounded-full bg-white/[0.07] p-1.5">
+                              <span className="rounded-full bg-ink/[0.07] p-1.5">
                                 <ListVideo size={14} />
                               </span>
                             </span>
@@ -345,8 +343,8 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
                               {Number.isInteger(l.minutes) ? `Toplam: ${l.minutes}dk` : `Min. ${Math.round(l.minutes * 60)} sn`}
                             </span>
                           </div>
-                          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
-                            <div className={`h-full ${ep?.completed ? "bg-emerald-500" : "bar-grad"}`} style={{ width: `${(done / target) * 100}%` }} />
+                          <div className="mt-2 h-1 overflow-hidden rounded-full bg-ink/10">
+                            <div className={`h-full ${ep?.completed ? "bg-ok" : "bar-fill"}`} style={{ width: `${(done / target) * 100}%` }} />
                           </div>
                         </div>
                       </Link>
@@ -370,18 +368,16 @@ function PratikKarti({ lesson: l, sonuc, image }: { lesson: Lesson; sonuc?: Step
   return (
     <Link
       href={`/teori/yol/${l.practice!.yol}/${encodeURIComponent(l.practice!.kod)}`}
-      className={`card group relative block overflow-hidden p-4 transition duration-300 hover:-translate-y-0.5 hover:border-white/15 ${sonuc?.passed ? "border-emerald-500/40" : ""}`}
+      className={`card group relative block overflow-hidden p-4 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15 ${sonuc?.passed ? "border-ok/40" : ""}`}
     >
       {image ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={image} alt="" className="absolute inset-0 size-full object-cover opacity-25" />
-      ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgb(191_90_242/0.14),transparent_55%)]" />
-      )}
+      ) : null}
       <div className="relative">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold leading-tight">{l.title}</h3>
-          <span className="rounded-full bg-white/[0.07] p-1.5">
+          <span className="rounded-full bg-ink/[0.07] p-1.5">
             <ListChecks size={14} />
           </span>
         </div>
@@ -392,7 +388,7 @@ function PratikKarti({ lesson: l, sonuc, image }: { lesson: Lesson; sonuc?: Step
         </p>
         <div className="mt-3 flex items-center justify-between border-t border-line/70 pt-3 text-xs font-medium">
           <span className="text-muted">{sonuc ? `${sonuc.attempts} deneme` : "Başlanmadı"}</span>
-          <span className={`rounded-full px-2.5 py-0.5 ${sonuc?.passed ? "bg-emerald-500/15 text-emerald-400" : "bg-accent/15 text-accent"}`}>
+          <span className={`rounded-full px-2.5 py-0.5 ${sonuc?.passed ? "bg-ok/15 text-ok" : "bg-accent/15 text-accent"}`}>
             {sonuc?.passed ? "Geçildi" : "Geçilmedi"}
           </span>
         </div>

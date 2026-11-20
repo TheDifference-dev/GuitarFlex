@@ -37,8 +37,8 @@ export function ProgressBar({ value, max }: { value: number; max: number }) {
           {value}/{max}
         </span>
       </div>
-      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-        <div className="bar-grad h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
+      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink/10">
+        <div className="bar-fill h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

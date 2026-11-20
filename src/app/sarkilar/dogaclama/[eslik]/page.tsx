@@ -33,7 +33,7 @@ export default async function BackingPage(props: PageProps<"/sarkilar/dogaclama/
             {backing.style} · Ton: {backing.key} · {backing.chords}
           </p>
         </div>
-        <span className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm font-semibold">{backing.bpm} BPM</span>
+        <span className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm font-semibold">{backing.bpm} BPM</span>
       </header>
       <BackingView backing={backing} />
     </div>

@@ -19,8 +19,8 @@ type Sonuc = { puan: number; tam: boolean; vurus?: number };
 type Props = { yol: string; adim: YolAdim; sonraki?: { kod: string; ad: string }; geri?: string };
 
 const btn = "px-5 py-2 disabled:opacity-40";
-const btnAna = `btn-grad ${btn}`;
-const btnIkincil = `btn-soft ${btn}`;
+const btnAna = `btn-primary ${btn}`;
+const btnIkincil = `btn-secondary ${btn}`;
 
 export default function AdimCalis({ yol, adim, sonraki, geri }: Props) {
   const [sorular, setSorular] = useState<Soru[] | null>(null);
@@ -72,7 +72,7 @@ export default function AdimCalis({ yol, adim, sonraki, geri }: Props) {
           Soru {i + 1} / {sorular.length}
         </span>
         <div className="h-2 flex-1 overflow-hidden rounded-full bg-panel">
-          <div className="bar-grad h-full rounded-full transition-all" style={{ width: `${((i + (cevaplandi ? 1 : 0)) / sorular.length) * 100}%` }} />
+          <div className="bar-fill h-full rounded-full transition-all" style={{ width: `${((i + (cevaplandi ? 1 : 0)) / sorular.length) * 100}%` }} />
         </div>
         <span className="tabular-nums">{sonuclar.filter((s) => s.tam).length} tam doğru</span>
       </div>
@@ -107,7 +107,7 @@ function SoruGoster({
   ) : null;
 
   const geribildirim = cevaplandi && sonuc ? (
-    <div className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 ${sonuc.tam ? "border-emerald-500/60 bg-emerald-500/10" : "border-rose-500/60 bg-rose-500/10"}`}>
+    <div className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 ${sonuc.tam ? "border-ok/60 bg-ok/10" : "border-bad/60 bg-bad/10"}`}>
       <div>
         <p className="font-semibold">
           {sonuc.tam ? "Doğru!" : sonuc.puan > 0 ? `Kısmen doğru (%${Math.round(sonuc.puan * 100)})` : "Yanlış"}
@@ -154,7 +154,7 @@ function SoruGoster({
                 onClick={() => sec(o.id)}
                 disabled={cevaplandi}
                 className={`flex items-center justify-center rounded-2xl border p-3 text-left font-medium transition ${
-                  dogru ? "border-emerald-500 bg-emerald-500/15" : yanlis ? "border-rose-500 bg-rose-500/15" : "border-line bg-panel hover:border-white/20"
+                  dogru ? "border-ok bg-ok/15" : yanlis ? "border-bad bg-bad/15" : "border-line bg-panel hover:border-ink/20"
                 } disabled:cursor-default`}
               >
                 {o.diyagram ? (
@@ -359,7 +359,7 @@ function RitimSoruGoster({
                 setAsama("hazir");
               }}
               className={`flex items-center gap-3 rounded-2xl border p-3 transition ${
-                dogru ? "border-emerald-500 bg-emerald-500/10" : yanlis ? "border-rose-500 bg-rose-500/10" : "border-line bg-panel hover:border-white/20"
+                dogru ? "border-ok bg-ok/10" : yanlis ? "border-bad bg-bad/10" : "border-line bg-panel hover:border-ink/20"
               } disabled:cursor-default`}
             >
               <span className="w-6 text-sm font-semibold text-muted">{String.fromCharCode(65 + n)}</span>
@@ -413,9 +413,9 @@ function Ozet({ yol, adim, sonuclar, sonraki, tekrar, geri }: { yol: string; adi
   }, [yol, adim.kod, dogruluk, gecti]);
 
   const satir = (ad: string, deger: number, gerek?: number) => (
-    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-3">
+    <div className="rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-3">
       <p className="text-xs font-medium text-muted">{ad}</p>
-      <p className={`text-2xl font-bold tabular-nums ${gerek !== undefined && deger < gerek ? "text-rose-400" : ""}`}>%{deger}</p>
+      <p className={`text-2xl font-bold tabular-nums ${gerek !== undefined && deger < gerek ? "text-bad" : ""}`}>%{deger}</p>
       {gerek !== undefined ? <p className="text-xs text-muted">Gereken %{gerek}</p> : null}
     </div>
   );
@@ -423,7 +423,7 @@ function Ozet({ yol, adim, sonuclar, sonraki, tekrar, geri }: { yol: string; adi
   return (
     <div className="space-y-5 card p-6">
       <div>
-        <p className={`text-sm font-semibold uppercase tracking-wide ${gecti ? "text-emerald-400" : "text-rose-400"}`}>{gecti ? "Adım geçildi" : "Henüz geçilmedi"}</p>
+        <p className={`text-sm font-semibold uppercase tracking-wide ${gecti ? "text-ok" : "text-bad"}`}>{gecti ? "Adım geçildi" : "Henüz geçilmedi"}</p>
         <h2 className="text-2xl font-bold">
           {adim.kod} {adim.ad}
         </h2>

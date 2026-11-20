@@ -17,12 +17,12 @@ const KATEGORI: Record<string, string> = {
   membership: "Üyelik",
   practice: "Pratik",
 };
-// Nadirlik: lacivert–beyaz–turuncu paletiyle kademeli vurgu
+// Nadirlik: gri → lacivert kademeli vurgu
 const NADIRLIK: Record<string, string> = {
   YAYGIN: "border-line text-muted",
   NADİR: "border-text/60 text-text",
   EPİK: "border-accent/70 text-accent",
-  EFSANEVİ: "border-transparent bg-[image:var(--grad)] text-white",
+  EFSANEVİ: "border-transparent bg-primary text-primary-ink",
 };
 
 /** Profil: günlük görevler, seri ve seri kalkanı, ders madalyaları ve başarımlar */
@@ -50,7 +50,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Kutu ikon={<Flame size={18} className="text-accent" />} etiket="Seri" deger={`${s.seri} gün`} not={`Rekor: ${s.rekor} gün`} />
         <Kutu ikon={<Shield size={18} className="text-accent" />} etiket="Seri Kalkanı" deger={`${s.kalkan} / ${kural.kalkanMaks}`} not={s.kullanilan ? `${s.kullanilan} kez seriyi korudu` : `Üç görevi ${kural.kalkanGun} günde tamamla`} />
-        <Kutu ikon={<Check size={18} className="text-emerald-400" />} etiket="Bugünkü görevler" deger={`${tamamSayi} / ${bugun.length}`} not={s.bugunTamam ? "Seri bugün korundu" : "Seri için en az 1 görev"} />
+        <Kutu ikon={<Check size={18} className="text-ok" />} etiket="Bugünkü görevler" deger={`${tamamSayi} / ${bugun.length}`} not={s.bugunTamam ? "Seri bugün korundu" : "Seri için en az 1 görev"} />
         <Kutu ikon={<Trophy size={18} className="text-accent" />} etiket="Başarım puanı" deger={`${xp} XP`} not={`${kazanilan.length} / ${oyun.basarimlar.length} başarım`} />
       </div>
 
@@ -61,16 +61,16 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {bugun.map((g) => (
-            <Link key={g.ad} href={g.href} className={`rounded-2xl border p-4 transition hover:border-white/15 ${g.tamam ? "border-emerald-500/40" : "border-white/[0.08]"} bg-white/[0.04]`}>
+            <Link key={g.ad} href={g.href} className={`rounded-2xl border p-4 transition hover:border-ink/15 ${g.tamam ? "border-ok/40" : "border-ink/[0.08]"} bg-ink/[0.04]`}>
               <div className="flex items-center justify-between">
                 <p className="font-semibold">{g.ad}</p>
-                {g.tamam ? <Check size={16} className="text-emerald-400" /> : <span className="text-xs text-muted">Bekliyor</span>}
+                {g.tamam ? <Check size={16} className="text-ok" /> : <span className="text-xs text-muted">Bekliyor</span>}
               </div>
               <p className="mt-1 text-sm tabular-nums text-muted">
                 {Math.min(g.deger, g.hedef)} / {g.hedef} {g.birim}
               </p>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-                <div className={`h-full ${g.tamam ? "bg-emerald-500" : "bar-grad"}`} style={{ width: `${Math.min(100, (g.deger / g.hedef) * 100)}%` }} />
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10">
+                <div className={`h-full ${g.tamam ? "bg-ok" : "bar-fill"}`} style={{ width: `${Math.min(100, (g.deger / g.hedef) * 100)}%` }} />
               </div>
             </Link>
           ))}
@@ -87,7 +87,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
         </p>
         <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
           {Object.entries(metalSayi).map(([m, n]) => (
-            <div key={m} className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-3 text-center">
+            <div key={m} className="rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-3 text-center">
               <p className="text-2xl">{METAL_IKON[m]}</p>
               <p className="text-sm font-semibold">{m}</p>
               <p className="text-xs tabular-nums text-muted">{n} ders</p>
@@ -98,7 +98,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
           <summary className="cursor-pointer text-muted hover:text-accent">Kademe sırası ({KADEMELER.length})</summary>
           <ol className="mt-2 flex flex-wrap gap-1.5">
             {KADEMELER.map((k, i) => (
-              <li key={k} className="rounded-full border border-white/10 px-2.5 py-0.5 text-xs">
+              <li key={k} className="rounded-full border border-ink/10 px-2.5 py-0.5 text-xs">
                 {i}. {k}
               </li>
             ))}
@@ -114,7 +114,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
               key={k || "hepsi"}
               type="button"
               onClick={() => setKat(k)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${kat === k ? "border-accent bg-accent/15 text-accent" : "border-white/10 bg-white/[0.05] hover:bg-white/10"}`}
+              className={`rounded-full border px-3 py-1 text-xs font-semibold ${kat === k ? "border-accent bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
             >
               {k ? (KATEGORI[k] ?? k) : "Tümü"}
             </button>
@@ -135,8 +135,8 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
                   <p className="text-sm text-muted">{b.aciklama}</p>
                   <div className="mt-2 flex items-center gap-2">
                     <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${NADIRLIK[b.nadirlik] ?? "border-line"}`}>{b.nadirlik}</span>
-                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
-                      <div className={`h-full ${ok ? "bg-emerald-500" : "bar-grad"}`} style={{ width: `${Math.min(100, (deger / b.esik) * 100)}%` }} />
+                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
+                      <div className={`h-full ${ok ? "bg-ok" : "bar-fill"}`} style={{ width: `${Math.min(100, (deger / b.esik) * 100)}%` }} />
                     </div>
                     <span className="text-[10px] tabular-nums text-muted">
                       {Math.min(deger, b.esik)}/{b.esik}

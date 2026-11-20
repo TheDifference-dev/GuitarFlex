@@ -36,8 +36,8 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{yol.ad}</h1>
         <p className="text-muted">{yol.ozet}</p>
         <div className="flex items-center gap-3">
-          <div className="h-1.5 max-w-md flex-1 overflow-hidden rounded-full bg-white/10">
-            <div className="bar-grad h-full rounded-full" style={{ width: `${(gecilen / yol.adimlar.length) * 100}%` }} />
+          <div className="h-1.5 max-w-md flex-1 overflow-hidden rounded-full bg-ink/10">
+            <div className="bar-fill h-full rounded-full" style={{ width: `${(gecilen / yol.adimlar.length) * 100}%` }} />
           </div>
           <span className="text-sm tabular-nums text-muted">
             {gecilen} / {yol.adimlar.length} adım
@@ -57,7 +57,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                 role="tab"
                 aria-selected={i === sekme}
                 onClick={() => setSekme(i)}
-                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${i === sekme ? "border-transparent bg-text text-bg" : "border-white/10 bg-white/[0.05] hover:bg-white/10"}`}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${i === sekme ? "border-transparent bg-text text-bg" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
               >
                 {s}
               </button>
@@ -97,7 +97,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                         {a.kod}
                         {a.kontrol ? " · Kontrol" : ""}
                       </p>
-                      {r?.passed ? <Check size={16} className="text-emerald-400" /> : !ac ? <Lock size={14} className="text-muted" /> : null}
+                      {r?.passed ? <Check size={16} className="text-ok" /> : !ac ? <Lock size={14} className="text-muted" /> : null}
                     </div>
                     <h3 className="font-semibold">{a.ad}</h3>
                     <p className="text-xs text-muted">
@@ -107,7 +107,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                   </>
                 );
                 return ac ? (
-                  <Link key={a.kod} href={`/teori/yol/${yol.slug}/${a.kod}`} className={`card p-3 transition hover:border-white/15 ${r?.passed ? "border-emerald-500/40" : ""}`}>
+                  <Link key={a.kod} href={`/teori/yol/${yol.slug}/${a.kod}`} className={`card p-3 transition hover:border-ink/15 ${r?.passed ? "border-ok/40" : ""}`}>
                     {icerik}
                   </Link>
                 ) : (

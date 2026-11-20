@@ -41,9 +41,9 @@ const yolOk = (p: Progress, steps: string[]) => !steps.length || stepDone(p, ste
 
 function Bar({ value, total, goal }: { value: number; total: number; goal?: boolean }) {
   return (
-    <div className="relative mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
-      <div className={`h-full rounded-full ${total && value >= total ? "bg-emerald-500" : "bar-grad"}`} style={{ width: `${pct(value, total)}%` }} />
-      {goal && <span className="absolute inset-y-0 w-px bg-white/60" style={{ left: `${BITIRME_ORANI * 100}%` }} title={`Hedef: %${BITIRME_ORANI * 100}`} />}
+    <div className="relative mt-1.5 h-1 overflow-hidden rounded-full bg-ink/10">
+      <div className={`h-full rounded-full ${total && value >= total ? "bg-ok" : "bar-fill"}`} style={{ width: `${pct(value, total)}%` }} />
+      {goal && <span className="absolute inset-y-0 w-px bg-ink/60" style={{ left: `${BITIRME_ORANI * 100}%` }} title={`Hedef: %${BITIRME_ORANI * 100}`} />}
     </div>
   );
 }
@@ -61,13 +61,13 @@ export function SeviyeKartlari({ items }: { items: SeviyeOzeti[] }) {
         const yolDone = stepDone(p, s.yolAdim);
         const ok = s.tab.length > 0 && tabDone / s.tab.length >= BITIRME_ORANI && yolOk(p, s.yolAdim);
         return (
-          <Link key={s.level} href={`/seviye/${s.level}`} className="card group flex flex-col p-5 transition duration-300 hover:-translate-y-0.5 hover:border-white/15">
+          <Link key={s.level} href={`/seviye/${s.level}`} className="card group flex flex-col p-5 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15">
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-3xl font-bold tracking-tight">
-                <span className="text-grad">{s.level}</span>
+                <span className="text-accent">{s.level}</span>
               </span>
               {ok && (
-                <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+                <span className="flex items-center gap-1 rounded-full bg-ok/15 px-2.5 py-0.5 text-xs font-semibold text-ok">
                   <CheckCircle2 size={12} /> %{BITIRME_ORANI * 100} geçildi
                 </span>
               )}
@@ -113,7 +113,7 @@ function Yakinda({ title, text }: { title: string; text: string }) {
       <div>
         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
           {title}
-          <span className="rounded-full bg-[image:var(--grad)] px-2 py-0.5 text-[10px] font-semibold text-white">Yakında</span>
+          <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-ink">Yakında</span>
         </p>
         <p className="mt-0.5 text-sm text-muted">{text}</p>
       </div>
@@ -127,7 +127,7 @@ function Satir({ row, p }: { row: SeviyeSatiri; p: Progress }) {
   return (
     <Link
       href={row.href}
-      className={`card flex items-center gap-3 px-4 py-3 transition hover:border-white/15 hover:bg-panel-2 ${complete ? "border-emerald-500/40" : ""}`}
+      className={`card flex items-center gap-3 px-4 py-3 transition hover:border-ink/15 hover:bg-panel-2 ${complete ? "border-ok/40" : ""}`}
     >
       <span className="w-10 shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-center text-xs font-semibold text-accent">{row.code}</span>
       <span className="min-w-0 flex-1">
@@ -135,7 +135,7 @@ function Satir({ row, p }: { row: SeviyeSatiri; p: Progress }) {
         <span className="block truncate text-xs text-muted">{row.courseTitle}</span>
       </span>
       <span className="w-24 shrink-0 text-right text-xs font-medium tabular-nums text-muted">
-        <span className={complete ? "text-emerald-400" : "text-text"}>{n}</span> / {row.lessons.length} ders
+        <span className={complete ? "text-ok" : "text-text"}>{n}</span> / {row.lessons.length} ders
         <Bar value={n} total={row.lessons.length} />
       </span>
       <ChevronRight size={16} className="shrink-0 text-muted" />
@@ -175,7 +175,7 @@ function Gruplar({ groups, p, bos }: { groups: SeviyeGrubu[]; p: Progress; bos: 
 function Kosul({ ok, children, yakinda }: { ok?: boolean; children: ReactNode; yakinda?: boolean }) {
   return (
     <li className="flex items-start gap-2 text-sm">
-      {ok ? <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-400" /> : yakinda ? <Clock size={16} className="mt-0.5 shrink-0 text-muted" /> : <Circle size={16} className="mt-0.5 shrink-0 text-muted" />}
+      {ok ? <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-ok" /> : yakinda ? <Clock size={16} className="mt-0.5 shrink-0 text-muted" /> : <Circle size={16} className="mt-0.5 shrink-0 text-muted" />}
       <span className={yakinda ? "text-muted" : ""}>{children}</span>
     </li>
   );
@@ -211,18 +211,18 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
         <div className="max-w-3xl">
           <p className="eyebrow">Seviye Yolu · Elektro Gitar</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
-            <span className="text-grad">{level}</span> {meta.ad}
+            <span className="text-accent">{level}</span> {meta.ad}
           </h1>
           <p className="mt-2 text-muted">{meta.tanim}</p>
         </div>
         <div className="flex gap-2 text-sm">
           {prev && (
-            <Link href={`/seviye/${prev}`} className="btn-soft px-4 py-2">
+            <Link href={`/seviye/${prev}`} className="btn-secondary px-4 py-2">
               <ChevronLeft size={16} /> {prev}
             </Link>
           )}
           {next && (
-            <Link href={`/seviye/${next}`} className="btn-soft px-4 py-2">
+            <Link href={`/seviye/${next}`} className="btn-secondary px-4 py-2">
               {next} <ChevronRight size={16} />
             </Link>
           )}
@@ -240,7 +240,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
               const t = tabLessons([...g.rows, ...extra]);
               const n = count(p, t);
               return (
-                <a key={g.axis} href={`#eksen-${g.axis}`} className="rounded-xl bg-white/[0.04] p-3 transition hover:bg-white/[0.08]">
+                <a key={g.axis} href={`#eksen-${g.axis}`} className="rounded-xl bg-ink/[0.04] p-3 transition hover:bg-ink/[0.08]">
                   <p className="flex justify-between text-sm font-semibold">
                     {EKSEN[g.axis]}
                     <span className="tabular-nums text-muted">
@@ -306,11 +306,11 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
               const n = stepDone(p, steps);
               const bolumler = [...new Set(y.adimlar.map((a) => a.bolum))];
               return (
-                <Link key={y.slug} href={`/teori/yol/${y.slug}`} className="card p-4 transition hover:border-white/15 hover:bg-panel-2">
+                <Link key={y.slug} href={`/teori/yol/${y.slug}`} className="card p-4 transition hover:border-ink/15 hover:bg-panel-2">
                   <p className="flex items-baseline justify-between text-sm font-semibold">
                     {y.ad}
                     <span className="tabular-nums text-muted">
-                      <span className={n === steps.length ? "text-emerald-400" : "text-text"}>{n}</span> / {steps.length} adım
+                      <span className={n === steps.length ? "text-ok" : "text-text"}>{n}</span> / {steps.length} adım
                     </span>
                   </p>
                   <Bar value={n} total={steps.length} goal />

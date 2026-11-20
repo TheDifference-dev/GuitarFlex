@@ -27,7 +27,7 @@ const SIRA: KursGrubu[] = ["rehber", "akor", "elektro", "ek", "akustik", "teori"
 
 const kucult = (s: string) => s.toLocaleLowerCase("tr");
 const chip = (on: boolean) =>
-  `rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${on ? "border-accent/40 bg-accent/15 text-accent" : "border-white/10 bg-white/[0.05] hover:bg-white/10"}`;
+  `rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${on ? "border-accent/40 bg-accent/15 text-accent" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`;
 
 /** Kurs kataloğu: bütün kurslar gruplarıyla, bölüme, duruma ve ada göre süzülür */
 export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yollar: YolKarti[] }) {
@@ -65,7 +65,7 @@ export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yol
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-sm sm:max-w-sm">
+          <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.04] px-3.5 py-2 text-sm sm:max-w-sm">
             <Search size={15} className="shrink-0 text-muted" />
             <input value={ara} onChange={(e) => setAra(e.target.value)} placeholder="Kurs ara…" className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted" aria-label="Kurs ara" />
           </label>
@@ -76,7 +76,7 @@ export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yol
                 type="button"
                 onClick={() => setDurum(id)}
                 aria-pressed={durum === id}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${durum === id ? "bg-white/[0.14] text-text" : "text-muted hover:text-text"}`}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${durum === id ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`}
               >
                 {ad}
               </button>
@@ -105,7 +105,7 @@ export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yol
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {yollar.map((y) => (
-              <Link key={y.href} href={y.href} className="card group flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:border-white/15">
+              <Link key={y.href} href={y.href} className="card group flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:border-ink/15">
                 <span className="min-w-0 flex-1">
                   <span className="eyebrow">{y.etiket}</span>
                   <span className="block font-semibold">{y.ad}</span>

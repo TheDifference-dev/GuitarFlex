@@ -15,7 +15,7 @@ export default async function LibrarySongPage(props: PageProps<"/kutuphane/[sark
   const { sarki } = await props.params;
   const song = await getLibrarySong(decodeURIComponent(sarki));
   if (!song) notFound();
-  const pill = "rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-sm font-semibold";
+  const pill = "rounded-full border border-ink/10 bg-ink/[0.05] px-3 py-1 text-sm font-semibold";
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-1 text-sm text-muted">

@@ -17,12 +17,12 @@ const SIRALAMA: Record<Siralama, string> = {
   isim: "İsme Göre",
 };
 const MADALYA_STYLE: Record<Madalya, string> = {
-  Bronz: "border-orange-400/50 text-orange-300",
-  Gümüş: "border-slate-300/50 text-slate-200",
-  Altın: "border-amber-400/60 text-amber-300",
-  Platin: "border-cyan-300/50 text-cyan-200",
-  Elmas: "border-sky-400/60 text-sky-300",
-  Usta: "border-rose-400/60 text-rose-300",
+  Bronz: "border-line text-muted",
+  Gümüş: "border-line text-muted",
+  Altın: "border-line text-text",
+  Platin: "border-line text-text",
+  Elmas: "border-accent/40 text-accent",
+  Usta: "border-accent/70 text-accent",
 };
 
 /** Madalyası olmayan (yerleşik) şarkılarda kolay/orta/zor seviyesinden tahmin */
@@ -99,7 +99,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
   }, [songs, q, madalya, koken, kind, course, sira, acilis]);
 
   const chip = (active: boolean) =>
-    `rounded-full border px-3.5 py-1.5 text-sm font-semibold ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-white/20"}`;
+    `rounded-full border px-3.5 py-1.5 text-sm font-semibold ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-ink/20"}`;
   const adim = songs.filter((s) => s.rehber).sort((a, b) => a.rehber!.adim - b.rehber!.adim);
 
   const kart = (s: PopularSong) => (
@@ -108,7 +108,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
         <div>
           <h3 className="font-semibold leading-tight">
             {s.title}
-            {s.yeni ? <span className="ml-2 rounded-full bg-[image:var(--grad)] px-2 py-0.5 align-middle text-[10px] font-semibold text-white">Yeni</span> : null}
+            {s.yeni ? <span className="ml-2 rounded-full bg-primary px-2 py-0.5 align-middle text-[10px] font-semibold text-primary-ink">Yeni</span> : null}
           </h3>
           <p className="text-sm text-muted">{s.artist}</p>
         </div>
@@ -118,12 +118,12 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent">{s.kind}</span>
-        {s.bpm ? <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-xs text-muted">{s.bpm} BPM</span> : null}
-        {s.koken ? <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-xs text-muted">{s.koken}</span> : null}
+        {s.bpm ? <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 text-xs text-muted">{s.bpm} BPM</span> : null}
+        {s.koken ? <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 text-xs text-muted">{s.koken}</span> : null}
         {s.tags
           .filter((t) => !/BPM$/.test(t) && !["Riff", "Solo", "Türkçe"].includes(t))
           .map((t) => (
-            <span key={t} className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-xs text-muted">
+            <span key={t} className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 text-xs text-muted">
               {t}
             </span>
           ))}
@@ -156,7 +156,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => acildi(anahtar(s))}
-        className="btn-grad mt-4 self-stretch px-4 py-2 text-sm"
+        className="btn-primary mt-4 self-stretch px-4 py-2 text-sm"
       >
         Songsterr&apos;de Aç <ExternalLink size={15} />
       </a>
@@ -186,7 +186,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
               const kilitli = puan < s.rehber!.puan;
               return (
                 <li key={anahtar(s)} className="flex flex-wrap items-center gap-3 card p-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[image:var(--grad)] text-sm font-semibold text-white">{s.rehber!.adim}</span>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-ink">{s.rehber!.adim}</span>
                   <div className="min-w-48 flex-1">
                     <p className="font-semibold leading-tight">
                       {s.title} <span className="font-normal text-muted">– {s.artist}</span>
@@ -213,7 +213,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => acildi(anahtar(s))}
-                    className={`${kilitli ? "btn-soft" : "btn-grad"} px-3.5 py-1.5 text-sm`}
+                    className={`${kilitli ? "btn-secondary" : "btn-primary"} px-3.5 py-1.5 text-sm`}
                   >
                     Aç <ExternalLink size={14} />
                   </a>
@@ -235,19 +235,19 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex min-w-60 flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5">
+            <label className="flex min-w-60 flex-1 items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5">
               <Search size={16} className="text-muted" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Şarkı veya sanatçı ara..." className="w-full bg-transparent text-sm outline-none" />
             </label>
             {kokenVar ? (
-              <select value={koken} onChange={(e) => setKoken(e.target.value as typeof koken)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Köken">
+              <select value={koken} onChange={(e) => setKoken(e.target.value as typeof koken)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm" aria-label="Köken">
                 <option value="">Köken: Tümü</option>
                 <option value="Global">Global</option>
                 <option value="Türkçe">Türkçe</option>
               </select>
             ) : null}
             {turler.length > 1 ? (
-              <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Tür">
+              <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm" aria-label="Tür">
                 <option value="">Tür: Tümü</option>
                 {turler.map((t) => (
                   <option key={t} value={t}>
@@ -256,7 +256,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                 ))}
               </select>
             ) : null}
-            <select value={course} onChange={(e) => setCourse(e.target.value)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Teknik">
+            <select value={course} onChange={(e) => setCourse(e.target.value)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm" aria-label="Teknik">
               <option value="">Bütün teknikler</option>
               {Object.entries(courseTitles)
                 .filter(([slug]) => songs.some((s) => s.courses?.includes(slug)))
@@ -266,7 +266,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                   </option>
                 ))}
             </select>
-            <select value={sira} onChange={(e) => setSira(e.target.value as Siralama)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Sıralama">
+            <select value={sira} onChange={(e) => setSira(e.target.value as Siralama)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm" aria-label="Sıralama">
               {Object.entries(SIRALAMA).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}

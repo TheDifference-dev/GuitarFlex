@@ -247,10 +247,10 @@ function Player({
             ...(range ? { startBar: range[0], barCount: range[1] - range[0] + 1 } : {}),
             resources: {
               mainGlyphColor: ink,
-              secondaryGlyphColor: color("--muted", "#666666"),
+              secondaryGlyphColor: color("--sheet-muted", "#666666"),
               staffLineColor: color("--sheet-line", "#666666"),
               barSeparatorColor: ink,
-              barNumberColor: color("--accent", "#c00000"),
+              barNumberColor: color("--sheet-muted", "#666666"),
               // Sayfa başındaki akor diyagramları (\chord) alphaTab'da "score info" rengiyle çizilir; varsayılanı siyah.
               scoreInfoColor: ink,
             },
@@ -683,9 +683,9 @@ function Player({
   const bpm = Math.round((meta.tempo * speed) / 100);
   const multiTrack = tracks.length > 1 && mutedTracks === undefined && !audioOnly;
   const showParts = !!parts?.length && !barRange && meta.bars > 0;
-  const btn = "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm transition hover:bg-white/10 disabled:opacity-40";
+  const btn = "inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-ink/[0.04] px-3 py-1.5 text-sm transition hover:bg-ink/10 disabled:opacity-40";
   const on = "border-accent/40 bg-accent/15 text-accent hover:bg-accent/20";
-  const iconBtn = "inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-sm transition hover:bg-white/10 disabled:opacity-40";
+  const iconBtn = "inline-flex h-8 w-8 items-center justify-center rounded-full border border-ink/10 bg-ink/[0.04] text-sm transition hover:bg-ink/10 disabled:opacity-40";
   const shownTrack = tracks.find((t) => t.index === shown);
 
   return (
@@ -697,7 +697,7 @@ function Player({
             type="button"
             onClick={() => apiRef.current?.playPause()}
             disabled={!playerReady}
-            className="btn-grad min-w-28 px-5 py-2 disabled:opacity-40"
+            className="btn-primary min-w-28 px-5 py-2 disabled:opacity-40"
             title="Çal / Duraklat (Boşluk)"
           >
             {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
@@ -744,17 +744,17 @@ function Player({
               }}
               onPointerMove={(e) => e.currentTarget.hasPointerCapture(e.pointerId) && seekTo(e.clientX)}
             >
-              <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-white/10">
-                {range && <div className="absolute inset-y-0 bg-white/20" style={{ left: `${pct(range.startTick)}%`, width: `${pct(range.endTick) - pct(range.startTick)}%` }} />}
-                <div className="bar-grad absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct(position.tick)}%` }} />
+              <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-ink/10">
+                {range && <div className="absolute inset-y-0 bg-ink/20" style={{ left: `${pct(range.startTick)}%`, width: `${pct(range.endTick) - pct(range.startTick)}%` }} />}
+                <div className="bar-fill absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct(position.tick)}%` }} />
               </div>
               {/* Kısım sınırları */}
               {showParts &&
                 parts!.slice(1).map((p) => (
-                  <span key={p.name} className="absolute top-1/2 h-3 w-px -translate-y-1/2 bg-white/40" style={{ left: `${pct(barTick(p.bars[0] - 1))}%` }} aria-hidden />
+                  <span key={p.name} className="absolute top-1/2 h-3 w-px -translate-y-1/2 bg-ink/40" style={{ left: `${pct(barTick(p.bars[0] - 1))}%` }} aria-hidden />
                 ))}
               <span
-                className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_3px_rgb(255_55_95/0.35)] transition-transform group-hover:scale-110"
+                className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_1px_4px_rgb(0_0_0/0.25)] transition-transform group-hover:scale-110"
                 style={{ left: `${pct(position.tick)}%` }}
                 aria-hidden
               />
@@ -869,12 +869,12 @@ function Player({
             Sayım
           </button>
           {audioOnly && (
-            <span className="rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1" title="Transkripsiyon: tab ve nota gizli, yalnız ses çalar">
+            <span className="rounded-full border border-ink/[0.08] bg-ink/[0.05] px-3 py-1" title="Transkripsiyon: tab ve nota gizli, yalnız ses çalar">
               Yalnız ses
             </span>
           )}
           {scoreOnly && !audioOnly && (
-            <span className="rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1" title="Porte okuma dersi: tab gizli, notayı porteden oku">
+            <span className="rounded-full border border-ink/[0.08] bg-ink/[0.05] px-3 py-1" title="Porte okuma dersi: tab gizli, notayı porteden oku">
               Yalnız nota
             </span>
           )}
@@ -940,7 +940,7 @@ function Player({
       </div>
 
       {multiTrack && panel === "mikser" && (
-        <div className="border-b border-line bg-white/[0.02] p-3 sm:p-4">
+        <div className="border-b border-line bg-ink/[0.02] p-3 sm:p-4">
           <Mikser izler={tracks} gosterilen={shown} sessiz={muted} solo={solo} ses={volumes} onGoster={setShown} onSessiz={toggleMute} onSolo={toggleSolo} onSes={changeVolume} />
         </div>
       )}
@@ -953,13 +953,13 @@ function Player({
       >
         {counting !== null && (
           <div className="sticky inset-x-0 top-0 z-10 flex justify-center p-2" role="status" aria-live="assertive">
-            <div className="glass flex items-center gap-4 rounded-full border border-white/10 py-2 pl-6 pr-2 text-text shadow-[0_24px_60px_-12px_rgb(0_0_0/0.8)]">
+            <div className="bg-elevated flex items-center gap-4 rounded-full border border-ink/10 py-2 pl-6 pr-2 text-text shadow-[var(--shadow-pop)]">
               <span className="text-xs font-semibold text-muted">Sayım</span>
-              <span className="text-grad w-10 text-center text-4xl font-bold tabular-nums">{counting}</span>
-              <button type="button" onClick={skipCountIn} className="btn-grad px-4 py-2 text-sm" title="Beklemeden başla">
+              <span className="text-accent w-10 text-center text-4xl font-bold tabular-nums">{counting}</span>
+              <button type="button" onClick={skipCountIn} className="btn-primary px-4 py-2 text-sm" title="Beklemeden başla">
                 Hemen başla
               </button>
-              <button type="button" onClick={cancelCountIn} className="btn-soft px-4 py-2 text-sm" title="Sayımı iptal et (Esc)">
+              <button type="button" onClick={cancelCountIn} className="btn-secondary px-4 py-2 text-sm" title="Sayımı iptal et (Esc)">
                 İptal ✕
               </button>
               <button
@@ -977,7 +977,7 @@ function Player({
           </div>
         )}
         {status === "loading" && <p className="p-6 text-center text-sm text-muted">Tab yükleniyor…</p>}
-        {status === "error" && <p className="p-6 text-center text-sm text-red-400">Tab açılamadı. Dosya bozuk ya da desteklenmeyen bir formatta olabilir.</p>}
+        {status === "error" && <p className="p-6 text-center text-sm text-bad">Tab açılamadı. Dosya bozuk ya da desteklenmeyen bir formatta olabilir.</p>}
         <div ref={hostRef} />
       </div>
 

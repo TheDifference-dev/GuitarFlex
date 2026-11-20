@@ -11,8 +11,8 @@ export default function KursKartiKucuk({ k, p }: { k: KursKarti; p: Progress }) 
   const { tamam, toplam, yuzde } = kartIlerleme(p, k);
   const yakinda = !!k.status;
   const ic = (
-    <div className={`card group flex h-full gap-4 p-4 transition duration-300 ${yakinda ? "opacity-60" : "hover:-translate-y-0.5 hover:border-white/15"}`}>
-      <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_30%_20%,rgb(255_55_95/0.35),transparent_60%),radial-gradient(circle_at_80%_90%,rgb(191_90_242/0.3),transparent_60%)] text-2xl">
+    <div className={`card group flex h-full gap-4 p-4 transition duration-300 ${yakinda ? "opacity-60" : "hover:-translate-y-0.5 hover:border-ink/15"}`}>
+      <span className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-panel-2 text-2xl">
         {k.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={k.image} alt="" className="absolute inset-0 size-full object-cover" />
@@ -26,7 +26,7 @@ export default function KursKartiKucuk({ k, p }: { k: KursKarti; p: Progress }) 
             {k.title}
           </span>
           {yakinda ? (
-            <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[11px] font-semibold">Yakında</span>
+            <span className="shrink-0 rounded-full border border-ink/10 px-2 py-0.5 text-[11px] font-semibold">Yakında</span>
           ) : (
             <ArrowRight size={16} className="mt-0.5 shrink-0 text-accent opacity-0 transition group-hover:opacity-100" />
           )}
@@ -46,8 +46,8 @@ export default function KursKartiKucuk({ k, p }: { k: KursKarti; p: Progress }) 
           )}
         </span>
         <span className="mt-auto flex items-center gap-2 pt-2.5">
-          <span className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
-            <span className="bar-grad block h-full rounded-full" style={{ width: `${yuzde}%` }} />
+          <span className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
+            <span className="bar-fill block h-full rounded-full" style={{ width: `${yuzde}%` }} />
           </span>
           <span className="text-[11px] font-semibold tabular-nums text-muted">
             {tamam}/{toplam}

@@ -74,8 +74,8 @@ export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik, et
             const cx = x(f);
             const cy = TEL_Y(s);
             let sinif = "";
-            if (dogrular && dogru) sinif = "fill-emerald-500";
-            else if (yanlis) sinif = "fill-rose-500";
+            if (dogrular && dogru) sinif = "fill-ok";
+            else if (yanlis) sinif = "fill-bad";
             else if (sec) sinif = "fill-[var(--accent)]";
             else if (p?.tur === "kok") sinif = "fill-[var(--accent)]";
             else if (p?.tur === "soru") sinif = "fill-[var(--text)]";

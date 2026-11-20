@@ -44,7 +44,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         </div>
         <div className="flex gap-2 text-sm font-semibold">
           {(lesson.tex || lesson.tabFile) && (
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5">
+            <span className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5">
               {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
             </span>
           )}

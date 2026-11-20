@@ -109,7 +109,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
       return n;
     });
   const chip = (active: boolean) =>
-    `rounded-full border px-3 py-1 text-sm font-semibold transition ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-white/20"}`;
+    `rounded-full border px-3 py-1 text-sm font-semibold transition ${active ? "border-accent bg-accent/15 text-accent" : "border-line bg-panel hover:border-ink/20"}`;
   const say = (f: (s: LibrarySummary) => boolean) => songs.filter(f).length;
 
   const ekstra = (s: LibrarySummary) => s.tracks.filter((t) => !["lead", "rhythm", "bass", "drums"].includes(t.role)).map((t) => ROL_ADI[t.role]);
@@ -117,7 +117,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex min-w-60 flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5">
+        <label className="flex min-w-60 flex-1 items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5">
           <Search size={16} className="text-muted" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Şarkı, tür, akor ya da teknik ara..." className="w-full bg-transparent text-sm outline-none" aria-label="Kütüphanede ara" />
           {q && (
@@ -129,14 +129,14 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
         <button type="button" onClick={() => setAcik(!acik)} className={`flex items-center gap-1.5 ${chip(acik || filtreSayisi > 0)} py-1.5`} aria-expanded={acik}>
           <SlidersHorizontal size={15} /> Filtreler{filtreSayisi ? ` (${filtreSayisi})` : ""}
         </button>
-        <select value={sira} onChange={(e) => setSira(e.target.value as Siralama)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-sm" aria-label="Sıralama">
+        <select value={sira} onChange={(e) => setSira(e.target.value as Siralama)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm" aria-label="Sıralama">
           {Object.entries(SIRALAMA).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
             </option>
           ))}
         </select>
-        <div className="flex rounded-full border border-white/10 bg-white/[0.05] p-0.5" role="group" aria-label="Görünüm">
+        <div className="flex rounded-full border border-ink/10 bg-ink/[0.05] p-0.5" role="group" aria-label="Görünüm">
           {(["liste", "kart"] as const).map((g) => (
             <button
               key={g}
@@ -144,7 +144,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
               onClick={() => gorunumYaz(g)}
               aria-pressed={gorunum === g}
               title={g === "liste" ? "Liste görünümü" : "Kart görünümü"}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${gorunum === g ? "bg-white/[0.12] text-text" : "text-muted hover:text-text"}`}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${gorunum === g ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`}
             >
               {g === "liste" ? <List size={15} /> : <LayoutGrid size={15} />} {g === "liste" ? "Liste" : "Kart"}
             </button>
@@ -183,7 +183,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
             ))}
           </Satir>
           <Satir ad="Ton ve kaynak">
-            <select value={ton} onChange={(e) => setTon(e.target.value)} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1 text-sm" aria-label="Ton">
+            <select value={ton} onChange={(e) => setTon(e.target.value)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1 text-sm" aria-label="Ton">
               <option value="">Ton: Tümü</option>
               {tumTonlar.map((t) => (
                 <option key={t} value={t}>
@@ -232,7 +232,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
               <li key={s.slug} className="border-b border-line/60 last:border-b-0">
                 <Link
                   href={`/kutuphane/${s.slug}`}
-                  className="grid gap-x-3 gap-y-1 px-4 py-3 transition hover:bg-white/[0.04] md:grid-cols-[minmax(0,1fr)_9rem_8rem_5rem_minmax(0,11rem)_3.5rem] md:items-center"
+                  className="grid gap-x-3 gap-y-1 px-4 py-3 transition hover:bg-ink/[0.04] md:grid-cols-[minmax(0,1fr)_9rem_8rem_5rem_minmax(0,11rem)_3.5rem] md:items-center"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-semibold">{s.title}</span>
@@ -259,7 +259,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {shown.map((s) => (
-            <Link key={s.slug} href={`/kutuphane/${s.slug}`} className="card flex flex-col p-4 transition hover:border-white/20">
+            <Link key={s.slug} href={`/kutuphane/${s.slug}`} className="card flex flex-col p-4 transition hover:border-ink/20">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="truncate font-semibold leading-tight">{s.title}</h3>
@@ -269,11 +269,11 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
               </div>
               <p className="mt-2 line-clamp-2 text-sm text-muted">{s.description}</p>
               <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
-                <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5">{s.key}</span>
-                <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5 tabular-nums">{s.bpm} BPM</span>
-                <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5">{s.timeSignature}</span>
-                {s.feel && <span className="rounded-full bg-white/[0.07] px-2.5 py-0.5">{s.feel}</span>}
-                <span className="flex items-center gap-1 rounded-full bg-white/[0.07] px-2.5 py-0.5 tabular-nums">
+                <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5">{s.key}</span>
+                <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 tabular-nums">{s.bpm} BPM</span>
+                <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5">{s.timeSignature}</span>
+                {s.feel && <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5">{s.feel}</span>}
+                <span className="flex items-center gap-1 rounded-full bg-ink/[0.07] px-2.5 py-0.5 tabular-nums">
                   <Clock size={11} /> {sure(s.durationSec)}
                 </span>
               </div>

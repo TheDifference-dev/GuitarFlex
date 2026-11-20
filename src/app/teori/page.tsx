@@ -22,13 +22,13 @@ export default async function TheoryPage() {
         <h2 className="text-xl font-semibold">Pratik Yolları</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {yollar.map((y) => (
-            <Link key={y.slug} href={`/teori/yol/${y.slug}`} className="card p-4 transition hover:border-white/20">
+            <Link key={y.slug} href={`/teori/yol/${y.slug}`} className="card p-4 transition hover:border-ink/20">
               <p className="eyebrow">{y.etiket}</p>
               <h3 className="font-semibold">{y.ad}</h3>
               <p className="text-sm text-muted">{y.yol ? `${y.yol.bolumler.length} bölüm · ${y.yol.adimlar.length} adım` : "İçerik paketi gerekli"}</p>
             </Link>
           ))}
-          <Link href="/calis/armoni" className="card p-4 transition hover:border-white/20">
+          <Link href="/calis/armoni" className="card p-4 transition hover:border-ink/20">
             <p className="eyebrow">Müzik Teorisi Dersleri</p>
             <h3 className="font-semibold">Armoni</h3>
             <p className="text-sm text-muted">Eğitim, pratik ve ek inceleme kartları</p>
@@ -45,7 +45,7 @@ export default async function TheoryPage() {
         <h2 className="text-xl font-semibold">Dersler</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {lessons.map((l) => (
-            <Link key={l.slug} href={`/teori/${l.slug}`} className="card p-4 transition hover:border-white/20">
+            <Link key={l.slug} href={`/teori/${l.slug}`} className="card p-4 transition hover:border-ink/20">
               <p className="eyebrow">Seviye {l.level}</p>
               <h3 className="font-semibold">{l.title}</h3>
               <p className="text-sm text-muted">{l.summary}</p>

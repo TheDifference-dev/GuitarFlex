@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useId } from "react";
 import { ArrowRight, BookOpen, Compass, Map, Mic2, Star } from "lucide-react";
 import type { CourseKind, SiteTexts } from "@/content/types";
 import { useProgress, type Progress } from "@/lib/progress";
@@ -32,18 +31,18 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
     const pct = coursePercent(p, c.keys);
     const disabled = !!c.status;
     const card = (
-      <div className={`card group/kart flex h-full flex-col overflow-hidden transition duration-300 ${disabled ? "opacity-70" : "hover:-translate-y-0.5 hover:border-white/15"}`}>
+      <div className={`card group/kart flex h-full flex-col overflow-hidden transition duration-300 ${disabled ? "opacity-70" : "hover:-translate-y-0.5 hover:border-ink/15"}`}>
         <div className="relative h-44 overflow-hidden">
           {c.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={c.image} alt="" className="absolute inset-0 size-full object-cover transition duration-500 group-hover/kart:scale-[1.03]" />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgb(255_55_95/0.25),transparent_55%),radial-gradient(circle_at_80%_90%,rgb(191_90_242/0.22),transparent_55%)] text-6xl">{c.icon ?? "🎸"}</div>
+            <div className="absolute inset-0 flex items-center justify-center bg-panel-2 text-6xl">{c.icon ?? "🎸"}</div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-panel via-panel/40 to-transparent" />
           <ProgressRing pct={pct} className="absolute right-4 top-4" />
           {disabled && (
-            <span className="glass absolute right-20 top-5 rounded-full border border-white/10 px-3 py-1 text-xs font-semibold">Yakında</span>
+            <span className="glass absolute right-20 top-5 rounded-full border border-ink/10 px-3 py-1 text-xs font-semibold">Yakında</span>
           )}
           <h3 lang="en" className="absolute bottom-3 left-5 right-5 text-[1.35rem] font-bold leading-tight tracking-tight">{c.title}</h3>
         </div>
@@ -54,11 +53,11 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
               <p className="text-xs font-medium text-muted">
                 <span className="font-semibold text-text">%{pct}</span> tamamlandı
               </p>
-              <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
-                <div className="bar-grad h-full rounded-full" style={{ width: `${pct}%` }} />
+              <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-ink/10">
+                <div className="bar-fill h-full rounded-full" style={{ width: `${pct}%` }} />
               </div>
             </div>
-            <span className="btn-soft px-4 py-2 text-sm">
+            <span className="btn-secondary px-4 py-2 text-sm">
               {c.kind === "guide" || c.slug.endsWith("-rehberi") ? "Rehberi Aç" : "Başla"}
             </span>
           </div>
@@ -83,7 +82,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
           <Kirinti halkalar={[{ label: bolum }, { label: "Teknik Egzersizler" }]} />
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{songs === "akustik" ? "Akustik Gitar Teknikleri" : "Gitar Teknik Egzersizleri"}</h1>
         </div>
-        <Link href="/kurslar" className="btn-soft px-4 py-2 text-sm">
+        <Link href="/kurslar" className="btn-secondary px-4 py-2 text-sm">
           Tüm kurslar <ArrowRight size={15} />
         </Link>
       </header>
@@ -91,7 +90,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
       <section className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
         {/* Başlangıç rehberleri */}
         <div className="card relative overflow-hidden p-7 sm:p-8">
-          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[radial-gradient(circle,rgb(255_55_95/0.22),transparent_65%)]" />
+          
           <p className="eyebrow">{texts.hero.eyebrow}</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{texts.hero.title}</h2>
           <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-muted">{texts.hero.text}</p>
@@ -99,11 +98,9 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
             {texts.hero.guides.map((g, i) => {
               const Icon = guideIcons[i % guideIcons.length];
               return (
-                <Link key={g.slug} href={`/calis/${g.slug}`} className="group flex items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 transition hover:bg-white/[0.08]">
-                  <span className="ring-grad flex size-11 shrink-0">
-                    <span className="flex size-full items-center justify-center rounded-full bg-panel">
-                      <Icon size={19} />
-                    </span>
+                <Link key={g.slug} href={`/calis/${g.slug}`} className="group flex items-center gap-4 rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-4 transition hover:bg-ink/[0.08]">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <Icon size={19} />
                   </span>
                   <span className="flex-1">
                     <span className="block font-semibold leading-tight">{g.title}</span>
@@ -120,12 +117,11 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
 
         {/* Akor yolu */}
         <div className="card relative overflow-hidden p-7 sm:p-8">
-          <div aria-hidden className="pointer-events-none absolute -bottom-28 -left-16 size-72 rounded-full bg-[radial-gradient(circle,rgb(191_90_242/0.2),transparent_65%)]" />
           <ChordDiagram />
           <p className="eyebrow mt-10">{texts.chordCard.eyebrow}</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{texts.chordCard.title}</h2>
           <p className="mt-3 max-w-[60%] text-[17px] leading-relaxed text-muted">{texts.chordCard.text}</p>
-          <Link href={`/calis/${texts.chordCard.slug}`} className="btn-grad mt-7 px-6 py-3 text-[15px]">
+          <Link href={`/calis/${texts.chordCard.slug}`} className="btn-primary mt-7 px-6 py-3 text-[15px]">
             {texts.chordCard.button} <ArrowRight size={16} />
           </Link>
         </div>
@@ -146,8 +142,8 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
         <h2 className="text-2xl font-bold tracking-tight">{songs === "akustik" ? "Şarkılar" : "Şarkı ve Sololar"}</h2>
         <div className="grid gap-5 md:grid-cols-3">
           {songCards.map(({ href, title, text, icon: Icon }) => (
-            <Link key={href} href={href} className="card group flex gap-4 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-white/15">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[image:var(--grad)] text-white shadow-[0_8px_20px_-8px_rgb(255_55_95/0.6)]">
+            <Link key={href} href={href} className="card group flex gap-4 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
                 <Icon size={22} />
               </span>
               <span>
@@ -175,23 +171,15 @@ const acousticSongCards = (chordSlug: string) => [
   { href: `/calis/${chordSlug}`, title: "Akorları Çal", text: "Şarkılara hazırlık: akorlar, geçişler ve ritim kalıpları.", icon: Compass },
 ];
 
-/** Instagram hikâye halkası gibi ilerleme halkası: dolu kısım gradyan, yüzde ortada */
+/** İlerleme halkası: dolu kısım lacivert, yüzde ortada */
 function ProgressRing({ pct, className = "" }: { pct: number; className?: string }) {
-  const id = useId();
   const r = 20;
   const c = 2 * Math.PI * r;
   return (
     <span className={`glass flex size-12 items-center justify-center rounded-full ${className}`} title={`%${pct} tamamlandı`}>
       <svg viewBox="0 0 48 48" className="absolute inset-0 size-full -rotate-90" aria-hidden>
-        <defs>
-          <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ff9f0a" />
-            <stop offset="50%" stopColor="#ff375f" />
-            <stop offset="100%" stopColor="#bf5af2" />
-          </linearGradient>
-        </defs>
-        <circle cx="24" cy="24" r={r} fill="none" stroke="rgb(255 255 255 / 0.14)" strokeWidth="3" />
-        {pct > 0 && <circle cx="24" cy="24" r={r} fill="none" stroke={`url(#${id})`} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(pct / 100) * c} ${c}`} />}
+        <circle cx="24" cy="24" r={r} fill="none" stroke="var(--line)" strokeWidth="3" />
+        {pct > 0 && <circle cx="24" cy="24" r={r} fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(pct / 100) * c} ${c}`} />}
       </svg>
       <span className="relative text-[11px] font-semibold tabular-nums">{pct}%</span>
     </span>

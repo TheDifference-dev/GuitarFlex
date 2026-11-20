@@ -110,11 +110,11 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
 
   return (
     <div className="space-y-4">
-      <div className={`card flex flex-wrap items-center gap-4 p-4 ${completed ? "border-emerald-500/40" : ""}`}>
+      <div className={`card flex flex-wrap items-center gap-4 p-4 ${completed ? "border-ok/40" : ""}`}>
         <button
           type="button"
           onClick={() => setRunning((r) => !r)}
-          className="btn-soft px-4 py-2 text-sm"
+          className="btn-secondary px-4 py-2 text-sm"
           title={source ? "Sayaç, tab çalarken kendiliğinden çalışır" : "Sayacı başlat / durdur"}
         >
           {running ? <Pause size={16} /> : <Play size={16} />} {running ? "Sayacı durdur" : "Sayacı başlat"}
@@ -126,12 +126,12 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
             </span>
             <span className="text-muted">Toplam çalışma: {formatClock(practiced)}</span>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-            <div className={`h-full rounded-full transition-all ${completed ? "bg-emerald-500" : "bar-grad"}`} style={{ width: `${(shown / target) * 100}%` }} />
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10">
+            <div className={`h-full rounded-full transition-all ${completed ? "bg-ok" : "bar-fill"}`} style={{ width: `${(shown / target) * 100}%` }} />
           </div>
         </div>
         {completed && (
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-ok">
             <CheckCircle2 size={18} /> Tamamlandı
           </span>
         )}

@@ -51,7 +51,7 @@ export default function Transkripsiyon({ tex, onPlayingChange }: { tex: string; 
     const k = anahtar(g.s, g.f);
     etiketler[k] = etiketler[k] ? `${etiketler[k]}·${i + 1}` : String(i + 1);
   });
-  const renk = { sira: "border-emerald-500/50 bg-emerald-500/15 text-emerald-300", var: "border-amber-400/50 bg-amber-400/10 text-amber-200", yok: "border-rose-500/50 bg-rose-500/10 text-rose-300" };
+  const renk = { sira: "border-ok/50 bg-ok/15 text-ok", var: "border-warn/50 bg-warn/10 text-warn", yok: "border-bad/50 bg-bad/10 text-bad" };
 
   return (
     <div className="space-y-4">
@@ -71,7 +71,7 @@ export default function Transkripsiyon({ tex, onPlayingChange }: { tex: string; 
         <div className="flex min-h-9 flex-wrap items-center gap-1.5" aria-label="Girilen notalar">
           {giris.length === 0 && <span className="text-sm text-muted">Henüz nota girmedin.</span>}
           {giris.map((g, i) => (
-            <span key={i} className={`rounded-lg border px-2 py-1 text-sm font-semibold tabular-nums ${sonuc ? renk[sonuc.durum[i]] : "border-white/10 bg-white/[0.05]"}`} title={`${g.s}. tel ${g.f}. perde · ${yaz(g.m).en}`}>
+            <span key={i} className={`rounded-lg border px-2 py-1 text-sm font-semibold tabular-nums ${sonuc ? renk[sonuc.durum[i]] : "border-ink/10 bg-ink/[0.05]"}`} title={`${g.s}. tel ${g.f}. perde · ${yaz(g.m).en}`}>
               <span className="mr-1 text-xs opacity-60">{i + 1}</span>
               {yaz(g.m).tr}
               <sub className="ml-px text-[10px] opacity-60">{Math.floor(g.m / 12) - 1}</sub>
@@ -80,24 +80,24 @@ export default function Transkripsiyon({ tex, onPlayingChange }: { tex: string; 
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button type="button" className="btn-grad px-4 py-2 text-sm" disabled={!giris.length || !cevap} onClick={() => cevap && setSonuc(karsilastir(giris.map((g) => g.m), cevap))}>
+          <button type="button" className="btn-primary px-4 py-2 text-sm" disabled={!giris.length || !cevap} onClick={() => cevap && setSonuc(karsilastir(giris.map((g) => g.m), cevap))}>
             <CheckCircle2 size={16} /> Kontrol et
           </button>
-          <button type="button" className="btn-soft px-3 py-2 text-sm" disabled={!giris.length} onClick={() => { setGiris((g) => g.slice(0, -1)); setSonuc(null); }}>
+          <button type="button" className="btn-secondary px-3 py-2 text-sm" disabled={!giris.length} onClick={() => { setGiris((g) => g.slice(0, -1)); setSonuc(null); }}>
             <Undo2 size={15} /> Geri al
           </button>
-          <button type="button" className="btn-soft px-3 py-2 text-sm" disabled={!giris.length} onClick={() => { setGiris([]); setSonuc(null); }}>
+          <button type="button" className="btn-secondary px-3 py-2 text-sm" disabled={!giris.length} onClick={() => { setGiris([]); setSonuc(null); }}>
             <RotateCcw size={15} /> Temizle
           </button>
-          <button type="button" className="btn-soft px-3 py-2 text-sm" onClick={() => setAcik((x) => !x)}>
+          <button type="button" className="btn-secondary px-3 py-2 text-sm" onClick={() => setAcik((x) => !x)}>
             <Eye size={15} /> {acik ? "Tabı gizle" : "Tabı göster"}
           </button>
         </div>
 
         {sonuc && cevap && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4" role="status">
+          <div className="rounded-2xl border border-ink/10 bg-ink/[0.03] p-4" role="status">
             <p className="text-lg font-semibold">
-              Doğru nota: <span className="text-grad">{sonuc.nota}/{cevap.length}</span> · Doğru sırada: <span className="text-grad">{sonuc.sira}/{cevap.length}</span>
+              Doğru nota: <span className="text-accent">{sonuc.nota}/{cevap.length}</span> · Doğru sırada: <span className="text-accent">{sonuc.sira}/{cevap.length}</span>
             </p>
             <p className="mt-1 text-sm text-muted">
               {sonuc.sira === cevap.length && giris.length === cevap.length

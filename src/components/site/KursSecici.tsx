@@ -34,12 +34,12 @@ export default function KursSecici({ baslik, slug, kurslar }: { baslik: string; 
         title="Başka bir kursa geç"
       >
         <h1 className="min-w-0 text-3xl font-bold tracking-tight sm:text-4xl">{baslik}</h1>
-        <span className={`flex size-8 shrink-0 items-center justify-center rounded-full bg-white/[0.07] text-accent transition group-hover:bg-white/[0.12] ${acik ? "rotate-180" : ""}`}>
+        <span className={`flex size-8 shrink-0 items-center justify-center rounded-full bg-ink/[0.07] text-accent transition group-hover:bg-ink/[0.12] ${acik ? "rotate-180" : ""}`}>
           <ChevronDown size={18} />
         </span>
       </button>
       {acik && (
-        <div className="glass absolute left-0 top-full z-40 mt-2 max-h-[min(70vh,32rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-white/10 p-2 shadow-[0_24px_60px_-12px_rgb(0_0_0/0.8)]" role="listbox">
+        <div className="bg-elevated absolute left-0 top-full z-40 mt-2 max-h-[min(70vh,32rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-ink/10 p-2 shadow-[var(--shadow-pop)]" role="listbox">
           {gruplar.map((g, gi) => (
             <div key={g} className={gi > 0 ? "mt-1 border-t border-line pt-1" : ""}>
               <p className="px-3 pb-1 pt-2 text-xs font-semibold text-muted">{g}</p>
@@ -52,7 +52,7 @@ export default function KursSecici({ baslik, slug, kurslar }: { baslik: string; 
                     onClick={() => setAcik(false)}
                     role="option"
                     aria-selected={k.slug === slug}
-                    className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-white/[0.08] ${k.slug === slug ? "text-accent" : ""}`}
+                    className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-ink/[0.08] ${k.slug === slug ? "text-accent" : ""}`}
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       {k.slug === slug ? <Check size={14} className="shrink-0" /> : <span className="w-3.5 shrink-0" />}

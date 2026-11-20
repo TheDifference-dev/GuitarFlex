@@ -42,7 +42,7 @@ function Satir({ baslik, children, not }: { baslik: string; children: ReactNode;
 
 function Secim<T extends string>({ deger, secenekler, onSec, kilit }: { deger: T; secenekler: [T, string][]; onSec: (v: T) => void; kilit?: boolean }) {
   return (
-    <div className={`flex gap-0.5 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5 text-sm ${kilit ? "opacity-50" : ""}`}>
+    <div className={`flex gap-0.5 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-0.5 text-sm ${kilit ? "opacity-50" : ""}`}>
       {secenekler.map(([v, ad]) => (
         <button
           key={v}
@@ -50,7 +50,7 @@ function Secim<T extends string>({ deger, secenekler, onSec, kilit }: { deger: T
           disabled={kilit}
           onClick={() => onSec(v)}
           aria-pressed={deger === v}
-          className={`flex-1 rounded-full px-3 py-1 transition ${deger === v ? "bg-white/[0.14] text-text shadow-[0_1px_2px_rgb(0_0_0/0.5)]" : "text-muted hover:text-text"}`}
+          className={`flex-1 rounded-full px-3 py-1 transition ${deger === v ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`}
         >
           {ad}
         </button>
@@ -67,10 +67,10 @@ function Anahtar({ acik, onDegis, ad, kilit }: { acik: boolean; onDegis: (v: boo
       aria-checked={acik}
       disabled={kilit}
       onClick={() => onDegis(!acik)}
-      className="flex w-full items-center justify-between gap-3 rounded-xl px-1 py-1 text-sm transition hover:bg-white/[0.04] disabled:opacity-50"
+      className="flex w-full items-center justify-between gap-3 rounded-xl px-1 py-1 text-sm transition hover:bg-ink/[0.04] disabled:opacity-50"
     >
       <span>{ad}</span>
-      <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${acik ? "bar-grad" : "bg-white/15"}`}>
+      <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${acik ? "bar-fill" : "bg-ink/15"}`}>
         <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${acik ? "left-[1.125rem]" : "left-0.5"}`} />
       </span>
     </button>
@@ -91,7 +91,7 @@ function Sayi({ deger, onDegis, min, max, adim, ad }: { deger: number; onDegis: 
           const v = Number(e.target.value);
           if (Number.isFinite(v)) onDegis(Math.min(max, Math.max(min, v)));
         }}
-        className="w-full rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1 text-sm tabular-nums text-text"
+        className="w-full rounded-lg border border-ink/10 bg-ink/[0.05] px-2 py-1 text-sm tabular-nums text-text"
       />
     </label>
   );
@@ -120,11 +120,11 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
       ref={ref}
       role="dialog"
       aria-label="Oynatıcı ayarları"
-      className="absolute right-2 top-full z-20 mt-2 bg-panel-2 max-h-[min(78vh,44rem)] w-[min(24rem,calc(100vw-2rem))] space-y-4 overflow-y-auto rounded-2xl border border-white/10 p-4 text-text shadow-[0_24px_60px_-12px_rgb(0_0_0/0.85)] sm:right-4"
+      className="absolute right-2 top-full z-20 mt-2 bg-elevated max-h-[min(78vh,44rem)] w-[min(24rem,calc(100vw-2rem))] space-y-4 overflow-y-auto rounded-2xl border border-ink/10 p-4 text-text shadow-[var(--shadow-pop)] sm:right-4"
     >
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Ayarlar</h3>
-        <button type="button" onClick={onKapat} className="rounded-full p-1 text-muted hover:bg-white/10 hover:text-text" aria-label="Ayarları kapat">
+        <button type="button" onClick={onKapat} className="rounded-full p-1 text-muted hover:bg-ink/10 hover:text-text" aria-label="Ayarları kapat">
           <X size={16} />
         </button>
       </div>
@@ -155,7 +155,7 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
 
       <Satir baslik="Yakınlaştırma">
         <div className="flex items-center gap-2">
-          <button type="button" className="btn-soft h-8 w-8 text-base" onClick={() => guncelle({ zoom: Math.max(60, ayarlar.zoom - 10) })} aria-label="Uzaklaştır">
+          <button type="button" className="btn-secondary h-8 w-8 text-base" onClick={() => guncelle({ zoom: Math.max(60, ayarlar.zoom - 10) })} aria-label="Uzaklaştır">
             −
           </button>
           <input
@@ -168,14 +168,14 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
             className="flex-1 accent-[var(--accent)]"
             aria-label="Yakınlaştırma"
           />
-          <button type="button" className="btn-soft h-8 w-8 text-base" onClick={() => guncelle({ zoom: Math.min(160, ayarlar.zoom + 10) })} aria-label="Yakınlaştır">
+          <button type="button" className="btn-secondary h-8 w-8 text-base" onClick={() => guncelle({ zoom: Math.min(160, ayarlar.zoom + 10) })} aria-label="Yakınlaştır">
             +
           </button>
           <span className="w-11 text-right text-sm tabular-nums">%{ayarlar.zoom}</span>
         </div>
       </Satir>
 
-      <div className="space-y-0.5 border-t border-white/[0.07] pt-3">
+      <div className="space-y-0.5 border-t border-ink/[0.07] pt-3">
         <Anahtar ad="İmleci takip et (sayfa kayar)" acik={ayarlar.imlecTakibi} onDegis={(v) => guncelle({ imlecTakibi: v })} />
         <Anahtar ad={sapKilit ? `Sap görünümü (${sapKilit})` : "Sap görünümü (çalan notalar)"} acik={ayarlar.sap && !sapKilit} kilit={!!sapKilit} onDegis={(v) => guncelle({ sap: v })} />
         <Anahtar ad="Sayım (başlamadan bir ölçü say)" acik={sayim} onDegis={onSayim} />
@@ -216,7 +216,7 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
           {KISAYOLLAR.map(([k, a]) => (
             <div key={k} className="contents">
               <dt>
-                <kbd className="rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[11px]">{k}</kbd>
+                <kbd className="rounded-md border border-ink/15 bg-ink/[0.06] px-1.5 py-0.5 font-mono text-[11px]">{k}</kbd>
               </dt>
               <dd className="text-muted">{a}</dd>
             </div>

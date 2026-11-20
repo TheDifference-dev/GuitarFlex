@@ -50,7 +50,7 @@ export function DersUstGezinme({ anahat, dersId }: { anahat: KursAnahat; dersId:
   }, [onceki, sonraki, anahat.slug, router]);
 
   if (!ders) return null;
-  const okBtn = "flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] transition hover:bg-white/10";
+  const okBtn = "flex size-9 shrink-0 items-center justify-center rounded-full border border-ink/10 bg-ink/[0.05] transition hover:bg-ink/10";
   return (
     <>
       <Kirinti
@@ -61,7 +61,7 @@ export function DersUstGezinme({ anahat, dersId }: { anahat: KursAnahat; dersId:
         ]}
       />
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => setAcik(true)} className="flex min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-2 text-sm font-semibold transition hover:bg-white/10" aria-haspopup="dialog">
+        <button type="button" onClick={() => setAcik(true)} className="flex min-w-0 items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-2 text-sm font-semibold transition hover:bg-ink/10" aria-haspopup="dialog">
           <ListTree size={16} className="shrink-0 text-accent" />
           <span className="truncate">Ders listesi</span>
           <span className="shrink-0 text-xs font-medium tabular-nums text-muted">
@@ -144,9 +144,9 @@ function DersListesi({ anahat, dersId, kapat }: { anahat: KursAnahat; dersId: st
                           href={adres(anahat.slug, d)}
                           onClick={kapat}
                           aria-current={bu ? "page" : undefined}
-                          className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition ${bu ? "bg-accent/15 font-semibold text-accent" : "hover:bg-white/[0.06]"}`}
+                          className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition ${bu ? "bg-accent/15 font-semibold text-accent" : "hover:bg-ink/[0.06]"}`}
                         >
-                          <span className={`flex size-4 shrink-0 items-center justify-center rounded-full ${bitti ? "bg-emerald-500 text-black" : bu ? "" : "border border-white/20"}`}>
+                          <span className={`flex size-4 shrink-0 items-center justify-center rounded-full ${bitti ? "bg-ok text-ok-ink" : bu ? "" : "border border-ink/20"}`}>
                             {bitti ? <Check size={10} /> : bu ? <PlayCircle size={16} /> : null}
                           </span>
                           <span className="min-w-0 flex-1 truncate">{d.title}</span>
@@ -171,7 +171,7 @@ export function DersAltGezinme({ anahat, dersId }: { anahat: KursAnahat; dersId:
   const i = liste.findIndex((d) => d.id === dersId);
   const onceki = liste[i - 1];
   const sonraki = liste[i + 1];
-  const kart = "card flex min-w-0 flex-1 items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:border-white/20";
+  const kart = "card flex min-w-0 flex-1 items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:border-ink/20";
   return (
     <nav className="flex flex-col gap-3 sm:flex-row" aria-label="Dersler arası">
       {onceki ? (
