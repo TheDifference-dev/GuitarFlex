@@ -17,7 +17,7 @@ declare global {
 const SCRIPT = "/alphatab/alphaTab.min.js";
 let loader: Promise<any> | null = null;
 
-function loadAlphaTab(): Promise<any> {
+export function loadAlphaTab(): Promise<any> {
   if (window.alphaTab) return Promise.resolve(window.alphaTab);
   loader ??= new Promise((resolve, reject) => {
     const s = document.createElement("script");
@@ -51,6 +51,20 @@ type Props = {
   onPlayingChange?: (playing: boolean) => void;
   /** İlk görünüm: "score" yalnız nota (porte okuma: tab gizli, görünüm düğmeleri kapalı), "tab", "both" (nota + tab) */
   stave?: Stave;
+  /** Yalnız bu ölçüleri çiz [ilk, son] (1'den; Quick Study okuma bölümü). Çalma bütün parçayı kapsar. */
+  barRange?: [number, number];
+  /** Yalnız ses (transkripsiyon): nota/tab alanı ve görünüm düğmeleri gizlenir, "Tekrar" düğmesi çıkar */
+  audioOnly?: boolean;
+  /** Sessize alınan track'ler (0'dan; ör. eşlikle çalarken gitar). Verilirse track listesi gösterilmez. */
+  mutedTracks?: number[];
+  /** Parça yüklenince alphaTab score nesnesi (cevap anahtarı, ölçü bilgisi) */
+  onScore?: (score: any) => void;
+  /** Çalarken o anki ölçü (0'dan) */
+  onBar?: (bar: number) => void;
+  /** Parça sona erdi (döngü kapalıyken) */
+  onFinished?: () => void;
+  /** Döngü başlangıçta açık mı (verilmezse compact ile aynı) */
+  initialLoop?: boolean;
 };
 
 const SPEEDS = [50, 75, 100];
@@ -103,7 +117,7 @@ export default function TabPlayer(props: Props) {
   return <Player key={id} {...props} />;
 }
 
-function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }: Props) {
+function Player({ source, compact = false, onBpmChange, onPlayingChange, stave, barRange, audioOnly = false, mutedTracks, onScore, onBar, onFinished, initialLoop }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
@@ -131,7 +145,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
   }, []);
   /** Sayım sürerken kalan vuruş (ekranda büyük rakam); sayım yoksa null */
   const [counting, setCounting] = useState<number | null>(null);
-  const [loop, setLoop] = useState(compact);
+  const [loop, setLoop] = useState(initialLoop ?? compact);
   const [zoom, setZoom] = useState(100);
   const [horizontal, setHorizontal] = useState(false);
   const [view, setView] = useState<View>(stave ? STAVE_VIEW[stave] : "tab");
@@ -139,13 +153,16 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
   const scoreOnly = stave === "score";
 
   // Callback'leri ve görünüm ayarlarını ref'te tut: değişmeleri player'ı yeniden kurmasın.
-  const callbacks = useRef({ onBpmChange, onPlayingChange });
+  const callbacks = useRef({ onBpmChange, onPlayingChange, onScore, onBar, onFinished });
   const display = useRef({ view, zoom, horizontal });
+  /** Kurulumda okunur: değişirse oynatıcı yeniden kurulmaz (Quick Study'de sabit) */
+  const rangeRef = useRef(barRange);
+  const audioOnlyRef = useRef(audioOnly);
   const playback = useRef({ countIn, speed });
   /** "Hemen başla" ile sayımsız başlatılan çalmada sayım gösterilmez */
   const skipNext = useRef(false);
   useEffect(() => {
-    callbacks.current = { onBpmChange, onPlayingChange };
+    callbacks.current = { onBpmChange, onPlayingChange, onScore, onBar, onFinished };
     display.current = { view, zoom, horizontal };
     playback.current = { countIn, speed };
   });
@@ -167,6 +184,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
         // Worker'lar blob üzerinden açıldığı için yollar tam URL olmalı.
         const abs = (path: string) => new URL(path, window.location.href).href;
         const { view: v, zoom: z, horizontal: h } = display.current;
+        const range = rangeRef.current;
         // Tab renkleri paletten (globals.css) okunur.
         const css = getComputedStyle(document.documentElement);
         const color = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
@@ -177,6 +195,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
             staveProfile: staveProfile(v, false),
             scale: z / 100,
             layoutMode: h ? at.LayoutMode.Horizontal : at.LayoutMode.Page,
+            ...(range ? { startBar: range[0], barCount: range[1] - range[0] + 1 } : {}),
             resources: {
               mainGlyphColor: ink,
               secondaryGlyphColor: color("--muted", "#666666"),
@@ -193,7 +212,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
             playerMode: at.PlayerMode.EnabledSynthesizer,
             soundFont: abs("/alphatab/soundfont/sonivox.sf2"),
             scrollElement: viewportRef.current,
-            enableUserInteraction: true,
+            enableUserInteraction: !audioOnlyRef.current,
           },
         });
         apiRef.current = api;
@@ -206,6 +225,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
 
         api.scoreLoaded.on((score: any) => {
           if (disposed) return;
+          callbacks.current.onScore?.(score);
           setMeta({ title: score.title, artist: score.artist, tempo: score.tempo });
           setTracks(
             score.tracks.map((t: any) => {
@@ -248,14 +268,26 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
           }, beatMs);
         });
         let last = 0;
-        api.playerPositionChanged.on((e: { currentTime: number; endTime: number }) => {
+        // Çalınan ölçü (onBar): tick konumundan; çizilmeyen ölçülerde de (Quick Study doğaçlama bölümü) çalışır
+        let sonOlcu = -1;
+        api.playerPositionChanged.on((e: { currentTime: number; endTime: number; currentTick: number }) => {
           if (disposed) return;
+          const mbs = api.score?.masterBars;
+          if (mbs?.length && callbacks.current.onBar) {
+            let i = mbs.length - 1;
+            while (i > 0 && mbs[i].start > e.currentTick) i--;
+            if (i !== sonOlcu) {
+              sonOlcu = i;
+              callbacks.current.onBar(i);
+            }
+          }
           const now = performance.now();
           if (now - last < 200 && e.currentTime !== 0) return;
           last = now;
           setPosition({ current: e.currentTime, end: e.endTime });
         });
         api.playbackRangeChanged.on((e: { playbackRange: unknown }) => !disposed && setHasRange(!!e.playbackRange));
+        api.playerFinished.on(() => !disposed && callbacks.current.onFinished?.());
 
         if (source.kind === "tex") api.tex(source.tex, [0]);
         else if (source.kind === "url") api.load(source.url, [0]);
@@ -300,6 +332,15 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
     api.isLooping = loop;
     api.countInVolume = countIn ? 1 : 0;
   }, [speed, metronome, loop, countIn, playerReady]);
+
+  // Dışarıdan verilen sessiz track'ler (ör. Quick Study'de "eşlikle çal": gitar susar, eşlik çalar)
+  const mutedKey = mutedTracks?.join(",");
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api?.score || mutedKey === undefined) return;
+    const off = new Set(mutedKey ? mutedKey.split(",").map(Number) : []);
+    for (const t of api.score.tracks) api.changeTrackMute([t], off.has(t.index));
+  }, [mutedKey, tracks, playerReady]);
 
   useEffect(() => {
     callbacks.current.onBpmChange?.(Math.round((meta.tempo * speed) / 100));
@@ -397,6 +438,23 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
           <button type="button" onClick={() => apiRef.current?.stop()} disabled={!playerReady} className={btn} title="Başa dön">
             ■
           </button>
+          {audioOnly && (
+            <button
+              type="button"
+              onClick={() => {
+                const api = apiRef.current;
+                if (!api) return;
+                api.stop();
+                skipNext.current = true;
+                api.play();
+              }}
+              disabled={!playerReady}
+              className={btn}
+              title="Baştan bir kez daha dinle"
+            >
+              ↺ Tekrar
+            </button>
+          )}
 
           <div className="flex min-w-48 flex-1 items-center gap-2 text-sm tabular-nums">
             <span>{formatTime(position.current)}</span>
@@ -458,8 +516,12 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
             </button>
           )}
 
-          <span className="mx-1 h-5 w-px bg-line" />
-          {scoreOnly ? (
+          {!audioOnly && <span className="mx-1 h-5 w-px bg-line" />}
+          {audioOnly ? (
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1" title="Transkripsiyon: tab ve nota gizli, yalnız ses çalar">
+              Yalnız ses
+            </span>
+          ) : scoreOnly ? (
             <span className="rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1" title="Porte okuma dersi: tab gizli, notayı porteden oku">
               Yalnız nota
             </span>
@@ -483,7 +545,7 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
               Yatay
             </button>
           )}
-          <div className="flex items-center gap-1">
+          <div className={`flex items-center gap-1 ${audioOnly ? "hidden" : ""}`}>
             <button type="button" onClick={() => setZoom((z) => Math.max(60, z - 10))} className={btn} aria-label="Uzaklaştır">
               −
             </button>
@@ -494,14 +556,14 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
           </div>
         </div>
 
-        {tracks[shown]?.tuning && (
+        {tracks[shown]?.tuning && !audioOnly && (
           <p className="text-xs text-muted">
             Akort: <span className="font-mono text-text">{tracks[shown].tuning}</span>
           </p>
         )}
 
         {/* Track listesi */}
-        {tracks.length > 1 && (
+        {tracks.length > 1 && mutedTracks === undefined && (
           <div className="flex flex-wrap gap-2">
             {tracks.map((t) => (
               <div
@@ -542,7 +604,11 @@ function Player({ source, compact = false, onBpmChange, onPlayingChange, stave }
         )}
       </div>
 
-      <div ref={viewportRef} className={`relative overflow-auto bg-[var(--sheet)] p-2 text-[var(--sheet-ink)] ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}>
+      <div
+        ref={viewportRef}
+        aria-hidden={audioOnly || undefined}
+        className={`relative overflow-auto bg-[var(--sheet)] text-[var(--sheet-ink)] ${audioOnly ? "h-0 p-0" : `p-2 ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}`}
+      >
         {counting !== null && (
           <div className="sticky inset-x-0 top-0 z-10 flex justify-center p-2" role="status" aria-live="assertive">
             <div className="glass flex items-center gap-4 rounded-full border border-white/10 py-2 pl-6 pr-2 text-text shadow-[0_24px_60px_-12px_rgb(0_0_0/0.8)]">

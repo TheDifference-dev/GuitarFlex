@@ -100,14 +100,14 @@ for (const item of items) {
 }
 
 // ── Müfredat alanları (Spec v2.2 §4): level, axes, skills, kind, variant, ref, form, tempoRounds,
-// readBars, improvBars, hideTab, stave. Etiketsiz içerikte hiçbir şey yazdırmaz.
+// readBars, improvBars, hideTab, stave, chords. Etiketsiz içerikte hiçbir şey yazdırmaz.
 const LEVELS = new Set(["L1", "L2", "L3", "L4", "L5"]);
 const AXES = new Set(["technique", "fretboard", "rhythm", "theory_ear"]);
 const KINDS = new Set(["drill", "etut", "okuma", "quickstudy", "transkripsiyon", "kompozisyon", "resital"]);
 const VARIANTS = new Set(["reverse", "inversion", "permutation"]);
 const FORM_PARTS = new Set(["intro", "A", "B", "bridge", "A2"]);
 const STAVES = new Set(["score", "tab", "both"]);
-const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave"] as const;
+const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave", "chords"] as const;
 
 // Beceri sözlüğü: kişisel içerik köklerinde belgeler/mufredat/beceri-sozlugu.json (ilk bulunan)
 let skillKeys: Set<string> | null = null;
@@ -205,6 +205,17 @@ function lessonProblems(r: Row): { problems: string[]; warnings: string[] } {
     else if ((v as number[])[0] > (v as number[])[1]) p.push(`${k} başlangıcı bitişten büyük: ${JSON.stringify(v)}`);
   }
   if (l.hideTab !== undefined && typeof l.hideTab !== "boolean") p.push(`hideTab true/false olmalı: ${JSON.stringify(l.hideTab)}`);
+  // chords (İP6d): ölçü başına akor; quickstudy ve kompozisyon eşlik ve geri bildirimi bundan kurar
+  if (l.chords !== undefined) {
+    const ch = l.chords as unknown;
+    if (!Array.isArray(ch) || !ch.length || !ch.every((x) => typeof x === "string" && x.trim())) p.push(`chords boş olmayan metinlerden oluşan bir dizi olmalı: ${JSON.stringify(ch)}`);
+    else {
+      if (l.kind !== "quickstudy" && l.kind !== "kompozisyon") w.push(`chords yalnız quickstudy ve kompozisyon derslerinde kullanılır (kind ${JSON.stringify(l.kind)})`);
+      const bars = l.tex ? l.tex.replace(/^\\tempo \d+ \. /, "").split("|").length : 0;
+      if (bars && ch.length !== bars) p.push(`chords ${ch.length} akor, tab ${bars} ölçü`);
+    }
+  }
+  if ((l.kind === "quickstudy" || l.kind === "kompozisyon") && !l.chords) p.push(`${l.kind} dersinde chords (ölçü başına akor) yok`);
   // stave (İP6): oynatıcı görünümü. Tabsız derste anlamsız; hideTab (yalnız ses) ile birlikte görünüm verilmez
   if (l.stave !== undefined) {
     if (!STAVES.has(l.stave as string)) p.push(`stave geçersiz: ${JSON.stringify(l.stave)} ("score", "tab" ya da "both" olmalı)`);

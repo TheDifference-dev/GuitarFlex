@@ -84,7 +84,7 @@ const DRUM_68 = `:8 ${[D(K, H), H, H, D(SN, H), H, H].join(" ")}`;
 // Groove: sekizlik hi-hat, 1 ve 2'nin "ve"sinde kick, 2 ve 4'te trampet
 const DRUM_GROOVE = `:8 ${[D(K, H), H, D(SN, H), D(K, H), H, D(K, H), D(SN, H), H].join(" ")}`;
 
-function song(title: string, bpm: number, tracks: { name: string; instrument: string; staff: string; extra?: string; bars: string[] }[], ts?: string) {
+export function song(title: string, bpm: number, tracks: { name: string; instrument: string; staff: string; extra?: string; bars: string[] }[], ts?: string) {
   const lines = [`\\title "${title}" \\tempo ${bpm} .`];
   for (const t of tracks) {
     lines.push(`\\track "${t.name}" \\instrument ${t.instrument} \\staff {${t.staff}}${t.extra ? ` ${t.extra}` : ""}`);
@@ -92,8 +92,8 @@ function song(title: string, bpm: number, tracks: { name: string; instrument: st
   }
   return lines.join("\n");
 }
-const BASS = { name: "Bas", instrument: "33", staff: "tabs", extra: "\\tuning G2 D2 A1 E1" };
-const DRUMS = { name: "Davul", instrument: "percussion", staff: "score", extra: "\\articulation defaults" };
+export const BASS = { name: "Bas", instrument: "33", staff: "tabs", extra: "\\tuning G2 D2 A1 E1" };
+export const DRUMS = { name: "Davul", instrument: "percussion", staff: "score", extra: "\\articulation defaults" };
 
 // ── 1. La minör blues shuffle (12 ölçü) ──────────────────────────────────────
 const BLUES = ["A7", "A7", "A7", "A7", "D7", "D7", "A7", "A7", "E7", "D7", "A7", "E7"];

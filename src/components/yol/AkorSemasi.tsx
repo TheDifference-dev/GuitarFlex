@@ -17,7 +17,8 @@ const G = {
   olcu: (n: number) => String.fromCharCode(0xe080 + n),
 };
 
-export default function AkorSemasi({ sema }: { sema: Sema }) {
+/** `ilk`: ilk ölçünün numarası (verilmezse 1; Quick Study doğaçlama bölümü 7'den başlar) */
+export default function AkorSemasi({ sema, ilk: ilkNo = 1 }: { sema: Sema; ilk?: number }) {
   const [vurus, birim] = sema.olcu;
   // Satırlar: 4 ölçü; Coda her zaman yeni satırda başlar
   const satirlar: number[][] = [];
@@ -58,7 +59,7 @@ export default function AkorSemasi({ sema }: { sema: Sema }) {
       const bw = (OLCU_W - 28) / vurus;
       const bx = (v: number) => ox + 18 + v * bw;
       // Ölçü numarası
-      parca.push(metin(ox + 4, ust - 4, String(oi + 1), "fill-[var(--muted)] text-[10px] font-semibold"));
+      parca.push(metin(ox + 4, ust - 4, String(oi + ilkNo), "fill-[var(--muted)] text-[10px] font-semibold"));
       // Tekrar başı / sonu ve ölçü çizgisi
       if (o.bas) parca.push(yazi(ox + 1, alt, G.tekrarBas));
       const sonOlcu = j === satir.length - 1;

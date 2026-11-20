@@ -6,7 +6,10 @@ import TabPlayer, { type TabSource } from "./TabPlayer";
 import Metronome from "./Metronome";
 import { formatClock } from "./CourseView";
 import { addPracticeTime, useProgress } from "@/lib/progress";
-import type { Stave } from "@/content/types";
+import type { LessonKind, Stave } from "@/content/types";
+import QuickStudy from "./turler/QuickStudy";
+import Transkripsiyon from "./turler/Transkripsiyon";
+import Kompozisyon from "./turler/Kompozisyon";
 
 type Props = {
   progressKey: string;
@@ -19,12 +22,18 @@ type Props = {
   reading?: boolean;
   /** Oynatıcının görünümü (ders alanı `stave`): "score" porte okuma, tab gizli */
   stave?: Stave;
+  /** Ders türü (İP6d): quickstudy, transkripsiyon ve kompozisyon kendi çalışma ekranını açar; diğerleri tab oynatıcı */
+  kind?: LessonKind;
+  readBars?: [number, number];
+  improvBars?: [number, number];
+  chords?: string[];
+  title?: string;
 };
 
 const SAVE_EVERY = 5;
 
 /** Ders ekranı: tab oynatıcı + hedef süre sayacı. Çalma süresi otomatik kaydedilir. */
-export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading, stave }: Props) {
+export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading, stave, kind, readBars, improvBars, chords, title }: Props) {
   const progress = useProgress();
   const saved = progress.exercises[progressKey];
   const target = minutes * 60;
@@ -124,7 +133,13 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
         )}
       </div>
 
-      {source ? (
+      {kind === "quickstudy" && tex && chords?.length && readBars && improvBars ? (
+        <QuickStudy tex={tex} chords={chords} readBars={readBars} improvBars={improvBars} onPlayingChange={setRunning} />
+      ) : kind === "transkripsiyon" && tex ? (
+        <Transkripsiyon tex={tex} onPlayingChange={setRunning} />
+      ) : kind === "kompozisyon" && tex && chords?.length ? (
+        <Kompozisyon tex={tex} chords={chords} bpm={bpm} title={title ?? "Kompozisyon"} progressKey={progressKey} onPlayingChange={setRunning} />
+      ) : source ? (
         <TabPlayer source={source} compact stave={stave} onBpmChange={setCurrentBpm} onPlayingChange={setRunning} />
       ) : reading ? null : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
