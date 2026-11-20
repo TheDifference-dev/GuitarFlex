@@ -256,15 +256,15 @@ export default function AnaSayfa({
 }
 
 /**
- * Kapak görseli: çerçevesiz çizim. cizim-koyu.png'nin zemini şeffaf, çizgileri açık gri ve kenarları tüy gibi yumuşak;
- * siyahtan laciverte geçen bandın zeminine doğrudan karışır (kart, kare ya da keskin kenar yok). Alt kenar ayrıca
+ * Kapak görseli: çerçevesiz çizim (cizim-spot.png). Çizimin kâğıt zemini spot ışığı gibi merkezde açık gri, kenarlara doğru
+ * şeffaflaşıp siyahtan laciverte geçen bandın zeminine karışır (kart, kare ya da keskin kenar yok). Alt kenar ayrıca
  * dikey maskeyle bandın dibine erir.
  */
 function Kapak({ kucuk = false }: { kucuk?: boolean }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/marka/cizim-koyu.png"
+      src="/marka/cizim-spot.png"
       alt="GuitarFlex kapağı: gitar çalan bir figürün karakalem çizimi"
       width={1024}
       height={1024}
