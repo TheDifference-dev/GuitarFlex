@@ -6,6 +6,7 @@ import { Check, Lock } from "lucide-react";
 import type { Yol } from "@/lib/alistirma/tipler";
 import { useProgress } from "@/lib/progress";
 import { MODUL_METIN } from "@/content/yol-modulleri";
+import CagedTablosu from "./CagedTablosu";
 
 // Teori yolu: bölümler ve sırayla açılan adımlar. Bir adım, önceki adım geçilince açılır; iskelet dışı ek
 // bölümlerin (serbest) ilk adımı her zaman açıktır.
@@ -67,6 +68,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
               <p key={p}>{p}</p>
             ))}
           </div>
+          {yol.slug === "klavye" && yol.modul.sekmeler[sekme] === "CAGED Sistemi" ? <CagedTablosu /> : null}
         </section>
       ) : null}
 

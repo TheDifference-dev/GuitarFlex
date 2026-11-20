@@ -48,6 +48,8 @@ export const MODUL_METIN: Record<string, Record<string, string[]>> = {
     "CAGED Sistemi": [
       "CAGED, majör akorun beş açık akor şeklinin (C, A, G, E, D) sap boyunca kaydırılarak her tonda çalınmasıdır. Beş şekil birbirine bağlanır ve sapı kaplar.",
       "Her formun kök notaları sabit tellerdedir: C formu 5. ve 2. tel, A formu 5. ve 3. tel, G formu 6., 3. ve 1. tel, E formu 6., 4. ve 1. tel, D formu 4. ve 2. tel.",
+      "Bir açık şekli tam ses (2 perde) yukarı taşıdığında açık teller boş kalamaz: işaret parmağı onların yerine geçer (barre ya da tek parmak) ve diğer parmaklar birer numara kayar. Böylece C şekli D, A şekli B, G şekli A, E şekli G, D şekli E akorunu verir.",
+      "Aynı kural minör şekillerde de geçerlidir: Cm şekli Dm, Am şekli Bm, Gm şekli Am, Em şekli Gm, Dm şekli Em olur. Şekli kaç perde kaydırırsan akor o kadar yarım ses yükselir; aşağıdaki diyagramlarda her şeklin açık ve taşınmış hâlini parmak numaralarıyla çalış.",
     ],
     "Pentatonik Şekiller": [
       "Minör pentatonik beş notadır: 1, ♭3, 4, 5, ♭7 (La minörde La Do Re Mi Sol). Sap üzerinde her telde iki nota olacak şekilde beş kutu (şekil) oluşturur.",
