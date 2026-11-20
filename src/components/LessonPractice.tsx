@@ -6,7 +6,7 @@ import TabPlayer, { type TabSource } from "./TabPlayer";
 import Metronome from "./Metronome";
 import { formatClock } from "./CourseView";
 import { addPracticeTime, useProgress } from "@/lib/progress";
-import type { LessonKind, Stave } from "@/content/types";
+import type { LessonKind, LessonPart, Stave } from "@/content/types";
 import QuickStudy from "./turler/QuickStudy";
 import Transkripsiyon from "./turler/Transkripsiyon";
 import Kompozisyon from "./turler/Kompozisyon";
@@ -28,12 +28,16 @@ type Props = {
   improvBars?: [number, number];
   chords?: string[];
   title?: string;
+  /** Çalışmanın kısımları (A / A′ / B / C): oynatıcıda kısım düğmeleri */
+  parts?: LessonPart[];
+  /** Dersin ton ipucundan seçilen gitar sesi (General MIDI programı) */
+  guitarProgram?: number;
 };
 
 const SAVE_EVERY = 5;
 
 /** Ders ekranı: tab oynatıcı + hedef süre sayacı. Çalma süresi otomatik kaydedilir. */
-export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading, stave, kind, readBars, improvBars, chords, title }: Props) {
+export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading, stave, kind, readBars, improvBars, chords, title, parts, guitarProgram }: Props) {
   const progress = useProgress();
   const saved = progress.exercises[progressKey];
   const target = minutes * 60;
@@ -140,7 +144,7 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
       ) : kind === "kompozisyon" && tex && chords?.length ? (
         <Kompozisyon tex={tex} chords={chords} bpm={bpm} title={title ?? "Kompozisyon"} progressKey={progressKey} onPlayingChange={setRunning} />
       ) : source ? (
-        <TabPlayer source={source} compact stave={stave} onBpmChange={setCurrentBpm} onPlayingChange={setRunning} />
+        <TabPlayer source={source} compact stave={stave} parts={parts} guitarProgram={guitarProgram} onBpmChange={setCurrentBpm} onPlayingChange={setRunning} />
       ) : reading ? null : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="rounded-3xl border border-dashed border-line p-6 text-sm text-muted">

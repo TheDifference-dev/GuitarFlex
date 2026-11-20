@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Lightbulb, Music } from "lucide-react";
 import LessonPractice from "@/components/LessonPractice";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { assetUrl, getCourse } from "@/lib/courses";
+import { gitarProgrami } from "@/lib/gitarTonu";
 
 async function find(kurs: string, ders: string) {
   const course = await getCourse(kurs);
@@ -85,6 +86,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         improvBars={lesson.improvBars}
         chords={lesson.chords}
         title={lesson.title}
+        parts={lesson.parts}
+        guitarProgram={gitarProgrami(lesson.tips, course.slug)}
       />
 
       {(theory.length > 0 || !!lesson.tips?.length) && (
