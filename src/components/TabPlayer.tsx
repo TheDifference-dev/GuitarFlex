@@ -792,7 +792,7 @@ function Player({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <div className="flex items-center gap-1.5" role="group" aria-label="Hız">
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Hız">
             <span className="text-muted">Hız</span>
             <button type="button" className={iconBtn} onClick={() => setSpeed(speed - 5)} disabled={speed <= MIN_SPEED} aria-label="Yavaşlat (↓)" title="Yavaşlat (↓)">
               −
