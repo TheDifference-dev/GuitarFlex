@@ -7,6 +7,7 @@ import type { Yol } from "@/lib/alistirma/tipler";
 import { useProgress } from "@/lib/progress";
 import { MODUL_METIN } from "@/content/yol-modulleri";
 import CagedTablosu from "./CagedTablosu";
+import { SayfaBasi } from "../site/Vitrin";
 
 // Teori yolu: bölümler ve sırayla açılan adımlar. Bir adım, önceki adım geçilince açılır; iskelet dışı ek
 // bölümlerin (serbest) ilk adımı her zaman açıktır.
@@ -26,24 +27,23 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
 
   return (
     <div className="space-y-8">
-      <header className="space-y-3">
-        <nav className="text-sm text-muted">
-          <Link href="/teori" className="hover:text-accent">
-            Müzik Teorisi
-          </Link>{" "}
-          / {yol.ad}
-        </nav>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{yol.ad}</h1>
-        <p className="text-muted">{yol.ozet}</p>
-        <div className="flex items-center gap-3">
-          <div className="h-1.5 max-w-md flex-1 overflow-hidden rounded-full bg-ink/10">
-            <div className="bar-fill h-full rounded-full" style={{ width: `${(gecilen / yol.adimlar.length) * 100}%` }} />
+      <SayfaBasi
+        kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: yol.ad }]}
+        ust="Pratik Yolu"
+        baslik={yol.ad}
+        alt={yol.ozet}
+        className="!pb-12"
+        ek={
+          <div className="mx-auto mt-8 flex max-w-sm flex-col items-center gap-2">
+            <div className="h-1 w-full overflow-hidden rounded-full bg-ink/10">
+              <div className="bar-fill h-full rounded-full" style={{ width: `${(gecilen / yol.adimlar.length) * 100}%` }} />
+            </div>
+            <span className="text-xs tabular-nums text-muted">
+              {gecilen} / {yol.adimlar.length} adım geçildi
+            </span>
           </div>
-          <span className="text-sm tabular-nums text-muted">
-            {gecilen} / {yol.adimlar.length} adım
-          </span>
-        </div>
-      </header>
+        }
+      />
 
       {yol.modul.sekmeler.length ? (
         <section className="space-y-3 card p-5">

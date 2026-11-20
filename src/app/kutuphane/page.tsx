@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Kirinti from "@/components/site/Kirinti";
+import { Bant, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import LibraryBrowser from "@/components/kutuphane/LibraryBrowser";
 import { getLibrary, summary } from "@/lib/kutuphane";
 
@@ -8,20 +8,32 @@ export const metadata: Metadata = { title: "Şarkı Kütüphanesi" };
 export default async function LibraryPage() {
   const songs = (await getLibrary()).map(summary);
   return (
-    <div className="space-y-6">
-      <header>
-        <Kirinti halkalar={[{ label: "Şarkı Kütüphanesi" }]} />
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Şarkı Kütüphanesi</h1>
-        <p className="mt-1 max-w-3xl text-muted">
-          Kurşun gitar, ritim gitarı, bas ve davullu çok track&apos;li parçalar: GuitarFlex&apos;in özgün şarkıları ve kamu malı ezgilerin düzenlemeleri.
+    <div>
+      <SayfaBasi
+        kirinti={[{ label: "Şarkı Kütüphanesi" }]}
+        baslik="Şarkı Kütüphanesi"
+        alt="Kurşun gitar, ritim gitarı, bas ve davullu çok track'li parçalar: GuitarFlex'in özgün şarkıları ve kamu malı ezgilerin düzenlemeleri."
+      >
+        <MetinBag href="/sarkilar" buyuk>
+          Popüler şarkılar
+        </MetinBag>
+        <MetinBag href="/oynatici" buyuk>
+          Tabla keşfet
+        </MetinBag>
+        <MetinBag href="/sarkilar/dogaclama" buyuk>
+          Doğaçlama çal
+        </MetinBag>
+      </SayfaBasi>
+      <Bant ton="gri" className="pt-12">
+        <p className="mx-auto mb-8 max-w-[760px] text-center text-muted">
           Türe, zorluğa, tona, tempoya ya da enstrümana göre süz; şarkıyı açınca tab oynatıcı, form ve çalışma ipuçları gelir.
         </p>
-      </header>
-      {songs.length ? (
-        <LibraryBrowser songs={songs} />
-      ) : (
-        <p className="card p-6 text-muted">Kütüphane içeriği bulunamadı (içerik paketinde icerik/kutuphane.json yok).</p>
-      )}
+        {songs.length ? (
+          <LibraryBrowser songs={songs} />
+        ) : (
+          <p className="card p-6 text-muted">Kütüphane içeriği bulunamadı (içerik paketinde icerik/kutuphane.json yok).</p>
+        )}
+      </Bant>
     </div>
   );
 }

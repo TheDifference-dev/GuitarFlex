@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { SayfaBasi } from "@/components/site/Vitrin";
 import { notFound } from "next/navigation";
 import { getYol } from "@/lib/yollar";
 import { getCourse } from "@/lib/courses";
@@ -26,25 +26,17 @@ export default async function AdimPage(props: PageProps<"/teori/yol/[yol]/[adim]
     : false;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <nav className="text-sm text-muted">
-        <Link href="/teori" className="hover:text-accent">
-          Müzik Teorisi
-        </Link>{" "}
-        /{" "}
-        <Link href={kursta ? `/calis/${yol.kurs}` : `/teori/yol/${yol.slug}`} className="hover:text-accent">
-          {kursta ? "Armoni" : yol.ad}
-        </Link>{" "}
-        / {bolum?.ad}
-      </nav>
-      <header>
-        <p className="eyebrow">
-          {adim.kod}
-          {adim.kontrol ? " · Bölüm kontrolü" : ""} · {adim.seviye}
-        </p>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{adim.ad}</h1>
-      </header>
+    <div className="space-y-6">
+      <SayfaBasi
+        kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { href: kursta ? `/calis/${yol.kurs}` : `/teori/yol/${yol.slug}`, label: kursta ? "Armoni" : yol.ad }, { label: bolum?.ad ?? adim.kod }]}
+        ust={`${adim.kod}${adim.kontrol ? " · Bölüm kontrolü" : ""} · ${adim.seviye}`}
+        baslik={adim.ad}
+        boyut="buyuk"
+        className="!pb-10"
+      />
+      <div className="mx-auto max-w-4xl">
       <AdimCalis key={adim.kod} yol={yol.slug} adim={adim} sonraki={sonraki ? { kod: sonraki.kod, ad: sonraki.ad } : undefined} geri={kursta ? `/calis/${yol.kurs}` : undefined} />
+      </div>
     </div>
   );
 }

@@ -30,16 +30,16 @@ export default function KursSecici({ baslik, slug, kurslar }: { baslik: string; 
         onClick={() => setAcik((v) => !v)}
         aria-expanded={acik}
         aria-haspopup="listbox"
-        className="group flex min-w-0 items-center gap-2 rounded-2xl text-left"
+        className="group flex min-w-0 items-center gap-3 rounded-2xl text-left"
         title="Başka bir kursa geç"
       >
-        <h1 className="min-w-0 text-3xl font-bold tracking-tight sm:text-4xl">{baslik}</h1>
+        <h1 className="baslik-buyuk min-w-0 text-balance">{baslik}</h1>
         <span className={`flex size-8 shrink-0 items-center justify-center rounded-full bg-ink/[0.07] text-accent transition group-hover:bg-ink/[0.12] ${acik ? "rotate-180" : ""}`}>
           <ChevronDown size={18} />
         </span>
       </button>
       {acik && (
-        <div className="bg-elevated absolute left-0 top-full z-40 mt-2 max-h-[min(70vh,32rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-ink/10 p-2 shadow-[var(--shadow-pop)]" role="listbox">
+        <div className="bg-elevated absolute left-1/2 top-full z-40 mt-2 -translate-x-1/2 text-left max-h-[min(70vh,32rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-ink/10 p-2 shadow-[var(--shadow-pop)]" role="listbox">
           {gruplar.map((g, gi) => (
             <div key={g} className={gi > 0 ? "mt-1 border-t border-line pt-1" : ""}>
               <p className="px-3 pb-1 pt-2 text-xs font-semibold text-muted">{g}</p>

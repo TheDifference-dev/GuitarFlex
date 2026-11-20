@@ -13,7 +13,11 @@
      --elevated  açılır panel (ayarlar, menü) zemini
      --seg       segment kontrolünde seçili parça     --header    üst çubuk (buzlu)
    Yazı
-     --text      birincil yazı (uzay grisi)           --muted     ikincil yazı
+     --text      birincil yazı (uzay grisi)           --heading   başlık yazısı (bir ton koyu)
+     --muted     ikincil yazı
+   Uzay grisi
+     --uzay      üst çubuk, alt bilgi ve uzay grisi vitrin bandının zemini; .uzay-kapsam içinde
+                 yazı ve vurgu açık tonlara döner (lacivert vurgu açık laciverte)
    Vurgu (tek vurgu rengi: lacivert)
      --accent    bağlantı, seçili öğe, simge          --accent-ink  --accent zemini üstündeki yazı
      --primary   dolu birincil düğme zemini           --primary-ink / --primary-hover
@@ -21,6 +25,10 @@
      --ok --warn --bad (+ -ink: o renk zemin olduğunda üstündeki yazı)
    Tab kağıdı (alphaTab)
      --sheet  --sheet-ink  --sheet-line  --sheet-muted  --sheet-cursor
+   Bantlar (apple.com gibi tam genişlikte, sırayla beyaz / açık gri bölümler)
+     --band      gri bant zemini            --panel-on-band  gri bant içindeki kart zemini
+     --vitrin    lacivert vitrin bandı (iki modda da koyu; içinde yazı ve vurgu açık tonlara döner)
+     --nav-h     üst gezinme çubuğunun yüksekliği (yapışkan öğeler bunun altına oturur)
    Ölçüler
      --radius-card  --radius-control  --shadow-pop (açılır menü)  --shadow-seg
    Mod: sistem tercihine uyar (prefers-color-scheme). İleride bir seçici eklenirse
@@ -37,8 +45,18 @@
   --elevated: #ffffff;
   --header: rgb(255 255 255 / 0.82);
 
-  --text: #1d1d1f;
-  --muted: #636366;
+  /* Yazı: uzay grisi (başlıklar bir ton koyu) */
+  --text: #3a3a3c;
+  --heading: #2c2c2e;
+  --muted: #6e6e73;
+
+  /* Uzay grisi yüzeyler: üst çubuk, alt bilgi ve vitrin bandı (iki modda da) */
+  --uzay: #2c2c2e;
+
+  --band: #f5f5f7;
+  --panel-on-band: #ffffff;
+  --vitrin: #0b1f4f;
+  --nav-h: 3rem;
 
   --accent: #1f3a93;
   --accent-ink: #ffffff;
@@ -59,7 +77,8 @@
   --sheet-muted: #636366;
   --sheet-cursor: #1f3a93;
 
-  --radius-card: 1.125rem;
+  --radius-card: 1.25rem;
+  --radius-tile: 1.75rem;
   --radius-control: 0.625rem;
   --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.18), 0 0 0 1px rgb(0 0 0 / 0.05);
   --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.04);
@@ -79,7 +98,11 @@
     --elevated: #3a3a3c;
     --header: rgb(28 28 30 / 0.82);
     --text: #f5f5f7;
+    --heading: #ffffff;
     --muted: #aeaeb2;
+    --band: #131315;
+    --panel-on-band: #2c2c2e;
+    --vitrin: #0b1f4f;
     --accent: #8fa9ff;
     --accent-ink: #0a1a45;
     --primary: #2f54c4;
@@ -112,7 +135,11 @@
   --elevated: #3a3a3c;
   --header: rgb(28 28 30 / 0.82);
   --text: #f5f5f7;
+  --heading: #ffffff;
   --muted: #aeaeb2;
+  --band: #131315;
+  --panel-on-band: #2c2c2e;
+  --vitrin: #0b1f4f;
   --accent: #8fa9ff;
   --accent-ink: #0a1a45;
   --primary: #2f54c4;
@@ -143,6 +170,7 @@
   --color-seg: var(--seg);
   --color-elevated: var(--elevated);
   --color-text: var(--text);
+  --color-heading: var(--heading);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
@@ -154,8 +182,10 @@
   --color-warn-ink: var(--warn-ink);
   --color-bad: var(--bad);
   --color-bad-ink: var(--bad-ink);
+  --color-band: var(--band);
   /* Sistem yazı tipi: Apple cihazlarda San Francisco, diğerlerinde Inter (optik boyutlu) */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", var(--font-inter), "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", var(--font-inter), Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", var(--font-inter), Inter, "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", var(--font-geist-mono), Menlo, Consolas, monospace;
 }
 
@@ -163,20 +193,42 @@ html {
   background: var(--bg);
 }
 
+html {
+  /* Tam genişlikteki bantlar dikey kaydırma çubuğu kadar taşabilir; yatay kaydırma çıkmasın */
+  overflow-x: clip;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
+  /* apple.com gövde yazısı: 17 px, hafif sıkı */
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.012em;
   font-optical-sizing: auto;
   text-rendering: optimizeLegibility;
+  overflow-x: clip;
 }
 
-/* Başlıklar: büyük başlıklarda sıkı harf aralığı */
+/* Başlıklar: Display kesimi, büyük başlıklarda sıkı harf aralığı */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+@layer base {
+  h1,
+  h2,
+  h3 {
+    color: var(--heading);
+  }
+}
 h1,
 h2 {
   letter-spacing: -0.022em;
 }
 h3 {
-  letter-spacing: -0.01em;
+  letter-spacing: -0.012em;
 }
 
 ::selection {
@@ -233,10 +285,10 @@ select option {
     -webkit-backdrop-filter: saturate(180%) blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
   }
-  /* Kart: zeminden bir ton farklı katman, gölgesiz, ince kenar */
+  /* Kart: zeminden bir ton farklı katman, gölgesiz; kenar neredeyse görünmez (durum renkleri için yer tutar) */
   .card {
     background: var(--panel);
-    border: 1px solid var(--line);
+    border: 1px solid color-mix(in srgb, var(--ink) 5%, transparent);
     border-radius: var(--radius-card);
   }
   /* Birincil düğme: dolu lacivert, hap biçimi */
@@ -278,6 +330,160 @@ select option {
   .bar-fill {
     background: var(--primary);
   }
+  /* ── apple.com dili: bantlar, dev başlıklar, metin bağlantılar, döşemeler ── */
+
+  /* Bant: sayfa kabının dışına taşan, tam genişlikte bölüm (içerik kabın içinde kalır) */
+  .bant {
+    margin-inline: calc(50% - 50vw);
+    padding-inline: calc(50vw - 50%);
+    padding-block: 4.5rem;
+  }
+  /* Sayfanın son bandı alt bilgiye yapışır (main'in alt boşluğunu geri alır) */
+  main > :last-child > .bant:last-child,
+  main > .bant:last-child {
+    margin-bottom: -5rem;
+  }
+  /* Sayfanın ilk bandı üst çubuğa yapışır (main'in üst boşluğunu geri alır) */
+  .bant-bas {
+    margin-top: -2rem;
+  }
+  .bant-beyaz {
+    background: var(--bg);
+  }
+  .bant-gri {
+    background: var(--band);
+    --panel: var(--panel-on-band);
+  }
+  /* Uzay grisi kapsam: üst çubuk, alt bilgi, uzay grisi bant. Renk değişkenleri koyu zemine göre döner. */
+  .uzay-kapsam {
+    color-scheme: dark;
+    --bg: var(--uzay);
+    --band: #242426;
+    --panel: rgb(255 255 255 / 0.07);
+    --panel-2: rgb(255 255 255 / 0.12);
+    --panel-on-band: rgb(255 255 255 / 0.07);
+    --elevated: #3a3a3c;
+    --header: rgb(44 44 46 / 0.86);
+    --line: rgb(255 255 255 / 0.14);
+    --ink: #ffffff;
+    --text: #f5f5f7;
+    --heading: #ffffff;
+    --muted: #aeaeb2;
+    --accent: #a9bfff;
+    --accent-ink: #0a1a45;
+    --primary: #2f54c4;
+    --primary-ink: #ffffff;
+    --primary-hover: #3a60d4;
+    --seg: #636366;
+    color: var(--text);
+  }
+  .bant-uzay {
+    background: var(--uzay);
+  }
+  /* Lacivert vitrin bandı: içindeki bütün renk değişkenleri açık tonlara döner */
+  .bant-koyu {
+    color-scheme: dark;
+    background: radial-gradient(120% 90% at 50% 0%, #17337d 0%, var(--vitrin) 55%, #0c1530 100%);
+    --text: #f5f5f7;
+    --heading: #ffffff;
+    --muted: #b8c1db;
+    --accent: #a9bfff;
+    --ink: #ffffff;
+    --line: rgb(255 255 255 / 0.14);
+    --panel: rgb(255 255 255 / 0.08);
+    --panel-2: rgb(255 255 255 / 0.12);
+    --primary: #ffffff;
+    --primary-ink: #0b1f4f;
+    --primary-hover: #e6ebf7;
+    color: var(--text);
+  }
+  /* Yalnız tam genişlik (zemin vermeden) */
+  .tam {
+    margin-inline: calc(50% - 50vw);
+    padding-inline: calc(50vw - 50%);
+  }
+  /* İnce şerit (apple.com'un üstteki duyuru şeridi gibi): günlük görevler */
+  .serit {
+    margin-inline: calc(50% - 50vw);
+    padding-inline: calc(50vw - 50%);
+    background: var(--band);
+    --panel: var(--panel-on-band);
+  }
+
+  /* Dev başlık (ana başlık 48–80 px), büyük başlık ve alt başlık */
+  .baslik-dev {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 2rem + 3.2vw, 5rem);
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .baslik-buyuk {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3.5rem);
+    line-height: 1.07;
+    font-weight: 600;
+    letter-spacing: -0.028em;
+  }
+  .baslik-orta {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: -0.024em;
+  }
+  .alt-baslik {
+    font-family: var(--font-display);
+    font-size: clamp(1.1875rem, 1rem + 0.6vw, 1.75rem);
+    line-height: 1.2;
+    font-weight: 400;
+    letter-spacing: -0.012em;
+  }
+
+  /* Metin bağlantı: "Başla ›" — lacivert, çizgisiz; üzerine gelince altı çizili */
+  .metin-bag {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2em;
+    color: var(--accent);
+    font-weight: 400;
+    border-radius: 0.375rem;
+  }
+  .metin-bag:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  /* Döşeme: büyük yuvarlatılmış kart; başlık + kısa metin + bağlantı, altında görsel alanı */
+  .doseme {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    text-align: center;
+    background: var(--panel);
+    border-radius: var(--radius-tile);
+  }
+
+  /* Uygulama simgesi gibi görsel: lacivert zemin, beyaz simge */
+  .simge-kutu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: linear-gradient(160deg, #2a4fbf 0%, #1f3a93 45%, #0b1f4f 100%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  }
+
+  /* Mega menü: tam genişlikte açılır panel, yumuşak açılma */
+  .mega {
+    animation: mega-ac 0.24s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  .mega-perde {
+    animation: perde-ac 0.24s ease;
+  }
+
   /* Bölüm etiketi: küçük, yarı kalın, ikincil renk (iOS bölüm başlığı) */
   .eyebrow {
     font-size: 0.8125rem;
@@ -311,9 +517,32 @@ select option {
   font-display: block;
 }
 
+@keyframes mega-ac {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes perde-ac {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn-primary,
   .btn-secondary {
     transition: none;
+  }
+  .mega,
+  .mega-perde {
+    animation: none;
   }
 }

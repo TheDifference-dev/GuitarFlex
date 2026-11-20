@@ -9,6 +9,7 @@ import { chapterLevels, isAcoustic } from "@/content/seviyeler";
 import SeviyeRozeti from "./SeviyeRozeti";
 import Cekmece from "./site/Cekmece";
 import Kirinti from "./site/Kirinti";
+import { Bant, Eylemler, HapBag } from "./site/Vitrin";
 import KursSecici, { type SeciciKurs } from "./site/KursSecici";
 import { AILE_ADI, AILE_ADRESI, type KursAilesi } from "@/lib/katalog";
 import { useProgress, type Progress, type StepProgress } from "@/lib/progress";
@@ -199,47 +200,51 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
   };
 
   return (
-    <div className="space-y-6">
-      {/* Kurs başı: kırıntı, kurs seçici, ilerleme ve sıradaki ders */}
-      <header className="space-y-4">
-        <Kirinti halkalar={[{ href: AILE_ADRESI[aile], label: AILE_ADI[aile] }, { label: course.cardTitle ?? course.title }]} />
-        {kurslar.length > 1 ? <KursSecici baslik={course.title} slug={course.slug} kurslar={kurslar} /> : <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{course.title}</h1>}
-        {course.description && <p className="max-w-3xl text-muted">{course.description}</p>}
-        <div className="card flex flex-wrap items-center gap-x-6 gap-y-3 p-4">
-          <div className="min-w-[12rem] flex-1">
-            <div className="flex justify-between gap-3 text-xs font-medium text-muted">
-              <span>
-                İlerleme <span className="font-semibold text-text">%{yuzde}</span>
+    <div>
+      {/* Kurs başı: kırıntı, ortalı büyük başlık (kurs seçici), ilerleme ve sıradaki ders */}
+      <Bant ton="beyaz" bas className="pb-12 pt-10">
+        <Kirinti halkalar={[{ href: AILE_ADRESI[aile], label: AILE_ADI[aile] }, { label: course.cardTitle ?? course.title }]} className="mb-8 justify-center" />
+        <div className="mx-auto max-w-[980px] text-center">
+          <p className="text-[17px] font-semibold text-muted sm:text-[19px]">{AILE_ADI[aile]}</p>
+          <div className="mt-2 flex justify-center">
+            {kurslar.length > 1 ? <KursSecici baslik={course.title} slug={course.slug} kurslar={kurslar} /> : <h1 className="baslik-buyuk text-balance">{course.title}</h1>}
+          </div>
+          {course.description && <p className="alt-baslik mx-auto mt-4 max-w-[760px] text-pretty text-muted">{course.description}</p>}
+          <Eylemler>
+            {siradaki ? (
+              <HapBag href={dersHref(siradaki.l)} title={siradaki.l.title} className="max-w-full">
+                <span className="shrink-0">{tamam ? "Devam et" : "Başla"}:</span>
+                <span className="min-w-0 truncate sm:max-w-[18rem]">{siradaki.l.title}</span>
+              </HapBag>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-full bg-ok/15 px-4 py-2.5 font-semibold text-ok">
+                <Check size={16} /> Kurs tamamlandı
               </span>
-              <span className="tabular-nums">
-                {tamam}/{hepsi.length} · {hepsi.length - tamam} kaldı
-              </span>
-            </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/10">
+            )}
+            <button type="button" onClick={() => setTab("rehber")} className="metin-bag text-[19px] sm:text-[21px]">
+              Rehberi oku <span aria-hidden>›</span>
+            </button>
+          </Eylemler>
+          <div className="mx-auto mt-8 max-w-sm">
+            <div className="h-1 overflow-hidden rounded-full bg-ink/10" role="progressbar" aria-valuenow={yuzde} aria-valuemin={0} aria-valuemax={100} aria-label="Kurs ilerlemesi">
               <div className="bar-fill h-full rounded-full" style={{ width: `${yuzde}%` }} />
             </div>
-          </div>
-          {siradaki && (
-            <p className="text-sm text-muted">
-              Mevcut bölüm: <span className="font-semibold text-text">{siradaki.c.code}</span>
+            <p className="mt-2 text-xs tabular-nums text-muted">
+              %{yuzde} · {tamam}/{hepsi.length} ders · {hepsi.length - tamam} kaldı
+              {siradaki && (
+                <>
+                  {" "}
+                  · Mevcut bölüm <span className="font-semibold text-text">{siradaki.c.code}</span>
+                </>
+              )}
             </p>
-          )}
-          {siradaki ? (
-            <Link href={dersHref(siradaki.l)} className="btn-primary w-full min-w-0 px-5 py-2.5 text-sm sm:w-auto" title={siradaki.l.title}>
-              <PlayCircle size={16} className="shrink-0" />
-              <span className="shrink-0 whitespace-nowrap">{tamam ? "Devam et" : "Başla"}:</span>
-              <span className="min-w-0 truncate sm:max-w-[14rem]">{siradaki.l.title}</span>
-            </Link>
-          ) : (
-            <span className="flex items-center gap-1.5 rounded-full bg-ok/15 px-3.5 py-2 text-sm font-semibold text-ok">
-              <Check size={16} /> Kurs tamamlandı
-            </span>
-          )}
+          </div>
         </div>
-      </header>
+      </Bant>
 
+      <Bant ton="gri" className="pt-10">
       {/* Mobil: bölüm seçimi yapışkan çubukta, liste çekmecede */}
-      <div className="sticky top-[3.6rem] z-20 -mx-4 border-y border-ink/[0.07] bg-bg/85 px-4 py-2 sm:-mx-6 sm:px-6 backdrop-blur lg:hidden">
+      <div className="sticky top-12 z-20 -mx-4 mb-6 border-y border-ink/[0.07] bg-bg/85 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
         <button type="button" onClick={() => setCekmece(true)} className="flex w-full items-center gap-2 text-left text-sm font-semibold">
           <ListTree size={16} className="shrink-0 text-accent" />
           <span className="min-w-0 flex-1 truncate">
@@ -255,13 +260,13 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
       {/* Sol panel */}
-      <aside className="hidden h-fit card p-3 lg:sticky lg:top-24 lg:block lg:max-h-[calc(100vh-7rem)] lg:overflow-auto">{panel(false)}</aside>
+      <aside className="hidden h-fit card p-3 lg:sticky lg:top-16 lg:block lg:max-h-[calc(100vh-5rem)] lg:overflow-auto">{panel(false)}</aside>
 
       {/* Ana alan */}
       <div className="min-w-0 space-y-8">
         {tab === "egzersiz" && (
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-[28px] font-semibold leading-tight tracking-tight">
               Bölüm {current.number} – {current.title}
             </h2>
             <span className="text-sm font-medium text-muted">
@@ -357,6 +362,7 @@ export default function CourseView({ course, image, kurslar = [], aile }: { cour
         )}
       </div>
       </div>
+      </Bant>
     </div>
   );
 }

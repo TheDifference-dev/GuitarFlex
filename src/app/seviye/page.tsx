@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Kirinti from "@/components/site/Kirinti";
+import { Bant, HapBag, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import { SeviyeKartlari, type SeviyeOzeti } from "@/components/SeviyeYolu";
 import { LEVELS } from "@/content/seviyeler";
 import { getSeviyeYolu } from "@/lib/seviye";
@@ -21,17 +21,24 @@ export default async function SeviyeYoluPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <header className="max-w-3xl">
-        <Kirinti halkalar={[{ href: "/elektro", label: "Elektro Gitar" }, { label: "Seviye Yolu" }]} />
-        <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Seviye Yolu</h1>
-        <p className="mt-2 text-muted">
-          Kurslardaki alt bölümler beş seviyeye ayrıldı. Kurs kurs ilerleyebilir ya da bir seviyenin teknik, klavye, ritim ve teori derslerini birlikte
-          çalışabilirsin. Kilit yok; seviyeyi bitirmek için o seviyedeki tablı derslerin ve Okuma, Kulak, Ritim yolu adımlarının en az %70&apos;ini
-          tamamla.
+    <div>
+      <SayfaBasi
+        kirinti={[{ href: "/elektro", label: "Elektro Gitar" }, { label: "Seviye Yolu" }]}
+        baslik="Seviye Yolu"
+        alt="Beş seviye, tek yol. Bir seviyenin teknik, klavye, ritim ve teori derslerini birlikte çalış."
+      >
+        <HapBag href="/seviye/L1">L1&apos;den başla</HapBag>
+        <MetinBag href="/nasil-calismaliyim" buyuk>
+          Seviyeni bul
+        </MetinBag>
+      </SayfaBasi>
+      <Bant ton="gri" className="pt-12">
+        <p className="mx-auto mb-10 max-w-[820px] text-center text-muted">
+          Kurslardaki alt bölümler beş seviyeye ayrıldı. Kurs kurs ilerleyebilir ya da seviyece çalışabilirsin. Kilit yok; seviyeyi bitirmek için o
+          seviyedeki tablı derslerin ve Okuma, Kulak, Ritim yolu adımlarının en az %70&apos;ini tamamla.
         </p>
-      </header>
-      <SeviyeKartlari items={items} />
+        <SeviyeKartlari items={items} />
+      </Bant>
     </div>
   );
 }

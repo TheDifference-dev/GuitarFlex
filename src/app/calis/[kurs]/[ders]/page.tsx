@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Lightbulb, Music } from "lucide-react";
 import LessonPractice from "@/components/LessonPractice";
+import { Bant } from "@/components/site/Vitrin";
 import { DersAltGezinme, DersUstGezinme } from "@/components/site/DersGezinme";
 import { kursAnahatti } from "@/lib/katalog";
 import { flatLessons, lessonKey } from "@/content/courses";
@@ -37,18 +38,19 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         <DersUstGezinme anahat={anahat} dersId={lesson.id} />
       </div>
 
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{lesson.title}</h1>
-          {lesson.description && <p className="mt-1 max-w-3xl text-muted">{lesson.description}</p>}
+      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 pt-4">
+        <div className="min-w-0">
+          <p className="text-[17px] font-semibold text-muted">{course.cardTitle ?? course.title}</p>
+          <h1 className="baslik-orta mt-1 text-balance !text-[clamp(2rem,1.5rem+1.6vw,3rem)]">{lesson.title}</h1>
+          {lesson.description && <p className="mt-3 max-w-3xl text-pretty text-[19px] leading-snug text-muted">{lesson.description}</p>}
         </div>
-        <div className="flex gap-2 text-sm font-semibold">
+        <div className="flex gap-2 text-sm">
           {(lesson.tex || lesson.tabFile) && (
-            <span className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5">
+            <span className="rounded-full bg-ink/[0.06] px-4 py-1.5 font-semibold tabular-nums">
               {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
             </span>
           )}
-          <span className="rounded-full bg-accent/15 px-3.5 py-1.5 text-accent">Toplam: {lesson.minutes}dk</span>
+          <span className="rounded-full bg-accent/10 px-4 py-1.5 font-semibold text-accent">Toplam: {lesson.minutes}dk</span>
         </div>
       </header>
 
@@ -86,11 +88,12 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         guitarProgram={gitarProgrami(lesson.tips, course.slug)}
       />
 
+      <Bant ton="gri" className="mt-12 space-y-8 pt-12">
       {(theory.length > 0 || !!lesson.tips?.length) && (
         <div className="grid gap-4 md:grid-cols-2">
           {theory.length > 0 && (
-            <section className="card p-5">
-              <h2 className="flex items-center gap-2 font-semibold">
+            <section className="card p-6">
+              <h2 className="flex items-center gap-2 text-[21px] font-semibold">
                 <Music size={18} className="text-accent" /> Müzik Bilgisi
               </h2>
               <ul className="mt-2 space-y-2 text-sm text-muted">
@@ -101,8 +104,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
             </section>
           )}
           {!!lesson.tips?.length && (
-            <section className="card p-5">
-              <h2 className="flex items-center gap-2 font-semibold">
+            <section className="card p-6">
+              <h2 className="flex items-center gap-2 text-[21px] font-semibold">
                 <Lightbulb size={18} className="text-accent" /> İpuçları
               </h2>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
@@ -116,6 +119,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
       )}
 
       <DersAltGezinme anahat={anahat} dersId={lesson.id} />
+      </Bant>
     </div>
   );
 }

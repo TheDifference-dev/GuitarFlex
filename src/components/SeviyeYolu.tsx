@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight, Circle, Clock } from "lucide-react";
+import { CheckCircle2, ChevronRight, Circle, Clock } from "lucide-react";
 import type { Level } from "@/content/types";
 import {
   BITIRME_ORANI,
@@ -16,6 +16,7 @@ import {
   type SeviyeYolu,
 } from "@/content/seviyeler";
 import { useProgress, type Progress } from "@/lib/progress";
+import { Bant, HapBag, MetinBag, SayfaBasi } from "./site/Vitrin";
 
 // Seviye Yolu (Müfredat Spec v2.2 §10). Veri sunucuda kurulur (src/lib/seviye.ts);
 // ilerleme tarayıcıdaki kayıttan (localStorage) burada sayılır. Kilit yok, yalnız öneri ve ilerleme.
@@ -199,36 +200,26 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
   const yDone = stepDone(p, ySteps);
 
   return (
-    <div className="space-y-8">
-      <nav className="flex flex-wrap items-center gap-1 text-sm text-muted">
-        <Link href="/seviye" className="font-semibold text-accent hover:underline">
-          Seviye Yolu
-        </Link>
-        <ChevronRight size={14} /> {level} {meta.ad}
-      </nav>
-
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="max-w-3xl">
-          <p className="eyebrow">Seviye Yolu · Elektro Gitar</p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
-            <span className="text-accent">{level}</span> {meta.ad}
-          </h1>
-          <p className="mt-2 text-muted">{meta.tanim}</p>
-        </div>
-        <div className="flex gap-2 text-sm">
-          {prev && (
-            <Link href={`/seviye/${prev}`} className="btn-secondary px-4 py-2">
-              <ChevronLeft size={16} /> {prev}
-            </Link>
-          )}
-          {next && (
-            <Link href={`/seviye/${next}`} className="btn-secondary px-4 py-2">
-              {next} <ChevronRight size={16} />
-            </Link>
-          )}
-        </div>
-      </header>
-
+    <div>
+      <SayfaBasi
+        kirinti={[{ href: "/seviye", label: "Seviye Yolu" }, { label: `${level} ${meta.ad}` }]}
+        ust={`Seviye Yolu · ${level}`}
+        baslik={meta.ad}
+        alt={meta.tanim}
+      >
+        {prev && (
+          <MetinBag href={`/seviye/${prev}`} buyuk geri>
+            {prev} {SEVIYE[prev].ad}
+          </MetinBag>
+        )}
+        <HapBag href="#eksen-technique">Derslere geç</HapBag>
+        {next && (
+          <MetinBag href={`/seviye/${next}`} buyuk>
+            {next} {SEVIYE[next].ad}
+          </MetinBag>
+        )}
+      </SayfaBasi>
+      <Bant ton="gri" className="space-y-12 pt-12">
       {/* Seviye özeti: eksen başına tablı ders ve bitirme koşulu (§3) */}
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="card p-5">
@@ -297,7 +288,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
       {data.yollar.length ? (
         <section className="space-y-3">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Yol adımları</h2>
+            <h2 className="text-[28px] font-semibold leading-tight tracking-tight">Yol adımları</h2>
             <p className="text-sm text-muted">Okuma, Kulak ve Ritim yollarında bu seviyedeki adımlar; geçilen / toplam.</p>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
@@ -337,7 +328,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
       {/* 1. Kurslardaki etiketli alt bölümler, eksene göre */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Kurslardan alt bölümler</h2>
+          <h2 className="text-[28px] font-semibold leading-tight tracking-tight">Kurslardan alt bölümler</h2>
           <p className="text-sm text-muted">Önce temel beceriler, sonra onların üstüne kurulanlar; eşitlikte kurs sırası.</p>
         </div>
         <Gruplar groups={data.groups} p={p} bos="Bu eksende bu seviyeye ait alt bölüm yok." />
@@ -345,7 +336,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
 
       {/* 2. Ek kurs ve Stil kursu */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold tracking-tight">Ek kurs</h2>
+        <h2 className="text-[28px] font-semibold leading-tight tracking-tight">Ek kurs</h2>
         {data.ekler ? (
           <Gruplar groups={data.ekler} p={p} bos="Ek kursta bu eksende bu seviyeye ait alt bölüm yok." />
         ) : (
@@ -353,7 +344,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
         )}
         {data.stiller ? (
           <>
-            <h2 className="pt-2 text-2xl font-bold tracking-tight">Stil kursu</h2>
+            <h2 className="pt-2 text-[28px] font-semibold leading-tight tracking-tight">Stil kursu</h2>
             <Gruplar groups={data.stiller} p={p} bos="Stil kursunda bu eksende bu seviyeye ait alt bölüm yok." />
           </>
         ) : (
@@ -363,7 +354,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
 
       {/* 3. Seviye etüdü */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold tracking-tight">Seviye etüdü</h2>
+        <h2 className="text-[28px] font-semibold leading-tight tracking-tight">Seviye etüdü</h2>
         {data.etut?.length ? (
           <div className="space-y-2">
             {data.etut.map((r) => (
@@ -374,6 +365,7 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
           <Yakinda title={`Etüt ${meta.etut}`} text="Seviyenin dört ekseninden becerileri bir araya getiren, formlu ve üç tempo turlu uzun parça." />
         )}
       </section>
+      </Bant>
     </div>
   );
 }

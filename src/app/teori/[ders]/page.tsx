@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { SayfaBasi } from "@/components/site/Vitrin";
 import { notFound } from "next/navigation";
 import { THEORY, getLesson } from "@/content/theory";
 import FretboardExplorer from "@/components/FretboardExplorer";
@@ -20,26 +20,16 @@ export default async function LessonPage(props: PageProps<"/teori/[ders]">) {
 
   return (
     <article className="space-y-6">
-      <nav className="text-sm text-muted">
-        <Link href="/teori" className="hover:text-accent">
-          Teori
-        </Link>{" "}
-        / {lesson.title}
-      </nav>
-      <header>
-        <p className="eyebrow">Seviye {lesson.level}</p>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{lesson.title}</h1>
-        <p className="mt-1 text-muted">{lesson.summary}</p>
-      </header>
+      <SayfaBasi kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: lesson.title }]} ust={`Seviye ${lesson.level}`} baslik={lesson.title} alt={lesson.summary} boyut="buyuk" />
 
-      <div className="max-w-3xl space-y-4 leading-relaxed">
+      <div className="mx-auto max-w-[760px] space-y-4 text-[19px] leading-relaxed">
         {lesson.body.map((p) => (
           <p key={p}>{p}</p>
         ))}
       </div>
 
       {lesson.table && (
-        <div className="max-w-3xl overflow-x-auto card">
+        <div className="mx-auto max-w-[760px] overflow-x-auto card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line text-muted">
               <tr>
@@ -66,8 +56,8 @@ export default async function LessonPage(props: PageProps<"/teori/[ders]">) {
       )}
 
       {lesson.explore && (
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Sapta incele</h2>
+        <section className="space-y-3 pt-6">
+          <h2 className="baslik-orta text-center">Sapta incele</h2>
           <FretboardExplorer initialSet={lesson.explore.set} initialRoot={lesson.explore.root} />
         </section>
       )}

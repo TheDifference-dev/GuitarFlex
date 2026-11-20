@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Katalog, { type YolKarti } from "@/components/site/Katalog";
-import Kirinti from "@/components/site/Kirinti";
+import { Bant, HapBag, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import { assetUrl, getCourses } from "@/lib/courses";
 import { kursKarti } from "@/lib/katalog";
 import { getYol, YOLLAR } from "@/lib/yollar";
@@ -21,15 +21,20 @@ export default async function CatalogPage() {
   ).filter((y): y is YolKarti => !!y);
   const ders = kartlar.reduce((n, k) => n + k.ders, 0);
   return (
-    <div className="space-y-6">
-      <header>
-        <Kirinti halkalar={[{ label: "Tüm Kurslar" }]} />
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Tüm Kurslar</h1>
-        <p className="mt-1 max-w-3xl text-muted">
-          {kartlar.length} kurs, {ders} ders. Hiçbiri kilitli değil: bir rehberle sırayla ilerle ya da istediğin tekniğe doğrudan geç.
-        </p>
-      </header>
-      <Katalog kartlar={kartlar} yollar={yollar} />
+    <div>
+      <SayfaBasi
+        kirinti={[{ label: "Tüm Kurslar" }]}
+        baslik="Tüm Kurslar"
+        alt={`${kartlar.length} kurs, ${ders} ders. Hiçbiri kilitli değil: bir rehberle sırayla ilerle ya da istediğin tekniğe doğrudan geç.`}
+      >
+        <HapBag href="/nasil-calismaliyim">Seviyeni seç</HapBag>
+        <MetinBag href="/seviye" buyuk>
+          Seviye Yolu
+        </MetinBag>
+      </SayfaBasi>
+      <Bant ton="gri" className="pt-12">
+        <Katalog kartlar={kartlar} yollar={yollar} />
+      </Bant>
     </div>
   );
 }

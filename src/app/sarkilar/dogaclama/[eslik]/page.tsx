@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { SayfaBasi } from "@/components/site/Vitrin";
 import BackingView from "@/components/BackingView";
 import SongsNav from "@/components/SongsNav";
 import { BACKINGS } from "@/content/dogaclama";
@@ -18,23 +17,17 @@ export default async function BackingPage(props: PageProps<"/sarkilar/dogaclama/
   const backing = find(eslik);
   if (!backing) notFound();
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <SongsNav />
-      <nav className="flex items-center gap-1 text-sm text-muted">
-        <Link href="/sarkilar/dogaclama" className="font-semibold text-accent hover:underline">
-          Doğaçlama Çal
-        </Link>
-        <ChevronRight size={14} /> {backing.title}
-      </nav>
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{backing.title}</h1>
-          <p className="mt-1 text-muted">
-            {backing.style} · Ton: {backing.key} · {backing.chords}
-          </p>
-        </div>
-        <span className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm font-semibold">{backing.bpm} BPM</span>
-      </header>
+      <SayfaBasi
+        bas={false}
+        kirinti={[{ href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" }, { label: backing.title }]}
+        ust={`${backing.style} · ${backing.bpm} BPM`}
+        baslik={backing.title}
+        alt={`Ton: ${backing.key} · ${backing.chords}`}
+        boyut="buyuk"
+        className="!pb-6"
+      />
       <BackingView backing={backing} />
     </div>
   );

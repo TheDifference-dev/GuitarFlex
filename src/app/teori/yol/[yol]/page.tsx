@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import { notFound } from "next/navigation";
 import { getYol, yolOzeti, YOLLAR } from "@/lib/yollar";
 import YolSayfasi from "@/components/yol/YolSayfasi";
@@ -16,10 +16,11 @@ export default async function YolPage(props: PageProps<"/teori/yol/[yol]">) {
   const yol = await getYol(slug);
   if (!yol) {
     return (
-      <div className="space-y-3">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{tanim.ad}</h1>
-        <p className="text-muted">Bu yolun adımları kişisel içerik paketinde. Paket bulunamadı; <Link href="/teori" className="text-accent">Müzik Teorisi</Link> sayfasına dön.</p>
-      </div>
+      <SayfaBasi kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: tanim.ad }]} baslik={tanim.ad} alt="Bu yolun adımları kişisel içerik paketinde. Paket bulunamadı.">
+        <MetinBag href="/teori" buyuk>
+          Müzik Teorisi
+        </MetinBag>
+      </SayfaBasi>
     );
   }
   return <YolSayfasi yol={yolOzeti(yol)} />;

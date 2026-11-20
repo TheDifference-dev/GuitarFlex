@@ -7,7 +7,7 @@
 //   --guncelle             → masaüstü kısayolunun kullandığı mod: önce GitHub'dan güncelleme
 //                            çeker, gerekirse derler (bkz. guncelle.cjs), sonra açar
 
-const { app, BrowserWindow, Menu, shell, dialog } = require("electron");
+const { app, BrowserWindow, Menu, shell, dialog, nativeTheme } = require("electron");
 const { spawn, execFile } = require("node:child_process");
 const http = require("node:http");
 const net = require("node:net");
@@ -173,7 +173,8 @@ async function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    backgroundColor: "#0b1c4a",
+    // Açılış zemini sistem moduna uysun (sayfa yüklenene kadar görünen renk)
+    backgroundColor: nativeTheme.shouldUseDarkColors ? "#1C1C1E" : "#FFFFFF",
     title: APP_NAME,
     icon: fs.existsSync(ICON) ? ICON : undefined,
     autoHideMenuBar: false,

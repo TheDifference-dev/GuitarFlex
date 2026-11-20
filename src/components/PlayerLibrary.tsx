@@ -154,8 +154,8 @@ export default function PlayerLibrary() {
         {current ? (
           <>
             <header>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{current.title}</h1>
-              <p className="text-muted">{current.subtitle}</p>
+              <h1 className="baslik-orta">{current.title}</h1>
+              <p className="mt-1 text-muted">{current.subtitle}</p>
             </header>
             <TabPlayer source={current.source} />
           </>

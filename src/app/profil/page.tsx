@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Kirinti from "@/components/site/Kirinti";
+import { Bant, SayfaBasi } from "@/components/site/Vitrin";
 import ProgressDashboard, { type CourseInfo } from "@/components/ProgressDashboard";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { getCourses } from "@/lib/courses";
@@ -28,13 +28,15 @@ export default async function ProfilePage() {
     hedef: Object.fromEntries(flatLessons(c).filter((l) => !l.practice && l.minutes > 0).map((l) => [lessonKey(c.slug, l.id), l.minutes * 60])),
   }));
   return (
-    <div className="space-y-6">
-      <header>
-        <Kirinti halkalar={[{ label: "Profil" }]} />
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Profil</h1>
-        <p className="mt-1 text-muted">Günlük görevlerin, serin, madalyaların, başarımların ve kurs ilerlemen. Şimdilik bu bilgisayarda saklanır.</p>
-      </header>
-      <ProgressDashboard courses={info} oyun={oyun} kurslar={kurslar} />
+    <div>
+      <SayfaBasi
+        kirinti={[{ label: "Profil" }]}
+        baslik="Profil"
+        alt="Günlük görevlerin, serin, madalyaların, başarımların ve kurs ilerlemen. Şimdilik bu bilgisayarda saklanır."
+      />
+      <Bant ton="gri" className="pt-12">
+        <ProgressDashboard courses={info} oyun={oyun} kurslar={kurslar} />
+      </Bant>
     </div>
   );
 }

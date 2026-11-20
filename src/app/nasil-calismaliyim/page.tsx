@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Bant, SayfaBasi } from "@/components/site/Vitrin";
 import LevelPicker, { type LevelOption } from "@/components/LevelPicker";
 import { getCourses, getSiteTexts } from "@/lib/courses";
 
@@ -22,13 +23,13 @@ export default async function HowToPracticePage() {
   ];
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <header>
-        <p className="eyebrow">Çalışma Planı</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Gitarda hangi seviyedesin?</h1>
-        <p className="mt-1 text-muted">Seviyeni seç, sana uygun çalışma yoluna yönlendirelim.</p>
-      </header>
-      <LevelPicker elektro={elektro} akustik={akustik} />
+    <div>
+      <SayfaBasi kirinti={[{ label: "Çalışma Planı" }]} ust="Çalışma Planı" baslik="Gitarda hangi seviyedesin?" alt="Seviyeni seç, sana uygun çalışma yoluna yönlendirelim." />
+      <Bant ton="gri" className="pt-12">
+        <div className="mx-auto max-w-3xl">
+          <LevelPicker elektro={elektro} akustik={akustik} />
+        </div>
+      </Bant>
     </div>
   );
 }
