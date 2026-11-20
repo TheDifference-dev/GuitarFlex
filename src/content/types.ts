@@ -28,6 +28,11 @@ export type LessonKind = "drill" | "etut" | "okuma" | "quickstudy" | "transkrips
 /** Etüt formunun parçası */
 export type FormPart = "intro" | "A" | "B" | "bridge" | "A2";
 
+/** Çalışmanın kısmı (Egzersiz Yazım Standardı v2.3 §2, §5): A kalıp · A′ varyasyon · B uygulama · C birleştirme */
+export type PartName = "A" | "A′" | "B" | "C";
+/** Kısım: ad, ölçü aralığı (1'den başlar, kapsayıcı) ve kısmın işi (en çok 60 karakter) */
+export type LessonPart = { name: PartName; bars: [number, number]; focus: string };
+
 export type Lesson = Tags & {
   id: string;
   title: string;
@@ -79,6 +84,9 @@ export type Lesson = Tags & {
    *  görünüm düğmeleri kapanır · "tab" yalnız tab · "both" nota + tab (ör. ritim okuma). Verilmezse bugünkü varsayılan
    *  görünüm (tab; öğrenci düğmelerle değiştirebilir). */
   stave?: Stave;
+  /** Çalışmanın kısımları (Egzersiz Yazım Standardı v2.3 §5): ardışık, boşluksuz, son kısım son ölçüde biter.
+   *  Oynatıcı kısım kısım döngüye alabilir. Verilmezse çalışma tek parça gösterilir. */
+  parts?: LessonPart[];
 };
 
 /** Tab oynatıcı görünümü: yalnız nota, yalnız tab ya da ikisi birlikte */

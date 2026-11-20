@@ -100,14 +100,15 @@ for (const item of items) {
 }
 
 // ── Müfredat alanları (Spec v2.2 §4): level, axes, skills, kind, variant, ref, form, tempoRounds,
-// readBars, improvBars, hideTab, stave, chords. Etiketsiz içerikte hiçbir şey yazdırmaz.
+// readBars, improvBars, hideTab, stave, chords; parts (Egzersiz Yazım Standardı v2.3 §5). Etiketsiz içerikte hiçbir şey yazdırmaz.
 const LEVELS = new Set(["L1", "L2", "L3", "L4", "L5"]);
 const AXES = new Set(["technique", "fretboard", "rhythm", "theory_ear"]);
 const KINDS = new Set(["drill", "etut", "okuma", "quickstudy", "transkripsiyon", "kompozisyon", "resital"]);
 const VARIANTS = new Set(["reverse", "inversion", "permutation"]);
 const FORM_PARTS = new Set(["intro", "A", "B", "bridge", "A2"]);
 const STAVES = new Set(["score", "tab", "both"]);
-const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave", "chords"] as const;
+const PART_NAMES = new Set(["A", "A′", "B", "C"]);
+const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave", "chords", "parts"] as const;
 
 // Beceri sözlüğü: kişisel içerik köklerinde belgeler/mufredat/beceri-sozlugu.json (ilk bulunan)
 let skillKeys: Set<string> | null = null;
@@ -222,6 +223,29 @@ function lessonProblems(r: Row): { problems: string[]; warnings: string[] } {
     else {
       if (!l.tex && !l.tabFile && !l.ref) w.push("stave verilmiş ama dersin tabı yok");
       if (l.hideTab) w.push(`hideTab ile stave "${l.stave}" birlikte verilmemeli (transkripsiyon dersi yalnız ses olarak çalınır)`);
+    }
+  }
+  // parts (v2.3 §5): ardışık, boşluksuz, 1. ölçüden tabın son ölçüsüne; focus en çok 60 karakter
+  if (l.parts !== undefined) {
+    const parts = l.parts as unknown;
+    if (!Array.isArray(parts) || !parts.length) p.push("parts boş olmayan bir dizi olmalı");
+    else {
+      let next = 1;
+      parts.forEach((x: { name?: unknown; bars?: unknown; focus?: unknown }, i) => {
+        if (!x || !PART_NAMES.has(x.name as string)) p.push(`parts[${i}] adı geçersiz: ${JSON.stringify(x?.name)} (A, A′, B ya da C)`);
+        if (!isRange(x?.bars)) p.push(`parts[${i}] bars [başlangıç, bitiş] biçiminde iki pozitif tam sayı olmalı: ${JSON.stringify(x?.bars)}`);
+        else {
+          const [a, b] = x.bars as [number, number];
+          if (a !== next) p.push(`parts[${i}] ${a}. ölçüden başlıyor, ${next}. ölçüden başlamalı (boşluk ya da örtüşme)`);
+          if (b < a) p.push(`parts[${i}] bitişi başlangıcından önce: ${JSON.stringify(x.bars)}`);
+          next = b + 1;
+        }
+        if (typeof x?.focus !== "string" || !x.focus.trim()) p.push(`parts[${i}] focus boş olmayan bir metin olmalı`);
+        else if (x.focus.length > 60) p.push(`parts[${i}] focus ${x.focus.length} karakter (en çok 60)`);
+      });
+      const barCount = typeof l.tex === "string" ? l.tex.replace(/^\\tempo \d+ \. /, "").split("|").length : undefined;
+      if (barCount !== undefined && next - 1 !== barCount) p.push(`parts ${next - 1}. ölçüde bitiyor, tab ${barCount} ölçü`);
+      if (!l.tex && !l.tabFile && !l.ref) w.push("parts verilmiş ama dersin tabı yok");
     }
   }
   return { problems: p, warnings: w };
