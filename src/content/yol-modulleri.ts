@@ -91,4 +91,28 @@ export const MODUL_METIN: Record<string, Record<string, string[]>> = {
       "Yanlış yaptığın soruların açıklamasını oku ve o sesi gitarında çal. Duyduğunu sapta bulmak, kulak ve klavye bilgisini birlikte geliştirir.",
     ],
   },
+  okuma: {
+    "Porte ve Sol Anahtarı": [
+      "Porte beş çizgi ve dört aralıktan oluşur; notalar çizgilerin ya da aralıkların üstüne yazılır ve yukarı çıktıkça tizleşir. Sol anahtarı ikinci çizgiyi Sol yapar: alttan çizgiler Mi – Sol – Si – Re – Fa, aralıklar Fa – La – Do – Mi.",
+      "Portenin altına ya da üstüne taşan notalar kısa ek çizgilere yazılır. Diyez (#) notayı yarım ses yükseltir, bemol (♭) yarım ses alçaltır, natürel (♮) işareti arızayı kaldırır. Bir arıza, ölçünün sonuna kadar aynı yerdeki bütün notalara geçerlidir.",
+      "Anahtarın yanındaki donanım, parça boyunca hangi notaların diyezli ya da bemollü çalınacağını söyler: tek diyez (Fa#) Sol majör, iki diyez (Fa#, Do#) Re majör, tek bemol (Si♭) Fa majör, iki bemol (Si♭, Mi♭) Si♭ majördür.",
+    ],
+    "Gitarda Porte": [
+      "Gitar notası, sol anahtarının altındaki küçük 8 rakamının söylediği gibi yazıldığından bir oktav pes duyulur. Portenin alt çizgisindeki Mi, 4. telin 2. perdesidir; boş kalın Mi teli portenin altında üç ek çizginin de altına yazılır.",
+      "Açık pozisyonda (boş teller ve 1.–4. perdeler) her nota çoğunlukla tek yerde bulunur; Si notası hem boş 2. tel hem 3. telin 4. perdesidir. 5. pozisyon 5.–8. perdeleri, 7. pozisyon 7.–10. perdeleri kapsar: sol el bu dört perdede kalır, her parmak bir perdeye bakar.",
+      "Okurken önce donanıma bak, sonra notanın çizgi mi aralık mı olduğunu bul ve bildiğin bir referans notadan (Sol çizgisi, orta Si, ek çizgideki Do) sayarak ilerle.",
+    ],
+    "Ritim Sayımı": [
+      'Her vuruşu sayıyla say: "1 2 3 4". Sekizlikler vuruşu ikiye böler: "1 ve 2 ve". Onaltılıklar dörde böler: "1 e ve a". Notanın başladığı heceyi söyle, susta yalnız say.',
+      "Noktalı sekizlik + onaltılık vuruşu uzun–kısa böler (1 … a); onaltılık + noktalı sekizlik kısa–uzun böler (1 e …). Senkopta vurgu vuruş arasına (ve) kayar: sekizlik – dörtlük – sekizlik kalıbında 2. vuruşta yeni nota yoktur.",
+    ],
+    "Akor Şeması": [
+      "Akor şeması (chart) yalnız akorları ve süreleri gösterir. Her eğik çizgi (/) bir vuruştur; akor adı başladığı vuruşun üstüne yazılır ve yeni bir akor gelene kadar sürer.",
+      "Slash akor, bastaki notayı söyler: C/E, basta Mi olan Do akorudur; Am/G basta Sol olan La minördür. Slash akorlar çoğunlukla adım adım inen ya da çıkan bas yürüyüşleri kurar.",
+    ],
+    "Tekrar ve Yönlendirme": [
+      "|: ve :| arasındaki ölçüler iki kez çalınır. 1. son (volta 1) ilk geçişte çalınır; tekrarda atlanır ve 2. sonla devam edilir.",
+      "D.S. al Fine: segno işaretine (𝄋) dön, Fine yazan ölçüde bitir. D.S. al Coda: segno'ya dön, To Coda yazan ölçüden sonra Coda bölümüne (𝄌) atla. D.S. dönüşünde tekrar işaretleri yeniden alınmaz.",
+    ],
+  },
 };

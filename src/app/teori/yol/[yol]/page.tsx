@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getYol, YOLLAR } from "@/lib/yollar";
+import { getYol, yolOzeti, YOLLAR } from "@/lib/yollar";
 import YolSayfasi from "@/components/yol/YolSayfasi";
 
 export async function generateMetadata(props: PageProps<"/teori/yol/[yol]">): Promise<Metadata> {
@@ -22,5 +22,5 @@ export default async function YolPage(props: PageProps<"/teori/yol/[yol]">) {
       </div>
     );
   }
-  return <YolSayfasi yol={yol} />;
+  return <YolSayfasi yol={yolOzeti(yol)} />;
 }

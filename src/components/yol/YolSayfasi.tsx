@@ -7,14 +7,20 @@ import type { Yol } from "@/lib/alistirma/tipler";
 import { useProgress } from "@/lib/progress";
 import { MODUL_METIN } from "@/content/yol-modulleri";
 
-// Teori yolu: bölümler ve sırayla açılan adımlar. Bir adım, önceki adım geçilince açılır.
+// Teori yolu: bölümler ve sırayla açılan adımlar. Bir adım, önceki adım geçilince açılır; iskelet dışı ek
+// bölümlerin (serbest) ilk adımı her zaman açıktır.
 
 export default function YolSayfasi({ yol }: { yol: Yol }) {
   const progress = useProgress();
   const [sekme, setSekme] = useState(0);
   const sonuc = (kod: string) => progress.steps[`${yol.slug}/${kod}`];
   const gecilen = yol.adimlar.filter((a) => sonuc(a.kod)?.passed).length;
-  const acik = (i: number) => i === 0 || Boolean(sonuc(yol.adimlar[i - 1].kod)?.passed) || Boolean(sonuc(yol.adimlar[i].kod));
+  // Ek (serbest) bölümlerin ilk adımı önceki bölümü beklemeden açılır
+  const serbestIlk = (i: number) => {
+    const a = yol.adimlar[i];
+    return Boolean(yol.bolumler.find((b) => b.no === a.bolum)?.serbest) && yol.adimlar[i - 1]?.bolum !== a.bolum;
+  };
+  const acik = (i: number) => i === 0 || serbestIlk(i) || Boolean(sonuc(yol.adimlar[i - 1].kod)?.passed) || Boolean(sonuc(yol.adimlar[i].kod));
   const metin = MODUL_METIN[yol.slug]?.[yol.modul.sekmeler[sekme]] ?? [];
 
   return (

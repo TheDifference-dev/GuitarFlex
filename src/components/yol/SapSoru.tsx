@@ -15,9 +15,11 @@ type Props = {
   dogrular?: string[];
   kilitli?: boolean;
   onTik?: (s: number, f: number) => void;
+  /** Konum başına yazı (sırayla dokunmada dokunuş sırası: "2", "3·5") */
+  etiketler?: Record<string, string>;
 };
 
-export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik }: Props) {
+export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik, etiketler }: Props) {
   const [lo, hi] = sap.perde;
   const ilk = Math.max(lo, 1);
   const m = hi - ilk + 1;
@@ -80,7 +82,7 @@ export default function SapSoru({ sap, secili = [], dogrular, kilitli, onTik }: 
             else if (p?.tur === "referans") sinif = "fill-[var(--text)]";
             else if (p) sinif = "fill-[var(--muted)]";
             const goster = Boolean(sinif);
-            const etiket = p?.etiket ?? (dogrular && dogru && !p ? "✓" : yanlis ? "✕" : "");
+            const etiket = etiketler?.[k] ?? p?.etiket ?? (dogrular && dogru && !p ? "✓" : yanlis ? "✕" : "");
             return (
               <g
                 key={k}

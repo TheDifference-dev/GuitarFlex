@@ -13,6 +13,7 @@ import {
   type SeviyeGrubu,
   type SeviyeSatiri,
   type SeviyeVerisi,
+  type SeviyeYolu,
 } from "@/content/seviyeler";
 import { useProgress, type Progress } from "@/lib/progress";
 
@@ -32,6 +33,12 @@ const allRows = (v: SeviyeVerisi): SeviyeSatiri[] =>
 /** Tablı drill'ler: bitirme koşulunun temeli (§3) */
 const tabLessons = (rows: SeviyeSatiri[]) => rows.flatMap((r) => r.lessons.filter((d) => d.tab));
 
+/** Yol adımı geçildi mi (teori yolu kaydı: progress.steps["<yol>/<kod>"]) */
+const stepDone = (p: Progress, steps: string[]) => steps.filter((st) => p.steps[st]?.passed).length;
+const yolSteps = (yollar: SeviyeYolu[]) => yollar.flatMap((y) => y.adimlar.map((a) => a.step));
+/** Okuma, Kulak, Ritim yolu koşulu: bu seviyede adım yoksa koşul aranmaz */
+const yolOk = (p: Progress, steps: string[]) => !steps.length || stepDone(p, steps) / steps.length >= BITIRME_ORANI;
+
 function Bar({ value, total, goal }: { value: number; total: number; goal?: boolean }) {
   return (
     <div className="relative mt-1.5 h-1 overflow-hidden rounded-full bg-white/10">
@@ -43,7 +50,7 @@ function Bar({ value, total, goal }: { value: number; total: number; goal?: bool
 
 // ── /seviye: beş seviyenin özet kartları ────────────────────────────────────
 
-export type SeviyeOzeti = { level: Level; rows: number; lessons: number; tab: SeviyeDers[] };
+export type SeviyeOzeti = { level: Level; rows: number; lessons: number; tab: SeviyeDers[]; yolAdim: string[] };
 
 export function SeviyeKartlari({ items }: { items: SeviyeOzeti[] }) {
   const p = useProgress();
@@ -51,7 +58,8 @@ export function SeviyeKartlari({ items }: { items: SeviyeOzeti[] }) {
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((s) => {
         const tabDone = count(p, s.tab);
-        const ok = s.tab.length > 0 && tabDone / s.tab.length >= BITIRME_ORANI;
+        const yolDone = stepDone(p, s.yolAdim);
+        const ok = s.tab.length > 0 && tabDone / s.tab.length >= BITIRME_ORANI && yolOk(p, s.yolAdim);
         return (
           <Link key={s.level} href={`/seviye/${s.level}`} className="card group flex flex-col p-5 transition duration-300 hover:-translate-y-0.5 hover:border-white/15">
             <div className="flex items-baseline justify-between gap-3">
@@ -77,6 +85,17 @@ export function SeviyeKartlari({ items }: { items: SeviyeOzeti[] }) {
                 </span>
               </p>
               <Bar value={tabDone} total={s.tab.length} goal />
+              {s.yolAdim.length ? (
+                <>
+                  <p className="mt-2.5 flex justify-between text-xs font-medium text-muted">
+                    <span>Okuma, Kulak, Ritim adımı</span>
+                    <span className="tabular-nums">
+                      <span className="font-semibold text-text">{yolDone}</span> / {s.yolAdim.length} · %{pct(yolDone, s.yolAdim.length)}
+                    </span>
+                  </p>
+                  <Bar value={yolDone} total={s.yolAdim.length} goal />
+                </>
+              ) : null}
             </div>
           </Link>
         );
@@ -176,6 +195,8 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
   const etutLessons = data.etut?.flatMap((r) => r.lessons) ?? [];
   const etutDone = etutLessons.length > 0 && count(p, etutLessons) === etutLessons.length;
   const hedef = `%${BITIRME_ORANI * 100}`;
+  const ySteps = yolSteps(data.yollar);
+  const yDone = stepDone(p, ySteps);
 
   return (
     <div className="space-y-8">
@@ -252,7 +273,16 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
                 ({tabDone} / {tab.length})
               </span>
             </Kosul>
-            <Kosul yakinda>Okuma, Kulak ve Ritim yolu adımlarının en az {hedef}&apos;i geçildi · yakında</Kosul>
+            {ySteps.length ? (
+              <Kosul ok={yolOk(p, ySteps)}>
+                Okuma, Kulak ve Ritim yolu adımlarının en az {hedef}&apos;i geçildi{" "}
+                <span className="tabular-nums text-muted">
+                  ({yDone} / {ySteps.length})
+                </span>
+              </Kosul>
+            ) : (
+              <Kosul ok>Okuma, Kulak ve Ritim yollarında bu seviyeye ait adım yok</Kosul>
+            )}
             {data.etut?.length ? (
               <Kosul ok={etutDone}>Seviye etüdü {meta.etut}: %100 tempo turu</Kosul>
             ) : (
@@ -262,6 +292,47 @@ export function SeviyeSayfasi({ data }: { data: SeviyeVerisi }) {
           </ul>
         </div>
       </section>
+
+      {/* Okuma, Kulak, Ritim yolu adımları (bitirme koşulu §3) */}
+      {data.yollar.length ? (
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Yol adımları</h2>
+            <p className="text-sm text-muted">Okuma, Kulak ve Ritim yollarında bu seviyedeki adımlar; geçilen / toplam.</p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {data.yollar.map((y) => {
+              const steps = y.adimlar.map((a) => a.step);
+              const n = stepDone(p, steps);
+              const bolumler = [...new Set(y.adimlar.map((a) => a.bolum))];
+              return (
+                <Link key={y.slug} href={`/teori/yol/${y.slug}`} className="card p-4 transition hover:border-white/15 hover:bg-panel-2">
+                  <p className="flex items-baseline justify-between text-sm font-semibold">
+                    {y.ad}
+                    <span className="tabular-nums text-muted">
+                      <span className={n === steps.length ? "text-emerald-400" : "text-text"}>{n}</span> / {steps.length} adım
+                    </span>
+                  </p>
+                  <Bar value={n} total={steps.length} goal />
+                  <ul className="mt-3 space-y-1">
+                    {bolumler.map((b) => {
+                      const bs = y.adimlar.filter((a) => a.bolum === b).map((a) => a.step);
+                      return (
+                        <li key={b} className="flex justify-between gap-2 text-xs text-muted">
+                          <span className="truncate">{b}</span>
+                          <span className="shrink-0 tabular-nums">
+                            {stepDone(p, bs)} / {bs.length}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       {/* 1. Kurslardaki etiketli alt bölümler, eksene göre */}
       <section className="space-y-4">

@@ -6,11 +6,14 @@ import { Headphones, RotateCcw, Volume2 } from "lucide-react";
 import type { YolAdim } from "@/lib/alistirma/tipler";
 import { soruListesi, type Soru } from "@/lib/alistirma/sorular";
 import { cal, vurusPuani, vurusZamani } from "@/lib/alistirma/ritim";
-import { simdi } from "@/lib/ses";
+import { nota, simdi } from "@/lib/ses";
+import { perdeSes } from "@/lib/alistirma/muzik";
 import { saveStep } from "@/lib/progress";
 import SapSoru from "./SapSoru";
 import AkorKutusu from "./AkorKutusu";
 import RitimYazi from "./RitimYazi";
+import Porte from "./Porte";
+import AkorSemasi from "./AkorSemasi";
 
 type Sonuc = { puan: number; tam: boolean; vurus?: number };
 type Props = { yol: string; adim: YolAdim; sonraki?: { kod: string; ad: string }; geri?: string };
@@ -133,14 +136,15 @@ function SoruGoster({
           <h2 className="text-xl font-semibold">{soru.metin}</h2>
           {dinle}
         </div>
+        <Gorseller soru={soru} />
         {soru.sap ? <SapSoru sap={soru.sap} kilitli /> : null}
         {soru.diyagram ? (
           <div className="flex justify-center card p-4">
             <AkorKutusu sekil={soru.diyagram} boyut={150} />
           </div>
         ) : null}
-        <div className={`grid gap-2 ${soru.secenekler.some((o) => o.diyagram) ? "grid-cols-2 sm:grid-cols-4" : "sm:grid-cols-2"}`}>
-          {soru.secenekler.map((o) => {
+        <div className={`grid gap-2 ${soru.secenekler.some((o) => o.diyagram) ? "grid-cols-2 sm:grid-cols-4" : soru.secenekler.some((o) => o.ritim) ? "" : "sm:grid-cols-2"}`}>
+          {soru.secenekler.map((o, n) => {
             const dogru = cevaplandi && o.id === soru.dogru;
             const yanlis = cevaplandi && o.id === secim && o.id !== soru.dogru;
             return (
@@ -153,11 +157,62 @@ function SoruGoster({
                   dogru ? "border-emerald-500 bg-emerald-500/15" : yanlis ? "border-rose-500 bg-rose-500/15" : "border-line bg-panel hover:border-white/20"
                 } disabled:cursor-default`}
               >
-                {o.diyagram ? <AkorKutusu sekil={o.diyagram} /> : o.ad}
+                {o.diyagram ? (
+                  <AkorKutusu sekil={o.diyagram} />
+                ) : o.ritim ? (
+                  <span className="flex w-full items-center gap-3">
+                    <span className="w-6 text-sm font-semibold text-muted">{String.fromCharCode(65 + n)}</span>
+                    <RitimYazi desen={o.ritim} />
+                  </span>
+                ) : (
+                  o.ad
+                )}
               </button>
             );
           })}
         </div>
+        {geribildirim}
+      </div>
+    );
+  }
+
+  // Sırayla dokunma (ezgi, akor kökü): her dokunuş çalar ve sıradaki sesle karşılaştırılır; geri alma yok
+  if (soru.sirali) {
+    const { sesler, esit } = soru.sirali;
+    const uyar = (key: string, i: number) => {
+      const [t, f] = key.split(":").map(Number);
+      const m = perdeSes(t, f);
+      return esit === "ses" ? m === sesler[i] : (((m - sesler[i]) % 12) + 12) % 12 === 0;
+    };
+    const etiketler: Record<string, string> = {};
+    const ilk = soru.sap.noktalar.some((p) => p.tur === "kok") ? 2 : 1;
+    secili.forEach((key, i) => {
+      etiketler[key] = etiketler[key] ? `${etiketler[key]}·${i + ilk}` : String(i + ilk);
+    });
+    const tikSirali = (t: number, f: number) => {
+      if (cevaplandi || secili.length >= sesler.length) return;
+      nota(perdeSes(t, f), undefined, 1.2);
+      const yeni = [...secili, `${t}:${f}`];
+      setSecili(yeni);
+      if (yeni.length === sesler.length) {
+        const dogru = yeni.filter((key, i) => uyar(key, i)).length;
+        onCevap({ puan: dogru / sesler.length, tam: dogru === sesler.length });
+      }
+    };
+    const dogruDokunus = secili.filter((key, i) => uyar(key, i));
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">{soru.metin}</h2>
+          {dinle}
+        </div>
+        <Gorseller soru={soru} />
+        <SapSoru sap={soru.sap} secili={secili} dogrular={cevaplandi ? [...soru.hedef, ...dogruDokunus] : undefined} kilitli={cevaplandi} onTik={tikSirali} etiketler={etiketler} />
+        {!cevaplandi ? (
+          <p className="text-sm text-muted tabular-nums">
+            {secili.length} / {sesler.length} nota · Her dokunuş çalar; sırayla dokun.
+          </p>
+        ) : null}
         {geribildirim}
       </div>
     );
@@ -187,6 +242,7 @@ function SoruGoster({
         <h2 className="text-xl font-semibold">{soru.metin}</h2>
         {dinle}
       </div>
+      <Gorseller soru={soru} />
       <SapSoru sap={soru.sap} secili={secili} dogrular={cevaplandi ? soru.hedef : undefined} kilitli={cevaplandi} onTik={tik} />
       {soru.coklu && !cevaplandi ? (
         <div className="flex items-center gap-3">
@@ -199,6 +255,22 @@ function SoruGoster({
         </div>
       ) : null}
       {geribildirim}
+    </div>
+  );
+}
+
+/** Okuma soruları: porte, ritim yazımı ya da akor şeması (sorunun üstünde) */
+function Gorseller({ soru }: { soru: Exclude<Soru, { tip: "ritim" }> }) {
+  if (!soru.porte && !soru.ritim && !soru.sema) return null;
+  return (
+    <div className="flex justify-center card p-4">
+      {soru.porte ? <Porte porte={soru.porte} /> : null}
+      {soru.ritim ? (
+        <div className="w-full max-w-xl">
+          <RitimYazi desen={soru.ritim.desen} olcu={soru.ritim.olcu} />
+        </div>
+      ) : null}
+      {soru.sema ? <AkorSemasi sema={soru.sema} /> : null}
     </div>
   );
 }

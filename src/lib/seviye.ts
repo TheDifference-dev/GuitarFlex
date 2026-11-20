@@ -7,6 +7,7 @@ import {
   AXES,
   EK_KURS,
   ETUTLER,
+  KOSUL_YOLLARI,
   LEVELS,
   STIL_KURSU,
   guideCopyTest,
@@ -15,8 +16,12 @@ import {
   type SeviyeGrubu,
   type SeviyeSatiri,
   type SeviyeVerisi,
+  type SeviyeYolu,
+  isLevel,
 } from "@/content/seviyeler";
 import { getCourses } from "./courses";
+import { getYol, YOLLAR } from "./yollar";
+import type { Yol, YolAdim } from "./alistirma/tipler";
 import { PRIVATE_ROOTS } from "./private-roots";
 
 // Seviye Yolu verisi (Müfredat Spec v2.2 §10). Sıra:
@@ -130,9 +135,31 @@ function group(rows: Aday[]): SeviyeGrubu[] {
   return AXES.map((axis) => ({ axis, rows: sortRows(rows.filter((r) => r.axis === axis)).map(strip) }));
 }
 
+/** Yol adımının seviyesi: adımın kendi seviyesi L1–L5 ise o (İP6b adımları), değilse bölümün `level` etiketi */
+function adimSeviyesi(y: Yol, a: YolAdim): Level | undefined {
+  if (isLevel(a.seviye)) return a.seviye;
+  const b = y.bolumler.find((x) => x.no === a.bolum);
+  if (b?.level && isLevel(b.level)) return b.level;
+  return b && isLevel(b.seviye) ? b.seviye : undefined;
+}
+
+/** Bitirme koşulundaki yolların (Okuma, Kulak, Ritim) adımlarını seviyelere dağıtır; paket yoksa boş */
+async function yolAdimlari(): Promise<Record<Level, SeviyeYolu[]>> {
+  const yollar = (await Promise.all(KOSUL_YOLLARI.map((slug) => getYol(slug)))).filter((y): y is Yol => Boolean(y));
+  const out = Object.fromEntries(LEVELS.map((lv) => [lv, [] as SeviyeYolu[]])) as Record<Level, SeviyeYolu[]>;
+  for (const level of LEVELS)
+    for (const y of yollar) {
+      const adimlar = y.adimlar
+        .filter((a) => adimSeviyesi(y, a) === level)
+        .map((a) => ({ kod: a.kod, ad: a.ad, bolum: y.bolumler.find((b) => b.no === a.bolum)?.ad ?? "", step: `${y.slug}/${a.kod}` }));
+      if (adimlar.length) out[level].push({ slug: y.slug, ad: YOLLAR.find((t) => t.slug === y.slug)?.ad ?? y.ad, adimlar });
+    }
+  return out;
+}
+
 /** Beş seviyenin Seviye Yolu verisi. Akustik kurslar (K7) dahil edilmez. */
 export async function getSeviyeYolu(): Promise<Record<Level, SeviyeVerisi>> {
-  const [courses, sozluk] = await Promise.all([getCourses(), readSozluk()]);
+  const [courses, sozluk, yollar] = await Promise.all([getCourses(), readSozluk(), yolAdimlari()]);
   const depthOf = depthFn(sozluk);
   const isCopy = guideCopyTest(courses);
   const elektro = courses.filter((c) => !isAcoustic(c));
@@ -174,6 +201,7 @@ export async function getSeviyeYolu(): Promise<Record<Level, SeviyeVerisi>> {
     }
     result[level] = {
       level,
+      yollar: yollar[level],
       groups: group(at(main)),
       ekler: ek ? group(at(ek)) : null,
       stiller: stil ? group(at(stil)) : null,

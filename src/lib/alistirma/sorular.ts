@@ -5,7 +5,7 @@
 
 import { akor, dizi, nota, simdi } from "@/lib/ses";
 import { pentaBox } from "@/content/dizi";
-import type { Alistirma } from "./tipler";
+import type { Alistirma, BankaSoru, Porte, Sema, SesVeri } from "./tipler";
 import {
   ACIK, AKOR_SEKLI, AKOR_TURU, ARALIK_ADI, GAM, MOD_IV, TEL_ADI, dogalMi, karistir, kisaAd, notaAdi, tonKoku, pc, perdeSes, rnd, romen, sec, secenekler,
 } from "./muzik";
@@ -14,9 +14,12 @@ import { armoniSorusu } from "./armoni";
 
 export type Nokta = { s: number; f: number; etiket?: string; tur: "kok" | "nota" | "soru" | "referans" };
 export type Sap = { perde: [number, number]; noktalar: Nokta[]; tel?: number };
-export type Secenek = { id: string; ad: string; diyagram?: string };
+export type Secenek = { id: string; ad: string; diyagram?: string; ritim?: string[][] };
 
-export type SecimSorusu = {
+/** Soruyla birlikte gösterilen okuma görselleri (İP6b): porte, tek ölçü ritim yazımı, akor şeması */
+type Gorsel = { porte?: Porte; ritim?: { olcu: [number, number]; desen: string[][] }; sema?: Sema };
+
+export type SecimSorusu = Gorsel & {
   tip: "secim";
   metin: string;
   secenekler: Secenek[];
@@ -28,7 +31,7 @@ export type SecimSorusu = {
   aciklama?: string;
 };
 
-export type SapSorusu = {
+export type SapSorusu = Gorsel & {
   tip: "sap";
   metin: string;
   sap: Sap;
@@ -36,6 +39,9 @@ export type SapSorusu = {
   hedef: string[];
   /** true: hedeflerin hepsi seçilip "Kontrol et"e basılır; false: tek tık, hedeflerden biri yeterli */
   coklu: boolean;
+  /** Sırayla dokunma (ezgi, akor kökü): her dokunuş sıradaki sesle karşılaştırılır. "ses" aynı perde yüksekliği,
+   *  "pc" aynı nota adı; hedef bu durumda örnek konumlardır (cevaptan sonra gösterilir) */
+  sirali?: { sesler: number[]; esit: "ses" | "pc" };
   ses?: () => void;
   aciklama?: string;
 };
@@ -448,6 +454,37 @@ function progresyonSorusu(listeler: string[][]): Soru {
   };
 }
 
+/* ------------------------------ Hazır banka (İP6b) ------------------------------ */
+
+/** İçerikteki ses tanımını çalınabilir işleve çevirir: ezgi (süreler vuruş) ya da akor dizisi */
+function sesCal(v: SesVeri): () => void {
+  if (v.tur === "melodi")
+    return () => {
+      const t0 = simdi() + 0.05;
+      const vurus = 60 / v.bpm;
+      let t = t0;
+      for (const n of v.notalar) {
+        nota(n.m, t, Math.max(0.6, n.d * vurus + 0.25));
+        t += n.d * vurus;
+      }
+    };
+  return () => {
+    const t0 = simdi() + 0.05;
+    v.akorlar.forEach((a, i) => akor(a, t0 + i * v.sure, { seconds: v.sure }));
+  };
+}
+
+/** Bankadaki soruyu oynatıcının sorusuna çevirir; şıkların sırası her seferinde karışır */
+function bankadan(q: BankaSoru): Soru {
+  const gorsel = { porte: q.porte, ritim: q.ritim, sema: q.sema };
+  const ses = q.ses ? sesCal(q.ses) : undefined;
+  if (q.tip === "secim")
+    return { tip: "secim", metin: q.metin, ...gorsel, sap: q.sap, secenekler: karistir(q.secenekler), dogru: q.dogru, ses, aciklama: q.aciklama };
+  const sap: Sap = q.sap ?? { perde: [0, 12], noktalar: [] };
+  if (q.tip === "sap") return { tip: "sap", metin: q.metin, ...gorsel, sap, hedef: q.hedef, coklu: q.coklu, ses, aciklama: q.aciklama };
+  return { tip: "sap", metin: q.metin, ...gorsel, sap, hedef: q.konumlar, coklu: true, sirali: { sesler: q.sesler, esit: q.esit }, ses, aciklama: q.aciklama };
+}
+
 /* ------------------------------ Dağıtıcı ------------------------------ */
 
 export function soruUret(a: Alistirma): Soru {
@@ -486,11 +523,15 @@ export function soruUret(a: Alistirma): Soru {
       return ritimSorusu(a);
     case "karma":
       return soruUret(sec(a.parcalar));
+    case "banka":
+      return bankadan(sec(a.sorular));
   }
 }
 
 /** Bir adımın soru listesi: arka arkaya aynı sorunun gelmemesine dikkat edilir */
 export function soruListesi(a: Alistirma, n: number): Soru[] {
+  // Banka: aynı denemede aynı soru iki kez gelmez
+  if (a.tur === "banka") return karistir(a.sorular).slice(0, n).map(bankadan);
   const out: Soru[] = [];
   let deneme = 0;
   while (out.length < n && deneme < n * 20) {

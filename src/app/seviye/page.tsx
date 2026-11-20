@@ -15,6 +15,7 @@ export default async function SeviyeYoluPage() {
       rows: rows.length,
       lessons: rows.reduce((n, r) => n + r.lessons.length, 0),
       tab: rows.flatMap((r) => r.lessons.filter((d) => d.tab)),
+      yolAdim: v.yollar.flatMap((y) => y.adimlar.map((a) => a.step)),
     };
   });
 
@@ -25,7 +26,8 @@ export default async function SeviyeYoluPage() {
         <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Seviye Yolu</h1>
         <p className="mt-2 text-muted">
           Kurslardaki alt bölümler beş seviyeye ayrıldı. Kurs kurs ilerleyebilir ya da bir seviyenin teknik, klavye, ritim ve teori derslerini birlikte
-          çalışabilirsin. Kilit yok; seviyeyi bitirmek için o seviyedeki tablı derslerin en az %70&apos;ini tamamla.
+          çalışabilirsin. Kilit yok; seviyeyi bitirmek için o seviyedeki tablı derslerin ve Okuma, Kulak, Ritim yolu adımlarının en az %70&apos;ini
+          tamamla.
         </p>
       </header>
       <SeviyeKartlari items={items} />

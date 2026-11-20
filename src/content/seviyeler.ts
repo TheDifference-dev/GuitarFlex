@@ -102,8 +102,15 @@ export type SeviyeSatiri = {
 
 export type SeviyeGrubu = { axis: Axis; rows: SeviyeSatiri[] };
 
+/** Bitirme koşulunun yol adımları (§3): Okuma, Kulak ve Ritim yollarında bu seviyedeki adımlar */
+export const KOSUL_YOLLARI = ["okuma", "kulak", "ritim"] as const;
+export type SeviyeYolAdimi = { kod: string; ad: string; bolum: string; step: string };
+export type SeviyeYolu = { slug: string; ad: string; adimlar: SeviyeYolAdimi[] };
+
 export type SeviyeVerisi = {
   level: Level;
+  /** Okuma, Kulak, Ritim yolları: adımın seviyesine (adım, yoksa bölüm etiketi) göre bu seviyedeki adımlar */
+  yollar: SeviyeYolu[];
   /** Dört eksen, her zaman bu sırada (boş olabilir) */
   groups: SeviyeGrubu[];
   /** Ek kurs / Stil kursu / Etüt: içerik paketinde yoksa null */
