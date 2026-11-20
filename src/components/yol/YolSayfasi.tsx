@@ -60,7 +60,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                 role="tab"
                 aria-selected={i === sekme}
                 onClick={() => setSekme(i)}
-                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${i === sekme ? "border-transparent bg-text text-bg" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${i === sekme ? "border-transparent bg-accent text-accent-ink" : "border-ink/10 bg-ink/[0.05] hover:bg-ink/10"}`}
               >
                 {s}
               </button>

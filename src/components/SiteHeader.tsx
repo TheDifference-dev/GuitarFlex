@@ -233,13 +233,14 @@ export default function SiteHeader() {
           </button>
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2 rounded-lg px-1.5 py-1 text-[14px] font-semibold tracking-[-0.01em] text-white/90 transition hover:text-white"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-[14px] font-semibold tracking-[-0.01em] text-white/90 transition hover:text-white"
             aria-label={`${SITE.name} ana sayfa`}
             aria-current={pathname === "/" ? "page" : undefined}
             onMouseEnter={() => open && setOpen(null)}
           >
+            {/* Çerçevesiz logo: kutu ya da köşe yok; çizimin zemini kenarlarda şeffaflaşıp çubuğa karışır */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={SITE.logo} alt="" width={20} height={20} className="size-5 rounded-[5px]" />
+            <img src={SITE.logo} alt="" width={34} height={34} className="-my-2 -ml-1 size-[34px]" />
             <span className="hidden sm:inline">{SITE.name}</span>
           </Link>
 

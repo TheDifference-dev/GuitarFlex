@@ -5,6 +5,7 @@ export const SITE = {
   tagline: "Gitar Akademisi",
   description: "Kolaydan zora gitar teknikleri, tab oynatıcı, müzik teorisi ve çalışma takibi.",
   footer: "Gitar akademisi ve ton laboratuvarı",
-  /** Üst çubuktaki logo: küçük boyutlar için sadeleştirilmiş uygulama simgesi (büyüğü: /marka/simge.svg) */
-  logo: "/marka/simge-kucuk.svg",
+  /** Üst çubuktaki logo: çerçevesiz çizim; açık kağıt zemini kenarlara doğru şeffafa döner, çubuğun zeminine karışır
+   *  (uygulama simgesi: /marka/simge.svg; üretici: scripts/marka-uret.py) */
+  logo: "/marka/logo.png",
 };

@@ -32,7 +32,8 @@ export type SeviyeBasamagi = { level: Level; ad: string; etut: string };
 export type TeoriYolu = { slug: string; href: string; ad: string; etiket: string; not: string };
 
 /** Seviye Yolu basamakları: açık uzay grisinden siyaha (beyaz yazı her basamakta AA) */
-const BASAMAK = ["#636366", "#48484a", "#3a3a3c", "#2c2c2e", "#1d1d1f"];
+/** Seviye basamakları: uzay grisinden laciverde koyulaşır (beyaz yazı her basamakta ≥ 7:1) */
+const BASAMAK = ["#636366", "#4a4d5c", "#323d5e", "#1d3266", "#0a2a6b"];
 
 /**
  * Ana sayfa (apple.com ana sayfasının düzeniyle): üstte günlük görev şeridi, ilk kahraman bandının altında simge ızgarası
@@ -254,16 +255,20 @@ export default function AnaSayfa({
   );
 }
 
-/** Kapak görseli: siyahtan uzay grisine geçen zeminde figür; bandın altına oturur, üstü siyah banda karışır */
+/**
+ * Kapak görseli: çerçevesiz çizim. cizim-koyu.png'nin zemini şeffaf, çizgileri açık gri ve kenarları tüy gibi yumuşak;
+ * siyahtan laciverte geçen bandın zeminine doğrudan karışır (kart, kare ya da keskin kenar yok). Alt kenar ayrıca
+ * dikey maskeyle bandın dibine erir.
+ */
 function Kapak({ kucuk = false }: { kucuk?: boolean }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/marka/kapak.png"
-      alt="GuitarFlex kapağı: spot ışığı altında elektro gitar çalan bir figür"
-      width={1600}
-      height={900}
-      className={`mt-8 block w-auto max-w-full [mask-image:linear-gradient(to_bottom,transparent,#000_22%)] ${kucuk ? "h-[340px]" : "h-[430px]"}`}
+      src="/marka/cizim-koyu.png"
+      alt="GuitarFlex kapağı: gitar çalan bir figürün karakalem çizimi"
+      width={1024}
+      height={1024}
+      className={`mt-6 block w-auto max-w-full [mask-image:linear-gradient(to_bottom,#000_70%,transparent)] ${kucuk ? "h-[360px]" : "h-[460px]"}`}
     />
   );
 }
