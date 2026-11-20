@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Bell, BookOpen, ChevronDown, Compass, Guitar, House, Trophy, User, Wrench } from "lucide-react";
+import { ArrowLeft, Bell, BookOpen, ChevronDown, Compass, Guitar, House, Library, User, Wrench } from "lucide-react";
 import { SITE } from "@/config/site";
 
 type MenuItem = { href?: string; label: string; note?: string };
@@ -15,6 +15,7 @@ function sectionName(p: string, fallback: string) {
   if (p.startsWith("/profil")) return "Profil";
   if (p.startsWith("/akustik")) return "Akustik Gitar";
   if (p.startsWith("/sarkilar") || p.startsWith("/oynatici")) return "Şarkı ve Sololar";
+  if (p.startsWith("/kutuphane")) return "Şarkı Kütüphanesi";
   if (p.startsWith("/teori") || p.startsWith("/calis/armoni")) return "Müzik Teorisi";
   if (p.startsWith("/araclar")) return "Araçlar";
   if (p.startsWith("/nasil-calismaliyim")) return "Çalışma Planı";
@@ -80,13 +81,7 @@ export default function SiteHeader({ subtitle }: { subtitle: string }) {
         },
       ],
     },
-    {
-      id: "yarisma",
-      label: "Yarışma",
-      icon: Trophy,
-      active: false,
-      groups: [{ items: [{ label: "Sezon Yarışı", note: "Yakında" }, { label: "Cover Yarışması", note: "Yakında" }] }],
-    },
+    { id: "kutuphane", label: "Şarkı Kütüphanesi", icon: Library, href: "/kutuphane", active: pathname.startsWith("/kutuphane") },
   ];
 
   const iconBtn = "rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-text";

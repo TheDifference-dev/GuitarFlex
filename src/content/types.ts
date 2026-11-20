@@ -150,3 +150,59 @@ export type SiteTexts = {
   /** Kursların sırası (slug listesi). Listede olmayanlar yerleşik sırayla sona eklenir. */
   courseOrder?: string[];
 };
+
+// ── Şarkı Kütüphanesi (Egzersiz Yazım Standardı v2.3 K15, İP10b) ──────────────
+// İçerik paketindeki icerik/kutuphane.json'dan okunur (bkz. src/lib/kutuphane.ts). Yalnız özgün parçalar ve kamu malı
+// ezgilerin GuitarFlex düzenlemeleri bulunur; telifli şarkı tabı, notası ya da sözü yoktur.
+
+export type LibraryGenre =
+  | "Blues" | "Rock" | "Funk" | "Metal" | "Pop" | "Caz" | "Bossa Nova" | "Reggae" | "Country" | "Fingerstyle" | "Türk Halk Müziği" | "Klasik";
+
+/** Kaynak: özgün parça ya da kamu malı ezginin düzenlemesi */
+export type LibrarySource = "Özgün (GuitarFlex)" | "Geleneksel / kamu malı, düzenleme: GuitarFlex";
+
+/** Track'in parçadaki işi: kurşun/solo gitar, ritim gitar, bas, davul, piyano, yaylılar, org */
+export type LibraryTrackRole = "lead" | "rhythm" | "bass" | "drums" | "keys" | "strings" | "organ";
+
+/** Track: tex'teki sırayla (0'dan); `instrument` görünen enstrüman adıdır */
+export type LibraryTrack = { name: string; role: LibraryTrackRole; instrument: string };
+
+/** Şarkının kısmı (giriş, kıta, nakarat, solo …): yazılı ölçü aralığı (1'den, kapsayıcı), tekrar sayısı ve akorları */
+export type LibraryPart = { name: string; bars: [number, number]; repeat?: number; chords: string[]; focus?: string };
+
+export type LibrarySong = {
+  slug: string;
+  title: string;
+  genre: LibraryGenre;
+  level: Level;
+  /** Ton (ör. "La minör", "Sol majör") */
+  key: string;
+  bpm: number;
+  /** Ölçü birimi (ör. "4/4", "9/8") */
+  timeSignature: string;
+  /** Ritim hissi (ör. "Shuffle", "Swing", "Aksak 2+2+2+3") */
+  feel?: string;
+  source: LibrarySource;
+  /** Kamu malı ezgilerde ezginin kökeni (ör. "L. van Beethoven, 9. Senfoni (1824)") */
+  origin?: string;
+  description: string;
+  tracks: LibraryTrack[];
+  parts: LibraryPart[];
+  /** Şarkıdaki akorlar, ilk geçtikleri sırayla */
+  chords: string[];
+  /** Çalışma ipuçları */
+  tips: string[];
+  /** Şarkıda kullanılan teknikler (ör. "bend", "palm mute") */
+  techniques: string[];
+  /** Yazılı ölçü sayısı (tab) */
+  bars: number;
+  /** Tekrarlarla çalınan ölçü sayısı */
+  playedBars: number;
+  /** Yaklaşık süre (saniye, tab temposunda) */
+  durationSec: number;
+  /** Çok track'li alphaTex */
+  tex: string;
+};
+
+/** icerik/kutuphane.json */
+export type Library = { version: 1; songs: LibrarySong[] };
