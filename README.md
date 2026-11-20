@@ -23,6 +23,8 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | ![Seviye sayfası](docs/ekran/seviye.png) | ![Uzun egzersiz](docs/ekran/uzun-egzersiz.png) |
 | **Quick Study: dinle, incele, eşlikle çal** | **Transkripsiyon: duyduğunu sapta işaretle** |
 | ![Quick Study](docs/ekran/quick-study.png) | ![Transkripsiyon](docs/ekran/transkripsiyon.png) |
+| **Şarkı Kütüphanesi** | **Şarkı sayfası: mikser** |
+| ![Şarkı Kütüphanesi](docs/ekran/kutuphane.png) | ![Şarkı sayfası](docs/ekran/kutuphane-sarki.png) |
 
 ## Highlights
 
@@ -67,6 +69,8 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Şarkı Kütüphanesi** (yeni sekme, Yarışma'nın yerine): kurşun gitar, ritim gitar, bas ve davullu 12 çok enstrümanlı şarkı; pop, klasik, reggae, blues, fingerstyle, country, rock, funk, Türk halk müziği tarzı, bossa nova, metal ve caz, L1'den L5'e. Hepsi GuitarFlex'in özgün parçası ya da kamu malı ezgilerin (Neşe Marşı, Greensleeves) kendi düzenlemesi. Arama, tür, zorluk, ton, tempo ve enstrüman filtreleri; liste ya da kart görünümü. Şarkı sayfasında mikserli oynatıcı, form ve kısımlar, akorlar, teknikler ve çalışma ipuçları. Piyano, org ve yaylılar notayla gösteriliyor
+- **Yarışma bölümü kaldırıldı**
 - **Yeni tab oynatıcı**: ilerleme çubuğunda tıkla-git ve kısım sınırları, ölçü sayacı, hız %25–150, ölçü ya da seçili aralık döngüsü (taba sürükle ya da Shift+tık), kısım düğmeleri (A, A′, B, C) ile tek tıkla kısım döngüsü, kademeli hızlanma (her turda hız artar), metronom her vuruş ya da yalnız ölçü başı, sayım. Ayarlar panelinde Tab / Nota+Tab / Nota, sayfa ya da yatay yerleşim, yakınlaştırma, imleç takibi, çalan notaları gösteren sap paneli ve klavye kısayolları (boşluk, ←/→, L, ↑/↓, M). Çok enstrümanlı tablarda mikser: ses, solo, sessiz, tabı gösterilen enstrüman. Tabın altında ritim (sap, kiriş, üçleme) görünüyor; akor adları pena ve parmak işaretleriyle çakışmıyor. Yeni ses bankası GeneralUser GS (temiz, overdrive, distortion gitar sesi dersin ton bilgisinden seçiliyor; hafif Sonivox seçeneği duruyor)
 - **Stiller kursu yeni egzersiz standardıyla yeniden yazıldı**: 36 çalışma, her biri 20–36 ölçü; blues üç koro (36 ölçü), funk ve metal 24 ölçü. Her egzersizde kalıp, çeşitleme, uygulama ve birleştirme kısımları; kısım adları tabın üstünde. Örnekler: La'da shuffle eşliği, Fa'da caz blues dörtlükleri, ii–V–I üzerinde bebop gamları, sabit yapılı füzyon akorları. Ders süresi artık parçanın gerçek uzunluğuna göre (1–3 dakika)
 - **Yeni ders türleri: Quick Study, transkripsiyon, kompozisyon**: Müzisyenlik ek kursuna 31 ders. Quick Study'de 12 ölçülük parça üç adımda çalışılıyor: dinle, 3 dakika incele, eşlikle çal (6 ölçü okuma + 6 ölçü doğaçlama). Transkripsiyonda tab gizli, yalnız ses çalıyor; duyduğun notaları sapta işaretleyip kontrol ediyorsun. Kompozisyonda akor yürüyüşü ve kurallarla kendi 8 ölçünü yazıyorsun; geri bildirim notaları akora göre adlandırıyor (F üstünde Si♭, A# değil). Melodik cümle dersleri 24 ölçüye çıktı (motif, çeşitleme, uygulama, birleştirme)
