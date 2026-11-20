@@ -33,7 +33,7 @@ export default function BrandPage() {
       <SayfaBasi
         kirinti={[{ label: "Marka" }]}
         baslik="Marka"
-        alt="Sade, geometrik çizgilerle özgün bir elektro gitarist ve tek kesikli bir gitar. Siyahtan uzay grisine zemin, beyaz figür, orta gri gitar."
+        alt="Yüzsüz, dolu beyaz bir siluet: çizgi film oranlarında, öne eğilip geniş duruşla solo atan özgün bir gitarist ve tek kesikli bir elektro gitar. Siyahtan uzay grisine zemin, beyaz figür, orta gri gitar."
         ek={
           <img src="/marka/kapak.png" alt={`${SITE.name} — Gitar akademisi`} width={1600} height={900} className="mx-auto mt-12 block h-auto w-full max-w-[1100px] rounded-[var(--radius-tile)]" />
         }
