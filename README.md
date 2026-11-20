@@ -73,6 +73,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Slide kursu yeni egzersiz standardıyla yeniden yazıldı**: 16 özgün çalışma, 19–30 ölçü (eskiden 4–12); bağlı slide, yeniden penalı slide, notaya alttan/üstten giriş ve notadan çıkış; her derste kalıp, çeşitleme, uygulama ve birleştirme kısımları
 - **Yeni simge: yüzsüz siluet gitarist**: çizgi film oranlarında, öne eğilip solo atan, dizleri kırık beyaz siluet; tek kesikli gri gitar, siyah–uzay grisi zemin. Küçük boyutlar (16–48 px) için sadeleştirilmiş ayrı çizim; kapak görseli de yeni figürle
 - **Arpej kursu yeni egzersiz standardıyla yeniden yazıldı**: 12 özgün çalışma, 16–25 ölçü (eskiden 6–10); her birinde kalıp, çeşitleme, uygulama ve birleştirme kısımları; ritim, tel grubu, armoni ve yön çeşitlemeleri; akor adları, pena yönleri ve parmaklar tabın üstünde
 - **apple.com ölçüleriyle siyah–uzay grisi–beyaz tasarım**: 48 px buzlu koyu üst çubuk ve mega menü, ana sayfada 692 px'lik siyah ve açık gri tanıtım bantları (56 px başlık), 2 sütunlu 580 px döşemeler, hap düğmeler (açık zeminde siyah, koyu zeminde beyaz), "›" bağlantılar, açık gri site haritalı alt bilgi. Lacivert kalktı; yalnız beyaz, #F5F5F7, uzay grisi ve siyah. Simge ve kapak da siyah–uzay grisi zemine geçti
