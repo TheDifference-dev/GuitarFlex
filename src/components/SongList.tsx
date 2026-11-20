@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { ExternalLink, Lock, Search } from "lucide-react";
+import { ExternalLink, Search } from "lucide-react";
 import { MADALYALAR, songUrl, type Madalya, type PopularSong } from "@/content/sarkilar";
 import { useProgress } from "@/lib/progress";
 import { METAL_IKON } from "@/lib/oyun";
@@ -179,13 +179,13 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
       {gorunum === "rehber" ? (
         <div className="space-y-3">
           <p className="text-sm text-muted">
-            {adim.length} adımlık şarkı yolu: önce hazırlayan teknik bölümünü çalış, sonra şarkıya geç. Bir adımın kilidi, Profil Puanın (tamamlanan ders sayın: {puan}) eşiğe ulaşınca açılır.
+            {adim.length} adımlık şarkı yolu: önce hazırlayan teknik bölümünü çalış, sonra şarkıya geç. Kilit yok: her adım açık. Profil Puanın (tamamlanan ders sayın: {puan}) önerilen eşiğin altındaysa adımda önerilen ders sayısı yazar.
           </p>
           <ol className="space-y-2">
             {adim.map((s) => {
               const kilitli = puan < s.rehber!.puan;
               return (
-                <li key={anahtar(s)} className={`flex flex-wrap items-center gap-3 card p-3 ${kilitli ? "opacity-60" : ""}`}>
+                <li key={anahtar(s)} className="flex flex-wrap items-center gap-3 card p-3">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[image:var(--grad)] text-sm font-semibold text-white">{s.rehber!.adim}</span>
                   <div className="min-w-48 flex-1">
                     <p className="font-semibold leading-tight">
@@ -203,21 +203,20 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
                       ))}
                     </p>
                   </div>
-                  {kilitli ? (
-                    <span className="flex items-center gap-1.5 text-xs font-semibold text-muted">
-                      <Lock size={14} /> Profil Puanı {s.rehber!.puan}
+                  {kilitli && (
+                    <span className="text-xs font-medium text-muted" title="Önerilen Profil Puanı: bu şarkıdan önce çalışman önerilen ders sayısı (kilit değil)">
+                      Önerilen: {s.rehber!.puan} ders
                     </span>
-                  ) : (
-                    <a
-                      href={songUrl(s)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => acildi(anahtar(s))}
-                      className="btn-grad px-3.5 py-1.5 text-sm"
-                    >
-                      Aç <ExternalLink size={14} />
-                    </a>
                   )}
+                  <a
+                    href={songUrl(s)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => acildi(anahtar(s))}
+                    className={`${kilitli ? "btn-soft" : "btn-grad"} px-3.5 py-1.5 text-sm`}
+                  >
+                    Aç <ExternalLink size={14} />
+                  </a>
                 </li>
               );
             })}

@@ -5,6 +5,7 @@ import { useId } from "react";
 import { ArrowRight, BookOpen, Compass, Map, Mic2, Star } from "lucide-react";
 import type { CourseKind, SiteTexts } from "@/content/types";
 import { useProgress, type Progress } from "@/lib/progress";
+import Kirinti from "./site/Kirinti";
 
 export type CourseSummary = {
   slug: string;
@@ -23,7 +24,7 @@ export function coursePercent(p: Progress, keys: string[]) {
 }
 
 /** Teknik egzersiz merkezi: rehberler, akor yolu kartı, kurs kartları ve şarkı bağlantıları (elektro ya da akustik) */
-export default function HomeView({ texts, courses, songs = "elektro" }: { texts: SiteTexts; courses: CourseSummary[]; songs?: "elektro" | "akustik" }) {
+export default function HomeView({ texts, courses, songs = "elektro", eyebrow }: { texts: SiteTexts; courses: CourseSummary[]; songs?: "elektro" | "akustik"; eyebrow?: string }) {
   const p = useProgress();
   const guideIcons = [BookOpen, Map];
   const songCards = songs === "akustik" ? acousticSongCards(texts.chordCard.slug) : SONG_CARDS;
@@ -73,14 +74,26 @@ export default function HomeView({ texts, courses, songs = "elektro" }: { texts:
     );
   };
 
+  const bolum = eyebrow ?? (songs === "akustik" ? "Akustik Gitar" : "Elektro Gitar");
   return (
     <div className="space-y-8">
+      {/* Sayfa başı: kırıntı, başlık ve tüm kurslara geçiş (GuitarBear'deki "Gitar Teknik Egzersizleri" sayfası gibi) */}
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <Kirinti halkalar={[{ label: bolum }, { label: "Teknik Egzersizler" }]} />
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{songs === "akustik" ? "Akustik Gitar Teknikleri" : "Gitar Teknik Egzersizleri"}</h1>
+        </div>
+        <Link href="/kurslar" className="btn-soft px-4 py-2 text-sm">
+          Tüm kurslar <ArrowRight size={15} />
+        </Link>
+      </header>
+
       <section className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
         {/* Başlangıç rehberleri */}
         <div className="card relative overflow-hidden p-7 sm:p-8">
           <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[radial-gradient(circle,rgb(255_55_95/0.22),transparent_65%)]" />
           <p className="eyebrow">{texts.hero.eyebrow}</p>
-          <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">{texts.hero.title}</h1>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{texts.hero.title}</h2>
           <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-muted">{texts.hero.text}</p>
           <div className={`mt-7 grid gap-3 ${texts.hero.guides.length > 1 ? "sm:grid-cols-2" : ""}`}>
             {texts.hero.guides.map((g, i) => {
@@ -110,7 +123,7 @@ export default function HomeView({ texts, courses, songs = "elektro" }: { texts:
           <div aria-hidden className="pointer-events-none absolute -bottom-28 -left-16 size-72 rounded-full bg-[radial-gradient(circle,rgb(191_90_242/0.2),transparent_65%)]" />
           <ChordDiagram />
           <p className="eyebrow mt-10">{texts.chordCard.eyebrow}</p>
-          <h2 className="mt-2 text-4xl font-bold tracking-tight">{texts.chordCard.title}</h2>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{texts.chordCard.title}</h2>
           <p className="mt-3 max-w-[60%] text-[17px] leading-relaxed text-muted">{texts.chordCard.text}</p>
           <Link href={`/calis/${texts.chordCard.slug}`} className="btn-grad mt-7 px-6 py-3 text-[15px]">
             {texts.chordCard.button} <ArrowRight size={16} />
@@ -120,7 +133,10 @@ export default function HomeView({ texts, courses, songs = "elektro" }: { texts:
 
       {/* Kurs kartları */}
       {courses.length > 0 ? (
-        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{courses.map(renderCard)}</section>
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold tracking-tight">Teknikler</h2>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{courses.map(renderCard)}</div>
+        </section>
       ) : (
         <p className="rounded-3xl border border-dashed border-line p-6 text-sm text-muted">Bu bölümün kursları yakında eklenecek.</p>
       )}

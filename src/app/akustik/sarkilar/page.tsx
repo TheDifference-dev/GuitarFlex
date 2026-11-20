@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Kirinti from "@/components/site/Kirinti";
 import SongList from "@/components/SongList";
 import { getCourses } from "@/lib/courses";
 import { getPopularSongs } from "@/lib/songs";
@@ -12,7 +13,7 @@ export default async function AcousticSongsPage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="eyebrow">Akustik Gitar</p>
+        <Kirinti halkalar={[{ href: "/akustik", label: "Akustik Gitar" }, { label: "Şarkılar" }]} />
         <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Akustik Şarkılar</h1>
         <p className="mt-1 max-w-3xl text-muted">Akorlarla çalınan şarkılar zorluğa göre. Tablar Songsterr&apos;de açılır; şarkıya hazırlayan kurslar kartın altında.</p>
       </header>

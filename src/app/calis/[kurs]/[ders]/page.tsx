@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ChevronRight, Lightbulb, Music } from "lucide-react";
+import { Lightbulb, Music } from "lucide-react";
 import LessonPractice from "@/components/LessonPractice";
+import { DersAltGezinme, DersUstGezinme } from "@/components/site/DersGezinme";
+import { kursAnahatti } from "@/lib/katalog";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { assetUrl, getCourse } from "@/lib/courses";
 import { gitarProgrami } from "@/lib/gitarTonu";
@@ -25,21 +26,16 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
   const { kurs, ders } = await props.params;
   const found = await find(kurs, ders);
   if (!found) notFound();
-  const { course, lessons, index, lesson } = found;
-  const prev = lessons[index - 1];
-  const next = lessons[index + 1];
+  const { course, lesson } = found;
   const theory = [...(lesson.chapter.theory ?? []), ...(lesson.theory ?? [])];
-  const href = (id: string) => `/calis/${course.slug}/${encodeURIComponent(id)}`;
+  const anahat = kursAnahatti(course);
 
   return (
     <div className="space-y-6">
-      <nav className="flex flex-wrap items-center gap-1 text-sm text-muted">
-        <Link href={`/calis/${course.slug}`} className="font-semibold text-accent hover:underline">
-          {course.title}
-        </Link>
-        <ChevronRight size={14} /> Bölüm {lesson.section.number} – {lesson.section.title}
-        <ChevronRight size={14} /> {lesson.chapter.code} {lesson.chapter.title}
-      </nav>
+      {/* Üst gezinme: kırıntı, ders listesi çekmecesi, önceki/sonraki */}
+      <div className="space-y-3">
+        <DersUstGezinme anahat={anahat} dersId={lesson.id} />
+      </div>
 
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -119,20 +115,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         </div>
       )}
 
-      <div className="flex justify-between gap-4 text-sm font-semibold">
-        {prev ? (
-          <Link href={href(prev.id)} className="flex items-center gap-1 card px-4 py-2 hover:border-white/20">
-            <ChevronLeft size={16} /> {prev.title}
-          </Link>
-        ) : (
-          <span />
-        )}
-        {next && (
-          <Link href={href(next.id)} className="flex items-center gap-1 card px-4 py-2 hover:border-white/20">
-            {next.title} <ChevronRight size={16} />
-          </Link>
-        )}
-      </div>
+      <DersAltGezinme anahat={anahat} dersId={lesson.id} />
     </div>
   );
 }

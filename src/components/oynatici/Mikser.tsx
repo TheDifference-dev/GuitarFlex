@@ -1,6 +1,6 @@
 "use client";
 
-import { Drum, Eye, Guitar, Music, Volume2, VolumeX } from "lucide-react";
+import { Drum, Eye, Guitar, KeyboardMusic, Music, Volume2, VolumeX } from "lucide-react";
 
 export type MikserIzi = {
   index: number;
@@ -22,9 +22,24 @@ type Props = {
   onSes: (i: number, deger: number) => void;
 };
 
+/** Bas simgesi: fa (bas) anahtarı, lucide çizgi biçiminde (lucide'da bas gitar simgesi yok) */
+function BasSimgesi({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="6.5" cy="9" r="1.6" fill="currentColor" stroke="none" />
+      <path d="M6.5 9.2C6 5.6 8.6 4 11 4c3.4 0 5.5 2.6 5.5 6 0 5-4.6 8.6-11 10" />
+      <circle cx="20" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="20" cy="12.5" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+/** Enstrüman simgesi General MIDI programına göre: 0–23 klavyeler, 24–31 gitar, 32–39 bas (kontrbas dahil) */
 function Simge({ iz }: { iz: MikserIzi }) {
   if (iz.percussion) return <Drum size={15} aria-hidden />;
-  if (iz.program >= 24 && iz.program <= 39) return <Guitar size={15} aria-hidden />;
+  if ((iz.program >= 32 && iz.program <= 39) || /^(kontra?)?bas\b/i.test(iz.name.trim())) return <BasSimgesi />;
+  if (iz.program >= 24 && iz.program <= 31) return <Guitar size={15} aria-hidden />;
+  if (iz.program >= 0 && iz.program <= 23) return <KeyboardMusic size={15} aria-hidden />;
   return <Music size={15} aria-hidden />;
 }
 

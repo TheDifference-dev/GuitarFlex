@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Kirinti from "@/components/site/Kirinti";
 import Metronome from "@/components/Metronome";
 import NoteQuiz from "@/components/NoteQuiz";
 
@@ -8,7 +9,8 @@ export default function ToolsPage() {
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Araçlar</h1>
+        <Kirinti halkalar={[{ label: "Araçlar" }]} />
+        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Araçlar</h1>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">

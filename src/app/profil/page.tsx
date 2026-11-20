@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Kirinti from "@/components/site/Kirinti";
 import ProgressDashboard, { type CourseInfo } from "@/components/ProgressDashboard";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { getCourses } from "@/lib/courses";
@@ -29,7 +30,8 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Profil</h1>
+        <Kirinti halkalar={[{ label: "Profil" }]} />
+        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Profil</h1>
         <p className="mt-1 text-muted">Günlük görevlerin, serin, madalyaların, başarımların ve kurs ilerlemen. Şimdilik bu bilgisayarda saklanır.</p>
       </header>
       <ProgressDashboard courses={info} oyun={oyun} kurslar={kurslar} />

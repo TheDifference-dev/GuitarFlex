@@ -49,7 +49,7 @@ export function gunler(p: Progress): Map<string, Gun> {
 export function gorevler(g: Gun | undefined, kural: OyunVeri["gorevler"]): Gorev[] {
   const x = g ?? { egzersiz: 0, serbest: 0, teori: 0 };
   return [
-    { ad: "Egzersiz", deger: Math.floor(x.egzersiz / 60), hedef: kural.egzersizDk, birim: "dk", tamam: x.egzersiz >= kural.egzersizDk * 60, href: "/" },
+    { ad: "Egzersiz", deger: Math.floor(x.egzersiz / 60), hedef: kural.egzersizDk, birim: "dk", tamam: x.egzersiz >= kural.egzersizDk * 60, href: "/elektro" },
     { ad: "Teori", deger: x.teori, hedef: kural.teoriAdim, birim: "adım", tamam: x.teori >= kural.teoriAdim, href: "/teori" },
     { ad: "Serbest Çalışma", deger: Math.floor(x.serbest / 60), hedef: kural.serbestDk, birim: "dk", tamam: x.serbest >= kural.serbestDk * 60, href: "/sarkilar/dogaclama" },
   ];

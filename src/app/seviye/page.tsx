@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Kirinti from "@/components/site/Kirinti";
 import { SeviyeKartlari, type SeviyeOzeti } from "@/components/SeviyeYolu";
 import { LEVELS } from "@/content/seviyeler";
 import { getSeviyeYolu } from "@/lib/seviye";
@@ -22,7 +23,7 @@ export default async function SeviyeYoluPage() {
   return (
     <div className="space-y-6">
       <header className="max-w-3xl">
-        <p className="eyebrow">Elektro Gitar</p>
+        <Kirinti halkalar={[{ href: "/elektro", label: "Elektro Gitar" }, { label: "Seviye Yolu" }]} />
         <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Seviye Yolu</h1>
         <p className="mt-2 text-muted">
           Kurslardaki alt bölümler beş seviyeye ayrıldı. Kurs kurs ilerleyebilir ya da bir seviyenin teknik, klavye, ritim ve teori derslerini birlikte

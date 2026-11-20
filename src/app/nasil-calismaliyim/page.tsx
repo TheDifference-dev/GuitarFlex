@@ -11,9 +11,9 @@ export default async function HowToPracticePage() {
   const chords = `/calis/${texts.chordCard.slug}`;
 
   const elektro: LevelOption[] = [
-    { title: "Gitara sıfırdan başlıyorum", text: "Temel konular ve ilk egzersizler, adım adım.", href: course("sifirdan-baslangic-rehberi", "/") },
-    { title: "Başlangıç / orta seviyedeyim", text: "Akorları, ritmi ve temel teknikleri düzenli bir plana oturtmak istiyorum.", href: course("baslangic-orta-rehberi", "/") },
-    { title: "Orta / ileri seviyedeyim", text: "Bir tekniği derinleştirmek, hızımı ve repertuvarımı geliştirmek istiyorum.", href: "/" },
+    { title: "Gitara sıfırdan başlıyorum", text: "Temel konular ve ilk egzersizler, adım adım.", href: course("sifirdan-baslangic-rehberi", "/elektro") },
+    { title: "Başlangıç / orta seviyedeyim", text: "Akorları, ritmi ve temel teknikleri düzenli bir plana oturtmak istiyorum.", href: course("baslangic-orta-rehberi", "/elektro") },
+    { title: "Orta / ileri seviyedeyim", text: "Bir tekniği derinleştirmek, hızımı ve repertuvarımı geliştirmek istiyorum.", href: "/elektro" },
   ];
   const akustik: LevelOption[] = [
     { title: "Gitara sıfırdan başlıyorum", text: "Akustikte duruş, ilk akorlar ve temel teknikler.", href: course("akustik-baslangic-rehberi", chords) },

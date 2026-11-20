@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Kirinti from "@/components/site/Kirinti";
 import Link from "next/link";
 import { THEORY } from "@/content/theory";
 import FretboardExplorer from "@/components/FretboardExplorer";
@@ -12,7 +13,8 @@ export default async function TheoryPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Müzik Teorisi</h1>
+        <Kirinti halkalar={[{ label: "Müzik Teorisi" }]} />
+        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Müzik Teorisi</h1>
         <p className="mt-1 text-muted">Gitarcının ihtiyaç duyduğu teori, sap üzerinde görerek.</p>
       </header>
 

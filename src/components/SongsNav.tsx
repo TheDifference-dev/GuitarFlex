@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Compass, Mic2, Star } from "lucide-react";
+import Kirinti from "./site/Kirinti";
 
 const TABS = [
   { href: "/sarkilar", label: "Popüler Şarkılar", icon: Star, match: (p: string) => p === "/sarkilar" },
@@ -13,9 +14,11 @@ const TABS = [
 /** "Şarkı ve Sololar" bölümünün sekmeleri */
 export default function SongsNav() {
   const pathname = usePathname();
+  const aktif = TABS.find((t) => t.match(pathname));
   return (
+    <div className="space-y-3">
+    <Kirinti halkalar={[{ href: "/elektro", label: "Elektro Gitar" }, { href: "/sarkilar", label: "Şarkı ve Sololar" }, ...(aktif && aktif.href !== "/sarkilar" ? [{ label: aktif.label }] : [])]} />
     <nav className="flex flex-wrap items-center gap-2">
-      <span className="mr-2 text-xs font-semibold text-muted">Şarkı ve Sololar</span>
       {TABS.map((t) => {
         const Icon = t.icon;
         const active = t.match(pathname);
@@ -32,5 +35,6 @@ export default function SongsNav() {
         );
       })}
     </nav>
+    </div>
   );
 }
