@@ -487,7 +487,10 @@ function Player({
     const api = apiRef.current;
     const track = api?.score?.tracks[shown];
     if (!track) return;
-    api.settings.display.staveProfile = staveProfile(view, !!track.staves[0]?.isPercussion);
+    // Telsiz track'ler (davul, piyano, org, yaylılar) tab çizemez: her görünümde nota
+    const st = track.staves[0];
+    const tabsiz = !!st?.isPercussion || st?.showTablature === false || !(st?.tuning?.length);
+    api.settings.display.staveProfile = staveProfile(view, tabsiz);
     api.settings.notation.rhythmMode = rhythmMode(view);
     api.updateSettings();
     api.renderTracks([track]);

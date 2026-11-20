@@ -3,19 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Layers, Lightbulb, ListMusic, Music } from "lucide-react";
 import TabPlayer, { type TabSource } from "@/components/TabPlayer";
-import type { LibrarySong, LibraryTrack } from "@/content/types";
+import type { LibrarySong } from "@/content/types";
 import { addPracticeTime } from "@/lib/progress";
 import { SERBEST } from "@/lib/oyun";
 import { ROL_ADI } from "./ortak";
-
-/**
- * Mikser yeri (İP10, w2): çok track mikseri (ses, solo, sessiz, gösterilecek track) TabPlayer'a eklendiğinde buraya bağlanır.
- * Şimdilik TabPlayer'ın kendi track listesi (sessiz, solo, ses, göster) kullanılır; bu bileşen bilinçli olarak boş döner.
- */
-function MikserYeri({ tracks }: { tracks: LibraryTrack[] }) {
-  void tracks;
-  return null;
-}
 
 /** Şarkı sayfası: çok track'li tab oynatıcı, kısım listesi, akorlar, çalışma ipuçları ve track bilgisi */
 export default function LibrarySongView({ song }: { song: LibrarySong }) {
@@ -41,7 +32,6 @@ export default function LibrarySongView({ song }: { song: LibrarySong }) {
   return (
     <div className="space-y-6">
       <TabPlayer source={source} onPlayingChange={setCaliyor} />
-      <MikserYeri tracks={song.tracks} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section className="card p-5">
@@ -110,9 +100,9 @@ export default function LibrarySongView({ song }: { song: LibrarySong }) {
               ))}
             </ul>
             <p className="mt-3 text-xs text-muted">
-              Oynatıcının track listesinden bir track&apos;i gösterebilir, sessize alabilir (M) ya da tek başına çalabilirsin (S).
+              Oynatıcıdaki Mikser&apos;den bir enstrümanın tabını gösterebilir, sesini ayarlayabilir, sessize alabilir (M) ya da tek başına çalabilirsin (S).
               {song.tracks.some((t) => ["keys", "strings", "organ"].includes(t.role)) &&
-                " Piyano, org ve yaylılar yalnız notayla yazılıdır: onları göstermeden önce görünümü “Nota” yap."}
+                " Piyano, org ve yaylılar notayla gösterilir."}
             </p>
           </section>
         </div>
