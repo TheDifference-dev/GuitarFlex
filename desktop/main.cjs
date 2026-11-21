@@ -7,13 +7,14 @@
 //   --guncelle             → masaüstü kısayolunun kullandığı mod: önce GitHub'dan güncelleme
 //                            çeker, gerekirse derler (bkz. guncelle.cjs), sonra açar
 
-const { app, BrowserWindow, Menu, shell, dialog, nativeTheme } = require("electron");
+const { app, BrowserWindow, Menu, shell, dialog, nativeTheme, nativeImage } = require("electron");
 const { spawn, execFile } = require("node:child_process");
 const http = require("node:http");
 const net = require("node:net");
 const path = require("node:path");
 const fs = require("node:fs");
 const metronomMini = require("./metronom-mini.cjs");
+const { simgeleriYenile } = require("./simge-yenile.cjs");
 
 const ROOT = path.join(__dirname, "..");
 const AUTO_UPDATE = process.argv.includes("--guncelle");
@@ -115,6 +116,18 @@ function splash() {
 
 function setStatus(text) {
   win?.webContents.executeJavaScript(`document.getElementById("durum") && (document.getElementById("durum").textContent = ${JSON.stringify(text)})`).catch(() => {});
+}
+
+/** Güncelleme simgeyi değiştirdiyse açık pencereye, açılış ekranına ve kısayollara yansıtır */
+function simgeyiTazele() {
+  try {
+    if (win && !win.isDestroyed() && fs.existsSync(ICON)) win.setIcon(nativeImage.createFromPath(ICON));
+  } catch {}
+  try {
+    const src = `data:image/svg+xml;base64,${fs.readFileSync(LOGO_SVG).toString("base64")}`;
+    win?.webContents.executeJavaScript(`(() => { const i = document.querySelector("img"); if (i) i.src = ${JSON.stringify(src)}; })()`).catch(() => {});
+  } catch {}
+  simgeleriYenile({ ikon: path.join(__dirname, "icon.ico"), klasor: app.getPath("userData") }).catch(() => {});
 }
 
 function relaunchWithUpdate() {
@@ -237,6 +250,7 @@ async function createWindow(yeniden = false) {
     }
     setStatus(PROD ? "Açılıyor…" : "Geliştirme modunda açılıyor… (bir dakika kadar sürebilir)");
   }
+  simgeyiTazele();
 
   const port = await appPort();
   baseUrl = `http://127.0.0.1:${port}`;
