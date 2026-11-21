@@ -88,7 +88,7 @@ export const MODUL_METIN: Record<string, Record<string, string[]>> = {
       "Akor yürüyüşleri Roma rakamlarıyla yazılır: büyük harf majör (I, IV, V), küçük harf minör (ii, iii, vi) akordur. Do majörde I = Do, IV = Fa, V = Sol, vi = La minör.",
       "Bası (en kalın notayı) takip et: I'e dönüş \"eve varma\" hissi verir, V gerilim yaratır ve I'e çözülmek ister.",
     ],
-    "Alıştırma Tüyoları": [
+    "Alıştırma Tipleri": [
       "Cevaplamadan önce sesi içinden tekrar söyle. Emin değilsen tekrar dinle; tahmin etme alışkanlığı kulağını geliştirmez.",
       "Yanlış yaptığın soruların açıklamasını oku ve o sesi gitarında çal. Duyduğunu sapta bulmak, kulak ve klavye bilgisini birlikte geliştirir.",
     ],

@@ -4,8 +4,10 @@
 
 export type Alistirma =
   // Klavye
-  | { tur: "tel"; teller: number[] }
-  | { tur: "nota"; teller: number[]; perde: [number, number]; sesler: "dogal" | "arizali" | "hepsi"; yazim?: "diyez" | "bemol"; mod: "adlandir" | "bul" | "karisik" }
+  // mod "sec": her soru 6 seçenekli tel tanıma; yoksa yarısı seçim, yarısı sapta dokunma
+  | { tur: "tel"; teller: number[]; mod?: "sec" }
+  // dagilim: "karisik" adımda kaç adlandırma, kaç sapta bulma sorusu (sıra karışık)
+  | { tur: "nota"; teller: number[]; perde: [number, number]; sesler: "dogal" | "arizali" | "hepsi"; yazim?: "diyez" | "bemol"; mod: "adlandir" | "bul" | "karisik"; dagilim?: { adlandir: number; bul: number } }
   | { tur: "akor"; akorlar: string[] }
   | { tur: "oktav"; atlama: number | null }
   | { tur: "pentatonik"; sekil: number | null; gorev: "kok" | "kokler" }
@@ -13,7 +15,8 @@ export type Alistirma =
   | { tur: "3nps"; mod: string | null }
   | { tur: "derece" }
   // Kulak
-  | { tur: "ses"; gorev: "ayni-farkli" | "tiz-pes" | "oktav"; aralik: [number, number] }
+  // secenek 3: Aynı / Daha tiz / Daha pes (oktavda Aynı ses / Bir oktav / Oktav değil)
+  | { tur: "ses"; gorev: "ayni-farkli" | "tiz-pes" | "oktav"; aralik: [number, number]; secenek?: 3 }
   | { tur: "referans"; teller: number[]; yon: "pes" | "tiz" | "iki"; maks: number }
   | { tur: "aralik"; araliklar: number[] }
   | { tur: "akorTuru"; turler: string[] }
@@ -22,10 +25,14 @@ export type Alistirma =
   // Armoni (Müzik Teorisi Dersleri pratikleri)
   | { tur: "teori"; konu: "giris" | "gam" | "besli" | "uclu" | "mod" | "modFormul" | "modAnla" | "diyatonik" | "yuruyus" | "dortlu" | "yedili" }
   // Ritim
-  | { tur: "ritim"; olcu: [number, number]; hucreler: string[]; olcuSayisi: number; bpm: [number, number]; sus?: number }
-  | { tur: "karma"; parcalar: Alistirma[] }
+  // secenek: yazım seçmede şık sayısı (yoksa 3). dagilim: kaç soru yalnız yazım seçme, kaç soru yalnız geri vurma
+  // (önce seçme); yoksa her soru ikisini birden ister
+  | { tur: "ritim"; olcu: [number, number]; hucreler: string[]; olcuSayisi: number; bpm: [number, number]; sus?: number; secenek?: number; dagilim?: RitimDagilim }
+  | { tur: "karma"; parcalar: Alistirma[]; dagilim?: RitimDagilim }
   // Hazır soru bankası (içerik üreticisinde teori kurallarından hesaplanır)
   | { tur: "banka"; sorular: BankaSoru[] };
+
+export type RitimDagilim = { secim: number; vurus: number };
 
 /** Porte notası: h harf (0 Do … 6 Si), o yazılı oktav (gitar bir oktav pes duyulur), a portede yazılı arıza
  *  (-1 bemol, 0 natürel, 1 diyez; yoksa donanım ve ölçü kuralı), d süre (vuruş; verilmezse 1) */
@@ -90,8 +97,14 @@ export type YolBolum = {
   /** Seviye Yolu için seviye ve beceri (iskelet bölümleri; yeni bölümlerde seviye zaten L1–L5) */
   level?: string;
   skill?: string;
-  /** Bölümün ilk adımı önceki bölümü beklemeden açılır (iskelet dışı ek bölümler) */
+  /** İskelet dışı bölüm (eski kilit kuralından kalma; kilit yok) */
   serbest?: boolean;
+  /** GuitarBear'deki bölüm etiketi ("Başlangıç", "Bölüm 2", "Kontrol") */
+  etiket?: string;
+  /** GuitarBear'de olmayan, bizim eklediğimiz bölüm: yol sayfasında ana bölümlerden sonra "Ek bölümler" alanında;
+   *  no 101…, kod "E1"…, adım kodları "E1.1"…; ana yolun ilerlemesine girmez, ayrı sayılır */
+  ek?: boolean;
+  kod?: string;
 };
 
 export type Yol = {

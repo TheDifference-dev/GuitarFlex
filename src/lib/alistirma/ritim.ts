@@ -42,6 +42,9 @@ export type RitimSorusu = {
   dogru: string;
   bpm: number;
   olcu: [number, number];
+  /** "secim": yalnız dinleyip yazımı seçme · "vurus": yalnız yazılı ritmi dinleyip metronomla geri vurma ·
+   *  yoksa ikisi birden (önce seçme, sonra vurma) */
+  asama?: "secim" | "vurus";
 };
 
 /** Desendeki atakların (vuruş cinsinden) başlangıç zamanları */
@@ -98,20 +101,23 @@ function celdirici(desen: Desen, havuz: string[]): Desen {
   return d;
 }
 
-export function ritimSorusu(a: Extract<Alistirma, { tur: "ritim" }>): RitimSorusu {
+export function ritimSorusu(a: Extract<Alistirma, { tur: "ritim" }>, asama?: "secim" | "vurus"): RitimSorusu {
+  const sik = a.secenek ?? 3;
   const vurusSayisi = a.olcu[0];
   const desen: Desen = Array.from({ length: a.olcuSayisi }, () => olcuUret(a.hucreler, vurusSayisi, a.sus));
   // Çeldiriciler için hücre havuzu: adımın hücreleri + aynı aileden temel hücreler
   const ek = a.hucreler.some((h) => HUCRE[h].uclu) ? ["t", "q", "qr", "ee"] : a.hucreler.some((h) => h.includes("s")) ? ["ee", "ssss", "q"] : ["q", "qr", "ee"];
   const havuz = [...new Set([...a.hucreler, ...ek])].filter((h) => HUCRE[h].vurus === 1 || a.hucreler.includes(h));
   const secenekler: { id: string; desen: Desen }[] = [{ id: "dogru", desen }];
-  for (let k = 0; k < 40 && secenekler.length < 3; k++) {
+  for (let k = 0; k < 60 && secenekler.length < sik; k++) {
     const c = celdirici(desen, havuz);
     if (!secenekler.some((s) => imza(s.desen) === imza(c))) secenekler.push({ id: `c${secenekler.length}`, desen: c });
   }
   return {
     tip: "ritim",
-    metin: "Ritmi dinle, doğru yazımı seç; sonra aynı ritmi vurarak çal.",
+    metin:
+      asama === "secim" ? "Ritmi dinle, doğru yazımı seç." : asama === "vurus" ? "Ritmi dinle ve oku; sonra metronomla aynı ritmi geri vur." : "Ritmi dinle, doğru yazımı seç; sonra aynı ritmi vurarak çal.",
+    ...(asama ? { asama } : {}),
     desen,
     secenekler: karistir(secenekler),
     dogru: "dogru",

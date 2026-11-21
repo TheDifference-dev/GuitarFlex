@@ -4,7 +4,7 @@ import { Bant, HapBag, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import { getCourses } from "@/lib/courses";
 import { kursKarti } from "@/lib/katalog";
 import { yerSimgesi } from "@/lib/simge";
-import { getYol, YOLLAR } from "@/lib/yollar";
+import { getYol, YOLLAR, yolSayim } from "@/lib/yollar";
 
 export const metadata: Metadata = { title: "Tüm Kurslar" };
 
@@ -16,7 +16,7 @@ export default async function CatalogPage() {
     await Promise.all(
       YOLLAR.map(async (y): Promise<YolKarti | null> => {
         const yol = await getYol(y.slug);
-        return yol ? { slug: y.slug, href: `/teori/yol/${y.slug}`, etiket: y.etiket, ad: y.ad, not: `${yol.bolumler.length} bölüm · ${yol.adimlar.length} adım` } : null;
+        return yol ? { slug: y.slug, href: `/teori/yol/${y.slug}`, etiket: y.etiket, ad: y.ad, not: yolSayim(yol) } : null;
       }),
     )
   ).filter((y): y is YolKarti => !!y);

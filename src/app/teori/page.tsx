@@ -3,7 +3,7 @@ import { Bant, HapBag, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import Link from "next/link";
 import { THEORY } from "@/content/theory";
 import FretboardExplorer from "@/components/FretboardExplorer";
-import { getYol, YOLLAR } from "@/lib/yollar";
+import { getYol, YOLLAR, yolSayim } from "@/lib/yollar";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { kursSimgesi, yerSimgesi, yolSimgesi } from "@/lib/simge";
 
@@ -32,7 +32,7 @@ export default async function TheoryPage() {
               <UygulamaSimgesi simge={yolSimgesi(y.slug)} boyut={60} className="mb-5" />
               <p className="text-xs font-semibold text-muted">{y.etiket}</p>
               <h3 className="mt-1 text-[28px] font-semibold leading-tight tracking-tight">{y.ad}</h3>
-              <p className="mt-1 text-muted">{y.yol ? `${y.yol.bolumler.length} bölüm · ${y.yol.adimlar.length} adım` : "İçerik paketi gerekli"}</p>
+              <p className="mt-1 text-muted">{y.yol ? yolSayim(y.yol) : "İçerik paketi gerekli"}</p>
               <span className="metin-bag mt-auto pt-4 group-hover:underline">
                 Başla <span aria-hidden>›</span>
               </span>

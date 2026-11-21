@@ -18,8 +18,10 @@ export default async function AdimPage(props: PageProps<"/teori/yol/[yol]/[adim]
   const i = yol?.adimlar.findIndex((a) => a.kod === decodeURIComponent(kod)) ?? -1;
   if (!yol || i < 0) notFound();
   const adim = yol.adimlar[i];
-  const sonraki = yol.adimlar[i + 1];
   const bolum = yol.bolumler.find((b) => b.no === adim.bolum);
+  // Ana yolun son adımından Ek bölümlere geçilmez (Ek bölümler ayrı alan)
+  const sonrakiAday = yol.adimlar[i + 1];
+  const sonraki = sonrakiAday && !!yol.bolumler.find((b) => b.no === sonrakiAday.bolum)?.ek === !!bolum?.ek ? sonrakiAday : undefined;
   // Kursa bağlı yolda (Armoni) adımın pratik kartı kursta varsa geri dönüş kursa, yoksa (ek adımlar) yola
   const kursta = yol.kurs
     ? Boolean((await getCourse(yol.kurs))?.sections.some((s) => s.chapters.some((ch) => ch.lessons.some((l) => l.practice?.yol === yol.slug && l.practice.kod === adim.kod))))

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { YOL_GOC_SURUM, yolKoduGoc } from "./yol-goc";
 
 // Şimdilik ilerleme tarayıcıda (localStorage) tutulur. Üyelik sistemi eklendiğinde
 // aynı şekil Supabase tablosuna taşınacak.
@@ -33,10 +34,12 @@ export type Progress = {
   steps: Record<string, StepProgress>;
   /** Gün (YYYY-MM-DD) → o gün geçilen teori adımı sayısı (günlük "Teori" görevi ve seri için) */
   teori: Record<string, number>;
+  /** Uygulanan teori yolu kod göçünün sürümü (yol-goc.ts); yoksa 0 */
+  yolGoc?: number;
 };
 
 const KEY = "muzik.progress.v1";
-const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {}, steps: {}, teori: {} };
+const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {}, steps: {}, teori: {}, yolGoc: YOL_GOC_SURUM };
 
 let cache: Progress | null = null;
 const listeners = new Set<() => void>();
@@ -45,11 +48,24 @@ function read(): Progress {
   if (cache) return cache;
   try {
     const raw = window.localStorage.getItem(KEY);
-    cache = raw ? { ...EMPTY, ...(JSON.parse(raw) as Progress) } : EMPTY;
+    const kayit = raw ? (JSON.parse(raw) as Progress) : null;
+    cache = kayit ? goc({ ...EMPTY, ...kayit, yolGoc: kayit.yolGoc ?? 0 }) : EMPTY;
   } catch {
     cache = EMPTY;
   }
   return cache;
+}
+
+/** Açılışta bir kez: eski teori yolu adım kodlarını yenilerine taşır (K18 Ek bölümler) ve kaydeder */
+function goc(p: Progress): Progress {
+  if ((p.yolGoc ?? 0) >= YOL_GOC_SURUM) return p;
+  const next = { ...p, steps: yolKoduGoc(p.steps ?? {}), yolGoc: YOL_GOC_SURUM };
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    // Kaydedilemezse bir sonraki açılışta yeniden denenir; bellekteki kopya zaten göç etmiş durumda.
+  }
+  return next;
 }
 
 function write(next: Progress) {

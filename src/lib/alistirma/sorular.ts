@@ -56,9 +56,9 @@ const kokSec = (alt = 45, ust = 57) => alt + rnd(ust - alt + 1);
 
 /* ------------------------------ Klavye ------------------------------ */
 
-function telSorusu(teller: number[]): Soru {
+function telSorusu(teller: number[], mod?: "sec"): Soru {
   const s = sec(teller);
-  if (Math.random() < 0.5) {
+  if (mod === "sec" || Math.random() < 0.5) {
     return {
       tip: "secim",
       metin: "Vurgulanan tel hangisi?",
@@ -78,14 +78,14 @@ function telSorusu(teller: number[]): Soru {
   };
 }
 
-function notaSorusu(a: Extract<Alistirma, { tur: "nota" }>): Soru {
+function notaSorusu(a: Extract<Alistirma, { tur: "nota" }>, gorev?: "adlandir" | "bul"): Soru {
   const [lo, hi] = a.perde;
   const uygun = (p: number) => (a.sesler === "dogal" ? dogalMi(p) : a.sesler === "arizali" ? !dogalMi(p) : true);
   const konumlar: { s: number; f: number }[] = [];
   for (const s of a.teller) for (let f = lo; f <= hi; f++) if (uygun(perdeSes(s, f))) konumlar.push({ s, f });
   const { s, f } = sec(konumlar);
   const p = perdeSes(s, f);
-  const mod = a.mod === "karisik" ? (Math.random() < 0.5 ? "adlandir" : "bul") : a.mod;
+  const mod = gorev ?? (a.mod === "karisik" ? (Math.random() < 0.5 ? "adlandir" : "bul") : a.mod);
   // Arızalı notada yazım verilmediyse rastgele diyez ya da bemol adıyla sor (ikisi de aynı ses)
   const yazim = a.yazim ?? (dogalMi(p) ? undefined : Math.random() < 0.5 ? "diyez" : "bemol");
   const ad = isim(p, yazim);
@@ -115,9 +115,16 @@ function notaSorusu(a: Extract<Alistirma, { tur: "nota" }>): Soru {
   };
 }
 
+/** Akorun öbür türü (Am ↔ A): az akorlu adımlarda çeldirici olarak önce bunlar eklenir */
+const ters = (a: string) => (a.endsWith("m") ? a.slice(0, -1) : `${a}m`);
+
 function akorSorusu(akorlar: string[]): Soru {
   const dogru = sec(akorlar);
-  const havuz = akorlar.length >= 3 ? akorlar : Object.keys(AKOR_SEKLI);
+  // Her soru 4 seçenekli (GuitarBear 4.x): 3 akorlu adımda (4.1 minör şekiller) eşlerinin öbür türüyle tamamlanır
+  const havuz =
+    akorlar.length >= 4
+      ? akorlar
+      : [...new Set([...akorlar, ...akorlar.map(ters).filter((x) => AKOR_SEKLI[x]), ...Object.keys(AKOR_SEKLI)])].slice(0, Math.max(4, akorlar.length * 2));
   const ops = secenekler(dogru, havuz, Math.min(4, havuz.length));
   const sesler = AKOR_SEKLI[dogru]
     .split(" ")
@@ -313,10 +320,40 @@ const ikiSes = (a: number, b: number) => () => {
   nota(b, t + 0.9, 1.4);
 };
 
+const ISARET = () => (Math.random() < 0.5 ? 1 : -1);
+
+/** Üç seçenekli ses karşılaştırma (GuitarBear Kulak 1.x): Aynı / Daha tiz / Daha pes; oktavda Aynı ses / Bir oktav / Oktav değil */
+function sesSorusu3(a: Extract<Alistirma, { tur: "ses" }>, ilk: number, alt: number, hi: number): Soru {
+  if (a.gorev === "oktav") {
+    const r = rnd(3);
+    const fark = r === 0 ? 0 : (r === 1 ? 12 : 1 + rnd(11)) * ISARET();
+    return {
+      tip: "secim",
+      metin: "İki sesi dinle. Aynı ses mi, aralarında bir oktav mı var, yoksa başka bir aralık mı?",
+      secenekler: [{ id: "ayni", ad: "Aynı ses" }, { id: "oktav", ad: "Bir oktav" }, { id: "diger", ad: "Oktav değil" }],
+      dogru: r === 0 ? "ayni" : r === 1 ? "oktav" : "diger",
+      ses: ikiSes(ilk, ilk + fark),
+      aciklama: r === 0 ? "İki ses aynıydı." : r === 1 ? `Aynı nota, bir oktav ${fark > 0 ? "tiz" : "pes"}.` : `Aralık: ${ARALIK_ADI[Math.abs(fark)]}, oktav değil.`,
+    };
+  }
+  // "Aynı mı farklı mı" adımında üç cevap eşit olasılıkta; tiz/pes adımlarında "Aynı" seyrek (%20)
+  const ayni = Math.random() < (a.gorev === "ayni-farkli" ? 1 / 3 : 0.2);
+  const fark = ayni ? 0 : (alt + rnd(hi - alt + 1)) * ISARET();
+  return {
+    tip: "secim",
+    metin: a.gorev === "ayni-farkli" ? "İki sesi dinle. Aynı mı, farklıysa ikinci ses daha tiz mi, daha pes mi?" : "İkinci ses birinciye göre daha tiz mi, daha pes mi, yoksa aynı mı?",
+    secenekler: [{ id: "ayni", ad: "Aynı" }, { id: "tiz", ad: "Daha tiz (ince)" }, { id: "pes", ad: "Daha pes (kalın)" }],
+    dogru: fark === 0 ? "ayni" : fark > 0 ? "tiz" : "pes",
+    ses: ikiSes(ilk, ilk + fark),
+    aciklama: fark === 0 ? "İki ses aynıydı." : `İkinci ses ${Math.abs(fark)} yarım ses ${fark > 0 ? "tizdi" : "pesti"}.`,
+  };
+}
+
 function sesSorusu(a: Extract<Alistirma, { tur: "ses" }>): Soru {
   const [lo, hi] = a.aralik;
   const alt = Math.max(1, lo);
   const ilk = kokSec(48, 64);
+  if (a.secenek === 3) return sesSorusu3(a, ilk, alt, hi);
   if (a.gorev === "ayni-farkli") {
     const ayni = Math.random() < 0.5;
     const fark = (alt + rnd(hi - alt + 1)) * (Math.random() < 0.5 ? 1 : -1);
@@ -490,7 +527,7 @@ function bankadan(q: BankaSoru): Soru {
 export function soruUret(a: Alistirma): Soru {
   switch (a.tur) {
     case "tel":
-      return telSorusu(a.teller);
+      return telSorusu(a.teller, a.mod);
     case "nota":
       return notaSorusu(a);
     case "akor":
@@ -528,15 +565,34 @@ export function soruUret(a: Alistirma): Soru {
   }
 }
 
+/** Soru dağılımı olan adımda i. sorunun üreteci: ritimde önce yazım seçme, sonra geri vurma soruları; notada
+ *  adlandırma ve bulma soruları karışık sırada. Dağılım yoksa undefined */
+function dagilimUreteci(a: Alistirma, n: number): ((i: number) => Soru) | undefined {
+  if ((a.tur === "ritim" || a.tur === "karma") && a.dagilim) {
+    const parcalar = a.tur === "ritim" ? [a] : a.parcalar.filter((p): p is Extract<Alistirma, { tur: "ritim" }> => p.tur === "ritim");
+    if (!parcalar.length) return undefined;
+    const secim = Math.round((a.dagilim.secim / (a.dagilim.secim + a.dagilim.vurus)) * n);
+    return (i) => ritimSorusu(sec(parcalar), i < secim ? "secim" : "vurus");
+  }
+  if (a.tur === "nota" && a.mod === "karisik" && a.dagilim) {
+    const { adlandir, bul } = a.dagilim;
+    const ad = Math.round((adlandir / (adlandir + bul)) * n);
+    const sira = karistir(Array.from({ length: n }, (_, i): "adlandir" | "bul" => (i < ad ? "adlandir" : "bul")));
+    return (i) => notaSorusu(a, sira[i]);
+  }
+  return undefined;
+}
+
 /** Bir adımın soru listesi: arka arkaya aynı sorunun gelmemesine dikkat edilir */
 export function soruListesi(a: Alistirma, n: number): Soru[] {
   // Banka: aynı denemede aynı soru iki kez gelmez
   if (a.tur === "banka") return karistir(a.sorular).slice(0, n).map(bankadan);
+  const uret = dagilimUreteci(a, n) ?? (() => soruUret(a));
   const out: Soru[] = [];
   let deneme = 0;
   while (out.length < n && deneme < n * 20) {
     deneme++;
-    const q = soruUret(a);
+    const q = uret(out.length);
     const imza = JSON.stringify({ ...q, ses: undefined });
     const onceki = out.at(-1);
     if (onceki && JSON.stringify({ ...onceki, ses: undefined }) === imza && deneme < n * 10) continue;

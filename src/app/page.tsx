@@ -6,7 +6,7 @@ import { kursAnahatti, kursKarti } from "@/lib/katalog";
 import { getLibrary } from "@/lib/kutuphane";
 import { getOyun } from "@/lib/oyun-veri";
 import { kisaAd, kursSimgesi, yerSimgesi, yolSimgesi } from "@/lib/simge";
-import { getYol, YOLLAR } from "@/lib/yollar";
+import { getYol, YOLLAR, yolSayim } from "@/lib/yollar";
 import type { IzgaraOgesi } from "@/components/site/SimgeIzgarasi";
 
 /** Öne çıkan kurslar: başlangıç rehberleri, akor yolu ve yeni eklenen kurslar (pakette yoksa atlanır) */
@@ -122,7 +122,7 @@ export default async function Home() {
     await Promise.all(
       YOLLAR.map(async (y): Promise<TeoriYolu | null> => {
         const yol = await getYol(y.slug);
-        return yol ? { slug: y.slug, href: `/teori/yol/${y.slug}`, ad: y.ad, etiket: y.etiket, not: `${yol.bolumler.length} bölüm · ${yol.adimlar.length} adım` } : null;
+        return yol ? { slug: y.slug, href: `/teori/yol/${y.slug}`, ad: y.ad, etiket: y.etiket, not: yolSayim(yol) } : null;
       }),
     )
   ).filter((y): y is TeoriYolu => !!y);

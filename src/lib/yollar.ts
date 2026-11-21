@@ -29,3 +29,10 @@ export const YOLLAR = [
 export function yolOzeti(y: Yol): Yol {
   return { ...y, adimlar: y.adimlar.map((a) => ({ ...a, alistirma: { tur: "karma", parcalar: [] } })) };
 }
+
+/** Kart notu: ana (GuitarBear) bölüm ve adım sayısı; Ek bölümler ayrı ("9 bölüm · 60 adım · 2 ek bölüm") */
+export function yolSayim(y: Yol): string {
+  const ek = y.bolumler.filter((b) => b.ek);
+  const anaAdim = y.adimlar.filter((a) => !ek.some((b) => b.no === a.bolum)).length;
+  return `${y.bolumler.length - ek.length} bölüm · ${anaAdim} adım${ek.length ? ` · ${ek.length} ek bölüm` : ""}`;
+}

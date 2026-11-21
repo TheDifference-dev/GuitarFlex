@@ -15,7 +15,8 @@ import RitimYazi from "./RitimYazi";
 import Porte from "./Porte";
 import AkorSemasi from "./AkorSemasi";
 
-type Sonuc = { puan: number; tam: boolean; vurus?: number };
+/** secimsiz: yalnız geri vurma sorusu (ritim dağılımı); "tam doğru" (seçim doğruluğu) oranına girmez */
+type Sonuc = { puan: number; tam: boolean; vurus?: number; secimsiz?: boolean };
 type Props = { yol: string; adim: YolAdim; sonraki?: { kod: string; ad: string }; geri?: string };
 
 const btn = "px-5 py-2 disabled:opacity-40";
@@ -106,12 +107,14 @@ function SoruGoster({
     </button>
   ) : null;
 
+  // Yalnız geri vurma sorusunda doğru/yanlış yok: vuruş puanı %80 ve üstü yeşil
+  const iyi = sonuc ? sonuc.tam || (sonuc.secimsiz && sonuc.puan >= 0.8) : false;
   const geribildirim = cevaplandi && sonuc ? (
-    <div className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 ${sonuc.tam ? "border-ok/60 bg-ok/10" : "border-bad/60 bg-bad/10"}`}>
+    <div className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 ${iyi ? "border-ok/60 bg-ok/10" : "border-bad/60 bg-bad/10"}`}>
       <div>
         <p className="font-semibold">
-          {sonuc.tam ? "Doğru!" : sonuc.puan > 0 ? `Kısmen doğru (%${Math.round(sonuc.puan * 100)})` : "Yanlış"}
-          {sonuc.vurus !== undefined ? ` · Vuruş puanı %${sonuc.vurus}` : ""}
+          {sonuc.secimsiz ? `Vuruş puanı %${sonuc.vurus}` : sonuc.tam ? "Doğru!" : sonuc.puan > 0 ? `Kısmen doğru (%${Math.round(sonuc.puan * 100)})` : "Yanlış"}
+          {sonuc.vurus !== undefined && !sonuc.secimsiz ? ` · Vuruş puanı %${sonuc.vurus}` : ""}
         </p>
         {soru.tip !== "ritim" && soru.aciklama ? <p className="text-sm text-muted">{soru.aciklama}</p> : null}
       </div>
@@ -281,7 +284,8 @@ function RitimSoruGoster({
   soru, cevaplandi, onCevap, geribildirim,
 }: { soru: Extract<Soru, { tip: "ritim" }>; cevaplandi: boolean; onCevap: (s: Sonuc) => void; geribildirim: React.ReactNode }) {
   const [secim, setSecim] = useState<string | null>(null);
-  const [asama, setAsama] = useState<Asama>("sec");
+  // Yalnız geri vurma sorusunda seçim yok: doğrudan vurmaya hazır
+  const [asama, setAsama] = useState<Asama>(soru.asama === "vurus" ? "hazir" : "sec");
   const [vurusSayi, setVurusSayi] = useState(0);
   const vuruslar = useRef<number[]>([]);
   const bas = useRef(0);
@@ -326,6 +330,7 @@ function RitimSoruGoster({
       window.setTimeout(() => {
         setAsama("bitti");
         const puan = vurusPuani(soru.desen, soru.bpm, soru.olcu, bas.current, vuruslar.current);
+        if (soru.asama === "vurus") return onCevap({ puan: puan / 100, tam: false, vurus: puan, secimsiz: true });
         const secimDogru = secim === soru.dogru;
         onCevap({ puan: (secimDogru ? 0.5 : 0) + (puan / 100) * 0.5, tam: secimDogru, vurus: puan });
       }, (bitis - now) * 1000 + 350),
@@ -336,7 +341,7 @@ function RitimSoruGoster({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">
-          {asama === "sec" ? "Ritmi dinle ve doğru yazımı seç." : "Şimdi aynı ritmi vur: boşluk tuşu ya da büyük düğme."}
+          {asama === "sec" ? "Ritmi dinle ve doğru yazımı seç." : soru.asama === "secim" ? "Ritmi dinle ve doğru yazımı seç." : "Şimdi aynı ritmi vur: boşluk tuşu ya da büyük düğme."}
         </h2>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted tabular-nums">♩ = {soru.bpm}</span>
@@ -345,8 +350,13 @@ function RitimSoruGoster({
           </button>
         </div>
       </div>
+      {soru.asama === "vurus" ? (
+        <div className="rounded-2xl border border-line bg-panel p-3">
+          <RitimYazi desen={soru.desen} olcu={soru.olcu} />
+        </div>
+      ) : null}
       <div className="grid gap-2">
-        {soru.secenekler.map((o, n) => {
+        {(soru.asama === "vurus" ? [] : soru.secenekler).map((o, n) => {
           const dogru = secim !== null && o.id === soru.dogru;
           const yanlis = secim === o.id && o.id !== soru.dogru;
           return (
@@ -356,7 +366,11 @@ function RitimSoruGoster({
               disabled={secim !== null}
               onClick={() => {
                 setSecim(o.id);
-                setAsama("hazir");
+                // Yalnız yazım seçme sorusu: seçimle biter
+                if (soru.asama === "secim") {
+                  setAsama("bitti");
+                  onCevap({ puan: o.id === soru.dogru ? 1 : 0, tam: o.id === soru.dogru });
+                } else setAsama("hazir");
               }}
               className={`flex items-center gap-3 rounded-2xl border p-3 transition ${
                 dogru ? "border-ok bg-ok/10" : yanlis ? "border-bad bg-bad/10" : "border-line bg-panel hover:border-ink/20"
@@ -368,10 +382,10 @@ function RitimSoruGoster({
           );
         })}
       </div>
-      {secim !== null && !cevaplandi ? (
+      {(secim !== null || soru.asama === "vurus") && soru.asama !== "secim" && !cevaplandi ? (
         <div className="space-y-3 card p-4">
           <p className="text-sm text-muted">
-            {secim === soru.dogru ? "Doğru yazım! " : "Doğru yazım yeşil olanı. "}
+            {soru.asama === "vurus" ? "" : secim === soru.dogru ? "Doğru yazım! " : "Doğru yazım yeşil olanı. "}
             Bir ölçü sayımdan sonra ritmi metronomla birlikte vur.
           </p>
           {asama === "hazir" ? (
@@ -400,7 +414,9 @@ function RitimSoruGoster({
 function Ozet({ yol, adim, sonuclar, sonraki, tekrar, geri }: { yol: string; adim: YolAdim; sonuclar: Sonuc[]; sonraki?: { kod: string; ad: string }; tekrar: () => void; geri?: string }) {
   const n = sonuclar.length || 1;
   const dogruluk = Math.round((sonuclar.reduce((a, s) => a + s.puan, 0) / n) * 100);
-  const secim = Math.round((sonuclar.filter((s) => s.tam).length / n) * 100);
+  // Seçim doğruluğu yalnız seçimli sorulardan (yalnız geri vurma soruları hariç)
+  const secimli = sonuclar.filter((s) => !s.secimsiz);
+  const secim = Math.round((secimli.filter((s) => s.tam).length / (secimli.length || 1)) * 100);
   const ritim = sonuclar.filter((s) => s.vurus !== undefined);
   const vurus = ritim.length ? Math.round(ritim.reduce((a, s) => a + (s.vurus ?? 0), 0) / ritim.length) : undefined;
   const gecti =
