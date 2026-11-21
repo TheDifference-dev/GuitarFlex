@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
+import SongsterrAra from "@/components/SongsterrAra";
+import { POPULAR_SONGS } from "@/content/sarkilar";
 import { HardDrive, Search, Star, Trash2, Upload, X } from "lucide-react";
 import type { Level } from "@/content/types";
 import { LEVELS, SEVIYE } from "@/content/seviyeler";
@@ -108,6 +110,12 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
   const sekmeSatirlari = (x: Sekme) =>
     x === "dosyalar" ? tum.filter((s) => s.dosya) : x === "favoriler" ? tum.filter((s) => favoriler.has(s.id)) : x === "son" ? tum.filter((s) => sonSira.has(s.id)) : tum;
 
+  const populerEslesen = useMemo(() => {
+    const igne = q.trim().toLocaleLowerCase("tr");
+    if (igne.length < 2) return [];
+    return POPULAR_SONGS.filter((s) => `${s.title} ${s.artist}`.toLocaleLowerCase("tr").includes(igne)).slice(0, 6);
+  }, [q]);
+
   const gosterilen = useMemo(() => {
     const igne = q.trim().toLocaleLowerCase("tr");
     const out = sekmeSatirlari(sekme).filter((s) => {
@@ -194,6 +202,8 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
           </button>
         )}
       </label>
+
+      <SongsterrAra q={q} bulunan={gosterilen.length + populerEslesen.length} oneriler={populerEslesen} />
 
       {/* Sekmeler ve dosya ekleme */}
       <div className="flex flex-wrap items-center gap-3">

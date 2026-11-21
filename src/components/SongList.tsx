@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, useSyncExternalStore } from "react";
+import SongsterrAra from "@/components/SongsterrAra";
 import { ExternalLink, Search } from "lucide-react";
 import { MADALYALAR, songUrl, type Madalya, type PopularSong } from "@/content/sarkilar";
 import { useProgress } from "@/lib/progress";
@@ -275,6 +276,8 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
           </div>
 
           <p className="text-sm text-muted">{shown.length} şarkı · Tablar Songsterr&apos;de açılır.</p>
+
+          <SongsterrAra q={q} bulunan={shown.length} />
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{shown.map(kart)}</div>
         </>

@@ -311,6 +311,17 @@ select option {
   background: var(--panel);
   color: var(--text);
 }
+/* Grup başlıkları (ör. "Gamlar", "Akorlar"): Windows'ta varsayılan beyaz zemin + açık yazı okunmuyordu */
+select optgroup {
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 700;
+  font-style: normal;
+}
+select option:checked {
+  background: var(--accent);
+  color: #fff;
+}
 
 /* İnce, yuvarlak kaydırma çubuğu (macOS gibi) */
 * {
