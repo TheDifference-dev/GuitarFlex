@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { noteName } from "@/lib/music";
 
 /** Sapta gösterilecek bir nota: tel (1 = en kalın), perde, ölü (x) ya da bağlı (önceki notanın devamı) */
@@ -11,12 +12,14 @@ type Props = {
   notalar: SapNotasi[];
   /** Ölçü ve vuruş bilgisi (ör. "Ölçü 5 · A7") */
   etiket?: string;
+  /** Verilirse başlıkta kapat düğmesi (tercih kalıcı) */
+  onKapat?: () => void;
 };
 
 const MARKERS = [3, 5, 7, 9, 15, 17, 19, 21];
 
 /** Çalan notaları gitar sapı üzerinde gösteren alt panel (Songsterr'ın sap görünümüne benzer). */
-export default function SapPaneli({ akort, notalar, etiket }: Props) {
+export default function SapPaneli({ akort, notalar, etiket, onKapat }: Props) {
   const telSayisi = akort.length || 6;
   const enYuksek = notalar.reduce((m, n) => Math.max(m, n.perde), 0);
   const perdeSayisi = enYuksek > 15 ? 24 : 15;
@@ -33,12 +36,18 @@ export default function SapPaneli({ akort, notalar, etiket }: Props) {
   const y = (tel: number) => UST + (telSayisi - tel) * ARA;
 
   return (
-    <div className="border-t border-line bg-[var(--panel)] px-3 pb-2 pt-1.5" aria-label="Sap görünümü: çalan notalar">
-      <div className="flex items-center justify-between text-[11px] text-muted">
+    <div className="glass border-t border-line px-3 pb-1.5 pt-1" role="region" aria-label="Sap paneli: çalan notalar">
+      <div className="flex items-center gap-3 text-[11px] text-muted">
         <span className="font-semibold uppercase tracking-wide">Sap</span>
         <span className="tabular-nums">{etiket}</span>
+        {onKapat && (
+          <button type="button" onClick={onKapat} className="ml-auto rounded-full p-0.5 hover:bg-ink/10 hover:text-text" title="Sap panelini kapat (Ayarlar'dan yeniden açılır)" aria-label="Sap panelini kapat">
+            <X size={14} />
+          </button>
+        )}
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={notalar.length ? `Çalan: ${notalar.map((n) => `${n.tel}. tel ${n.olu ? "x" : n.perde}`).join(", ")}` : "Çalan nota yok"}>
+      {/* İnce panel: yükseklik sınırlı, sap ortalanır (tabı sıkıştırmaz) */}
+      <svg viewBox={`0 0 ${W} ${H}`} className="mx-auto block max-h-[7.5rem] w-full" role="img" aria-label={notalar.length ? `Çalan: ${notalar.map((n) => `${n.tel}. tel ${n.olu ? "x" : n.perde}`).join(", ")}` : "Çalan nota yok"}>
         {MARKERS.filter((f) => f <= perdeSayisi).map((f) => (
           <circle key={f} cx={x(f)} cy={UST + ((telSayisi - 1) * ARA) / 2} r={4} className="fill-ink/10" />
         ))}

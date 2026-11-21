@@ -33,46 +33,11 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
   const anahat = kursAnahatti(course);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Üst gezinme: kırıntı, ders listesi çekmecesi, önceki/sonraki */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <DersUstGezinme anahat={anahat} dersId={lesson.id} />
       </div>
-
-      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 pt-4">
-        <div className="flex min-w-0 items-start gap-5">
-          <UygulamaSimgesi simge={dersSimgesi(dersTuru(lesson), course.slug)} boyut={60} etiket={DERS_TURU_ADI[dersTuru(lesson) ?? "drill"]} className="mt-1" />
-          <div className="min-w-0">
-            <p className="text-[17px] font-semibold text-muted">{course.cardTitle ?? course.title}</p>
-            <h1 className="baslik-orta mt-1 text-balance !text-[clamp(2rem,1.5rem+1.6vw,3rem)]">{lesson.title}</h1>
-            {lesson.description && <p className="mt-3 max-w-3xl text-pretty text-[19px] leading-snug text-muted">{lesson.description}</p>}
-          </div>
-        </div>
-        <div className="flex gap-2 text-sm">
-          {(lesson.tex || lesson.tabFile) && (
-            <span className="rounded-full bg-ink/[0.06] px-4 py-1.5 font-semibold tabular-nums">
-              {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
-            </span>
-          )}
-          <span className="rounded-full bg-accent/10 px-4 py-1.5 font-semibold text-accent">Toplam: {lesson.minutes}dk</span>
-        </div>
-      </header>
-
-      {!!lesson.body?.length && (
-        <article className="card max-w-3xl space-y-3 p-6 leading-relaxed sm:p-8">
-          {lesson.body.map((para, i) =>
-            para.startsWith("## ") ? (
-              <h2 key={i} className="pt-2 text-xl font-semibold first:pt-0">
-                {para.slice(3)}
-              </h2>
-            ) : (
-              <p key={i} className="text-muted">
-                {para}
-              </p>
-            ),
-          )}
-        </article>
-      )}
 
       <LessonPractice
         key={lesson.id}
@@ -90,7 +55,41 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         title={lesson.title}
         parts={lesson.parts}
         guitarProgram={gitarProgrami(lesson.tips, course.slug)}
-      />
+        baslik={
+          // Kompakt başlık: küçük simge, kurs adı, ders adı ve kısa açıklama; tab ekranın üstüne yakın başlar
+          <header className="flex min-w-0 items-start gap-3.5">
+            <UygulamaSimgesi simge={dersSimgesi(dersTuru(lesson), course.slug)} boyut={44} etiket={DERS_TURU_ADI[dersTuru(lesson) ?? "drill"]} className="mt-0.5" />
+            <div className="min-w-0">
+              <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-muted">
+                <span>{course.cardTitle ?? course.title}</span>
+                {(lesson.tex || lesson.tabFile) && (
+                  <span className="rounded-full bg-ink/[0.06] px-2 py-px tabular-nums text-text">
+                    {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
+                  </span>
+                )}
+              </p>
+              <h1 className="mt-0.5 text-balance text-[clamp(1.375rem,1.1rem+0.8vw,1.75rem)] font-semibold leading-tight tracking-[-0.015em] text-heading">{lesson.title}</h1>
+              {lesson.description && <p className="mt-1 max-w-3xl text-pretty text-[15px] leading-snug text-muted">{lesson.description}</p>}
+            </div>
+          </header>
+        }
+      >
+        {!!lesson.body?.length && (
+          <article className="card max-w-3xl space-y-3 p-6 leading-relaxed sm:p-8">
+            {lesson.body.map((para, i) =>
+              para.startsWith("## ") ? (
+                <h2 key={i} className="pt-2 text-xl font-semibold first:pt-0">
+                  {para.slice(3)}
+                </h2>
+              ) : (
+                <p key={i} className="text-muted">
+                  {para}
+                </p>
+              ),
+            )}
+          </article>
+        )}
+      </LessonPractice>
 
       <Bant ton="gri" className="mt-12 space-y-8 pt-12">
       {(theory.length > 0 || !!lesson.tips?.length) && (

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import { X } from "lucide-react";
+import Acilir from "./Acilir";
 import type { OynaticiAyarlari } from "./ayarlar";
 
 type Props = {
@@ -16,6 +17,10 @@ type Props = {
   sayim: boolean;
   onSayim: (on: boolean) => void;
   onKapat: () => void;
+  /** Paneli açan düğme (odak dönüşü, dış tıklama) */
+  tetik: RefObject<HTMLElement | null>;
+  /** Görüntülenen track'in akordu (kalından inceye) */
+  akort?: string;
 };
 
 const KISAYOLLAR: [string, string][] = [
@@ -25,7 +30,7 @@ const KISAYOLLAR: [string, string][] = [
   ["↑ ↓", "Hız ±%5"],
   ["M", "Metronom"],
   ["Shift + tık", "Ölçüden ölçüye aralık seç"],
-  ["Esc", "Seçimi kaldır / sayımı iptal et"],
+  ["Esc", "Paneli kapat / seçimi kaldır / sayımı iptal et"],
 ];
 
 function Satir({ baslik, children, not }: { baslik: string; children: ReactNode; not?: string }) {
@@ -108,37 +113,22 @@ function Seviye({ ad, deger, onDegis }: { ad: string; deger: number; onDegis: (v
   );
 }
 
-/** Oynatıcının ayar paneli: görünüm, yerleşim, yakınlaştırma, imleç takibi, sap, metronom, ses seviyeleri, kademeli hız, ses bankası. */
-export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, gorunumKilit, sapKilit, sayim, onSayim, onKapat }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const dis = (e: PointerEvent) => {
-      const t = e.target as HTMLElement;
-      if (ref.current && !ref.current.contains(t) && !t.closest("[data-ayar-dugmesi]")) onKapat();
-    };
-    const tus = (e: KeyboardEvent) => e.key === "Escape" && onKapat();
-    window.addEventListener("pointerdown", dis);
-    window.addEventListener("keydown", tus);
-    return () => {
-      window.removeEventListener("pointerdown", dis);
-      window.removeEventListener("keydown", tus);
-    };
-  }, [onKapat]);
-
+/** Oynatıcının ayar paneli: görünüm, yerleşim, yakınlaştırma, imleç takibi, sap, metronom, ses seviyeleri, kademeli hız, ses bankası, akort, kısayollar. */
+export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, gorunumKilit, sapKilit, sayim, onSayim, onKapat, tetik, akort }: Props) {
   const r = ayarlar.rampa;
   return (
-    <div
-      ref={ref}
-      role="dialog"
-      aria-label="Oynatıcı ayarları"
-      className="absolute right-2 top-full z-20 mt-2 bg-elevated max-h-[min(78vh,44rem)] w-[min(24rem,calc(100vw-2rem))] space-y-4 overflow-y-auto rounded-2xl border border-ink/10 p-4 text-text shadow-[var(--shadow-pop)] sm:right-4"
-    >
+    <Acilir tetik={tetik} onKapat={onKapat} etiket="Oynatıcı ayarları" className="right-0 w-[min(24rem,calc(100vw-2rem))] space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Ayarlar</h3>
         <button type="button" onClick={onKapat} className="rounded-full p-1 text-muted hover:bg-ink/10 hover:text-text" aria-label="Ayarları kapat">
           <X size={16} />
         </button>
       </div>
+      {akort && (
+        <p className="-mt-2 text-sm text-muted">
+          Akort: <span className="font-mono text-text">{akort}</span>
+        </p>
+      )}
 
       <Satir baslik="Görünüm" not={gorunumKilit}>
         <Secim
@@ -188,7 +178,7 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
 
       <div className="space-y-0.5 border-t border-ink/[0.07] pt-3">
         <Anahtar ad="İmleci takip et (sayfa kayar)" acik={ayarlar.imlecTakibi} onDegis={(v) => guncelle({ imlecTakibi: v })} />
-        <Anahtar ad={sapKilit ? `Sap görünümü (${sapKilit})` : "Sap görünümü (çalan notalar)"} acik={ayarlar.sap && !sapKilit} kilit={!!sapKilit} onDegis={(v) => guncelle({ sap: v })} />
+        <Anahtar ad={sapKilit ? `Sap paneli (${sapKilit})` : "Sap paneli (çalan notalar, altta)"} acik={ayarlar.sap && !sapKilit} kilit={!!sapKilit} onDegis={(v) => guncelle({ sap: v })} />
         <Anahtar ad="Sayım (başlamadan bir ölçü say)" acik={sayim} onDegis={onSayim} />
       </div>
 
@@ -203,14 +193,14 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
         />
       </Satir>
 
-      <Satir baslik="Ses seviyeleri" not="ana ses çalma çubuğunda">
+      <Satir baslik="Ses seviyeleri" not="ana ses kontrol çubuğunda">
         <div className="space-y-1.5">
           <Seviye ad="Metronom" deger={ayarlar.metronomSesi} onDegis={(v) => guncelle({ metronomSesi: v })} />
           <Seviye ad="Sayım" deger={ayarlar.sayimSesi} onDegis={(v) => guncelle({ sayimSesi: v })} />
         </div>
       </Satir>
 
-      <Satir baslik="Kademeli hızlanma" not="her döngü turunda">
+      <Satir baslik="Kademeli hızlanma" not="hız menüsünden aç · her döngü turunda">
         <div className="flex gap-2">
           <Sayi ad="Başla %" deger={r.baslangic} min={25} max={150} adim={5} onDegis={(v) => guncelle({ rampa: { ...r, baslangic: v } })} />
           <Sayi ad="Artış %" deger={r.adim} min={1} max={25} adim={1} onDegis={(v) => guncelle({ rampa: { ...r, adim: v } })} />
@@ -240,7 +230,8 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
             </div>
           ))}
         </dl>
+        <p className="pt-1 text-xs text-muted">Notaya tıklayarak oradan çal; sürükleyerek ya da Shift + tıkla ölçü aralığı seç (döngü açıksa seçili aralık tekrar eder).</p>
       </Satir>
-    </div>
+    </Acilir>
   );
 }

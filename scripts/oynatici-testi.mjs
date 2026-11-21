@@ -392,6 +392,9 @@ const depoBetigi = (depo) => `try { ${depo === null ? `localStorage.removeItem("
 // ── Ölçümler ─────────────────────────────────────────────────────────────────
 const CAL = 'button[title^="Çal / Duraklat"]';
 const METRONOM = 'button[title^="Metronom (M)"]';
+/** Kompakt kontrol çubuğu: %50/%75/%100 hız panelinde, "Bu ölçü" döngü panelinde */
+const HIZ_PANELI = "button[data-hiz-dugmesi]";
+const DONGU_PANELI = "button[data-dongu-dugmesi]";
 
 /** Çal'a basıp konumun ilerlediğini ve ses çıktığını ölçer. `i`: sayfadaki oynatıcı sırası. */
 async function calVeOlc(s, i = 0, { enCok = 3500, enAz = 900 } = {}) {
@@ -655,7 +658,9 @@ async function ekSenaryo(s, sayfa) {
   const o = await calVeOlc(s, 0, { enCok: Math.min(12000, 3500 + (parca.ilkNota / 960) * (60000 / parca.tempo)) });
   adim("sayimsiz-nota", o.ilerledi && o.rms > ESIK, { rms: o.rms, ilerledi: o.ilerledi });
 
-  // 4) Hız %50 → ses sürer, konum ilerler; sonra %100
+  // 4) Hız %50 → ses sürer, konum ilerler; sonra %100. Hız düğmeleri kontrol çubuğundaki hız panelinde (kompakt çubuk):
+  // kullanıcı gibi önce panel açılır (panel düğmelere basınca açık kalır)
+  await s.js(`window.__gfSonda.tikla('${HIZ_PANELI}')`, true);
   await s.js(`window.__gfSonda.metinTikla("%50")`, true);
   await bekle(300);
   let t1 = (await s.durum()).tick;
@@ -665,6 +670,7 @@ async function ekSenaryo(s, sayfa) {
   const ilkPencere = rms;
   if (rms <= ESIK) rms = await pencere(s, 2500);
   adim("hiz-50", d.hiz === 0.5 && d.tick !== t1 && rms > ESIK, { hiz: d.hiz, rms, ilkPencere, tick: [t1, d.tick] });
+  if (!(await s.js(`!!window.__gfSonda.dugme("%100")`))) await s.js(`window.__gfSonda.tikla('${HIZ_PANELI}')`, true);
   await s.js(`window.__gfSonda.metinTikla("%100")`, true);
 
   // 5) Ana ses %0 → sessiz (konum ilerler); %100 → ses geri gelir; hoparlör düğmesi sessize alır
@@ -703,7 +709,9 @@ async function ekSenaryo(s, sayfa) {
   adim("metronom-acik", (await pencere(s, 1500)) > ESIK, {});
   await s.js(`window.__gfSonda.tikla('${METRONOM}')`, true);
 
-  // 7) Döngü: "Bu ölçü" → aralık kurulur; aralığın sonuna yaklaşınca başa sarar ve ses sürer
+  // 7) Döngü: "Bu ölçü" → aralık kurulur; aralığın sonuna yaklaşınca başa sarar ve ses sürer.
+  // "Bu ölçü" kontrol çubuğundaki döngü panelinde (kompakt çubuk): önce panel açılır
+  if (!(await s.js(`!!window.__gfSonda.dugme("Bu ölçü")`))) await s.js(`window.__gfSonda.tikla('${DONGU_PANELI}')`, true);
   await s.js(`window.__gfSonda.metinTikla("Bu ölçü")`, true);
   await bekle(300);
   d = await s.durum();

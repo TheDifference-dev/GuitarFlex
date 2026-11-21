@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Metronome as MetronomeIcon, Pause, Play, Repeat, Settings2, SkipBack, SlidersHorizontal, TrendingUp, Volume1, Volume2, VolumeX, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Gauge, Metronome as MetronomeIcon, Pause, Play, Repeat, Settings2, SkipBack, SlidersHorizontal, Timer, TrendingUp, Volume1, Volume2, VolumeX, X } from "lucide-react";
 import { noteName } from "@/lib/music";
 import type { LessonPart, Stave } from "@/content/types";
 import { useOynaticiAyarlari, type OynaticiAyarlari } from "./oynatici/ayarlar";
+import Acilir from "./oynatici/Acilir";
 import AyarPaneli from "./oynatici/AyarPaneli";
 import Mikser, { type MikserIzi } from "./oynatici/Mikser";
 import SapPaneli, { type SapNotasi } from "./oynatici/SapPaneli";
@@ -118,7 +119,8 @@ export default function TabPlayer(props: Props) {
     id = ++nextSourceId;
     sourceIds.set(props.source, id);
   }
-  return <Player key={`${id}-${ayarlar.sesBankasi}`} {...props} bank={ayarlar.sesBankasi} />;
+  // Yerleşim değişince de yeniden kurulur: alphaTab kaydırma kabını (sayfa ya da yatay kutu) yalnız kurulumda okur
+  return <Player key={`${id}-${ayarlar.sesBankasi}-${ayarlar.yerlesim}`} {...props} bank={ayarlar.sesBankasi} />;
 }
 
 type Range = { startTick: number; endTick: number };
@@ -168,7 +170,19 @@ function Player({
   const [position, setPosition] = useState({ current: 0, end: 0, tick: 0, endTick: 0 });
   const [currentBar, setCurrentBar] = useState(0);
   const [range, setRange] = useState<Range | null>(null);
-  const [panel, setPanel] = useState<"ayar" | "mikser" | null>(null);
+  /** Kontrol çubuğundan açılan panel (aynı anda biri) */
+  const [panel, setPanel] = useState<"ayar" | "mikser" | "hiz" | "dongu" | null>(null);
+  const panelRef = useRef(panel);
+  const kapat = useCallback(() => setPanel(null), []);
+  const ac = (p: NonNullable<typeof panel>) => setPanel((x) => (x === p ? null : p));
+  const hizTetik = useRef<HTMLButtonElement>(null);
+  const donguTetik = useRef<HTMLButtonElement>(null);
+  const ayarTetik = useRef<HTMLButtonElement>(null);
+  const mikserTetik = useRef<HTMLButtonElement>(null);
+  /** Yapışkan kontrol çubuğu: yüksekliği imleç takibinin kaydırma payını belirler */
+  const cubukRef = useRef<HTMLDivElement>(null);
+  const isaretRef = useRef<HTMLDivElement>(null);
+  const [yapisti, setYapisti] = useState(false);
   const [fretNotes, setFretNotes] = useState<{ notes: SapNotasi[]; bar: number } | null>(null);
 
   const [speed, setSpeedState] = useState(100);
@@ -200,7 +214,7 @@ function Player({
 
   // Callback'leri ve ayarları ref'te tut: değişmeleri player'ı yeniden kurmasın.
   const callbacks = useRef({ onBpmChange, onPlayingChange, onScore, onBar, onFinished });
-  const display = useRef({ view, zoom, horizontal, follow: ayarlar.imlecTakibi });
+  const display = useRef({ view, zoom, horizontal });
   /** Kurulumda okunur: değişirse oynatıcı yeniden kurulmaz (Quick Study'de sabit) */
   const rangeRef = useRef(barRange);
   const audioOnlyRef = useRef(audioOnly);
@@ -221,7 +235,8 @@ function Player({
   const anchorBar = useRef<number | null>(null);
   useEffect(() => {
     callbacks.current = { onBpmChange, onPlayingChange, onScore, onBar, onFinished };
-    display.current = { view, zoom, horizontal, follow: ayarlar.imlecTakibi };
+    panelRef.current = panel;
+    display.current = { view, zoom, horizontal };
     playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi };
   });
 
@@ -236,6 +251,13 @@ function Player({
     return v === "tab" ? R.ShowWithBars : R.Automatic;
   }, []);
 
+  // İmleç takibinde çalınan satır yapışkan çubuğun hemen altına gelsin: pay = çubuğun üst konumu + yüksekliği + boşluk
+  const kaydirmaPayi = useCallback(() => {
+    const el = cubukRef.current;
+    if (!el) return 120;
+    return (parseFloat(getComputedStyle(el).top) || 0) + el.offsetHeight + 12;
+  }, []);
+
   // Kaynak değiştiğinde player'ı kur.
   useEffect(() => {
     let disposed = false;
@@ -246,7 +268,7 @@ function Player({
         atRef.current = at;
         // Worker'lar blob üzerinden açıldığı için yollar tam URL olmalı.
         const abs = (path: string) => new URL(path, window.location.href).href;
-        const { view: v, zoom: z, horizontal: h, follow } = display.current;
+        const { view: v, zoom: z, horizontal: h } = display.current;
         const range = rangeRef.current;
         // Tab renkleri paletten (globals.css) okunur.
         const css = getComputedStyle(document.documentElement);
@@ -278,8 +300,12 @@ function Player({
           },
           player: {
             playerMode: at.PlayerMode.EnabledSynthesizer,
-            scrollElement: viewportRef.current,
-            scrollMode: follow ? at.ScrollMode.Continuous : at.ScrollMode.Off,
+            // Sayfa yerleşiminde tab sayfayla birlikte uzar: imleç takibi sayfayı kaydırır (kontrol çubuğunun altına,
+            // bkz. scrollOffsetY). Yatay yerleşimde tab kendi yatay kutusunda kayar.
+            scrollElement: h ? viewportRef.current : "html,body",
+            scrollOffsetY: -kaydirmaPayi(),
+            // Takip yalnız çalarken açılır (bkz. "İmleç takibi"): duruyorken notaya tıklamak sayfayı oynatmasın
+            scrollMode: at.ScrollMode.Off,
             enableUserInteraction: !audioOnlyRef.current,
           },
         });
@@ -486,7 +512,7 @@ function Player({
       apiRef.current?.destroy();
       apiRef.current = null;
     };
-  }, [source, bank, staveProfile, rhythmMode]);
+  }, [source, bank, staveProfile, rhythmMode, kaydirmaPayi]);
 
   /** Ölçüleri (0'dan, kapsayıcı) çalma aralığı yap ve tabda işaretle */
   const selectBars = useCallback((a: number, b: number) => {
@@ -555,14 +581,40 @@ function Player({
     api.render();
   }, [zoom, horizontal]);
 
-  // İmleç takibi
+  // İmleç takibi: yalnız çalarken. Sayfa yerleşiminde alphaTab sayfayı (html) kaydırır; çalınan satır kontrol çubuğunun
+  // hemen altına gelir. Duruyorken (yükleme, notaya tıklama, ölçü atlama) sayfa yerinden oynamaz.
   const follow = ayarlar.imlecTakibi;
   useEffect(() => {
     const api = apiRef.current;
-    if (!api) return;
-    api.settings.player.scrollMode = follow ? atRef.current.ScrollMode.Continuous : atRef.current.ScrollMode.Off;
+    if (!api || !atRef.current) return;
+    const mod = follow && playing && !audioOnlyRef.current ? atRef.current.ScrollMode.Continuous : atRef.current.ScrollMode.Off;
+    if (api.settings.player.scrollMode === mod) return;
+    api.settings.player.scrollMode = mod;
     api.updateSettings();
-  }, [follow, playerReady]);
+  }, [follow, playerReady, playing]);
+
+  useEffect(() => {
+    const el = cubukRef.current;
+    if (!el) return;
+    const guncelPay = () => {
+      const api = apiRef.current;
+      if (api) api.settings.player.scrollOffsetY = -kaydirmaPayi();
+    };
+    guncelPay();
+    const ro = new ResizeObserver(guncelPay);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [kaydirmaPayi, playerReady]);
+
+  // Çubuk yapıştı mı (köşeler düzleşir, gölge çıkar): çubuğun hemen üstündeki işaret gezinme çubuğunun altına geçince
+  useEffect(() => {
+    const el = isaretRef.current;
+    if (!el) return;
+    const ust = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) * 16 || 48;
+    const io = new IntersectionObserver(([e]) => setYapisti(!e.isIntersecting && e.boundingClientRect.top < ust + 1), { rootMargin: `-${ust + 1}px 0px 0px 0px` });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // Çalma ayarları
   useEffect(() => {
@@ -685,6 +737,8 @@ function Player({
       } else if (e.key === "l" || e.key === "L") setLoop((x) => !x);
       else if (e.key === "m" || e.key === "M") setMetronome((x) => !x);
       else if (e.key === "Escape") {
+        // Açık panel varsa Esc yalnız paneli kapatır (Acilir)
+        if (panelRef.current) return;
         if (counting !== null) cancelCountIn();
         else clearRange();
       }
@@ -790,27 +844,48 @@ function Player({
   const bpm = Math.round((meta.tempo * speed) / 100);
   const multiTrack = tracks.length > 1 && mutedTracks === undefined && !audioOnly;
   const showParts = !!parts?.length && !barRange && meta.bars > 0;
-  const btn = "inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-ink/[0.04] px-3 py-1.5 text-sm transition hover:bg-ink/10 disabled:opacity-40";
-  const on = "!border-accent !bg-accent !text-accent-ink hover:!bg-accent/85";
-  const iconBtn = "inline-flex h-8 w-8 items-center justify-center rounded-full border border-ink/10 bg-ink/[0.04] text-sm transition hover:bg-ink/10 disabled:opacity-40";
   const shownTrack = tracks.find((t) => t.index === shown);
+  /** Kontrol çubuğu düğmeleri: zeminsiz, üstüne gelince hafif dolgu (apple.com), açıkken vurgu rengi */
+  const ctl =
+    "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-sm transition hover:bg-ink/[0.08] disabled:opacity-40 disabled:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)]";
+  const ikon = `${ctl} w-8 !px-0`;
+  const kucukIkon = `${ctl} h-7 w-7 !px-0`;
+  const on = "!bg-accent !text-accent-ink hover:!bg-accent/85";
+  const ayrac = <span className="mx-0.5 h-5 w-px shrink-0 bg-line" aria-hidden />;
+  const calEtiketi = playerReady ? (playing ? "Duraklat" : "Çal") : sesSorunu === "hata" ? "Ses yok" : sfPercent !== null && sfPercent < 100 ? `Ses %${sfPercent}` : "Ses hazırlanıyor…";
+  const ozelSecim = range && rangeBars && !activePart ? `${rangeBars[0] + 1}${rangeBars[1] !== rangeBars[0] ? `–${rangeBars[1] + 1}` : ""}` : null;
 
   return (
-    <div className="card overflow-clip" onPointerDown={() => (lastTouchedPlayer = playerId)}>
-      {/* Ana araç çubuğu */}
-      <div className="glass sticky top-[57px] z-[5] space-y-2.5 border-b border-line p-3 sm:p-4">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="card relative" onPointerDown={() => (lastTouchedPlayer = playerId)}>
+      {/* Yapışma işareti: bu çizgi gezinme çubuğunun altına geçince kontrol çubuğu "yapışmış" sayılır */}
+      <div ref={isaretRef} className="h-0" aria-hidden />
+      {/* Kontrol çubuğu: bütün kontroller tek satırda; sayfa kayarken üstte (site gezinmesinin altında) yapışkan kalır */}
+      <div
+        ref={cubukRef}
+        role="region"
+        aria-label="Oynatıcı kontrolleri"
+        data-kontrol-cubugu
+        data-yapisti={yapisti || undefined}
+        className={`glass @container sticky top-[var(--nav-h)] z-[6] border-b border-line transition-[border-radius,box-shadow] ${yapisti ? "rounded-none shadow-[0_6px_16px_-10px_rgb(0_0_0/0.35)]" : "rounded-t-[var(--radius-card)]"}`}
+      >
+        <div className="flex min-h-[3.25rem] flex-wrap items-center gap-x-1 gap-y-1 px-2 py-1.5 sm:px-3">
           <button
             type="button"
             onClick={() => apiRef.current?.playPause()}
             disabled={!playerReady}
-            className="btn-primary min-w-28 px-5 py-2 disabled:opacity-40"
+            className={`btn-primary h-9 shrink-0 disabled:opacity-40 ${playerReady ? "w-9 !px-0" : "px-3 text-xs tabular-nums"}`}
             title={playerReady ? "Çal / Duraklat (Boşluk)" : sesSorunu === "hata" ? "Çal / Duraklat: ses yüklenemedi" : "Çal / Duraklat: ses bankası yükleniyor, hazır olunca açılır"}
           >
-            {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
-            {playerReady ? (playing ? "Duraklat" : "Çal") : sesSorunu === "hata" ? "Ses yok" : sfPercent !== null && sfPercent < 100 ? `Ses %${sfPercent}` : "Ses hazırlanıyor…"}
+            {playerReady ? (
+              <>
+                {playing ? <Pause size={16} fill="currentColor" aria-hidden /> : <Play size={16} fill="currentColor" className="translate-x-px" aria-hidden />}
+                <span className="sr-only">{calEtiketi}</span>
+              </>
+            ) : (
+              calEtiketi
+            )}
           </button>
-          <button type="button" onClick={() => apiRef.current?.stop()} disabled={!playerReady} className={iconBtn} title="Başa dön" aria-label="Başa dön">
+          <button type="button" onClick={() => apiRef.current?.stop()} disabled={!playerReady} className={ikon} title="Başa dön" aria-label="Başa dön">
             <SkipBack size={15} />
           </button>
           {audioOnly && (
@@ -824,15 +899,16 @@ function Player({
                 api.play();
               }}
               disabled={!playerReady}
-              className={btn}
+              className={ctl}
               title="Baştan bir kez daha dinle"
             >
               ↺ Tekrar
             </button>
           )}
 
-          <div className="flex min-w-48 flex-1 items-center gap-2 text-sm tabular-nums">
-            <span className="w-10 text-right">{formatTime(position.current)}</span>
+          {/* Konum: süre, ilerleme (tıkla-git, sürükle), kısım sınırları */}
+          <div className="flex min-w-[6rem] flex-1 items-center gap-1.5 px-1 text-xs tabular-nums">
+            <span className="w-8 text-right">{formatTime(position.current)}</span>
             <div
               ref={barRef}
               role="slider"
@@ -843,7 +919,7 @@ function Player({
               aria-valuenow={Math.round(position.current / 1000)}
               aria-valuetext={`${formatTime(position.current)} / ${formatTime(position.end)}`}
               aria-disabled={!playerReady}
-              className={`group relative mx-2 h-6 flex-1 touch-none ${playerReady ? "cursor-pointer" : "opacity-40"}`}
+              className={`group relative mx-1 h-6 flex-1 touch-none rounded-full focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${playerReady ? "cursor-pointer" : "opacity-40"}`}
               onPointerDown={(e) => {
                 if (!playerReady) return;
                 e.currentTarget.setPointerCapture(e.pointerId);
@@ -851,175 +927,190 @@ function Player({
               }}
               onPointerMove={(e) => e.currentTarget.hasPointerCapture(e.pointerId) && seekTo(e.clientX)}
             >
-              <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-ink/10">
+              <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 overflow-hidden rounded-full bg-ink/10">
                 {range && <div className="absolute inset-y-0 bg-ink/20" style={{ left: `${pct(range.startTick)}%`, width: `${pct(range.endTick) - pct(range.startTick)}%` }} />}
                 <div className="bar-fill absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct(position.tick)}%` }} />
               </div>
-              {/* Kısım sınırları */}
               {showParts &&
                 parts!.slice(1).map((p) => (
-                  <span key={p.name} className="absolute top-1/2 h-3 w-px -translate-y-1/2 bg-ink/40" style={{ left: `${pct(barTick(p.bars[0] - 1))}%` }} aria-hidden />
+                  <span key={p.name} className="absolute top-1/2 h-2.5 w-px -translate-y-1/2 bg-ink/40" style={{ left: `${pct(barTick(p.bars[0] - 1))}%` }} aria-hidden />
                 ))}
               <span
-                className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_1px_4px_rgb(0_0_0/0.25)] transition-transform group-hover:scale-110"
+                className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_1px_4px_rgb(0_0_0/0.25)] transition-transform group-hover:scale-110"
                 style={{ left: `${pct(position.tick)}%` }}
                 aria-hidden
               />
             </div>
-            <span className="w-10 text-muted">{formatTime(position.end)}</span>
+            <span className="w-8 text-muted">{formatTime(position.end)}</span>
           </div>
+
           {meta.bars > 0 && (
-            <div className="flex items-center gap-0.5 text-sm tabular-nums">
-              <button type="button" className={iconBtn} onClick={() => gotoBar(currentBar - 1)} disabled={!playerReady} title="Önceki ölçü (←)" aria-label="Önceki ölçü">
+            <div className="flex shrink-0 items-center text-sm tabular-nums" role="group" aria-label="Ölçü">
+              <button type="button" className={kucukIkon} onClick={() => gotoBar(currentBar - 1)} disabled={!playerReady} title="Önceki ölçü (←)" aria-label="Önceki ölçü">
                 <ChevronLeft size={15} />
               </button>
-              <span className="min-w-[5.5rem] whitespace-nowrap text-center text-muted" aria-live="off">
-                Ölçü <span className="text-text">{currentBar + 1}</span>/{meta.bars}
+              <span className="min-w-[4.75rem] whitespace-nowrap text-center text-xs text-muted @max-6xl:min-w-[3rem]" aria-live="off">
+                {/* Dar çubukta (72rem altı) etiket yazıları gizlenir, kontroller tek satırda kalsın */}
+                <span className="@max-6xl:sr-only">Ölçü </span>
+                <span className="text-sm font-semibold text-text">{currentBar + 1}</span>/{meta.bars}
               </span>
-              <button type="button" className={iconBtn} onClick={() => gotoBar(currentBar + 1)} disabled={!playerReady} title="Sonraki ölçü (→)" aria-label="Sonraki ölçü">
+              <button type="button" className={kucukIkon} onClick={() => gotoBar(currentBar + 1)} disabled={!playerReady} title="Sonraki ölçü (→)" aria-label="Sonraki ölçü">
                 <ChevronRight size={15} />
               </button>
             </div>
           )}
-          {/* Ana ses: her oynatıcıda (tek track'li derslerde de) görünür; tercih kalıcıdır */}
-          <div className="flex items-center gap-1.5 text-sm" role="group" aria-label="Ses">
+
+          {ayrac}
+          {/* Hız: −/+ ve açılır panel (kaydırıcı, %50/%75/%100, kademeli hızlanma) */}
+          <div className="relative flex shrink-0 items-center" role="group" aria-label="Hız">
+            <button type="button" className={kucukIkon} onClick={() => setSpeed(speed - 5)} disabled={speed <= MIN_SPEED} aria-label="Yavaşlat (↓)" title="Yavaşlat %5 (↓)">
+              −
+            </button>
             <button
+              ref={hizTetik}
               type="button"
-              data-ana-ses-dugmesi
-              onClick={() => guncelle(anaSes === 0 ? { sessiz: false, ...(seviye(ayarlar.anaSes) === 0 ? { anaSes: 100 } : {}) } : { sessiz: true })}
-              className={iconBtn}
-              aria-pressed={anaSes === 0}
-              title={anaSes === 0 ? "Sesi aç" : "Sessize al"}
-              aria-label={anaSes === 0 ? "Sesi aç" : "Sessize al"}
+              data-hiz-dugmesi
+              onClick={() => ac("hiz")}
+              className={`${ctl} px-2 tabular-nums ${panel === "hiz" ? "bg-ink/[0.08]" : ""}`}
+              aria-haspopup="dialog"
+              aria-expanded={panel === "hiz"}
+              aria-label={`Hız %${speed}, ${bpm} BPM${ramp ? ", kademeli hızlanma açık" : ""}: hız panelini aç`}
+              title={`Hız %${speed} · ${bpm} BPM${ramp ? ` · kademeli → %${ayarlar.rampa.hedef}` : ""}`}
             >
-              {anaSes === 0 ? <VolumeX size={15} className="text-bad" /> : anaSes < 0.5 ? <Volume1 size={15} /> : <Volume2 size={15} />}
+              {ramp ? <TrendingUp size={14} className="text-accent" aria-hidden /> : <Gauge size={14} className="text-muted" aria-hidden />}
+              <span className="min-w-[2.6rem] text-left">%{speed}</span>
+              <ChevronDown size={12} className="-ml-1 text-muted" aria-hidden />
             </button>
-            <input
-              type="range"
-              min={0}
-              max={150}
-              step={5}
-              value={anaYuzde}
-              onChange={(e) => anaSesiAyarla(Number(e.target.value))}
-              className="w-20 accent-[var(--accent)] sm:w-24"
-              aria-label="Ana ses"
-              title="Ana ses (%0–150)"
-            />
-            <span className="w-9 whitespace-nowrap text-xs tabular-nums text-muted">%{anaYuzde}</span>
+            <button type="button" className={kucukIkon} onClick={() => setSpeed(speed + 5)} disabled={speed >= MAX_SPEED} aria-label="Hızlandır (↑)" title="Hızlandır %5 (↑)">
+              +
+            </button>
+            {panel === "hiz" && (
+              <Acilir tetik={hizTetik} onKapat={kapat} etiket="Hız" className="left-0 w-[19rem] space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <h3 className="font-semibold">Hız</h3>
+                  <span className="text-sm tabular-nums">
+                    %{speed} <span className="text-muted">· {bpm} BPM</span>
+                  </span>
+                </div>
+                <input type="range" min={MIN_SPEED} max={MAX_SPEED} step={5} value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="w-full accent-[var(--accent)]" aria-label="Hız" />
+                <div className="flex gap-1.5">
+                  {SPEEDS.map((v) => (
+                    <button key={v} type="button" onClick={() => setSpeed(v)} aria-pressed={speed === v} className={`flex-1 rounded-full border border-ink/10 bg-ink/[0.04] py-1 text-sm tabular-nums transition hover:bg-ink/10 ${speed === v ? on : ""}`}>
+                      %{v}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={ramp}
+                  onClick={toggleRamp}
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border-t border-ink/[0.07] px-1 pt-3 text-left text-sm"
+                  title="Kademeli hızlanma: döngü açılır, her turda hız bir adım artar"
+                >
+                  <span>
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <TrendingUp size={14} /> Kademeli hızlanma
+                    </span>
+                    <span className="block text-xs text-muted tabular-nums">
+                      %{ayarlar.rampa.baslangic}&apos;tan başla, her döngüde +%{ayarlar.rampa.adim}, hedef %{ayarlar.rampa.hedef}
+                      {ramp ? (speed >= ayarlar.rampa.hedef ? " · hedefte" : ` · şimdi %${speed}`) : ""}
+                    </span>
+                  </span>
+                  <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${ramp ? "bar-fill" : "bg-ink/15"}`}>
+                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${ramp ? "left-[1.125rem]" : "left-0.5"}`} />
+                  </span>
+                </button>
+                <p className="text-xs text-muted">↑ ↓ tuşları ±%5 · adımlar Ayarlar&apos;da</p>
+              </Acilir>
+            )}
           </div>
-          {multiTrack && (
-            <button type="button" onClick={() => setPanel((p) => (p === "mikser" ? null : "mikser"))} className={`${btn} ${panel === "mikser" ? on : ""}`} aria-expanded={panel === "mikser"} title="Mikser: track sesleri, solo, sessiz">
-              <SlidersHorizontal size={14} /> Mikser
+
+          {/* Döngü: aç/kapa (L) ve açılır panel (bu ölçü, seçim) */}
+          <div className="relative flex shrink-0 items-center" role="group" aria-label="Döngü">
+            <button type="button" onClick={() => setLoop((x) => !x)} className={`${ikon} w-[1.875rem] !rounded-l-full !rounded-r-none ${loop ? on : ""}`} title="Döngü (L): seçili aralık ya da bütün parça tekrar eder" aria-label="Döngü (L)" aria-pressed={loop}>
+              <Repeat size={15} />
             </button>
+            <button
+              ref={donguTetik}
+              type="button"
+              data-dongu-dugmesi
+              onClick={() => ac("dongu")}
+              className={`${ctl} h-8 w-5 !rounded-l-none !rounded-r-full !px-0 ${loop ? "bg-accent/15" : ""} ${panel === "dongu" ? "!bg-ink/[0.12]" : ""}`}
+              aria-haspopup="dialog"
+              aria-expanded={panel === "dongu"}
+              aria-label="Döngü seçenekleri: bu ölçü, seçim"
+              title="Döngü seçenekleri: bu ölçüyü döngüye al, seçimi kaldır"
+            >
+              <ChevronDown size={12} className="text-muted" />
+            </button>
+            {panel === "dongu" && (
+              <Acilir tetik={donguTetik} onKapat={kapat} etiket="Döngü" className="left-0 w-[19rem] space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">Döngü</h3>
+                  <span className="text-xs text-muted">{loop ? "açık" : "kapalı"} · L</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => selectBars(currentBar, currentBar)}
+                  disabled={!playerReady}
+                  className={`flex w-full items-center justify-between rounded-xl border border-ink/10 bg-ink/[0.04] px-3 py-2 text-sm transition hover:bg-ink/10 disabled:opacity-40 ${rangeBars && rangeBars[0] === rangeBars[1] && rangeBars[0] === currentBar ? on : ""}`}
+                  title="Bulunulan ölçüyü döngüye al (Shift + tık ile birden çok ölçü seçilir)"
+                >
+                  Bu ölçü <span className="text-xs tabular-nums opacity-75">ölçü {currentBar + 1} döngüye girer</span>
+                </button>
+                {range && rangeBars ? (
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span>
+                      Seçim: ölçü {rangeBars[0] + 1}
+                      {rangeBars[1] !== rangeBars[0] ? `–${rangeBars[1] + 1}` : ""}
+                      {activePart ? ` (kısım ${activePart.name})` : ""}
+                    </span>
+                    <button type="button" onClick={clearRange} className="rounded-full px-2.5 py-0.5 text-xs font-semibold text-[var(--link)] hover:bg-ink/10" title="Seçimi kaldır (Esc)">
+                      Seçimi kaldır
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted">Seçim yok: döngü bütün parçayı tekrarlar.</p>
+                )}
+                <p className="text-xs text-muted">Tabda sürükleyerek ya da Shift + tıkla ölçü aralığı seç; notaya tıklayınca oradan çalar.</p>
+              </Acilir>
+            )}
+          </div>
+          {ozelSecim && (
+            <span className="inline-flex h-7 shrink-0 items-center gap-0.5 rounded-full bg-accent/10 pl-2.5 pr-0.5 text-xs font-semibold tabular-nums text-accent">
+              Seçim {ozelSecim}
+              <button type="button" onClick={clearRange} className="rounded-full p-1 hover:bg-accent/20" title="Seçimi kaldır (Esc)" aria-label="Seçimi kaldır">
+                <X size={12} />
+              </button>
+            </span>
           )}
           <button
             type="button"
-            data-ayar-dugmesi
-            onClick={() => setPanel((p) => (p === "ayar" ? null : "ayar"))}
-            className={`${btn} ${panel === "ayar" ? on : ""}`}
-            aria-expanded={panel === "ayar"}
-            title="Görünüm, yerleşim, yakınlaştırma, sap, metronom, kısayollar"
-          >
-            <Settings2 size={14} /> Ayarlar
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Hız">
-            <span className="text-muted">Hız</span>
-            <button type="button" className={iconBtn} onClick={() => setSpeed(speed - 5)} disabled={speed <= MIN_SPEED} aria-label="Yavaşlat (↓)" title="Yavaşlat (↓)">
-              −
-            </button>
-            <input
-              type="range"
-              min={MIN_SPEED}
-              max={MAX_SPEED}
-              step={5}
-              value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
-              className="w-24 accent-[var(--accent)] sm:w-28"
-              aria-label="Hız"
-            />
-            <button type="button" className={iconBtn} onClick={() => setSpeed(speed + 5)} disabled={speed >= MAX_SPEED} aria-label="Hızlandır (↑)" title="Hızlandır (↑)">
-              +
-            </button>
-            <span className="whitespace-nowrap tabular-nums">
-              %{speed} <span className="text-muted">· {bpm} BPM</span>
-            </span>
-            {SPEEDS.map((s) => (
-              <button key={s} type="button" onClick={() => setSpeed(s)} className={`${btn} px-2.5 py-1 ${speed === s ? on : ""}`}>
-                %{s}
-              </button>
-            ))}
-          </div>
-
-          <span className="mx-0.5 hidden h-5 w-px bg-line sm:block" />
-          <button type="button" onClick={() => setLoop((x) => !x)} className={`${btn} ${loop ? on : ""}`} title="Döngü (L): seçili aralık ya da bütün parça tekrar eder" aria-pressed={loop}>
-            <Repeat size={14} /> Döngü
-          </button>
-          <button
-            type="button"
-            onClick={() => selectBars(currentBar, currentBar)}
-            disabled={!playerReady}
-            className={`${btn} ${rangeBars && rangeBars[0] === rangeBars[1] && rangeBars[0] === currentBar ? on : ""}`}
-            title="Bulunulan ölçüyü döngüye al (Shift + tık ile birden çok ölçü seçilir)"
-          >
-            Bu ölçü
-          </button>
-          <button
-            type="button"
-            onClick={toggleRamp}
-            className={`${btn} ${ramp ? on : ""}`}
-            title={`Kademeli hızlanma: %${ayarlar.rampa.baslangic}'tan başla, her döngüde +%${ayarlar.rampa.adim}, hedef %${ayarlar.rampa.hedef} (ayarlardan değiştir)`}
-            aria-pressed={ramp}
-          >
-            <TrendingUp size={14} /> Kademeli
-            {ramp && (
-              <span className="tabular-nums text-xs">
-                {speed >= ayarlar.rampa.hedef ? "hedefte" : `→ %${ayarlar.rampa.hedef}`}
-              </span>
-            )}
-          </button>
-
-          <span className="mx-0.5 hidden h-5 w-px bg-line sm:block" />
-          <button
-            type="button"
             onClick={() => setMetronome((x) => !x)}
-            className={`${btn} ${metronome ? on : ""}`}
+            className={`${ikon} ${metronome ? on : ""}`}
             title={`Metronom (M) · ${ayarlar.metronomKipi === "olcu" ? "yalnız ölçü başı" : "her vuruş"} (ayarlardan değiştir)`}
+            aria-label="Metronom (M)"
             aria-pressed={metronome}
           >
-            <MetronomeIcon size={14} /> Metronom
-            {metronome && ayarlar.metronomKipi === "olcu" && <span className="text-xs">· ölçü başı</span>}
+            <MetronomeIcon size={15} />
           </button>
           <button
             type="button"
             onClick={() => setCountIn(!countIn)}
-            className={`${btn} ${countIn ? on : ""}`}
+            className={`${ctl} ${countIn ? on : ""}`}
             title={countIn ? "Sayım açık: başlamadan önce bir ölçü sayar. Kapatmak için tıkla." : "Sayım kapalı: Çal'a basınca hemen başlar."}
             aria-pressed={countIn}
           >
-            Sayım
+            <Timer size={14} aria-hidden />
+            <span className="@max-6xl:sr-only">Sayım</span>
           </button>
-          {audioOnly && (
-            <span className="rounded-full border border-ink/[0.08] bg-ink/[0.05] px-3 py-1" title="Transkripsiyon: tab ve nota gizli, yalnız ses çalar">
-              Yalnız ses
-            </span>
-          )}
-          {scoreOnly && !audioOnly && (
-            <span className="rounded-full border border-ink/[0.08] bg-ink/[0.05] px-3 py-1" title="Porte okuma dersi: tab gizli, notayı porteden oku">
-              Yalnız nota
-            </span>
-          )}
 
-        </div>
-
-        {(showParts || range || (shownTrack?.tuning && !audioOnly)) && (
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            {showParts && (
-              <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Kısımlar">
-                <span className="text-muted">Kısım</span>
-                <button type="button" onClick={clearRange} className={`${btn} px-2.5 py-1 ${!range ? on : ""}`} title="Bütün çalışma">
+          {showParts && (
+            <>
+              {ayrac}
+              <div className="flex shrink-0 gap-0.5 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-0.5 text-sm" role="group" aria-label="Kısımlar">
+                <button type="button" onClick={clearRange} aria-pressed={!range} className={`rounded-full px-2.5 py-0.5 transition ${!range ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`} title="Bütün çalışma">
                   Tümü
                 </button>
                 {parts!.map((p) => (
@@ -1028,38 +1119,88 @@ function Player({
                     type="button"
                     onClick={() => selectBars(p.bars[0] - 1, p.bars[1] - 1)}
                     disabled={!playerReady}
-                    className={`${btn} px-2.5 py-1 ${activePart === p ? on : ""}`}
+                    aria-pressed={activePart === p}
+                    aria-label={`Kısım ${p.name}, ölçü ${p.bars[0]}–${p.bars[1]}: ${p.focus}`}
+                    className={`min-w-8 rounded-full px-2.5 py-0.5 font-semibold transition disabled:opacity-40 ${activePart === p ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`}
                     title={`${p.name} (ölçü ${p.bars[0]}–${p.bars[1]}): ${p.focus}. Tıkla: bu kısım döngüye girer.`}
                   >
-                    <span className="font-semibold">{p.name}</span>
-                    <span className="text-xs tabular-nums opacity-70">
-                      {p.bars[0]}–{p.bars[1]}
-                    </span>
+                    {p.name}
                   </button>
                 ))}
               </div>
+            </>
+          )}
+          {audioOnly && (
+            <span className="shrink-0 rounded-full bg-ink/[0.06] px-2.5 py-0.5 text-xs text-muted" title="Transkripsiyon: tab ve nota gizli, yalnız ses çalar">
+              Yalnız ses
+            </span>
+          )}
+          {scoreOnly && !audioOnly && (
+            <span className="shrink-0 rounded-full bg-ink/[0.06] px-2.5 py-0.5 text-xs text-muted" title="Porte okuma dersi: tab gizli, notayı porteden oku">
+              Yalnız nota
+            </span>
+          )}
+
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            {/* Ana ses: her oynatıcıda görünür; tercih kalıcı (gf-oynatici › anaSes), mikserdeki "Ana ses" ile aynı değer */}
+            <div className="flex items-center gap-1 text-sm" role="group" aria-label="Ses">
+              <button
+                type="button"
+                data-ana-ses-dugmesi
+                onClick={() => guncelle(anaSes === 0 ? { sessiz: false, ...(seviye(ayarlar.anaSes) === 0 ? { anaSes: 100 } : {}) } : { sessiz: true })}
+                className={ikon}
+                aria-pressed={anaSes === 0}
+                title={anaSes === 0 ? "Sesi aç" : "Sessize al"}
+                aria-label={anaSes === 0 ? "Sesi aç" : "Sessize al"}
+              >
+                {anaSes === 0 ? <VolumeX size={16} className="text-bad" /> : anaSes < 0.5 ? <Volume1 size={16} /> : <Volume2 size={16} />}
+              </button>
+              <input
+                type="range"
+                min={0}
+                max={150}
+                step={5}
+                value={anaYuzde}
+                onChange={(e) => anaSesiAyarla(Number(e.target.value))}
+                className="w-20 accent-[var(--accent)]"
+                aria-label="Ana ses"
+                title="Ana ses (%0–150)"
+              />
+              <span className="w-9 whitespace-nowrap text-xs tabular-nums text-muted @max-6xl:sr-only">%{anaYuzde}</span>
+            </div>
+            {multiTrack && (
+              <button
+                ref={mikserTetik}
+                type="button"
+                data-mikser-dugmesi
+                onClick={() => ac("mikser")}
+                className={`${ctl} ${panel === "mikser" ? on : ""}`}
+                aria-haspopup="dialog"
+                aria-expanded={panel === "mikser"}
+                title="Mikser: track sesleri, pan, solo, sessiz, gösterilen track"
+              >
+                <SlidersHorizontal size={14} aria-hidden /> <span className="@max-6xl:sr-only">Mikser</span>
+              </button>
             )}
-            {range && rangeBars && !activePart && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 py-1 pl-3 pr-1 text-accent">
-                Seçim: ölçü {rangeBars[0] + 1}
-                {rangeBars[1] !== rangeBars[0] ? `–${rangeBars[1] + 1}` : ""}
-                <button type="button" onClick={clearRange} className="rounded-full p-0.5 hover:bg-accent/20" title="Seçimi kaldır (Esc)" aria-label="Seçimi kaldır">
-                  <X size={14} />
-                </button>
-              </span>
-            )}
-            {shownTrack?.tuning && !audioOnly && (
-              <span className="ml-auto text-xs text-muted">
-                Akort: <span className="font-mono text-text">{shownTrack.tuning}</span>
-              </span>
-            )}
+            <button
+              ref={ayarTetik}
+              type="button"
+              data-ayar-dugmesi
+              onClick={() => ac("ayar")}
+              className={`${ikon} ${panel === "ayar" ? on : ""}`}
+              aria-haspopup="dialog"
+              aria-expanded={panel === "ayar"}
+              aria-label="Ayarlar"
+              title="Ayarlar: görünüm, yerleşim, yakınlaştırma, sap paneli, metronom, ses seviyeleri, kısayollar"
+            >
+              <Settings2 size={16} />
+            </button>
           </div>
-        )}
-        {activePart && <p className="text-xs text-muted">{activePart.name} · {activePart.focus}</p>}
+        </div>
 
         {/* Ses durumu: yüklenirken yüzde, sorun varsa anlaşılır mesaj (tab görünür kalır) */}
         {status !== "error" && (!playerReady || sesSorunu) && (
-          <div data-ses-durumu role="status" className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-xs ${sesSorunu === "hata" ? "text-bad" : "text-muted"}`}>
+          <div data-ses-durumu role="status" className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 px-3 py-1 text-xs ${sesSorunu === "hata" ? "text-bad" : "text-muted"}`}>
             {sesSorunu === "hata" ? (
               <span>Ses yüklenemedi: ses bankası dosyası indirilemedi. Tab görünür ama çalınamaz; bağlantıyı ya da kurulumu (npm install) kontrol et.</span>
             ) : !playerReady ? (
@@ -1092,42 +1233,37 @@ function Player({
             sapKilit={fretLock}
             sayim={countIn}
             onSayim={setCountIn}
-            onKapat={() => setPanel(null)}
+            onKapat={kapat}
+            tetik={ayarTetik}
+            akort={!audioOnly ? shownTrack?.tuning : undefined}
           />
         )}
-      </div>
+        {multiTrack && panel === "mikser" && (
+          <Acilir tetik={mikserTetik} onKapat={kapat} etiket="Mikser" className="right-0 w-[min(56rem,calc(100vw-2rem))]">
+            <Mikser
+              izler={tracks}
+              gosterilen={shown}
+              sessiz={muted}
+              solo={solo}
+              ses={volumes}
+              onGoster={setShown}
+              onSessiz={toggleMute}
+              onSolo={toggleSolo}
+              onSes={changeVolume}
+              pan={pans}
+              onPan={changePan}
+              ana={anaYuzde}
+              onAna={anaSesiAyarla}
+              onYalnizBunuSustur={muteOnly}
+              hatirlaniyor={!!mikserKaydi}
+            />
+          </Acilir>
+        )}
 
-      {multiTrack && panel === "mikser" && (
-        <div className="border-b border-line bg-ink/[0.02] p-3 sm:p-4">
-          <Mikser
-            izler={tracks}
-            gosterilen={shown}
-            sessiz={muted}
-            solo={solo}
-            ses={volumes}
-            onGoster={setShown}
-            onSessiz={toggleMute}
-            onSolo={toggleSolo}
-            onSes={changeVolume}
-            pan={pans}
-            onPan={changePan}
-            ana={anaYuzde}
-            onAna={anaSesiAyarla}
-            onYalnizBunuSustur={muteOnly}
-            hatirlaniyor={!!mikserKaydi}
-          />
-        </div>
-      )}
-
-      <div
-        ref={viewportRef}
-        aria-hidden={audioOnly || undefined}
-        className={`relative isolate overflow-auto bg-[var(--sheet)] text-[var(--sheet-ink)] ${audioOnly ? "h-0 p-0" : `p-2 ${compact ? "max-h-[60vh]" : "max-h-[75vh]"}`}`}
-        onPointerDownCapture={(e) => (shiftRef.current = e.shiftKey)}
-      >
+        {/* Sayım: çubuğun altında, tabın üstünde yüzer */}
         {counting !== null && (
-          <div className="sticky inset-x-0 top-0 z-10 flex justify-center p-2" role="status" aria-live="assertive">
-            <div className="bg-elevated flex items-center gap-4 rounded-full border border-ink/10 py-2 pl-6 pr-2 text-text shadow-[var(--shadow-pop)]">
+          <div className="pointer-events-none absolute inset-x-0 top-full z-10 flex justify-center p-2" role="status" aria-live="assertive">
+            <div className="bg-elevated pointer-events-auto flex items-center gap-4 rounded-full border border-ink/10 py-2 pl-6 pr-2 text-text shadow-[var(--shadow-pop)]">
               <span className="text-xs font-semibold text-muted">Sayım</span>
               <span className="text-accent w-10 text-center text-4xl font-bold tabular-nums">{counting}</span>
               <button type="button" onClick={skipCountIn} className="btn-primary px-4 py-2 text-sm" title="Beklemeden başla">
@@ -1150,24 +1286,35 @@ function Player({
             </div>
           </div>
         )}
+      </div>
+
+      {activePart && !audioOnly && (
+        <p className="border-b border-line/60 px-4 py-1.5 text-xs text-muted">
+          <span className="font-semibold text-text">Kısım {activePart.name}</span> · ölçü {activePart.bars[0]}–{activePart.bars[1]} · {activePart.focus}
+        </p>
+      )}
+
+      {/* Tab: sayfa yerleşiminde kendi kaydırma kutusu yok, sayfayla aşağı uzar; yatay yerleşimde yana kayar */}
+      <div
+        ref={viewportRef}
+        aria-hidden={audioOnly || undefined}
+        className={`relative isolate bg-[var(--sheet)] text-[var(--sheet-ink)] ${audioOnly ? "h-0 overflow-hidden p-0" : `p-2 ${horizontal ? "overflow-x-auto" : ""}`} ${showFret && !audioOnly ? "" : "rounded-b-[var(--radius-card)]"}`}
+        onPointerDownCapture={(e) => (shiftRef.current = e.shiftKey)}
+      >
         {status === "loading" && <p className="p-6 text-center text-sm text-muted">Tab yükleniyor…</p>}
         {status === "error" && <p className="p-6 text-center text-sm text-bad">Tab açılamadı. Dosya bozuk ya da desteklenmeyen bir formatta olabilir.</p>}
         <div ref={hostRef} />
       </div>
 
       {showFret && !audioOnly && (
-        <div className="sticky bottom-0 z-[4]">
+        <div className="sticky bottom-0 z-[5] overflow-hidden rounded-b-[var(--radius-card)]">
           <SapPaneli
             akort={shownTrack?.tuningMidi.length ? shownTrack.tuningMidi : [64, 59, 55, 50, 45, 40]}
             notalar={fretNotes?.notes ?? []}
             etiket={fretNotes ? `Ölçü ${fretNotes.bar + 1}` : "Çal'a bas ya da bir notaya tıkla"}
+            onKapat={() => guncelle({ sap: false })}
           />
         </div>
-      )}
-      {!compact && !audioOnly && (
-        <p className="border-t border-line px-3 py-2 text-xs text-muted">
-          İpucu: Notaya tıklayarak oradan çal, sürükleyerek ya da Shift + tıkla ölçü aralığı seç (döngü açıksa seçili aralık tekrar eder). Kısayollar Ayarlar&apos;da.
-        </p>
       )}
     </div>
   );
