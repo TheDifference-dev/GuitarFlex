@@ -1,5 +1,6 @@
 // Kurslarda ortak kullanılan gam pozisyonları (La minör ağırlıklı).
-import { OPEN, SCALE, between, inPosition, noteList, pc, perString, run } from "../dizi.ts";
+import { OPEN, SCALE, between, inPosition, pc, perString, run } from "../dizi.ts";
+import { adTr, yukari, type Ad } from "../../lib/alistirma/muzik.ts";
 
 export const A2 = 45;
 export const G2 = 43;
@@ -34,22 +35,32 @@ export const AKOR: Record<string, string> = {
   Cmaj7: "3.5 2.4 0.3 0.2 0.1", Fmaj7: "3.4 2.3 1.2 0.1", Am7: "0.5 2.4 0.3 1.2 0.1", Em7: "0.6 2.5 0.4 0.3 0.2 0.1",
   Dm7: "0.4 2.3 1.2 1.1", E9: "0.6 7.5 6.4 7.3 7.2",
   Dsus2: "0.4 2.3 3.2 0.1", Dsus4: "0.4 2.3 3.2 3.1", Asus2: "0.5 2.4 2.3 0.2 0.1", Asus4: "0.5 2.4 2.3 3.2 0.1",
-  Cadd9: "3.5 2.4 0.3 3.2 3.1", "G5/D": "3.6 2.5 0.4 0.3 3.2 3.1",
-  "C/G": "3.6 3.5 2.4 0.3 1.2 0.1", "D/F#": "2.6 0.5 0.4 2.3 3.2 2.1", "G/B": "2.5 0.4 0.3 3.2 3.1", "Am/G": "3.6 0.5 2.4 2.3 1.2 0.1",
-  "Am/F#": "2.6 0.5 2.4 2.3 1.2 0.1", "Fmaj7/E": "0.6 3.4 2.3 1.2 0.1",
+  Cadd9: "3.5 2.4 0.3 3.2 3.1", "G (rock)": "3.6 2.5 0.4 0.3 3.2 3.1", "Em7 (rock)": "0.6 2.5 2.4 0.3 3.2 3.1",
+  "C/G": "3.6 3.5 2.4 0.3 1.2 0.1", "D/F#": "2.6 0.4 2.3 3.2 2.1", "G/B": "2.5 0.4 0.3 3.2 3.1", "Am/G": "3.6 2.4 2.3 1.2 0.1",
+  "Am/F#": "2.6 2.4 2.3 1.2 0.1", "Fmaj7/E": "0.6 3.4 2.3 1.2 0.1",
   "C/B": "2.5 2.4 0.3 1.2 0.1", Dmaj7: "0.4 2.3 2.2 2.1", Emaj7: "0.6 2.5 1.4 1.3 0.2 0.1",
   "Dm7 (funk)": "5.5 7.4 5.3 6.2", "G7 (funk)": "3.6 5.5 3.4 4.3",
 };
 
-/** Akorun kökü: adın baş harfi (ve #/b) */
-const ROOT_PC: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+/** Akorun kökü: adın baş harfi (ve #/b) — harf sırası Do = 0 … Si = 6 */
+const HARF: Record<string, number> = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
+const DOGAL_PC = [0, 2, 4, 5, 7, 9, 11];
 
-/** Akorun notaları kök – üçlü – beşli … sırasıyla ("Do – Mi – Sol") */
+/**
+ * Akorun notaları kök – üçlü – beşli … sırasıyla ve doğru harf adlarıyla ("Sol – Si♭ – Re", "Re – Fa# – La").
+ * Her ses kökten aralığına göre adlandırılır: küçük üçlü bemol, büyük üçlü diyez … (Gm'de La# değil Si♭).
+ */
 export function akorNotalari(name: string): string {
   const ms = AKOR[name].split(" ").map((n) => {
     const [f, s] = n.split(".").map(Number);
     return OPEN[s - 1] + f;
   });
-  const r = ROOT_PC[name[0]] + (name[1] === "#" ? 1 : 0);
-  return noteList([...ms].sort((a, b) => pc(a - r) - pc(b - r)));
+  const kok: Ad = { h: HARF[name[0]], a: name[1] === "#" ? 1 : name[1] === "b" ? -1 : 0 };
+  const r = pc(DOGAL_PC[kok.h] + kok.a);
+  const dim = /dim|m7b5/.test(name);
+  // Aralık (yarım ses) → harf adımı: 6 eksik beşli (dim) ya da artık dörtlü, 9 dim7'de eksik yedili
+  const harf = (iv: number) => ({ 0: 0, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: dim ? 4 : 3, 7: 4, 8: 5, 9: dim && /dim/.test(name) ? 6 : 5, 10: 6, 11: 6 } as Record<number, number>)[iv];
+  const seen: number[] = [];
+  for (const m of [...ms].sort((a, b) => pc(a - r) - pc(b - r))) if (!seen.includes(pc(m - r))) seen.push(pc(m - r));
+  return seen.map((iv) => adTr(yukari(kok, harf(iv), iv))).join(" – ");
 }

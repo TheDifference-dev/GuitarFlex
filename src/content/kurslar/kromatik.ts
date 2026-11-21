@@ -1,8 +1,8 @@
 // Kromatik Isınma — 3 bölüm, özgün egzersizler. Parmak sıraları (permütasyonlar) üretilir.
-import type { Course } from "../types.ts";
+import type { Course, Tags } from "../types.ts";
 import { strokes, tex } from "../tex.ts";
 import { measures } from "../dizi.ts";
-import { chapter, ders, section } from "./ortak.ts";
+import { chapter, ders, etiketle, section } from "./ortak.ts";
 
 const P = "kr";
 const UP = [6, 5, 4, 3, 2, 1];
@@ -46,9 +46,9 @@ const s2 = section(2, "Koordinasyon", [
   chapter(P, 2, 0, "On Altılık Permütasyonlar", ["On altılıkta her vuruşa bir tel (dört nota) düşer; permütasyonun ilk notası her zaman aşağı pena."], [
     ders("1-3-2-4", 60, s16(60, upDownPerm("1324", 5)), "On altılıkla 1-3-2-4.", "Her vuruşun ilk notasını vurgula."),
     ders("2-4-1-3", 60, s16(60, upDownPerm("2413", 5)), "On altılıkla 2-4-1-3.", "Orta parmakla başlamak alışılmadık: yavaş başla."),
-    ders("Karışık", 60, s16(60, [...perm("1324", 5, UP), ...perm("4231", 5, DOWN), ...perm("2413", 5, UP), ...perm("3142", 5, DOWN)]), "Dört permütasyon art arda.", "Permütasyon değişirken ritim bozulmasın.", "", 2),
+    ders("Karışık", 60, s16(60, [...perm("1324", 5, UP), ...perm("4231", 5, DOWN), ...perm("2413", 5, UP), ...perm("3142", 5, DOWN)]), "İki permütasyon ve tersleri art arda: 1-3-2-4 çıkış, 4-2-3-1 iniş, 2-4-1-3 çıkış, 3-1-4-2 iniş.", "Permütasyon değişirken ritim bozulmasın.", "", 2),
   ]),
-  chapter(P, 2, 1, "Çapraz Kromatik", ["Çapraz kromatikte her telde el bir perde yukarı kayar: sap boyunca 'merdiven'. Pozisyon değişimini ve kromatiği birleştirir."], [
+  chapter(P, 2, 1, "Çapraz Kromatik", ["Çapraz kromatikte her telde el iki perde yukarı kayar: sap boyunca 'merdiven'. Pozisyon değişimini ve kromatiği birleştirir."], [
     ders("Merdiven", 60, e8(60, UP.flatMap((s, i) => [1, 2, 3, 4].map((d) => `${i * 2 + d}.${s}`))), "Her yeni tel iki perde yukarıda başlar.", "Kaymayı işaret parmağı yönetir."),
     ders("Merdiven – İniş", 60, e8(60, DOWN.flatMap((s, i) => [4, 3, 2, 1].map((d) => `${10 - i * 2 + d}.${s}`))), "Tepeden geri in.", "İnişte serçe parmak yönetir."),
     ders("Merdiven – Triole", 60, t8(60, UP.flatMap((s, i) => [1, 2, 3].map((d) => `${i * 2 + d}.${s}`)).concat(DOWN.flatMap((s, i) => [3, 2, 1].map((d) => `${10 - i * 2 + d}.${s}`)))), "Üç parmakla triole merdiven.", "Her vuruş bir tel.", "", 2),
@@ -67,23 +67,36 @@ const s3 = section(3, "Günlük Rutin", [
     ders("Tam Isınma", 60, s16(60, [...upDownPerm("1234", 5), ...upDownPerm("1324", 7), ...upDownPerm("2413", 9)]), "Üç pozisyonda üç permütasyon.", "Isınma bitince ana çalışmana geç.", "", 5),
   ]),
   chapter(P, 3, 1, "Esneme", ["Geniş aralıklar (bir parmak bir perde kuralının dışı) sol elin açıklığını artırır. Esnemeyi yüksek perdelerde başlatıp aşağı doğru ilerlet."], [
-    ders("Yüksek Perdelerde", 60, e8(60, upDownPerm("1235", 12)), "12. pozisyonda 1-2-3-5 (serçe bir perde öteye uzanır).", "Ağrı hissedersen dur."),
+    ders("Yüksek Perdelerde", 60, e8(60, upDownPerm("1235", 12)), "12. pozisyonda 1-2-3-5: 12 – 13 – 14 – 16, serçe bir perde öteye uzanır.", "Ağrı hissedersen dur."),
     ders("Orta Perdelerde", 60, e8(60, upDownPerm("1235", 7)), "Aynı esneme 7. pozisyonda.", "Başparmak sapın arkasında aşağı iner; el açılır."),
     ders("Geniş Esneme", 50, e8(50, upDownPerm("1246", 9)), "1-2-4-6: altı perdelik açıklık.", "Sadece ısındıktan sonra.", "", 2),
   ]),
   chapter(P, 3, 2, "Hız Merdiveni", ["Hız merdiveni: aynı kalıbı sekizlik, triole ve on altılıkla art arda çalmak. Tempo sabit kalırken nota yoğunluğu artar."], [
-    ders("Sekizlik → On Altılık", 60, tex(60, [...measures(":8", strokes(perm("1234", 5, [6, 5])), 8), ...measures(":16", strokes(perm("1234", 5, [4, 3, 2, 1])), 16)]), "İki ölçü sekizlik, bir ölçü on altılık.", "Geçişte tempo kaymasın."),
+    ders("Sekizlik → On Altılık", 60, tex(60, [...measures(":8", strokes(perm("1234", 5, [6, 5, 4, 3])), 8), ...measures(":16", strokes(perm("1234", 5, [2, 1, 2, 1])), 16)]), "İki ölçü sekizlik (kalın dört tel), bir ölçü on altılık (ince iki tel).", "Geçişte tempo kaymasın: on altılıkta el iki kat sık salınır, vuruş aynı kalır."),
     ders("Üç Basamak", 60, tex(60, [...measures(":8", strokes(perm("1234", 5, [6, 5])), 8), ...measures(":8", strokes(perm("123", 5, [4, 3, 2, 1])), 12, 3), ...measures(":16", strokes(perm("1234", 5, [1, 2, 3, 4])), 16)]), "Sekizlik, triole, on altılık.", "Triolede üç parmak kullan."),
     ders("Hedef Tempo", 80, tex(80, [...measures(":8", strokes(perm("1234", 5, [6, 5])), 8), ...measures(":8", strokes(perm("123", 5, [4, 3, 2, 1])), 12, 3), ...measures(":16", strokes(perm("1234", 5, [1, 2, 3, 4])), 16)]), "Hedef tempoda.", "Bunu temiz çalabiliyorsan parmakların her çalışmaya hazır.", "", 2),
   ]),
 ]);
+
+// Müfredat etiketleri (Spec v2.2 §4): alt bölüm → seviye, eksenler (ilki ana eksen), beceriler.
+// Kaynak: içerik paketi belgeler/mufredat/seviye-esleme.csv, "YERLESIK/kromatik-isinma" satırları.
+const ETIKET: Record<string, Tags> = {
+  "1.0": { level: "L1", axes: ["technique", "fretboard"], skills: ["T.chromatic_1234", "F.single_position"] }, // 1-2-3-4
+  "1.1": { level: "L1", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Permütasyonlar
+  "1.2": { level: "L2", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Örümcek
+  "2.0": { level: "L2", axes: ["rhythm", "technique"], skills: ["R.sixteenth", "T.chromatic_1234"] }, // On Altılık Permütasyonlar
+  "2.1": { level: "L2", axes: ["fretboard", "rhythm"], skills: ["F.position_shift", "R.triplet_8th"] }, // Çapraz Kromatik
+  "2.2": { level: "L3", axes: ["technique"], skills: ["T.string_skip"] }, // Tel Atlama
+  "3.0": { level: "L1", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Beş Dakikalık Isınma
+  "3.1": { level: "L2", axes: ["fretboard"], skills: ["F.stretch"] }, // Esneme
+  "3.2": { level: "L2", axes: ["rhythm", "technique"], skills: ["R.sixteenth", "T.chromatic_1234"] }, // Hız Merdiveni
+};
 
 export const kromatikCourse: Course = {
   slug: "kromatik-isinma",
   title: "Kromatik Isınma",
   description: "Parmak bağımsızlığı ve her çalışmadan önce ısınma.",
   kind: "technique",
-  icon: "🔥",
   guide: [
     "## Kromatik ısınma nedir?",
     ...CORE,
@@ -94,5 +107,5 @@ export const kromatikCourse: Course = {
     "Bölüm 2 – Koordinasyon: on altılık, çapraz kromatik, tel atlama.",
     "Bölüm 3 – Günlük rutin: ısınma, esneme, hız merdiveni.",
   ],
-  sections: [s1, s2, s3],
+  sections: etiketle([s1, s2, s3], ETIKET),
 };

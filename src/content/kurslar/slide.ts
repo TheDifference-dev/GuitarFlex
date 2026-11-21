@@ -73,7 +73,6 @@ export const slideCourse: Course = {
   title: "Slide",
   description: "Perdeler arasında kayarak bağlı geçişler.",
   kind: "technique",
-  icon: "↗",
   guide: [
     "## Slide nedir?",
     "Parmağı teli bırakmadan bir perdeden diğerine kaydırmak. Legato slide'da varış notası çalınmaz; shift slide'da pena ile tekrar çalınır. Notaya aşağıdan kayarak girmek ya da notadan kayarak çıkmak ise süsleme olarak kullanılır.",

@@ -15,10 +15,13 @@
     "predesktop": "npm run copy-alphatab",
     "desktop": "electron desktop/main.cjs",
     "desktop:prod": "npm run build && electron desktop/main.cjs --prod",
-    "kisayol": "node desktop/kisayol-olustur.cjs"
+    "kisayol": "node desktop/kisayol-olustur.cjs",
+    "test:oynatici": "node --no-warnings --experimental-strip-types scripts/oynatici-testi.mjs",
+    "test:yol-goc": "node --no-warnings --experimental-strip-types scripts/yol-goc-testi.ts"
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",
+    "generaluser": "1.47.1",
     "lucide-react": "^1.51.0",
     "next": "16.3.8",
     "react": "19.2.8",

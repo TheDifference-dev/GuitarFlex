@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Bant, SayfaBasi } from "@/components/site/Vitrin";
 import LevelPicker, { type LevelOption } from "@/components/LevelPicker";
 import { getCourses, getSiteTexts } from "@/lib/courses";
 
@@ -11,9 +12,9 @@ export default async function HowToPracticePage() {
   const chords = `/calis/${texts.chordCard.slug}`;
 
   const elektro: LevelOption[] = [
-    { title: "Gitara sıfırdan başlıyorum", text: "Temel konular ve ilk egzersizler, adım adım.", href: course("sifirdan-baslangic-rehberi", "/") },
-    { title: "Başlangıç / orta seviyedeyim", text: "Akorları, ritmi ve temel teknikleri düzenli bir plana oturtmak istiyorum.", href: course("baslangic-orta-rehberi", "/") },
-    { title: "Orta / ileri seviyedeyim", text: "Bir tekniği derinleştirmek, hızımı ve repertuvarımı geliştirmek istiyorum.", href: "/" },
+    { title: "Gitara sıfırdan başlıyorum", text: "Temel konular ve ilk egzersizler, adım adım.", href: course("sifirdan-baslangic-rehberi", "/elektro") },
+    { title: "Başlangıç / orta seviyedeyim", text: "Akorları, ritmi ve temel teknikleri düzenli bir plana oturtmak istiyorum.", href: course("baslangic-orta-rehberi", "/elektro") },
+    { title: "Orta / ileri seviyedeyim", text: "Bir tekniği derinleştirmek, hızımı ve repertuvarımı geliştirmek istiyorum.", href: "/elektro" },
   ];
   const akustik: LevelOption[] = [
     { title: "Gitara sıfırdan başlıyorum", text: "Akustikte duruş, ilk akorlar ve temel teknikler.", href: course("akustik-baslangic-rehberi", chords) },
@@ -22,13 +23,13 @@ export default async function HowToPracticePage() {
   ];
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <header>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">Çalışma Planı</p>
-        <h1 className="mt-1 text-3xl font-black tracking-tight">Gitarda hangi seviyedesin?</h1>
-        <p className="mt-1 text-muted">Seviyeni seç, sana uygun çalışma yoluna yönlendirelim.</p>
-      </header>
-      <LevelPicker elektro={elektro} akustik={akustik} />
+    <div>
+      <SayfaBasi kirinti={[{ label: "Çalışma Planı" }]} ust="Çalışma Planı" baslik="Gitarda hangi seviyedesin?" alt="Seviyeni seç, sana uygun çalışma yoluna yönlendirelim." />
+      <Bant ton="gri" className="pt-12">
+        <div className="mx-auto max-w-3xl">
+          <LevelPicker elektro={elektro} akustik={akustik} />
+        </div>
+      </Bant>
     </div>
   );
 }

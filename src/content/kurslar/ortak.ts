@@ -1,5 +1,5 @@
 // Kurs dosyalarının ortak yardımcıları.
-import type { Chapter, Lesson, Section } from "../types.ts";
+import type { Chapter, Lesson, Section, Tags } from "../types.ts";
 import { fx, strokes, tex } from "../tex.ts";
 import { measures } from "../dizi.ts";
 
@@ -18,6 +18,28 @@ export function chapter(prefix: string, section: number, index: number, title: s
 
 export function section(number: number, title: string, chapters: Chapter[]): Section {
   return { number, title, exam: true, chapters };
+}
+
+/**
+ * Müfredat etiketleri (Spec v2.2 §4): alt bölüm koduna göre level/axes/skills ekler; alanlar `title`'dan
+ * sonra gelir. Kaynak: içerik paketindeki belgeler/mufredat/seviye-esleme.csv ("YERLESIK/<slug>" satırları).
+ * Tabloda olup kursta bulunmayan kod hatadır (etiket sessizce kaybolmasın).
+ */
+export function etiketle(sections: Section[], tablo: Record<string, Tags>): Section[] {
+  const kullanilan = new Set<string>();
+  const out = sections.map((s) => ({
+    ...s,
+    chapters: s.chapters.map((ch) => {
+      const t = tablo[ch.code];
+      if (!t) return ch;
+      kullanilan.add(ch.code);
+      const { code, title, ...geri } = ch;
+      return { code, title, ...t, ...geri };
+    }),
+  }));
+  const eksik = Object.keys(tablo).filter((k) => !kullanilan.has(k));
+  if (eksik.length) throw new Error(`etiketle: kursta olmayan alt bölüm kodu: ${eksik.join(", ")}`);
+  return out;
 }
 
 /** Alternate picking: notalara sırayla aşağı/yukarı pena işareti */

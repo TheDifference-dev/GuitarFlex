@@ -5,10 +5,10 @@ import * as alphaTab from "@coderline/alphatab";
 import { SONGS } from "../src/content/songs.ts";
 import { BUILTIN_COURSES, flatLessons } from "../src/content/courses.ts";
 import { BACKINGS } from "../src/content/dogaclama.ts";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { PRIVATE_ROOTS } from "../src/lib/private-roots.ts";
-import type { Course } from "../src/content/types.ts";
+import type { Chapter, Course, Lesson, LibrarySong } from "../src/content/types.ts";
 
 function check(tex: string): string[] {
   const problems: string[] = [];
@@ -70,15 +70,17 @@ for (const c of BUILTIN_COURSES) {
 
 // Kişisel içerik paketindeki kurslar (varsa)
 let packLessons = 0;
+const packCourses: Course[] = [];
 for (const root of PRIVATE_ROOTS) {
   let files: string[] = [];
   try {
-    files = readdirSync(path.join(root, "icerik")).filter((f) => f.endsWith(".json") && f !== "site.json" && f !== "sarkilar.json");
+    files = readdirSync(path.join(root, "icerik")).filter((f) => f.endsWith(".json") && !["site.json", "sarkilar.json", "kutuphane.json"].includes(f));
   } catch {
     continue;
   }
   for (const f of files) {
     const c = JSON.parse(readFileSync(path.join(root, "icerik", f), "utf8")) as Course;
+    packCourses.push(c);
     for (const s of c.sections ?? []) for (const ch of s.chapters ?? []) for (const l of ch.lessons ?? []) {
       if (!l.tex) continue;
       packLessons++;
@@ -96,6 +98,283 @@ for (const item of items) {
     console.log(`✗ ${item.id} — ${item.title}\n  ${problems.join("\n  ")}`);
   }
 }
+
+// ── Müfredat alanları (Spec v2.2 §4): level, axes, skills, kind, variant, ref, form, tempoRounds,
+// readBars, improvBars, hideTab, stave, chords; parts (Egzersiz Yazım Standardı v2.3 §5). Etiketsiz içerikte hiçbir şey yazdırmaz.
+const LEVELS = new Set(["L1", "L2", "L3", "L4", "L5"]);
+const AXES = new Set(["technique", "fretboard", "rhythm", "theory_ear"]);
+const KINDS = new Set(["drill", "etut", "okuma", "quickstudy", "transkripsiyon", "kompozisyon", "resital"]);
+const VARIANTS = new Set(["reverse", "inversion", "permutation"]);
+const FORM_PARTS = new Set(["intro", "A", "B", "bridge", "A2"]);
+const STAVES = new Set(["score", "tab", "both"]);
+const PART_NAMES = new Set(["A", "A′", "B", "C"]);
+const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave", "chords", "parts"] as const;
+
+// Beceri sözlüğü: kişisel içerik köklerinde belgeler/mufredat/beceri-sozlugu.json (ilk bulunan)
+let skillKeys: Set<string> | null = null;
+for (const root of PRIVATE_ROOTS) {
+  const file = path.join(root, "belgeler", "mufredat", "beceri-sozlugu.json");
+  if (!existsSync(file)) continue;
+  try {
+    skillKeys = new Set(Object.keys(JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>));
+  } catch (e) {
+    console.log(`⚠ ${file} okunamadı (${(e as Error).message}); beceri kontrolü atlandı.`);
+  }
+  break;
+}
+
+// Uygulamanın gördüğü kurs kümesi (src/lib/courses.ts ile aynı): paket aynı slug'lı yerleşik kursun
+// yerine geçer, aynı slug iki kökte varsa ilk kökteki geçerlidir. Ders id'leri normalize() gibi tamamlanır.
+const effective = new Map<string, Course>(BUILTIN_COURSES.map((c) => [c.slug, c]));
+const packSeen = new Set<string>();
+for (const c of packCourses) {
+  if (!c?.slug || !c.title || !Array.isArray(c.sections) || packSeen.has(c.slug)) continue;
+  packSeen.add(c.slug);
+  effective.set(c.slug, c);
+}
+type Row = { slug: string; ch: Chapter; code: string; lesson: Lesson; id: string };
+const rows: Row[] = [];
+for (const c of effective.values())
+  c.sections.forEach((s, si) =>
+    (s.chapters ?? []).forEach((ch, ci) => {
+      const code = ch.code ?? `${s.number ?? si + 1}.${ci}`;
+      (ch.lessons ?? []).forEach((l, li) =>
+        rows.push({ slug: c.slug, ch, code, lesson: l, id: l.id ?? `${ch.code ?? `${si + 1}.${ci}`}-${li + 1}` }),
+      );
+    }),
+  );
+const lessonIndex = new Map<string, Lesson>();
+for (const r of rows) if (!lessonIndex.has(`${r.slug}#${r.id}`)) lessonIndex.set(`${r.slug}#${r.id}`, r.lesson);
+
+const isInt = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n);
+const isRange = (v: unknown) => Array.isArray(v) && v.length === 2 && v.every((n) => isInt(n) && n >= 1);
+
+function tagProblems(t: { level?: unknown; axes?: unknown; skills?: unknown }): string[] {
+  const p: string[] = [];
+  if (t.level !== undefined && !LEVELS.has(t.level as string)) p.push(`level geçersiz: ${JSON.stringify(t.level)} (L1–L5 olmalı)`);
+  if (t.axes !== undefined) {
+    if (!Array.isArray(t.axes) || !t.axes.length) p.push("axes boş olmayan bir dizi olmalı");
+    else for (const a of t.axes) if (!AXES.has(a)) p.push(`geçersiz eksen: ${JSON.stringify(a)}`);
+  }
+  if (t.skills !== undefined) {
+    if (!Array.isArray(t.skills)) p.push("skills bir dizi olmalı");
+    else
+      for (const k of t.skills) {
+        if (typeof k !== "string") p.push(`skills elemanı metin olmalı: ${JSON.stringify(k)}`);
+        else if (skillKeys && !skillKeys.has(k)) p.push(`beceri sözlükte yok: ${k}`);
+      }
+  }
+  return p;
+}
+
+function lessonProblems(r: Row): { problems: string[]; warnings: string[] } {
+  const l = r.lesson as Lesson & Record<string, unknown>;
+  const p = tagProblems(l);
+  const w: string[] = [];
+  if (l.kind !== undefined && !KINDS.has(l.kind)) p.push(`kind geçersiz: ${JSON.stringify(l.kind)}`);
+  if (l.variant !== undefined) {
+    if (!VARIANTS.has(l.variant)) p.push(`variant geçersiz: ${JSON.stringify(l.variant)}`);
+    if (!l.variantOf) p.push("variant verilmiş ama variantOf yok");
+  }
+  if (l.variantOf !== undefined && (typeof l.variantOf !== "string" || !l.variantOf)) p.push("variantOf boş olmayan bir metin olmalı");
+  if (l.ref !== undefined) {
+    if (typeof l.ref !== "string" || !/^[^#\s]+#[^#\s]+$/.test(l.ref)) p.push(`ref biçimi "<kurs-slug>#<ders-id>" olmalı: ${JSON.stringify(l.ref)}`);
+    else if (l.ref === `${r.slug}#${r.id}`) p.push("ref dersin kendisini gösteriyor");
+    else {
+      const target = lessonIndex.get(l.ref);
+      if (!target) p.push(`ref hedefi bulunamadı: ${l.ref}`);
+      else if (target.ref) w.push(`ref hedefi de ref taşıyor (${l.ref} → ${target.ref}); yalnız tek seviye çözülür`);
+    }
+  }
+  if (l.form !== undefined) {
+    if (!Array.isArray(l.form) || !l.form.length) p.push("form boş olmayan bir dizi olmalı");
+    else
+      l.form.forEach((f, i) => {
+        if (!f || !FORM_PARTS.has(f.part)) p.push(`form[${i}] parçası geçersiz: ${JSON.stringify(f?.part)}`);
+        if (!isInt(f?.bars) || f.bars <= 0) p.push(`form[${i}] bars pozitif tam sayı olmalı: ${JSON.stringify(f?.bars)}`);
+      });
+  }
+  if (l.tempoRounds !== undefined) {
+    const t = l.tempoRounds as unknown;
+    if (!Array.isArray(t) || t.length !== 3 || !t.every((n) => typeof n === "number" && n > 0)) p.push(`tempoRounds 3 pozitif sayı olmalı: ${JSON.stringify(t)}`);
+    else if (!(t[0] < t[1] && t[1] < t[2])) p.push(`tempoRounds artan olmalı: ${JSON.stringify(t)}`);
+  }
+  for (const k of ["readBars", "improvBars"] as const) {
+    const v = l[k] as unknown;
+    if (v === undefined) continue;
+    if (!isRange(v)) p.push(`${k} [başlangıç, bitiş] biçiminde iki pozitif tam sayı olmalı: ${JSON.stringify(v)}`);
+    else if ((v as number[])[0] > (v as number[])[1]) p.push(`${k} başlangıcı bitişten büyük: ${JSON.stringify(v)}`);
+  }
+  if (l.hideTab !== undefined && typeof l.hideTab !== "boolean") p.push(`hideTab true/false olmalı: ${JSON.stringify(l.hideTab)}`);
+  // chords (İP6d): ölçü başına akor; quickstudy ve kompozisyon eşlik ve geri bildirimi bundan kurar
+  if (l.chords !== undefined) {
+    const ch = l.chords as unknown;
+    if (!Array.isArray(ch) || !ch.length || !ch.every((x) => typeof x === "string" && x.trim())) p.push(`chords boş olmayan metinlerden oluşan bir dizi olmalı: ${JSON.stringify(ch)}`);
+    else {
+      if (l.kind !== "quickstudy" && l.kind !== "kompozisyon") w.push(`chords yalnız quickstudy ve kompozisyon derslerinde kullanılır (kind ${JSON.stringify(l.kind)})`);
+      const bars = l.tex ? l.tex.replace(/^\\tempo \d+ \. /, "").split("|").length : 0;
+      if (bars && ch.length !== bars) p.push(`chords ${ch.length} akor, tab ${bars} ölçü`);
+    }
+  }
+  if ((l.kind === "quickstudy" || l.kind === "kompozisyon") && !l.chords) p.push(`${l.kind} dersinde chords (ölçü başına akor) yok`);
+  // stave (İP6): oynatıcı görünümü. Tabsız derste anlamsız; hideTab (yalnız ses) ile birlikte görünüm verilmez
+  if (l.stave !== undefined) {
+    if (!STAVES.has(l.stave as string)) p.push(`stave geçersiz: ${JSON.stringify(l.stave)} ("score", "tab" ya da "both" olmalı)`);
+    else {
+      if (!l.tex && !l.tabFile && !l.ref) w.push("stave verilmiş ama dersin tabı yok");
+      if (l.hideTab) w.push(`hideTab ile stave "${l.stave}" birlikte verilmemeli (transkripsiyon dersi yalnız ses olarak çalınır)`);
+    }
+  }
+  // parts (v2.3 §5): ardışık, boşluksuz, 1. ölçüden tabın son ölçüsüne; focus en çok 60 karakter
+  if (l.parts !== undefined) {
+    const parts = l.parts as unknown;
+    if (!Array.isArray(parts) || !parts.length) p.push("parts boş olmayan bir dizi olmalı");
+    else {
+      let next = 1;
+      parts.forEach((x: { name?: unknown; bars?: unknown; focus?: unknown }, i) => {
+        if (!x || !PART_NAMES.has(x.name as string)) p.push(`parts[${i}] adı geçersiz: ${JSON.stringify(x?.name)} (A, A′, B ya da C)`);
+        if (!isRange(x?.bars)) p.push(`parts[${i}] bars [başlangıç, bitiş] biçiminde iki pozitif tam sayı olmalı: ${JSON.stringify(x?.bars)}`);
+        else {
+          const [a, b] = x.bars as [number, number];
+          if (a !== next) p.push(`parts[${i}] ${a}. ölçüden başlıyor, ${next}. ölçüden başlamalı (boşluk ya da örtüşme)`);
+          if (b < a) p.push(`parts[${i}] bitişi başlangıcından önce: ${JSON.stringify(x.bars)}`);
+          next = b + 1;
+        }
+        if (typeof x?.focus !== "string" || !x.focus.trim()) p.push(`parts[${i}] focus boş olmayan bir metin olmalı`);
+        else if (x.focus.length > 60) p.push(`parts[${i}] focus ${x.focus.length} karakter (en çok 60)`);
+      });
+      const barCount = typeof l.tex === "string" ? l.tex.replace(/^\\tempo \d+ \. /, "").split("|").length : undefined;
+      if (barCount !== undefined && next - 1 !== barCount) p.push(`parts ${next - 1}. ölçüde bitiyor, tab ${barCount} ölçü`);
+      if (!l.tex && !l.tabFile && !l.ref) w.push("parts verilmiş ama dersin tabı yok");
+    }
+  }
+  return { problems: p, warnings: w };
+}
+
+let taggedChapters = 0;
+let taggedLessons = 0;
+const curriculumStart = failures;
+const seenChapters = new Set<Chapter>();
+for (const r of rows) {
+  if (!seenChapters.has(r.ch)) {
+    seenChapters.add(r.ch);
+    const ch = r.ch as Chapter & Record<string, unknown>;
+    if (ch.level !== undefined || ch.axes !== undefined || ch.skills !== undefined) {
+      taggedChapters++;
+      const p = tagProblems(ch);
+      if (p.length) {
+        failures++;
+        console.log(`✗ müfredat:${r.slug}/${r.code} — ${ch.title}\n  ${p.join("\n  ")}`);
+      }
+    }
+  }
+  const l = r.lesson as Lesson & Record<string, unknown>;
+  if (![...LESSON_FIELDS, "level", "axes", "skills"].some((k) => l[k] !== undefined)) continue;
+  taggedLessons++;
+  const { problems, warnings } = lessonProblems(r);
+  for (const w of warnings) console.log(`⚠ müfredat:${r.slug}/${r.id} — ${w}`);
+  if (problems.length) {
+    failures++;
+    console.log(`✗ müfredat:${r.slug}/${r.id} — ${l.title}\n  ${problems.join("\n  ")}`);
+  }
+}
+if (taggedChapters || taggedLessons) {
+  if (!skillKeys) console.log("⚠ beceri-sozlugu.json bulunamadı (belgeler/mufredat/); beceri (skills) kontrolü atlandı.");
+  console.log(`Müfredat alanları: ${taggedChapters} alt bölüm ve ${taggedLessons} derste kontrol edildi, ${failures - curriculumStart} hatalı.`);
+}
+
+// ── Şarkı Kütüphanesi (İP10b): icerik/kutuphane.json. Her tex alphaTab ile okunur (ölçü uzunlukları, track'ler arası ölçü
+// sayısı, bağlar: check()); track sayısı ve adları, zorunlu alanlar, kısımların tabı tam kaplaması, ölçü sayısı denetlenir.
+const GENRES = new Set(["Blues", "Rock", "Funk", "Metal", "Pop", "Caz", "Bossa Nova", "Reggae", "Country", "Fingerstyle", "Türk Halk Müziği", "Klasik", "Soul", "Ska", "Latin"]);
+const SOURCES = new Set(["Özgün (GuitarFlex)", "Geleneksel / kamu malı, düzenleme: GuitarFlex"]);
+const ROLES = new Set(["lead", "rhythm", "bass", "drums", "keys", "strings", "organ", "brass", "woodwind"]);
+let librarySongs = 0;
+const librarySlugs = new Set<string>();
+for (const root of PRIVATE_ROOTS) {
+  const file = path.join(root, "icerik", "kutuphane.json");
+  if (!existsSync(file)) continue;
+  let songs: LibrarySong[] = [];
+  try {
+    const data = JSON.parse(readFileSync(file, "utf8")) as { version?: unknown; songs?: unknown };
+    if (data.version !== 1 || !Array.isArray(data.songs)) throw new Error("version 1 ve songs dizisi olmalı");
+    songs = data.songs as LibrarySong[];
+  } catch (e) {
+    failures++;
+    console.log(`✗ kutuphane — ${file} okunamadı: ${(e as Error).message}`);
+    continue;
+  }
+  for (const s of songs) {
+    librarySongs++;
+    const p: string[] = [];
+    const id = `kutuphane:${s?.slug ?? "?"}`;
+    for (const k of ["slug", "title", "key", "timeSignature", "description", "tex"] as const)
+      if (typeof s?.[k] !== "string" || !s[k].trim()) p.push(`${k} boş olmayan bir metin olmalı`);
+    if (librarySlugs.has(s.slug)) p.push("tekrarlanan slug");
+    librarySlugs.add(s.slug);
+    if (!GENRES.has(s.genre)) p.push(`genre geçersiz: ${JSON.stringify(s.genre)}`);
+    if (!LEVELS.has(s.level)) p.push(`level geçersiz: ${JSON.stringify(s.level)}`);
+    if (!SOURCES.has(s.source)) p.push(`source geçersiz: ${JSON.stringify(s.source)}`);
+    if (s.source !== "Özgün (GuitarFlex)" && !s.origin) p.push("kamu malı düzenlemede origin (ezginin kökeni) yok");
+    if (!(typeof s.bpm === "number" && s.bpm > 0)) p.push(`bpm pozitif sayı olmalı: ${JSON.stringify(s.bpm)}`);
+    for (const k of ["chords", "tips", "techniques"] as const) if (!Array.isArray(s[k]) || !s[k].length) p.push(`${k} boş olmayan bir dizi olmalı`);
+    if (!isInt(s.bars) || s.bars < 32 || s.bars > 64) p.push(`bars 32–64 arasında olmalı: ${JSON.stringify(s.bars)}`);
+    if (!isInt(s.playedBars) || s.playedBars < s.bars) p.push(`playedBars en az bars kadar olmalı: ${JSON.stringify(s.playedBars)}`);
+    if (!Array.isArray(s.tracks) || s.tracks.length < 3) p.push("en az 3 track olmalı");
+    else for (const t of s.tracks) if (!t?.name || !ROLES.has(t.role) || !t.instrument) p.push(`track bilgisi eksik ya da rolü geçersiz: ${JSON.stringify(t)}`);
+    // Kısımlar: 1. ölçüden son ölçüye ardışık, tekrar sayısı 2 ya da daha çok; çalınan ölçü sayısı tekrarlarla uyuşur
+    if (!Array.isArray(s.parts) || !s.parts.length) p.push("parts boş olmayan bir dizi olmalı");
+    else {
+      let next = 1;
+      let played = 0;
+      for (const [i, x] of s.parts.entries()) {
+        if (!x?.name || !isRange(x.bars) || x.bars[0] !== next || x.bars[1] < x.bars[0]) p.push(`parts[${i}] ölçüleri ardışık değil: ${JSON.stringify(x?.bars)}`);
+        else next = x.bars[1] + 1;
+        if (x?.repeat !== undefined && (!isInt(x.repeat) || x.repeat < 2)) p.push(`parts[${i}] repeat 2 ya da daha büyük tam sayı olmalı`);
+        if (!Array.isArray(x?.chords) || !x.chords.length) p.push(`parts[${i}] akor listesi boş`);
+        if (isRange(x?.bars)) played += (x.bars[1] - x.bars[0] + 1) * (x.repeat ?? 1);
+      }
+      if (next - 1 !== s.bars) p.push(`parts ${next - 1}. ölçüde bitiyor, bars ${s.bars}`);
+      if (played !== s.playedBars) p.push(`kısımların tekrarlarla toplamı ${played}, playedBars ${s.playedBars}`);
+    }
+    if (typeof s.tex === "string") {
+      p.push(...check(s.tex));
+      try {
+        const importer = new alphaTab.importer.AlphaTexImporter();
+        importer.initFromString(s.tex, new alphaTab.Settings());
+        const score = importer.readScore();
+        if (score.tracks.length !== s.tracks?.length) p.push(`tex'te ${score.tracks.length} track, kayıtta ${s.tracks?.length}`);
+        else
+          score.tracks.forEach((t, i) => {
+            if (t.name !== s.tracks[i].name) p.push(`track ${i + 1} adı tex'te "${t.name}", kayıtta "${s.tracks[i].name}"`);
+            if ((s.tracks[i].role === "drums") !== t.isPercussion) p.push(`track ${i + 1}: davul rolü ile perküsyon track'i uyuşmuyor`);
+            // General MIDI programı kayıtta varsa tex'teki \\instrument ile aynı olmalı (uygulama simge ve aileyi buradan bulur)
+            const prog = s.tracks[i].program;
+            if (prog !== undefined && (t.isPercussion || prog !== t.playbackInfo.program)) p.push(`track ${i + 1}: program kayıtta ${prog}, tex'te ${t.isPercussion ? "perküsyon" : t.playbackInfo.program}`);
+          });
+        if (score.masterBars.length !== s.bars) p.push(`tex ${score.masterBars.length} ölçü, bars ${s.bars}`);
+        const mb = score.masterBars[0];
+        if (mb && `${mb.timeSignatureNumerator}/${mb.timeSignatureDenominator}` !== s.timeSignature) p.push(`ölçü birimi tex'te ${mb.timeSignatureNumerator}/${mb.timeSignatureDenominator}, kayıtta ${s.timeSignature}`);
+        if (score.tempo !== s.bpm) p.push(`tempo tex'te ${score.tempo}, kayıtta ${s.bpm}`);
+        let calinan = 0;
+        let tekrarBasi = 0;
+        score.masterBars.forEach((m, i) => {
+          if (m.isRepeatStart) tekrarBasi = i;
+          calinan += 1;
+          if (m.repeatCount > 1) calinan += (i - tekrarBasi + 1) * (m.repeatCount - 1);
+        });
+        if (calinan !== s.playedBars) p.push(`tex tekrarlarıyla ${calinan} ölçü, playedBars ${s.playedBars}`);
+      } catch {
+        // Ayrıştırma hatası check() tarafından zaten yazıldı.
+      }
+    }
+    if (p.length) {
+      failures++;
+      console.log(`✗ ${id} — ${s?.title}\n  ${p.join("\n  ")}`);
+    }
+  }
+  break;
+}
+if (librarySongs) console.log(`Şarkı Kütüphanesi: ${librarySongs} şarkı kontrol edildi.`);
 
 console.log(`${courseLessons} ders, ${packLessons} paket dersi, ${SONGS.length} şarkı ve ${BACKINGS.length} eşlik kaydı kontrol edildi, ${failures} hatalı.`);
 process.exit(failures ? 1 : 0);

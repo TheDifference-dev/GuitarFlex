@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ChevronRight, Lightbulb, Music } from "lucide-react";
 import LessonPractice from "@/components/LessonPractice";
+import { Bant } from "@/components/site/Vitrin";
+import { DersAltGezinme, DersUstGezinme } from "@/components/site/DersGezinme";
+import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
+import { kursAnahatti } from "@/lib/katalog";
+import { DERS_TURU_ADI, dersSimgesi, dersTuru, yerSimgesi } from "@/lib/simge";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { assetUrl, getCourse } from "@/lib/courses";
+import { gitarProgrami } from "@/lib/gitarTonu";
 
 async function find(kurs: string, ders: string) {
   const course = await getCourse(kurs);
@@ -24,52 +28,16 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
   const { kurs, ders } = await props.params;
   const found = await find(kurs, ders);
   if (!found) notFound();
-  const { course, lessons, index, lesson } = found;
-  const prev = lessons[index - 1];
-  const next = lessons[index + 1];
+  const { course, lesson } = found;
   const theory = [...(lesson.chapter.theory ?? []), ...(lesson.theory ?? [])];
-  const href = (id: string) => `/calis/${course.slug}/${encodeURIComponent(id)}`;
+  const anahat = kursAnahatti(course);
 
   return (
-    <div className="space-y-6">
-      <nav className="flex flex-wrap items-center gap-1 text-sm text-muted">
-        <Link href={`/calis/${course.slug}`} className="font-bold text-accent hover:underline">
-          {course.title}
-        </Link>
-        <ChevronRight size={14} /> Bölüm {lesson.section.number} – {lesson.section.title}
-        <ChevronRight size={14} /> {lesson.chapter.code} {lesson.chapter.title}
-      </nav>
-
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight">{lesson.title}</h1>
-          {lesson.description && <p className="mt-1 max-w-3xl text-muted">{lesson.description}</p>}
-        </div>
-        <div className="flex gap-2 text-sm font-bold">
-          {(lesson.tex || lesson.tabFile) && (
-            <span className="rounded-lg border border-line bg-panel px-3 py-1.5">
-              {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
-            </span>
-          )}
-          <span className="rounded-lg border border-accent/60 bg-accent/15 px-3 py-1.5 text-accent">Toplam: {lesson.minutes}dk</span>
-        </div>
-      </header>
-
-      {!!lesson.body?.length && (
-        <article className="max-w-3xl space-y-3 rounded-2xl border border-line bg-panel p-6 leading-relaxed">
-          {lesson.body.map((para, i) =>
-            para.startsWith("## ") ? (
-              <h2 key={i} className="pt-2 text-xl font-black first:pt-0">
-                {para.slice(3)}
-              </h2>
-            ) : (
-              <p key={i} className="text-muted">
-                {para}
-              </p>
-            ),
-          )}
-        </article>
-      )}
+    <div className="space-y-4">
+      {/* Üst gezinme: kırıntı, ders listesi çekmecesi, önceki/sonraki */}
+      <div className="space-y-2">
+        <DersUstGezinme anahat={anahat} dersId={lesson.id} />
+      </div>
 
       <LessonPractice
         key={lesson.id}
@@ -79,14 +47,57 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         minutes={lesson.minutes}
         tex={lesson.tex}
         tabUrl={assetUrl(lesson.tabFile)}
-      />
+        stave={lesson.stave}
+        kind={lesson.kind}
+        readBars={lesson.readBars}
+        improvBars={lesson.improvBars}
+        chords={lesson.chords}
+        title={lesson.title}
+        parts={lesson.parts}
+        guitarProgram={gitarProgrami(lesson.tips, course.slug)}
+        baslik={
+          // Kompakt başlık: küçük simge, kurs adı, ders adı ve kısa açıklama; tab ekranın üstüne yakın başlar
+          <header className="flex min-w-0 items-start gap-3.5">
+            <UygulamaSimgesi simge={dersSimgesi(dersTuru(lesson), course.slug)} boyut={44} etiket={DERS_TURU_ADI[dersTuru(lesson) ?? "drill"]} className="mt-0.5" />
+            <div className="min-w-0">
+              <p className="flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-muted">
+                <span>{course.cardTitle ?? course.title}</span>
+                {(lesson.tex || lesson.tabFile) && (
+                  <span className="rounded-full bg-ink/[0.06] px-2 py-px tabular-nums text-text">
+                    {lesson.bpmRange ? `${lesson.bpmRange[0]}–${lesson.bpmRange[1]}` : lesson.bpm} BPM
+                  </span>
+                )}
+              </p>
+              <h1 className="mt-0.5 text-balance text-[clamp(1.375rem,1.1rem+0.8vw,1.75rem)] font-semibold leading-tight tracking-[-0.015em] text-heading">{lesson.title}</h1>
+              {lesson.description && <p className="mt-1 max-w-3xl text-pretty text-[15px] leading-snug text-muted">{lesson.description}</p>}
+            </div>
+          </header>
+        }
+      >
+        {!!lesson.body?.length && (
+          <article className="card max-w-3xl space-y-3 p-6 leading-relaxed sm:p-8">
+            {lesson.body.map((para, i) =>
+              para.startsWith("## ") ? (
+                <h2 key={i} className="pt-2 text-xl font-semibold first:pt-0">
+                  {para.slice(3)}
+                </h2>
+              ) : (
+                <p key={i} className="text-muted">
+                  {para}
+                </p>
+              ),
+            )}
+          </article>
+        )}
+      </LessonPractice>
 
+      <Bant ton="gri" className="mt-12 space-y-8 pt-12">
       {(theory.length > 0 || !!lesson.tips?.length) && (
         <div className="grid gap-4 md:grid-cols-2">
           {theory.length > 0 && (
-            <section className="rounded-2xl border border-accent/40 bg-panel p-5">
-              <h2 className="flex items-center gap-2 font-bold">
-                <Music size={18} className="text-accent" /> Müzik Bilgisi
+            <section className="card p-6">
+              <h2 className="flex items-center gap-2.5 text-[21px] font-semibold">
+                <UygulamaSimgesi simge={yerSimgesi("muzik-bilgisi")} boyut={32} /> Müzik Bilgisi
               </h2>
               <ul className="mt-2 space-y-2 text-sm text-muted">
                 {theory.map((t) => (
@@ -96,9 +107,9 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
             </section>
           )}
           {!!lesson.tips?.length && (
-            <section className="rounded-2xl border border-line bg-panel p-5">
-              <h2 className="flex items-center gap-2 font-bold">
-                <Lightbulb size={18} className="text-accent" /> İpuçları
+            <section className="card p-6">
+              <h2 className="flex items-center gap-2.5 text-[21px] font-semibold">
+                <UygulamaSimgesi simge={yerSimgesi("ipucu")} boyut={32} /> İpuçları
               </h2>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
                 {lesson.tips.map((t) => (
@@ -110,20 +121,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         </div>
       )}
 
-      <div className="flex justify-between gap-4 text-sm font-bold">
-        {prev ? (
-          <Link href={href(prev.id)} className="flex items-center gap-1 rounded-xl border border-line bg-panel px-4 py-2 hover:border-accent">
-            <ChevronLeft size={16} /> {prev.title}
-          </Link>
-        ) : (
-          <span />
-        )}
-        {next && (
-          <Link href={href(next.id)} className="flex items-center gap-1 rounded-xl border border-line bg-panel px-4 py-2 hover:border-accent">
-            {next.title} <ChevronRight size={16} />
-          </Link>
-        )}
-      </div>
+      <DersAltGezinme anahat={anahat} dersId={lesson.id} />
+      </Bant>
     </div>
   );
 }

@@ -2,187 +2,386 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Bell, BookOpen, ChevronDown, Compass, Guitar, House, Trophy, User, Wrench } from "lucide-react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { ChevronDown, ChevronLeft, Menu as MenuIcon, User, X } from "lucide-react";
 import { SITE } from "@/config/site";
+import UygulamaSimgesi from "./site/UygulamaSimgesi";
+import { kursSimgesi, yerSimgesi, type SimgeTanim } from "@/lib/simge";
 
-type MenuItem = { href?: string; label: string; note?: string };
-type MenuGroup = { title?: string; items: MenuItem[] };
-type Menu = { id: string; label: string; icon: typeof User; href?: string; active: boolean; banner?: { href: string; title: string; text: string }; groups?: MenuGroup[] };
+type Bag = { href: string; label: string };
+type Sutun = { baslik: string; items: Bag[] };
+type Menu = {
+  id: string;
+  label: string;
+  /** Üst bağlantının gittiği bölüm sayfası */
+  href: string;
+  active: (p: string) => boolean;
+  /** Mega menünün ilk sütunu: uygulama simgeli büyük bağlantılar */
+  buyuk: (Bag & { simge: SimgeTanim })[];
+  sutunlar: Sutun[];
+};
 
-/** Logonun yanındaki sayfa adı: bulunulan bölüme göre değişir */
-function sectionName(p: string, fallback: string) {
-  if (p.startsWith("/profil")) return "Profil";
-  if (p.startsWith("/akustik")) return "Akustik Gitar";
-  if (p.startsWith("/sarkilar") || p.startsWith("/oynatici")) return "Şarkı ve Sololar";
-  if (p.startsWith("/teori")) return "Müzik Teorisi";
-  if (p.startsWith("/araclar")) return "Araçlar";
-  if (p.startsWith("/nasil-calismaliyim")) return "Çalışma Planı";
-  return fallback;
-}
+/** Üst gezinme ve mega menüler (apple.com'daki gibi: büyük bağlantılı ilk sütun, yanında başlıklı listeler) */
+const MENULER: Menu[] = [
+  {
+    id: "calis",
+    label: "Gitar Çalış",
+    href: "/kurslar",
+    active: (p) => ["/calis", "/akustik", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
+    buyuk: [
+      { href: "/elektro", label: "Elektro Gitar", simge: yerSimgesi("elektro") },
+      { href: "/akustik", label: "Akustik Gitar", simge: yerSimgesi("akustik") },
+      { href: "/seviye", label: "Seviye Yolu", simge: yerSimgesi("seviye") },
+      { href: "/kurslar", label: "Tüm Kurslar", simge: yerSimgesi("kurslar") },
+    ],
+    sutunlar: [
+      {
+        baslik: "Elektro Gitar",
+        items: [
+          { href: "/elektro", label: "Teknik Egzersizler" },
+          { href: "/seviye", label: "Seviye Yolu" },
+          { href: "/calis/sifirdan-baslangic-rehberi", label: "Sıfırdan Başlangıç" },
+          { href: "/calis/akor-yolu", label: "Akor Yolu" },
+        ],
+      },
+      {
+        baslik: "Akustik Gitar",
+        items: [
+          { href: "/akustik", label: "Teknik Egzersizler" },
+          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
+        ],
+      },
+      {
+        baslik: "Müzisyenlik",
+        items: [
+          { href: "/calis/gf-stiller", label: "Stiller" },
+          { href: "/calis/gf-ekler", label: "Müzisyenlik" },
+          { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
+          { href: "/nasil-calismaliyim", label: "Nasıl Çalışmalıyım?" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "teori",
+    label: "Teori",
+    href: "/teori",
+    active: (p) => p.startsWith("/teori") || p.startsWith("/calis/armoni"),
+    buyuk: [
+      { href: "/teori", label: "Müzik Teorisi", simge: yerSimgesi("teori") },
+      { href: "/calis/armoni", label: "Armoni", simge: kursSimgesi("armoni") },
+    ],
+    sutunlar: [
+      {
+        baslik: "Pratik Yolları",
+        items: [
+          { href: "/teori/yol/ritim", label: "Ritim" },
+          { href: "/teori/yol/klavye", label: "Klavye Görselleştirme" },
+          { href: "/teori/yol/kulak", label: "Kulak Eğitimi" },
+          { href: "/teori/yol/okuma", label: "Okuma" },
+          { href: "/teori/yol/armoni", label: "Armoni Pratikleri" },
+        ],
+      },
+      {
+        baslik: "Keşfet",
+        items: [
+          { href: "/teori#sap", label: "Sap Gezgini" },
+          { href: "/teori#dersler", label: "Teori Dersleri" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "kutuphane",
+    label: "Kütüphane",
+    href: "/kutuphane",
+    active: (p) => p.startsWith("/kutuphane") || p.startsWith("/sarkilar") || p.startsWith("/oynatici"),
+    buyuk: [
+      { href: "/kutuphane", label: "Şarkı Kütüphanesi", simge: yerSimgesi("kutuphane") },
+      { href: "/sarkilar", label: "Popüler Şarkılar", simge: yerSimgesi("sarkilar") },
+    ],
+    sutunlar: [
+      {
+        baslik: "Çal",
+        items: [
+          { href: "/oynatici", label: "Tabla Keşfet" },
+          { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
+          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "araclar",
+    label: "Araçlar",
+    href: "/araclar",
+    active: (p) => p.startsWith("/araclar"),
+    buyuk: [
+      { href: "/araclar#metronom", label: "Metronom", simge: yerSimgesi("metronom") },
+      { href: "/araclar#nota-testi", label: "Nota Testi", simge: yerSimgesi("nota-testi") },
+      { href: "/teori#sap", label: "Sap Gezgini", simge: yerSimgesi("sap-gezgini") },
+    ],
+    sutunlar: [
+      {
+        baslik: "Pratik araçları",
+        items: [
+          { href: "/araclar#metronom", label: "Metronom" },
+          { href: "/araclar#nota-testi", label: "Nota Bulma Testi" },
+          { href: "/teori#sap", label: "Sap Gezgini" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "profil",
+    label: "Profil",
+    href: "/profil",
+    active: (p) => p.startsWith("/profil") || p.startsWith("/marka"),
+    buyuk: [{ href: "/profil", label: "Profil", simge: yerSimgesi("profil") }],
+    sutunlar: [
+      {
+        baslik: "İlerleme",
+        items: [
+          { href: "/profil", label: "Günlük görevler ve seri" },
+          { href: "/profil", label: "Madalyalar ve başarımlar" },
+        ],
+      },
+      { baslik: "GuitarFlex", items: [{ href: "/marka", label: "Marka" }] },
+    ],
+  },
+];
 
-export default function SiteHeader({ subtitle }: { subtitle: string }) {
+export default function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState<string | null>(null);
-  const navRef = useRef<HTMLDivElement>(null);
+  const [mobil, setMobil] = useState(false);
+  const tetik = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const panel = useRef<Record<string, HTMLDivElement | null>>({});
+  const zaman = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Menü dışına tıklayınca kapat
+  const temizle = () => {
+    if (zaman.current) clearTimeout(zaman.current);
+    zaman.current = null;
+  };
+  // Esc: menüyü kapat, odağı üst bağlantıya geri ver
   useEffect(() => {
-    const close = (e: MouseEvent) => {
-      if (!navRef.current?.contains(e.target as Node)) setOpen(null);
+    if (!open && !mobil) return;
+    const tus = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMobil(false);
+      if (open) tetik.current[open]?.focus();
+      setOpen(null);
     };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
+    document.addEventListener("keydown", tus);
+    return () => document.removeEventListener("keydown", tus);
+  }, [open, mobil]);
 
-  const menus: Menu[] = [
-    { id: "profil", label: "Profil", icon: User, href: "/profil", active: pathname.startsWith("/profil") },
-    {
-      id: "calis",
-      label: "Gitar Çalış",
-      icon: Guitar,
-      active: ["/calis", "/akustik", "/sarkilar", "/oynatici", "/nasil-calismaliyim"].some((p) => pathname.startsWith(p)) || pathname === "/",
-      banner: { href: "/nasil-calismaliyim", title: "Gitarda Nasıl Çalışmalıyım?", text: "Seviyeni seç, sana uygun yolu önerelim." },
-      groups: [
-        {
-          title: "Akustik Gitar",
-          items: [
-            { href: "/akustik", label: "Teknik Egzersizler", note: "Yeni" },
-            { href: "/akustik/sarkilar", label: "Şarkılar", note: "Yeni" },
-          ],
-        },
-        {
-          title: "Elektro Gitar",
-          items: [
-            { href: "/", label: "Teknik Egzersizler" },
-            { href: "/sarkilar", label: "Şarkı ve Sololar" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "teori",
-      label: "Müzik Teorisi",
-      icon: BookOpen,
-      active: pathname.startsWith("/teori"),
-      groups: [
-        {
-          title: "Müzik Teorisi",
-          items: [
-            { href: "/teori#dersler", label: "Armoni" },
-            { label: "Ritim", note: "Yakında" },
-            { href: "/teori#sap", label: "Klavye Görselleştirme" },
-            { label: "Kulak Eğitimi", note: "Yakında" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "yarisma",
-      label: "Yarışma",
-      icon: Trophy,
-      active: false,
-      groups: [{ items: [{ label: "Sezon Yarışı", note: "Yakında" }, { label: "Cover Yarışması", note: "Yakında" }] }],
-    },
-  ];
+  useEffect(() => temizle, []);
 
-  const iconBtn = "rounded-lg p-2 text-muted hover:bg-panel hover:text-text";
+  /** Panelin içindeki bağlantılar arasında ok tuşlarıyla gezinme */
+  const panelTus = (id: string, e: ReactKeyboardEvent) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Home" && e.key !== "End") return;
+    const linkler = [...(panel.current[id]?.querySelectorAll<HTMLAnchorElement>("a[href]") ?? [])];
+    if (!linkler.length) return;
+    e.preventDefault();
+    const i = linkler.indexOf(document.activeElement as HTMLAnchorElement);
+    const n =
+      e.key === "Home" ? 0 : e.key === "End" ? linkler.length - 1 : e.key === "ArrowDown" ? Math.min(linkler.length - 1, i + 1) : i <= 0 ? -1 : i - 1;
+    if (n < 0) tetik.current[id]?.focus();
+    else linkler[n].focus();
+  };
+
+  /** Üst bağlantılarda: ↓ menüyü açar ve ilk bağlantıya geçer; ←/→ üst öğeler arasında gezer */
+  const ustTus = (i: number, e: ReactKeyboardEvent) => {
+    const m = MENULER[i];
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setOpen(m.id);
+      requestAnimationFrame(() => panel.current[m.id]?.querySelector<HTMLAnchorElement>("a[href]")?.focus());
+    } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      const j = (i + (e.key === "ArrowRight" ? 1 : MENULER.length - 1)) % MENULER.length;
+      tetik.current[MENULER[j].id]?.focus();
+      if (open) setOpen(MENULER[j].id);
+    }
+  };
+
+  const acikMenu = MENULER.find((m) => m.id === open);
+  const ikonBtn = "flex size-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/[0.08] hover:text-white";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
-      <div ref={navRef} className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
-        <div className="flex shrink-0 items-center gap-0.5">
-          <button type="button" onClick={() => router.back()} className={iconBtn} title="Önceki sayfa" aria-label="Önceki sayfa">
-            <ArrowLeft size={18} />
+    <>
+      <header
+        // Açık mega menüde çubuk bulanıklığı kaldırılır (sabit konumlu panel çubuğa göre değil, pencereye göre yerleşsin);
+        // arkadaki sayfayı perde bulanıklaştırır.
+        className={`uzay-kapsam sticky top-0 z-40 ${acikMenu ? "bg-[var(--gnav)]" : "gnav"}`}
+        onMouseLeave={() => {
+          temizle();
+          zaman.current = setTimeout(() => setOpen(null), 180);
+        }}
+        onMouseEnter={temizle}
+        onBlur={(e) => {
+          // Odak açık menünün (üst bağlantı + panel) dışına çıkınca menüyü kapat
+          const hedef = e.relatedTarget as HTMLElement | null;
+          if (open && hedef?.closest("[data-menu]")?.getAttribute("data-menu") !== open) setOpen(null);
+        }}
+      >
+        <nav aria-label="Ana gezinme" className="mx-auto flex h-12 max-w-[1024px] items-center gap-1 px-4">
+          <button type="button" onClick={() => router.back()} className={ikonBtn} title="Önceki sayfa" aria-label="Önceki sayfa">
+            <ChevronLeft size={18} />
           </button>
-          <Link href="/" className={`${iconBtn} ${pathname === "/" ? "text-accent" : ""}`} title="Ana sayfa" aria-label="Ana sayfa">
-            <House size={18} />
+          <Link
+            href="/"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-[14px] font-semibold tracking-[-0.01em] text-white/90 transition hover:text-white"
+            aria-label={`${SITE.name} ana sayfa`}
+            aria-current={pathname === "/" ? "page" : undefined}
+            onMouseEnter={() => open && setOpen(null)}
+          >
+            {/* Çerçevesiz logo: kutu ya da köşe yok; çizimin zemini kenarlarda şeffaflaşıp çubuğa karışır */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={SITE.logo} alt="" width={34} height={34} className="-my-2 -ml-1 size-[34px]" />
+            <span className="hidden sm:inline">{SITE.name}</span>
           </Link>
-        </div>
 
-        <Link href="/" className="mr-4 flex shrink-0 items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SITE.logo} alt="" width={40} height={40} className="rounded-lg" />
-          <span className="h-8 w-px bg-accent" />
-          <span className="leading-tight">
-            <span className="block text-xs font-semibold tracking-[0.2em] text-muted">{sectionName(pathname, subtitle)}</span>
-            <span className="block text-lg font-bold">
-              <span className="text-accent">Guitar</span>Flex
-            </span>
-          </span>
-        </Link>
-
-        <nav className="flex flex-1 flex-wrap items-center justify-center gap-1">
-          {menus.map((m) => {
-            const Icon = m.icon;
-            const cls = `flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap ${
-              m.active ? "bg-accent/15 text-accent" : "text-text hover:bg-panel"
-            }`;
-            if (!m.groups)
+          {/* Masaüstü: çubuk boyunca eşit aralıklı kısa bağlantılar (apple.com gibi) */}
+          <ul className="mx-8 hidden flex-1 items-center justify-between lg:flex">
+            {MENULER.map((m, i) => {
+              const aktif = m.active(pathname);
+              const acik = open === m.id;
               return (
-                <Link key={m.id} href={m.href!} className={cls}>
-                  <Icon size={16} /> {m.label}
-                </Link>
-              );
-            return (
-              <div key={m.id} className="relative">
-                <button type="button" className={cls} onClick={() => setOpen(open === m.id ? null : m.id)}>
-                  <Icon size={16} /> {m.label} <ChevronDown size={14} className={`transition ${open === m.id ? "rotate-180" : ""}`} />
-                </button>
-                {open === m.id && (
-                  <div onClick={() => setOpen(null)} className="absolute left-1/2 top-full z-40 mt-2 w-72 -translate-x-1/2 rounded-2xl border border-line bg-panel p-2 shadow-2xl">
-                    {m.banner && (
-                      <Link href={m.banner.href} className="mb-1 flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 p-3 hover:border-accent">
-                        <Compass size={20} className="shrink-0 text-accent" />
-                        <span>
-                          <span className="block text-sm font-bold">{m.banner.title}</span>
-                          <span className="block text-xs text-muted">{m.banner.text}</span>
-                        </span>
-                      </Link>
-                    )}
-                    {m.groups.map((g, gi) => (
-                      <div key={g.title ?? gi} className={gi > 0 ? "mt-1 border-t border-line pt-1" : ""}>
-                        {g.title && <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-accent">{g.title}</p>}
-                        {g.items.map((it) =>
-                          it.href ? (
-                            <Link
-                              key={it.label}
-                              href={it.href}
-                              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-semibold hover:bg-bg hover:text-accent ${pathname === it.href ? "text-accent" : ""}`}
-                            >
-                              {it.label}
-                              {it.note && <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-accent-ink">{it.note}</span>}
-                            </Link>
-                          ) : (
-                            <span key={it.label} className="flex justify-between gap-2 rounded-lg px-3 py-2 text-sm text-muted">
-                              {it.label} {it.note && <span className="text-xs text-accent">{it.note}</span>}
-                            </span>
-                          ),
-                        )}
+                <li key={m.id} data-menu={m.id} className="relative flex items-center">
+                  <Link
+                    ref={(el) => {
+                      tetik.current[m.id] = el;
+                    }}
+                    href={m.href}
+                    onMouseEnter={() => {
+                      temizle();
+                      // İlk açılışta küçük gecikme: imleç çubuğun üstünden geçerken menü açılıp kapanmasın
+                      if (open) setOpen(m.id);
+                      else zaman.current = setTimeout(() => setOpen(m.id), 110);
+                    }}
+                    onClick={() => setOpen(null)}
+                    onKeyDown={(e) => ustTus(i, e)}
+                    aria-current={aktif ? "page" : undefined}
+                    className={`rounded-md px-2 py-1.5 text-[12px] tracking-[-0.01em] transition ${acik || aktif ? "text-white" : "text-white/80 hover:text-white"} ${aktif ? "font-semibold" : ""}`}
+                  >
+                    {m.label}
+                  </Link>
+                  {/* Klavye için menü düğmesi: odaklanınca görünür (apple.com'daki gibi) */}
+                  <button
+                    type="button"
+                    aria-expanded={acik}
+                    aria-controls={`mega-${m.id}`}
+                    aria-label={`${m.label} menüsü`}
+                    onClick={() => {
+                      const ac = !acik;
+                      setOpen(ac ? m.id : null);
+                      if (ac) requestAnimationFrame(() => panel.current[m.id]?.querySelector<HTMLAnchorElement>("a[href]")?.focus());
+                    }}
+                    className="-ml-1.5 flex size-5 items-center justify-center rounded text-white/80 opacity-0 focus-visible:opacity-100"
+                  >
+                    <ChevronDown size={12} className={`transition ${acik ? "rotate-180" : ""}`} />
+                  </button>
+                  {acik && (
+                    <div
+                      id={`mega-${m.id}`}
+                      ref={(el) => {
+                        panel.current[m.id] = el;
+                      }}
+                      onKeyDown={(e) => panelTus(m.id, e)}
+                      onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(null)}
+                      className="mega gnav fixed inset-x-0 top-12 z-40"
+                    >
+                      <div className="mx-auto grid max-w-[1024px] grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))] gap-11 px-6 pb-[84px] pt-10">
+                        <div>
+                          <p className="mb-3.5 text-[12px] leading-4 text-[#aeaeb2]">Keşfedin: {m.label}</p>
+                          <ul className="space-y-2.5">
+                            {m.buyuk.map((b) => (
+                              <li key={b.href + b.label}>
+                                <Link href={b.href} className="inline-flex items-center gap-3 rounded-md font-[family-name:var(--font-display)] text-[24px] font-semibold leading-[1.1667] tracking-[0.009em] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-4">
+                                  <UygulamaSimgesi simge={b.simge} boyut={32} /> {b.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        {m.sutunlar.map((s) => (
+                          <div key={s.baslik}>
+                            <p className="mb-3.5 text-[12px] leading-4 text-[#aeaeb2]">{s.baslik}</p>
+                            <ul className="space-y-2.5">
+                              {s.items.map((b) => (
+                                <li key={b.href + b.label}>
+                                  <Link href={b.href} className="inline-block rounded text-[12px] font-semibold leading-[1.34] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-2">
+                                    {b.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
+            <Link
+              href="/profil"
+              className={`${ikonBtn} ${pathname.startsWith("/profil") ? "!text-white" : ""}`}
+              title="Profil"
+              aria-label="Profil"
+              onMouseEnter={() => open && setOpen(null)}
+            >
+              <User size={17} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobil((v) => !v)}
+              className={`${ikonBtn} lg:hidden`}
+              aria-expanded={mobil}
+              aria-controls="mobil-menu"
+              aria-label={mobil ? "Menüyü kapat" : "Menüyü aç"}
+              title="Menü"
+            >
+              {mobil ? <X size={18} /> : <MenuIcon size={18} />}
+            </button>
+          </div>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <button type="button" className={iconBtn} title="Bildirimler">
-            <Bell size={18} />
-          </button>
-          <Link href="/araclar" className={iconBtn} title="Araçlar">
-            <Wrench size={18} />
-          </Link>
-          <Link href="/profil" className="ml-1 flex items-center gap-1 rounded-xl border border-line bg-panel p-1.5" title="Profil">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-accent/20 text-accent">
-              <User size={16} />
-            </span>
-          </Link>
-        </div>
-      </div>
-    </header>
+        {/* Mobil menü: büyük bağlantılar ve sütunlar alt alta */}
+        {mobil && (
+          <div
+            id="mobil-menu"
+            className="max-h-[calc(100dvh-3rem)] overflow-y-auto border-t border-line bg-[#1d1d1f] px-6 pb-8 pt-4 lg:hidden"
+            onClick={(e) => (e.target as HTMLElement).closest("a") && setMobil(false)}
+          >
+            <div className="mx-auto grid max-w-xl gap-6">
+              {MENULER.map((m) => (
+                <div key={m.id}>
+                  <p className="mb-1 text-xs text-muted">{m.label}</p>
+                  {m.buyuk.map((b) => (
+                    <Link key={b.href + b.label} href={b.href} className="block py-1 text-2xl font-semibold tracking-tight">
+                      {b.label}
+                    </Link>
+                  ))}
+                  {m.sutunlar.flatMap((s) => s.items).map((b) => (
+                    <Link key={b.href + b.label} href={b.href} className="block py-1 text-sm font-semibold text-text/85">
+                      {b.label}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </header>
+      {/* Mega menü açıkken sayfa bulanıklaşır ve hafifçe kararır (çubuğun arkası da: çubuk o sırada kendisi bulanıklaştırmaz) */}
+      {acikMenu && <div aria-hidden className="mega-perde fixed inset-0 z-30 hidden bg-black/25 backdrop-blur-[20px] lg:block" onMouseEnter={() => setOpen(null)} />}
+    </>
   );
 }

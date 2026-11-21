@@ -15,7 +15,18 @@ export type PopularSong = {
   courses?: string[];
   /** Doğrudan bağlantı; verilmezse Songsterr'de arama açılır */
   url?: string;
+  /** Zorluk madalyası (Tüm Şarkılar filtreleri) */
+  madalya?: Madalya;
+  koken?: "Global" | "Türkçe";
+  bpm?: number;
+  /** Listeye yeni eklenen şarkı */
+  yeni?: boolean;
+  /** Şarkı Rehberi adımı: sıra, seviye kodu (ör. "1.10"), hazırlayan teknik bölümleri ve kilit eşiği */
+  rehber?: { adim: number; seviye: string; bolumler: { kurs: string; bolum: number; ad: string }[]; puan: number };
 };
+
+export const MADALYALAR = ["Bronz", "Gümüş", "Altın", "Platin", "Elmas", "Usta"] as const;
+export type Madalya = (typeof MADALYALAR)[number];
 
 export const LEVEL_NAMES: Record<SongLevel, string> = { 1: "Kolay", 2: "Orta", 3: "Zor" };
 
@@ -73,4 +84,33 @@ export const POPULAR_SONGS: PopularSong[] = [
   S("Tornado of Souls", "Megadeth", 3, "solo", ["Alternate picking", "Sweep"], ["alternatif-pena", "sweep"]),
   S("Far Beyond the Sun", "Yngwie Malmsteen", 3, "solo", ["Armonik minör", "Sweep", "Economy picking"], ["sweep", "economy-pena"]),
   S("Through the Fire and Flames", "DragonForce", 3, "solo", ["Tapping", "Sweep", "Hız"], ["tapping", "sweep"]),
+  // Songsterr ana sayfasında en çok açılanlar (21.11.2026 listesi) — tablar Songsterr'de açılır
+  S("Creep", "Radiohead", 1, "şarkı", ["Barre akorlar", "Arpej", "Dinamik"], ["akorlar", "arpej"]),
+  S("Seven Nation Army", "The White Stripes", 1, "riff", ["Tek tel riff", "Slide"], ["slide"]),
+  S("Highway to Hell", "AC/DC", 1, "riff", ["Power chord", "Açık akor"], ["akorlar", "ritim-tarama"]),
+  S("Another One Bites the Dust", "Queen", 1, "riff", ["Bas riff", "Susmalar"], ["palm-mute"]),
+  S("Where Is My Mind?", "Pixies", 1, "şarkı", ["Power chord", "Tek nota melodi"], ["akorlar"]),
+  S("Heart-Shaped Box", "Nirvana", 1, "şarkı", ["Power chord", "Dinamik"], ["akorlar", "palm-mute"]),
+  S("Feel Good Inc.", "Gorillaz", 1, "riff", ["Akustik ritim", "Susturma"], ["ritim-tarama"]),
+  S("Money", "Pink Floyd", 2, "riff", ["7/4 riff", "Blues solo"], ["bend-vibrato"]),
+  S("Californication", "Red Hot Chili Peppers", 2, "şarkı", ["Arpej", "Çift notalar"], ["arpej"]),
+  S("Can't Stop", "Red Hot Chili Peppers", 2, "riff", ["Funk susturma", "On altılık"], ["ritim-tarama"]),
+  S("Do I Wanna Know?", "Arctic Monkeys", 2, "riff", ["Slide", "Hammer-on"], ["slide", "hammer-on-pull-off"]),
+  S("Everlong", "Foo Fighters", 2, "şarkı", ["Drop D", "Açık tel akorlar", "Hızlı tarama"], ["ritim-tarama", "akorlar"]),
+  S("Killing in the Name", "Rage Against the Machine", 2, "riff", ["Drop D", "Palm mute", "Susturma"], ["palm-mute"]),
+  S("War Pigs", "Black Sabbath", 2, "riff", ["Power chord", "Pentatonik riff"], ["palm-mute", "bend-vibrato"]),
+  S("Aerials", "System of a Down", 2, "şarkı", ["Drop C", "Arpej", "Power chord"], ["arpej", "palm-mute"]),
+  S("Toxicity", "System of a Down", 2, "riff", ["Drop C", "Tel atlama", "Palm mute"], ["palm-mute", "alternatif-pena"]),
+  S("Chop Suey!", "System of a Down", 2, "riff", ["Drop C", "Hızlı tarama", "Palm mute"], ["palm-mute", "ritim-tarama"]),
+  S("For Whom the Bell Tolls", "Metallica", 2, "riff", ["Kromatik riff", "Palm mute"], ["palm-mute"]),
+  S("Seek & Destroy", "Metallica", 2, "riff", ["Palm mute", "Hammer-on"], ["palm-mute", "legato"]),
+  S("Psychosocial", "Slipknot", 2, "riff", ["Drop B", "Palm mute", "Pedal"], ["palm-mute", "alternatif-pena"]),
+  S("My Own Summer (Shove It)", "Deftones", 2, "riff", ["Düşük akort", "Palm mute", "Dinamik"], ["palm-mute"]),
+  S("Fade to Black", "Metallica", 3, "solo", ["Arpej intro", "Bend", "Pentatonik"], ["arpej", "bend-vibrato"]),
+  S("One", "Metallica", 3, "solo", ["Arpej", "Galop riff", "Tapping"], ["arpej", "palm-mute", "tapping"]),
+  S("The Trooper", "Iron Maiden", 3, "riff", ["Galop", "Armonize melodi"], ["alternatif-pena", "palm-mute"]),
+  S("Hysteria", "Muse", 3, "riff", ["Hızlı alternate picking", "On altılık"], ["alternatif-pena"]),
+  S("Symphony of Destruction", "Megadeth", 2, "riff", ["Palm mute", "Power chord"], ["palm-mute"]),
+  S("Beat It", "Michael Jackson", 3, "solo", ["Tapping", "Hızlı pentatonik"], ["tapping", "bend-vibrato"]),
+  S("Bohemian Rhapsody", "Queen", 3, "solo", ["Melodik solo", "Bend", "Vibrato"], ["bend-vibrato"]),
 ];

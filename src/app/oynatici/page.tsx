@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Tabla Keşfet" };
 
 export default function PlayerPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <SongsNav />
       <Suspense fallback={<p className="text-muted">Yükleniyor…</p>}>
         <PlayerLibrary />

@@ -255,7 +255,6 @@ export const legatoCourse: Course = {
   title: "Legato",
   description: "Hammer-on ve pull-off ile akıcı, bağlı cümleler.",
   kind: "technique",
-  icon: "∿",
   guide: [
     "## Legato nedir?",
     "Notaları pena yerine sol elle çalmak: hammer-on (parmağı tele vurmak) ve pull-off (parmağı telden çekerek bırakmak). Pena her telin ilk notasında ya da vurgulanacak notalarda kullanılır; geri kalanı akar.",

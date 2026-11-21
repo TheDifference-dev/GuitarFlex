@@ -196,7 +196,6 @@ export const arpejCourse: Course = {
   title: "Arpejler",
   description: "Akorları melodik arpej kalıplarına dönüştür.",
   kind: "technique",
-  icon: "⚟",
   guide: [
     "## Arpej nedir?",
     "Akorun notalarını aynı anda değil, tek tek çalmak. Eşlikte akorlara hareket katar; soloda ise akor tonlarını bulmanın en sağlam yoludur.",

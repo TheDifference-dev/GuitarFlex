@@ -147,7 +147,6 @@ export const tappingCourse: Course = {
   title: "Tapping",
   description: "Sağ elle sapa vurarak geniş aralıklı hızlı cümleler.",
   kind: "technique",
-  icon: "☝",
   guide: [
     "## Tapping nedir?",
     "Sağ elin bir parmağıyla sapa vurarak nota çalmak. Tap'lenen nota sol elin notalarına pull-off ile bağlanır; böylece tek telde, elin erişemeyeceği genişlikte arpejler çalınır.",

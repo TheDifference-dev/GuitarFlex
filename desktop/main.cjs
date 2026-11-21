@@ -7,12 +7,14 @@
 //   --guncelle             → masaüstü kısayolunun kullandığı mod: önce GitHub'dan güncelleme
 //                            çeker, gerekirse derler (bkz. guncelle.cjs), sonra açar
 
-const { app, BrowserWindow, Menu, shell, dialog } = require("electron");
+const { app, BrowserWindow, Menu, shell, dialog, nativeTheme, nativeImage } = require("electron");
 const { spawn, execFile } = require("node:child_process");
 const http = require("node:http");
 const net = require("node:net");
 const path = require("node:path");
 const fs = require("node:fs");
+const metronomMini = require("./metronom-mini.cjs");
+const { simgeleriYenile } = require("./simge-yenile.cjs");
 
 const ROOT = path.join(__dirname, "..");
 const AUTO_UPDATE = process.argv.includes("--guncelle");
@@ -32,6 +34,18 @@ function freePort() {
       const { port } = srv.address();
       srv.close(() => resolve(port));
     });
+  });
+}
+
+// Pencere her açılışta aynı adreste (http://127.0.0.1:47823) açılır: tarayıcı depolaması (ilerleme, ayarlar, "Benim
+// dosyalarım" IndexedDB'si) adrese bağlıdır, rastgele port her açılışta boş bir depo demekti. Port doluysa rastgele port.
+const SABIT_PORT = 47823;
+function appPort() {
+  return new Promise((resolve) => {
+    const srv = net.createServer();
+    srv.unref();
+    srv.once("error", () => freePort().then(resolve, () => resolve(0)));
+    srv.listen(SABIT_PORT, "127.0.0.1", () => srv.close(() => resolve(SABIT_PORT)));
   });
 }
 
@@ -85,21 +99,35 @@ function stopServer() {
 
 const APP_NAME = "GuitarFlex";
 const ICON = path.join(__dirname, process.platform === "win32" ? "icon.ico" : "icon.png");
-const LOGO_SVG = path.join(ROOT, "public", "marka", "sahne.svg");
+const LOGO_SVG = path.join(ROOT, "public", "marka", "simge.svg");
+// Güvenli köprü: window.guitarflexMasaustu (küçük metronom penceresi)
+const PRELOAD = path.join(__dirname, "preload.cjs");
 
 function splash() {
   let logo = "";
   try {
     logo = `<img src="data:image/svg+xml;base64,${fs.readFileSync(LOGO_SVG).toString("base64")}" width="120" height="120" style="border-radius:24px">`;
   } catch {}
-  const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#071029;color:#ffffff;font-family:system-ui,sans-serif">
-<div style="text-align:center">${logo}<div style="font-size:30px;font-weight:700;margin-top:16px">${APP_NAME}</div>
-<p id="durum" style="color:#a3b0cf;max-width:520px;margin:12px auto 0">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;color:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif">
+<div style="text-align:center">${logo}<div style="font-size:30px;font-weight:600;letter-spacing:-0.4px;margin-top:16px">${APP_NAME}</div>
+<p id="durum" style="color:#A1A1A6;max-width:520px;margin:12px auto 0">Başlatılıyor… İlk açılış bir dakika kadar sürebilir.</p></div></body></html>`;
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
 }
 
 function setStatus(text) {
   win?.webContents.executeJavaScript(`document.getElementById("durum") && (document.getElementById("durum").textContent = ${JSON.stringify(text)})`).catch(() => {});
+}
+
+/** Güncelleme simgeyi değiştirdiyse açık pencereye, açılış ekranına ve kısayollara yansıtır */
+function simgeyiTazele() {
+  try {
+    if (win && !win.isDestroyed() && fs.existsSync(ICON)) win.setIcon(nativeImage.createFromPath(ICON));
+  } catch {}
+  try {
+    const src = `data:image/svg+xml;base64,${fs.readFileSync(LOGO_SVG).toString("base64")}`;
+    win?.webContents.executeJavaScript(`(() => { const i = document.querySelector("img"); if (i) i.src = ${JSON.stringify(src)}; })()`).catch(() => {});
+  } catch {}
+  simgeleriYenile({ ikon: path.join(__dirname, "icon.ico"), klasor: app.getPath("userData") }).catch(() => {});
 }
 
 function relaunchWithUpdate() {
@@ -167,17 +195,19 @@ function buildMenu() {
   ]);
 }
 
-async function createWindow() {
+// yeniden: sunucu zaten çalışırken (ör. küçük metronomdan "ana pencereye dön") ana pencereyi yeniden aç
+async function createWindow(yeniden = false) {
   win = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    backgroundColor: "#071029",
+    // Açılış zemini sistem moduna uysun (sayfa yüklenene kadar görünen renk)
+    backgroundColor: nativeTheme.shouldUseDarkColors ? "#000000" : "#FFFFFF",
     title: APP_NAME,
     icon: fs.existsSync(ICON) ? ICON : undefined,
     autoHideMenuBar: false,
-    webPreferences: { contextIsolation: true, sandbox: true },
+    webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, preload: PRELOAD },
   });
   Menu.setApplicationMenu(buildMenu());
 
@@ -192,6 +222,16 @@ async function createWindow() {
       shell.openExternal(url);
     }
   });
+
+  // Ana pencere kapatılınca küçük metronom açık kalabilir; kapanan pencereye dokunulmasın
+  const buPencere = win;
+  win.on("closed", () => {
+    if (win === buPencere) win = null;
+  });
+  if (yeniden && baseUrl) {
+    await win.loadURL(baseUrl + "/araclar");
+    return;
+  }
 
   await win.loadURL(splash());
 
@@ -210,8 +250,9 @@ async function createWindow() {
     }
     setStatus(PROD ? "Açılıyor…" : "Geliştirme modunda açılıyor… (bir dakika kadar sürebilir)");
   }
+  simgeyiTazele();
 
-  const port = await freePort();
+  const port = await appPort();
   baseUrl = `http://127.0.0.1:${port}`;
   startServer(port);
   try {
@@ -224,19 +265,28 @@ async function createWindow() {
   }
 }
 
+/** Ana pencereyi öne getirir; kapatılmışsa (küçük metronom açıkken) yeniden açar */
+function anaPencereyiAc() {
+  if (win && !win.isDestroyed()) {
+    if (win.isMinimized()) win.restore();
+    win.show();
+    win.focus();
+  } else if (baseUrl) {
+    createWindow(true);
+  }
+}
+
 app.setName(APP_NAME);
 if (process.platform === "win32") app.setAppUserModelId("com.guitarflex.app");
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (win) {
-      if (win.isMinimized()) win.restore();
-      win.focus();
-    }
+  app.on("second-instance", anaPencereyiAc);
+  app.whenReady().then(() => {
+    metronomMini.kur({ adres: () => baseUrl, anaPencereyiAc, ikon: fs.existsSync(ICON) ? ICON : undefined, preload: PRELOAD });
+    return createWindow();
   });
-  app.whenReady().then(createWindow);
   app.on("before-quit", () => {
     app.isQuitting = true;
     stopServer();

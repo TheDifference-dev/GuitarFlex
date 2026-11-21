@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { YOL_GOC_SURUM, yolKoduGoc } from "./yol-goc";
 
 // Şimdilik ilerleme tarayıcıda (localStorage) tutulur. Üyelik sistemi eklendiğinde
 // aynı şekil Supabase tablosuna taşınacak.
@@ -18,16 +19,27 @@ export type Session = {
   exerciseId: string;
   seconds: number;
   bpm: number;
+  /** Oturumun başladığı saat (0–23); gece/sabah başarımları için */
+  saat?: number;
 };
+
+/** Teori yollarındaki (Ritim, Klavye, Kulak) bir adımın en iyi sonucu */
+export type StepProgress = { best: number; passed: boolean; attempts: number; at: string };
 
 export type Progress = {
   exercises: Record<string, ExerciseProgress>;
   sessions: Session[];
   quizBest: Record<string, number>;
+  /** "<yol>/<kod>" → adım sonucu (ör. "klavye/2.3") */
+  steps: Record<string, StepProgress>;
+  /** Gün (YYYY-MM-DD) → o gün geçilen teori adımı sayısı (günlük "Teori" görevi ve seri için) */
+  teori: Record<string, number>;
+  /** Uygulanan teori yolu kod göçünün sürümü (yol-goc.ts); yoksa 0 */
+  yolGoc?: number;
 };
 
 const KEY = "muzik.progress.v1";
-const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {} };
+const EMPTY: Progress = { exercises: {}, sessions: [], quizBest: {}, steps: {}, teori: {}, yolGoc: YOL_GOC_SURUM };
 
 let cache: Progress | null = null;
 const listeners = new Set<() => void>();
@@ -36,11 +48,24 @@ function read(): Progress {
   if (cache) return cache;
   try {
     const raw = window.localStorage.getItem(KEY);
-    cache = raw ? { ...EMPTY, ...(JSON.parse(raw) as Progress) } : EMPTY;
+    const kayit = raw ? (JSON.parse(raw) as Progress) : null;
+    cache = kayit ? goc({ ...EMPTY, ...kayit, yolGoc: kayit.yolGoc ?? 0 }) : EMPTY;
   } catch {
     cache = EMPTY;
   }
   return cache;
+}
+
+/** Açılışta bir kez: eski teori yolu adım kodlarını yenilerine taşır (K18 Ek bölümler) ve kaydeder */
+function goc(p: Progress): Progress {
+  if ((p.yolGoc ?? 0) >= YOL_GOC_SURUM) return p;
+  const next = { ...p, steps: yolKoduGoc(p.steps ?? {}), yolGoc: YOL_GOC_SURUM };
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    // Kaydedilemezse bir sonraki açılışta yeniden denenir; bellekteki kopya zaten göç etmiş durumda.
+  }
+  return next;
 }
 
 function write(next: Progress) {
@@ -89,7 +114,7 @@ export function logPractice(exerciseId: string, seconds: number, bpm: number, co
   write({
     ...p,
     exercises: { ...p.exercises, [exerciseId]: entry },
-    sessions: [...p.sessions, { date: today(), exerciseId, seconds, bpm }],
+    sessions: [...p.sessions, { date: today(), exerciseId, seconds, bpm, saat: new Date().getHours() }],
   });
 }
 
@@ -114,7 +139,7 @@ export function addPracticeTime(key: string, seconds: number, bpm: number, targe
   if (last && last.date === date && last.exerciseId === key) {
     sessions[sessions.length - 1] = { ...last, seconds: last.seconds + seconds, bpm: Math.max(last.bpm, bpm) };
   } else {
-    sessions.push({ date, exerciseId: key, seconds, bpm });
+    sessions.push({ date, exerciseId: key, seconds, bpm, saat: new Date().getHours() });
   }
   write({ ...p, exercises: { ...p.exercises, [key]: entry }, sessions });
 }
@@ -129,6 +154,20 @@ export function saveQuizScore(quiz: string, score: number) {
   const p = read();
   if ((p.quizBest[quiz] ?? 0) >= score) return;
   write({ ...p, quizBest: { ...p.quizBest, [quiz]: score } });
+}
+
+/** Teori yolu adımının sonucunu kaydeder; geçilen adım geçilmiş kalır, en iyi yüzde saklanır */
+export function saveStep(key: string, score: number, passed: boolean) {
+  const p = read();
+  const prev = p.steps[key];
+  const entry: StepProgress = {
+    best: Math.max(prev?.best ?? 0, score),
+    passed: passed || !!prev?.passed,
+    attempts: (prev?.attempts ?? 0) + 1,
+    at: new Date().toISOString(),
+  };
+  const gun = today();
+  write({ ...p, steps: { ...p.steps, [key]: entry }, teori: passed ? { ...p.teori, [gun]: (p.teori[gun] ?? 0) + 1 } : p.teori });
 }
 
 export function resetProgress() {

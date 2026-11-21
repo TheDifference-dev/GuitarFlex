@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/config/site";
 import SiteHeader from "@/components/SiteHeader";
-import { getSiteTexts } from "@/lib/courses";
+import Altbilgi from "@/components/site/Altbilgi";
+import SiteKabugu from "@/components/SiteKabugu";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Apple cihazlarda San Francisco kullanılır (globals.css); diğerlerinde Inter, optik boyutlu (başlıkta "Display" kesimi)
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin", "latin-ext"],
+  axes: ["opsz"],
 });
 
 const geistMono = Geist_Mono({
@@ -24,19 +26,14 @@ export const metadata: Metadata = {
 // Kişisel içerik paketi (ozel-kaynak/icerik) çalışma anında okunduğu için sayfalar her istekte üretilir.
 export const dynamic = "force-dynamic";
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const texts = await getSiteTexts();
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="tr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="tr" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <SiteHeader subtitle={texts.navSubtitle} />
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>
-        <footer className="border-t border-line py-6 text-center text-xs text-muted">
-          {SITE.name} · {SITE.footer} ·{" "}
-          <Link href="/marka" className="hover:text-accent">
-            Marka
-          </Link>
-        </footer>
+        {/* Küçük pencereler (/metronom/mini) gezinme ve alt bilgi olmadan açılır */}
+        <SiteKabugu ust={<SiteHeader />} alt={<Altbilgi />}>
+          {children}
+        </SiteKabugu>
       </body>
     </html>
   );
