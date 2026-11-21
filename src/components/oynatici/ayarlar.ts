@@ -22,6 +22,12 @@ export type OynaticiAyarlari = {
   rampa: { baslangic: number; adim: number; hedef: number };
   /** Ses bankası: GeneralUser GS (varsayılan) ya da hafif Sonivox */
   sesBankasi: "generaluser" | "sonivox";
+  /** Ana ses (%0–150) ve sessiz düğmesi; bütün oynatıcılar paylaşır */
+  anaSes: number;
+  sessiz: boolean;
+  /** Metronom ve sayım tıklarının sesi (%0–150) */
+  metronomSesi: number;
+  sayimSesi: number;
 };
 
 export const VARSAYILAN: OynaticiAyarlari = {
@@ -34,6 +40,10 @@ export const VARSAYILAN: OynaticiAyarlari = {
   metronomKipi: "vurus",
   rampa: { baslangic: 60, adim: 5, hedef: 100 },
   sesBankasi: "generaluser",
+  anaSes: 100,
+  sessiz: false,
+  metronomSesi: 100,
+  sayimSesi: 100,
 };
 
 const KEY = "gf-oynatici";

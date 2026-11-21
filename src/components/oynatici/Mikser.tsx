@@ -51,7 +51,7 @@ export default function Mikser({ izler, gosterilen, sessiz, solo, ses, onGoster,
           {onAna && ana !== undefined && (
             <label className="flex min-w-56 flex-1 items-center gap-2 text-sm">
               <span className="font-semibold">Ana ses</span>
-              <input type="range" min={0} max={150} step={5} value={ana} onChange={(e) => onAna(Number(e.target.value))} className="w-full max-w-64 accent-[var(--accent)]" aria-label="Ana ses" />
+              <input type="range" min={0} max={150} step={5} value={ana} onChange={(e) => onAna(Number(e.target.value))} className="w-full max-w-64 accent-[var(--accent)]" aria-label="Ana ses (mikser)" title="Ana ses: çalma çubuğundaki ses kaydırıcısıyla aynı" />
               <span className="w-10 text-right text-xs tabular-nums text-muted">%{ana}</span>
             </label>
           )}

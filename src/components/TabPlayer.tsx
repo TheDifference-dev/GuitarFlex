@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Metronome as MetronomeIcon, Pause, Play, Repeat, Settings2, SkipBack, SlidersHorizontal, TrendingUp, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Metronome as MetronomeIcon, Pause, Play, Repeat, Settings2, SkipBack, SlidersHorizontal, TrendingUp, Volume1, Volume2, VolumeX, X } from "lucide-react";
 import { noteName } from "@/lib/music";
 import type { LessonPart, Stave } from "@/content/types";
 import { useOynaticiAyarlari, type OynaticiAyarlari } from "./oynatici/ayarlar";
 import AyarPaneli from "./oynatici/AyarPaneli";
 import Mikser, { type MikserIzi } from "./oynatici/Mikser";
 import SapPaneli, { type SapNotasi } from "./oynatici/SapPaneli";
+import { BANKA_ADI, sesBankasiYukle } from "./oynatici/sesBankasi";
 import { mikserOku, mikserYaz } from "@/lib/kutuphane-yerel";
 
 // alphaTab tarayıcıya klasik bir <script> olarak yüklenir (public/alphatab, bkz. scripts/copy-alphatab.mjs).
@@ -18,11 +19,12 @@ import { mikserOku, mikserYaz } from "@/lib/kutuphane-yerel";
 declare global {
   interface Window {
     alphaTab?: any;
+    /** Test kancası (scripts/oynatici-testi.mjs): sayfadaki oynatıcıların alphaTab api'leri. Uygulama bunu okumaz. */
+    __gfTest?: { players: any[] };
   }
 }
 
 const SCRIPT = "/alphatab/alphaTab.gf.js";
-const SES_BANKASI = { generaluser: "/alphatab/soundfont/GeneralUser.sf2", sonivox: "/alphatab/soundfont/sonivox.sf2" } as const;
 let loader: Promise<any> | null = null;
 
 export function loadAlphaTab(): Promise<any> {
@@ -39,15 +41,6 @@ export function loadAlphaTab(): Promise<any> {
     document.head.appendChild(s);
   });
   return loader;
-}
-
-/** GeneralUser GS sunucuda var mı (paket kurulmamışsa sonivox'a dönülür) */
-let generalUser: Promise<boolean> | null = null;
-function generalUserVar(): Promise<boolean> {
-  generalUser ??= fetch(SES_BANKASI.generaluser, { method: "HEAD" })
-    .then((r) => r.ok)
-    .catch(() => false);
-  return generalUser;
 }
 
 export type TabSource =
@@ -159,6 +152,9 @@ function Player({
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [playerReady, setPlayerReady] = useState(false);
   const [sfPercent, setSfPercent] = useState<number | null>(null);
+  /** Ses bankası sorunu: "yedek" seçilen banka yüklenemedi, öteki bankayla çalınıyor · "hata" hiçbiri yüklenemedi (çalınamaz) */
+  const [sesSorunu, setSesSorunu] = useState<"yedek" | "hata" | null>(null);
+  const sesYukleRef = useRef<() => void>(() => {});
   const [playing, setPlaying] = useState(false);
   const [meta, setMeta] = useState<{ title: string; artist: string; tempo: number; bars: number; barStarts: number[] }>({ title: "", artist: "", tempo: 120, bars: 0, barStarts: [] });
   const [tracks, setTracks] = useState<TrackInfo[]>([]);
@@ -166,9 +162,8 @@ function Player({
   const [muted, setMuted] = useState<Set<number>>(new Set());
   const [solo, setSolo] = useState<Set<number>>(new Set());
   const [volumes, setVolumes] = useState<Record<number, number>>({});
-  /** Pan (−100 … 100) ve ana ses (%): mikserKaydi ile saklanır */
+  /** Pan (−100 … 100): mikserKaydi ile saklanır. Ana ses tek kaynaktan gelir: oynatıcı ayarları (gf-oynatici › anaSes). */
   const [pans, setPans] = useState<Record<number, number>>({});
-  const [master, setMaster] = useState(100);
   const mikserRef = useRef(mikserKaydi);
   const [position, setPosition] = useState({ current: 0, end: 0, tick: 0, endTick: 0 });
   const [currentBar, setCurrentBar] = useState(0);
@@ -210,7 +205,15 @@ function Player({
   const rangeRef = useRef(barRange);
   const audioOnlyRef = useRef(audioOnly);
   const programRef = useRef(guitarProgram);
-  const playback = useRef({ countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown });
+  /** Ses seviyeleri (0–1,5): ana ses (sessizde 0), metronom, sayım */
+  const seviye = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.min(150, Math.max(0, v)) / 100 : 1);
+  const anaSes = ayarlar.sessiz ? 0 : seviye(ayarlar.anaSes);
+  const metronomSesi = seviye(ayarlar.metronomSesi);
+  const sayimSesi = seviye(ayarlar.sayimSesi);
+  /** Ana ses (%) ve ayarlayıcısı: çalma çubuğundaki kaydırıcı ile mikserdeki aynı değeri değiştirir */
+  const anaYuzde = Math.round(anaSes * 100);
+  const anaSesiAyarla = useCallback((v: number) => guncelle({ anaSes: v, sessiz: false }), [guncelle]);
+  const playback = useRef({ countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi });
   /** "Hemen başla" ile sayımsız başlatılan çalmada sayım gösterilmez */
   const skipNext = useRef(false);
   /** Shift+tık aralık seçimi: tıklama anında Shift basılı mıydı, son tıklanan ölçü */
@@ -219,7 +222,7 @@ function Player({
   useEffect(() => {
     callbacks.current = { onBpmChange, onPlayingChange, onScore, onBar, onFinished };
     display.current = { view, zoom, horizontal, follow: ayarlar.imlecTakibi };
-    playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown };
+    playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi };
   });
 
   const staveProfile = useCallback((v: View, percussion: boolean) => {
@@ -237,8 +240,8 @@ function Player({
   useEffect(() => {
     let disposed = false;
 
-    Promise.all([loadAlphaTab(), bank === "generaluser" ? generalUserVar() : Promise.resolve(false)])
-      .then(([at, guOk]) => {
+    loadAlphaTab()
+      .then((at) => {
         if (disposed || !hostRef.current) return;
         atRef.current = at;
         // Worker'lar blob üzerinden açıldığı için yollar tam URL olmalı.
@@ -275,13 +278,13 @@ function Player({
           },
           player: {
             playerMode: at.PlayerMode.EnabledSynthesizer,
-            soundFont: abs(guOk ? SES_BANKASI.generaluser : SES_BANKASI.sonivox),
             scrollElement: viewportRef.current,
             scrollMode: follow ? at.ScrollMode.Continuous : at.ScrollMode.Off,
             enableUserInteraction: !audioOnlyRef.current,
           },
         });
         apiRef.current = api;
+        (window.__gfTest ??= { players: [] }).players.push(api);
         // Şarkı adı, sanatçı ve akort zaten arayüzde gösteriliyor; tab alanında tekrar çizilmesin.
         const E = at.NotationElement;
         for (const el of [E.ScoreTitle, E.ScoreSubTitle, E.ScoreArtist, E.ScoreAlbum, E.ScoreWords, E.ScoreMusic, E.ScoreWordsAndMusic, E.ScoreCopyright, E.GuitarTuning]) {
@@ -306,7 +309,6 @@ function Player({
             setVolumes(kayit.ses);
             setMuted(new Set(kayit.sessiz));
             setSolo(new Set(kayit.solo));
-            setMaster(kayit.ana);
           }
           callbacks.current.onScore?.(score);
           setMeta({ title: score.title, artist: score.artist, tempo: score.tempo, bars: score.masterBars.length, barStarts: score.masterBars.map((m: any) => m.start) });
@@ -326,15 +328,37 @@ function Player({
           }
         });
         api.renderFinished.on(() => !disposed && setStatus("ready"));
-        api.error.on(() => !disposed && setStatus("error"));
-        api.soundFontLoad.on((e: { loaded: number; total: number }) => {
-          if (!disposed && e.total > 0) setSfPercent(Math.round((e.loaded / e.total) * 100));
-        });
+        // Parça yüklendikten sonraki hata tabın değil sesin hatasıdır: tab ekranda kalır
+        api.error.on(() => !disposed && !api.score && setStatus("error"));
         api.playerReady.on(() => {
           if (disposed) return;
           setPlayerReady(true);
           setSfPercent(null);
         });
+
+        // Ses bankası kendi yükleyicimizle gelir (yüzde, yedek banka, anlaşılır hata; bkz. oynatici/sesBankasi.ts)
+        api.player?.soundFontLoadFailed.on(() => !disposed && setSesSorunu("hata"));
+        const sesYukle = () => {
+          setSesSorunu(null);
+          setSfPercent(0);
+          sesBankasiYukle(bank, (yuzde) => !disposed && setSfPercent(yuzde))
+            .then(({ veri, yedek }) => {
+              if (disposed) return;
+              const sentez = api.player;
+              if (!sentez) return setSesSorunu("hata");
+              if (yedek) setSesSorunu("yedek");
+              // Sentezleyici hazır olunca verilir (hazırsa hemen)
+              let verildi = false;
+              sentez.ready.on(() => {
+                if (verildi || disposed) return;
+                verildi = true;
+                api.loadSoundFont(veri, false);
+              });
+            })
+            .catch(() => !disposed && setSesSorunu("hata"));
+        };
+        sesYukleRef.current = sesYukle;
+        sesYukle();
 
         // "Yalnız ölçü başı" metronomu: her ölçünün ilk vuruşuna perküsyon kanalında tık
         api.midiLoad.on((midi: any) => {
@@ -345,7 +369,7 @@ function Player({
           midi.addEvent(new M.ProgramChangeEvent(0, shift, 9, 0));
           for (const mb of lookups) {
             const t = mb.start + shift;
-            midi.addEvent(new M.NoteOnEvent(0, t, 9, 33, 112));
+            midi.addEvent(new M.NoteOnEvent(0, t, 9, 33, Math.min(127, Math.round(112 * playback.current.metronomSesi))));
             midi.addEvent(new M.NoteOffEvent(0, t + 240, 9, 33, 0));
           }
         });
@@ -457,6 +481,8 @@ function Player({
     return () => {
       disposed = true;
       setCounting(null);
+      const kanca = window.__gfTest?.players;
+      if (kanca && apiRef.current) kanca.splice(kanca.indexOf(apiRef.current) >>> 0, 1);
       apiRef.current?.destroy();
       apiRef.current = null;
     };
@@ -543,10 +569,11 @@ function Player({
     const api = apiRef.current;
     if (!api) return;
     api.playbackSpeed = speed / 100;
-    api.metronomeVolume = metronome && !barClicks ? 1 : 0;
+    api.masterVolume = anaSes;
+    api.metronomeVolume = metronome && !barClicks ? metronomSesi : 0;
     api.isLooping = loop;
-    api.countInVolume = countIn ? 1 : 0;
-  }, [speed, metronome, barClicks, loop, countIn, playerReady]);
+    api.countInVolume = countIn ? sayimSesi : 0;
+  }, [speed, metronome, barClicks, loop, countIn, anaSes, metronomSesi, sayimSesi, playerReady]);
 
   // Ölçü başı tıkları MIDI'nin parçası: açılıp kapanınca MIDI yeniden üretilir (çalıyorsa kaldığı yerden sürer)
   const clicksLoaded = useRef<boolean | null>(null);
@@ -567,7 +594,7 @@ function Player({
       skipNext.current = true;
       api.countInVolume = 0;
       api.play();
-      api.countInVolume = playback.current.countIn ? 1 : 0;
+      api.countInVolume = playback.current.countIn ? playback.current.sayimSesi : 0;
     }
   }, [barClicks, playerReady]);
 
@@ -586,13 +613,9 @@ function Player({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerReady]);
   useEffect(() => {
-    const api = apiRef.current;
-    if (api) api.masterVolume = master / 100;
-  }, [master, playerReady]);
-  useEffect(() => {
     if (!mikserRef.current || !tracks.length) return;
-    mikserYaz(mikserRef.current, { izSayisi: tracks.length, ana: master, ses: volumes, pan: pans, sessiz: [...muted], solo: [...solo] });
-  }, [tracks.length, master, volumes, pans, muted, solo]);
+    mikserYaz(mikserRef.current, { izSayisi: tracks.length, ana: anaYuzde, ses: volumes, pan: pans, sessiz: [...muted], solo: [...solo] });
+  }, [tracks.length, anaYuzde, volumes, pans, muted, solo]);
 
   // Dışarıdan verilen sessiz track'ler (ör. Quick Study'de "eşlikle çal": gitar susar, eşlik çalar)
   const mutedKey = mutedTracks?.join(",");
@@ -621,7 +644,7 @@ function Player({
     skipNext.current = true;
     api.countInVolume = 0;
     api.play();
-    api.countInVolume = playback.current.countIn ? 1 : 0;
+    api.countInVolume = playback.current.countIn ? playback.current.sayimSesi : 0;
     setCounting(null);
   }, []);
 
@@ -722,7 +745,7 @@ function Player({
         skipNext.current = true;
         api.countInVolume = 0;
         api.play();
-        api.countInVolume = playback.current.countIn ? 1 : 0;
+        api.countInVolume = playback.current.countIn ? playback.current.sayimSesi : 0;
       }
     }, 250);
   };
@@ -782,10 +805,10 @@ function Player({
             onClick={() => apiRef.current?.playPause()}
             disabled={!playerReady}
             className="btn-primary min-w-28 px-5 py-2 disabled:opacity-40"
-            title="Çal / Duraklat (Boşluk)"
+            title={playerReady ? "Çal / Duraklat (Boşluk)" : sesSorunu === "hata" ? "Çal / Duraklat: ses yüklenemedi" : "Çal / Duraklat: ses bankası yükleniyor, hazır olunca açılır"}
           >
             {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
-            {!playerReady && sfPercent !== null ? `Ses %${sfPercent}` : playing ? "Duraklat" : "Çal"}
+            {playerReady ? (playing ? "Duraklat" : "Çal") : sesSorunu === "hata" ? "Ses yok" : sfPercent !== null && sfPercent < 100 ? `Ses %${sfPercent}` : "Ses hazırlanıyor…"}
           </button>
           <button type="button" onClick={() => apiRef.current?.stop()} disabled={!playerReady} className={iconBtn} title="Başa dön" aria-label="Başa dön">
             <SkipBack size={15} />
@@ -858,6 +881,32 @@ function Player({
               </button>
             </div>
           )}
+          {/* Ana ses: her oynatıcıda (tek track'li derslerde de) görünür; tercih kalıcıdır */}
+          <div className="flex items-center gap-1.5 text-sm" role="group" aria-label="Ses">
+            <button
+              type="button"
+              data-ana-ses-dugmesi
+              onClick={() => guncelle(anaSes === 0 ? { sessiz: false, ...(seviye(ayarlar.anaSes) === 0 ? { anaSes: 100 } : {}) } : { sessiz: true })}
+              className={iconBtn}
+              aria-pressed={anaSes === 0}
+              title={anaSes === 0 ? "Sesi aç" : "Sessize al"}
+              aria-label={anaSes === 0 ? "Sesi aç" : "Sessize al"}
+            >
+              {anaSes === 0 ? <VolumeX size={15} className="text-bad" /> : anaSes < 0.5 ? <Volume1 size={15} /> : <Volume2 size={15} />}
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={150}
+              step={5}
+              value={anaYuzde}
+              onChange={(e) => anaSesiAyarla(Number(e.target.value))}
+              className="w-20 accent-[var(--accent)] sm:w-24"
+              aria-label="Ana ses"
+              title="Ana ses (%0–150)"
+            />
+            <span className="w-9 whitespace-nowrap text-xs tabular-nums text-muted">%{anaYuzde}</span>
+          </div>
           {multiTrack && (
             <button type="button" onClick={() => setPanel((p) => (p === "mikser" ? null : "mikser"))} className={`${btn} ${panel === "mikser" ? on : ""}`} aria-expanded={panel === "mikser"} title="Mikser: track sesleri, solo, sessiz">
               <SlidersHorizontal size={14} /> Mikser
@@ -1008,6 +1057,31 @@ function Player({
         )}
         {activePart && <p className="text-xs text-muted">{activePart.name} · {activePart.focus}</p>}
 
+        {/* Ses durumu: yüklenirken yüzde, sorun varsa anlaşılır mesaj (tab görünür kalır) */}
+        {status !== "error" && (!playerReady || sesSorunu) && (
+          <div data-ses-durumu role="status" className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-xs ${sesSorunu === "hata" ? "text-bad" : "text-muted"}`}>
+            {sesSorunu === "hata" ? (
+              <span>Ses yüklenemedi: ses bankası dosyası indirilemedi. Tab görünür ama çalınamaz; bağlantıyı ya da kurulumu (npm install) kontrol et.</span>
+            ) : !playerReady ? (
+              <>
+                <span className="tabular-nums">Ses bankası yükleniyor{sfPercent !== null && sfPercent < 100 ? ` %${sfPercent}.` : "…"} Hazır olunca Çal düğmesi açılır.</span>
+                <span className="h-1 w-24 overflow-hidden rounded-full bg-ink/10" aria-hidden>
+                  <span className="bar-fill block h-full rounded-full transition-all" style={{ width: `${sfPercent ?? 100}%` }} />
+                </span>
+              </>
+            ) : (
+              <span>
+                {BANKA_ADI[bank]} ses bankası yüklenemedi; yedek banka ({BANKA_ADI[bank === "generaluser" ? "sonivox" : "generaluser"]}) ile çalınıyor.
+              </span>
+            )}
+            {sesSorunu && (
+              <button type="button" onClick={() => sesYukleRef.current()} className="rounded-full border border-ink/15 px-2.5 py-0.5 font-semibold text-text hover:bg-ink/10">
+                Yeniden dene
+              </button>
+            )}
+          </div>
+        )}
+
         {panel === "ayar" && (
           <AyarPaneli
             ayarlar={ayarlar}
@@ -1037,8 +1111,8 @@ function Player({
             onSes={changeVolume}
             pan={pans}
             onPan={changePan}
-            ana={master}
-            onAna={setMaster}
+            ana={anaYuzde}
+            onAna={anaSesiAyarla}
             onYalnizBunuSustur={muteOnly}
             hatirlaniyor={!!mikserKaydi}
           />
