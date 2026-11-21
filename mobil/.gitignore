@@ -1,0 +1,10 @@
+node_modules/
+icerik-paket/
+.expo/
+dist/
+ios/
+android/
+web-build/
+*.tsbuildinfo
+public/alphatab/
+dist-ios/

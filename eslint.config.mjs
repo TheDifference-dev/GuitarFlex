@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "public/alphatab/**",
     "desktop/**",
+    // iOS uygulaması (Expo): kendi tsconfig'i ve denetimi var (mobil/)
+    "mobil/**",
     "build/**",
     "next-env.d.ts",
   ]),

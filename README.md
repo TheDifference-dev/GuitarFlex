@@ -30,6 +30,10 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | **Kurs kataloğu** | **Ders listesi çekmecesi** |
 | ![Kurs kataloğu](docs/ekran/katalog.png) | ![Ders listesi](docs/ekran/ders-listesi.png) |
 
+**iPhone (ilk sürüm): yol, teori, ders, soru, Çalışma Defteri, şarkı**
+
+![GuitarFlex iOS](docs/ekran/ios.png)
+
 ## Highlights
 
 - **12 complete technique courses, 557 original exercises** — Alternate Picking, Legato, Sweep Picking, Tapping, Economy Picking, Bend & Vibrato, Slide, Palm Mute, Arpeggios, Chords, Rhythm & Strumming and Chromatic Warm-ups, each split into 3–6 sections that progress from easy to hard
@@ -70,9 +74,11 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 - **Stiller (Ek Kurs)**: Sekiz stilin dili kısa derslerle, seviyelere göre: blues (shuffle comping, turnaround, kutu lickleri) ve rock riffleri (L2), funk (chank, staccato, tek nota, 9'lu akorlar) ve metal (gallop, 16'lık PM, Drop D) (L3), caz comping (shell, drop 2 ile ii–V–I, akor-melodi) ve bossa nova (L4), bebop dili ve füzyon (yan kayma, pentatonik bindirme, sabit yapılar) (L5); 36 ders. Shuffle ve swing derslerinde sekizlikler uzun-kısa çalınır, Drop D derslerinde oynatıcı akortu gösterir; her derste ton önerisi ve uygun eşlik. Seviye Yolu'nda her seviyenin Stil kursu listesinde.
 - **Profil**: Günlük görevler (Egzersiz, Teori, Serbest Çalışma), seri ve seri kalkanı, ders madalyaları (Bronz I → Elmas IV), 68 başarım ve XP, kurs ilerlemesi.
 - **Araçlar**: Metronom ve nota bulma testi.
+- **iPhone uygulaması (ilk sürüm, açık tema)**: Duolingo tarzı kıvrılan yol; her kurs ve teori yolu kendi renginde, ders düğümleri tamamlanınca dolup onaylanıyor, kilit yok. Dört sekme: Yol (bütün kurslar), Teori (Ritim, Klavye, Kulak, Armoni, Okuma), Şarkılar (Şarkı Rehberi'nin 38 adımı, Songsterr'de açılır) ve Çalışma Defteri (takvim, seri, günlük hedef, "Çalışmaya devam" / "Öğrendim", hangi gitarla). Tab oynatıcı ve teori soruları masaüstüyle aynı koddan çalışıyor.
 
 ### Son güncellemeler
 
+- **iPhone uygulaması başladı**: ferah, açık renkli bir tasarımla Duolingo tarzı yol ekranı. Ders düğümüne dokununca kart açılıyor, önerilen ders büyük ve "BAŞLA" balonlu; üstte seçili kurs, 🔥 seri ve günlük hedef halkası. Tab oynatıcı (hız, döngü, kısımlar, metronom, ses), teori soru motoru (sap, porte, ritim, kulak) ve ilerleme kaydı masaüstüyle aynı; Çalışma Defteri'nde aylık takvim, seçili günün çalışmaları, sarı/yeşil durum düğmeleri ve gitar seçimi var. İlerleme cihazda tutuluyor
 - **Teori yolları GuitarBear yapısında**: Ritim (9 bölüm, 70 adım), Klavye Görselleştirme (11/84), Kulak Eğitimi (9/60) ve Armoni (5 bölüm, 11 pratik) bölüm, adım, seviye, soru sayısı ve geçme eşiğiyle GuitarBear'deki sırada; soru türleri buna göre ayarlandı (ritimde yazım seçme + metronomla geri vurma, klavyede adlandırma/bulma). GuitarFlex'e özgü bölümler (Triad Çevrimleri, Drop 2, Melodi ve Akor Kökü Geri Çalma, İkincil Dominantlar, ii–V–I, Akor-Gam Eşleme) aynı sayfada ayrı "Ek bölümler" alanında; eski ilerleme kayıtları yeni kodlara otomatik taşınıyor
 - **Teori yollarında kilit kalktı**: Ritim, Klavye, Kulak, Armoni ve Okuma yollarındaki bütün adımlar her zaman açık; sıra yalnız öneri. GuitarBear'den gelen derslerin ilk kısımlarındaki birkaç açık hata (başka tele geçen bağ, sol ele çok yakın tap, tap'e bağla varan hammer-on) düzeltildi
 - **Songsterr'de ara**: Şarkı Kütüphanesi'nde ve Popüler Şarkılar'da aradığın şarkı burada yoksa, aramanın altında "Songsterr'de ara" çıkıyor ve Songsterr'in bütün tab kataloğunu tarayıcıda açıyor; eşleşen popüler şarkılar da bağlantı olarak listeleniyor. Popüler Şarkılar'a Songsterr'de en çok açılan 28 şarkı daha eklendi (tablar Songsterr'de açılır). Koyu modda açılır listelerdeki grup başlıkları (Gamlar, Akorlar) artık okunuyor

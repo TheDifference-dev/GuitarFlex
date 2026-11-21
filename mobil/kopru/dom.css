@@ -1,0 +1,5 @@
+/* DOM bileşenlerinin stili: masaüstünün globals.css'i (Tailwind 4) aynen; sınıflar ../../src'den taranır */
+@import "../../src/app/globals.css";
+@source "../../src";
+@source "./";
+html, body { background: var(--bg); margin: 0; -webkit-text-size-adjust: 100%; }

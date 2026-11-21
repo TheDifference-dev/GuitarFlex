@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "GuitarFlex",
+    "slug": "guitarflex",
+    "scheme": "guitarflex",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/simge.png",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.arda.guitarflex",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-web-browser",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": false,
+      "tsconfigPaths": true
+    },
+    "splash": {
+      "image": "./assets/simge.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    }
+  }
+}
