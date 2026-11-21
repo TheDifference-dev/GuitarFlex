@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Check, Lock } from "lucide-react";
+import { Check } from "lucide-react";
 import type { Yol } from "@/lib/alistirma/tipler";
 import { useProgress } from "@/lib/progress";
 import { MODUL_METIN } from "@/content/yol-modulleri";
@@ -19,12 +19,6 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
   const [sekme, setSekme] = useState(0);
   const sonuc = (kod: string) => progress.steps[`${yol.slug}/${kod}`];
   const gecilen = yol.adimlar.filter((a) => sonuc(a.kod)?.passed).length;
-  // Ek (serbest) bölümlerin ilk adımı önceki bölümü beklemeden açılır
-  const serbestIlk = (i: number) => {
-    const a = yol.adimlar[i];
-    return Boolean(yol.bolumler.find((b) => b.no === a.bolum)?.serbest) && yol.adimlar[i - 1]?.bolum !== a.bolum;
-  };
-  const acik = (i: number) => i === 0 || serbestIlk(i) || Boolean(sonuc(yol.adimlar[i - 1].kod)?.passed) || Boolean(sonuc(yol.adimlar[i].kod));
   const metin = MODUL_METIN[yol.slug]?.[yol.modul.sekmeler[sekme]] ?? [];
 
   return (
@@ -76,8 +70,8 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
       ) : null}
 
       {yol.bolumler.map((b) => {
-        const adimlar = yol.adimlar.map((a, i) => ({ a, i })).filter(({ a }) => a.bolum === b.no);
-        const biten = adimlar.filter(({ a }) => sonuc(a.kod)?.passed).length;
+        const adimlar = yol.adimlar.filter((a) => a.bolum === b.no);
+        const biten = adimlar.filter((a) => sonuc(a.kod)?.passed).length;
         return (
           <section key={b.no} className="space-y-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -90,9 +84,8 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
               </span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {adimlar.map(({ a, i }) => {
+              {adimlar.map((a) => {
                 const r = sonuc(a.kod);
-                const ac = acik(i);
                 const icerik = (
                   <div className="flex items-start gap-3">
                     <UygulamaSimgesi simge={a.kontrol ? yerSimgesi("gorev") : yolSimgesi(yol.slug)} boyut={32} className="mt-0.5" />
@@ -102,7 +95,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                           {a.kod}
                           {a.kontrol ? " · Kontrol" : ""}
                         </p>
-                        {r?.passed ? <Check size={16} className="text-ok" /> : !ac ? <Lock size={14} className="text-muted" /> : null}
+                        {r?.passed ? <Check size={16} className="text-ok" /> : null}
                       </div>
                       <h3 className="font-semibold">{a.ad}</h3>
                       <p className="text-xs text-muted">
@@ -112,14 +105,10 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
                     </div>
                   </div>
                 );
-                return ac ? (
+                return (
                   <Link key={a.kod} href={`/teori/yol/${yol.slug}/${a.kod}`} className={`card p-3 transition hover:border-ink/15 ${r?.passed ? "border-ok/40" : ""}`}>
                     {icerik}
                   </Link>
-                ) : (
-                  <div key={a.kod} className="card p-3 opacity-50" title="Önceki adımı geçince açılır">
-                    {icerik}
-                  </div>
                 );
               })}
             </div>
