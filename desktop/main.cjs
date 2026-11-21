@@ -7,13 +7,14 @@
 //   --guncelle             → masaüstü kısayolunun kullandığı mod: önce GitHub'dan güncelleme
 //                            çeker, gerekirse derler (bkz. guncelle.cjs), sonra açar
 
-const { app, BrowserWindow, Menu, shell, dialog, nativeTheme, nativeImage } = require("electron");
+const { app, BrowserWindow, Menu, shell, dialog, nativeTheme, nativeImage, ipcMain } = require("electron");
 const { spawn, execFile } = require("node:child_process");
 const http = require("node:http");
 const net = require("node:net");
 const path = require("node:path");
 const fs = require("node:fs");
 const metronomMini = require("./metronom-mini.cjs");
+const sarkiKutuphanesi = require("./sarki-kutuphanesi.cjs");
 const { simgeleriYenile } = require("./simge-yenile.cjs");
 
 const ROOT = path.join(__dirname, "..");
@@ -135,6 +136,47 @@ function relaunchWithUpdate() {
   app.exit(0);
 }
 
+// ── Görünüm teması: açık (varsayılan) · koyu · sistem. Sayfadaki tercih (localStorage) ile aynı tutulur; ana süreç
+// kendi kopyasını userData/tema.json'da saklar (açılış zemini ve menüdeki seçim için).
+const TEMALAR = ["acik", "koyu", "sistem"];
+let tema = "acik";
+function temaDosyasi() {
+  return path.join(app.getPath("userData"), "tema.json");
+}
+function temaOku() {
+  try {
+    const t = JSON.parse(fs.readFileSync(temaDosyasi(), "utf8")).tema;
+    if (TEMALAR.includes(t)) tema = t;
+  } catch {
+    // İlk açılış: açık tema
+  }
+  nativeTheme.themeSource = tema === "sistem" ? "system" : tema === "koyu" ? "dark" : "light";
+}
+function temaKoyuMu() {
+  return tema === "koyu" || (tema === "sistem" && nativeTheme.shouldUseDarkColors);
+}
+/** kaynak "menu": sayfaya da uygula (localStorage + data-mod); "sayfa": sayfa zaten uyguladı */
+function temaUygula(t, kaynak) {
+  if (!TEMALAR.includes(t)) return;
+  tema = t;
+  try {
+    fs.writeFileSync(temaDosyasi(), JSON.stringify({ tema }));
+  } catch {
+    // Yazılamazsa yalnız bu oturumda geçerli
+  }
+  nativeTheme.themeSource = tema === "sistem" ? "system" : tema === "koyu" ? "dark" : "light";
+  const zemin = temaKoyuMu() ? "#000000" : "#FFFFFF";
+  for (const w of BrowserWindow.getAllWindows()) if (!w.isDestroyed() && w !== sarkiPenceresi()) w.setBackgroundColor(zemin);
+  if (kaynak === "menu" && win && !win.isDestroyed() && baseUrl && win.webContents.getURL().startsWith(baseUrl)) {
+    win.webContents
+      .executeJavaScript(`try{localStorage.setItem("gf-tema",${JSON.stringify(t)})}catch(e){};document.documentElement.setAttribute("data-mod",${JSON.stringify(t)});window.dispatchEvent(new Event("gf-tema-degisti"));`)
+      .catch(() => {});
+  }
+  Menu.setApplicationMenu(buildMenu());
+}
+let sarkiPenceresi = () => null;
+let sarkiAc = null;
+
 function buildMenu() {
   const isMac = process.platform === "darwin";
   const go = (p) => win && baseUrl && win.loadURL(baseUrl + p);
@@ -168,7 +210,8 @@ function buildMenu() {
       submenu: [
         { label: "Ana sayfa", accelerator: "CmdOrCtrl+1", click: () => go("/") },
         { label: "Profil", accelerator: "CmdOrCtrl+2", click: () => go("/profil") },
-        { label: "Popüler Şarkılar", accelerator: "CmdOrCtrl+3", click: () => go("/sarkilar") },
+        { label: "Şarkılarla Öğren", accelerator: "CmdOrCtrl+3", click: () => go("/sarkilar") },
+        { label: "Şarkı Kütüphanesi (Songsterr)", accelerator: "CmdOrCtrl+K", click: () => sarkiAc && sarkiAc("") },
         { label: "Akustik Egzersizler", accelerator: "CmdOrCtrl+8", click: () => go("/akustik") },
         { label: "Gitarda Nasıl Çalışmalıyım?", accelerator: "CmdOrCtrl+9", click: () => go("/nasil-calismaliyim") },
         { label: "Tabla Keşfet", accelerator: "CmdOrCtrl+6", click: () => go("/oynatici") },
@@ -189,6 +232,15 @@ function buildMenu() {
         { role: "zoomOut", label: "Küçült" },
         { type: "separator" },
         { role: "togglefullscreen", label: "Tam ekran" },
+        { type: "separator" },
+        {
+          label: "Tema",
+          submenu: [
+            { label: "Açık (varsayılan)", type: "radio", checked: tema === "acik", click: () => temaUygula("acik", "menu") },
+            { label: "Koyu", type: "radio", checked: tema === "koyu", click: () => temaUygula("koyu", "menu") },
+            { label: "Sistem", type: "radio", checked: tema === "sistem", click: () => temaUygula("sistem", "menu") },
+          ],
+        },
         { role: "toggleDevTools", label: "Geliştirici araçları" },
       ],
     },
@@ -202,8 +254,8 @@ async function createWindow(yeniden = false) {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    // Açılış zemini sistem moduna uysun (sayfa yüklenene kadar görünen renk)
-    backgroundColor: nativeTheme.shouldUseDarkColors ? "#000000" : "#FFFFFF",
+    // Açılış zemini seçili temaya uysun (varsayılan açık; sayfa yüklenene kadar görünen renk)
+    backgroundColor: temaKoyuMu() ? "#000000" : "#FFFFFF",
     title: APP_NAME,
     icon: fs.existsSync(ICON) ? ICON : undefined,
     autoHideMenuBar: false,
@@ -284,7 +336,14 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on("second-instance", anaPencereyiAc);
   app.whenReady().then(() => {
+    temaOku();
     metronomMini.kur({ adres: () => baseUrl, anaPencereyiAc, ikon: fs.existsSync(ICON) ? ICON : undefined, preload: PRELOAD });
+    const sk = sarkiKutuphanesi.kur({ uygulamaAdresi: () => baseUrl, anaPencere: () => win, ikon: fs.existsSync(ICON) ? ICON : undefined });
+    sarkiAc = sk.ac;
+    sarkiPenceresi = sk.pencere;
+    ipcMain.on("tema-degisti", (e, t) => {
+      if (baseUrl && e.senderFrame && e.senderFrame.url.startsWith(baseUrl)) temaUygula(String(t), "sayfa");
+    });
     return createWindow();
   });
   app.on("before-quit", () => {

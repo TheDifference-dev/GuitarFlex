@@ -161,7 +161,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
 type SarkiKarti = { href: string; title: string; text: string; simge: SimgeTanim };
 
 const SONG_CARDS: SarkiKarti[] = [
-  { href: "/sarkilar", title: "Popüler Şarkılar", text: "Ünlü şarkı ve sololar zorluğa göre; tablar Songsterr'de açılır.", simge: yerSimgesi("sarkilar") },
+  { href: "/sarkilar", title: "Şarkılarla Öğren", text: "Şarkı Rehberi: teknik bölümünden şarkıya, adım adım; tablar Songsterr'de açılır.", simge: yerSimgesi("sarkilar") },
   { href: "/oynatici", title: "Tabla Keşfet", text: "Kendi Guitar Pro arşivini ve örnek şarkıları çok kanallı oynatıcıda çal.", simge: yerSimgesi("oynatici") },
   { href: "/sarkilar/dogaclama", title: "Doğaçlama Çal", text: "Davul, bas ve gitar eşliğinde önerilen gamlarla solo çal.", simge: yerSimgesi("dogaclama") },
 ];

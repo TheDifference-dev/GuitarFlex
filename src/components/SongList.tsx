@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import SongsterrAra from "@/components/SongsterrAra";
+import SongsterrBag from "@/components/SongsterrBag";
+import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { ExternalLink, Search } from "lucide-react";
 import { MADALYALAR, songUrl, type Madalya, type PopularSong } from "@/content/sarkilar";
 import { useProgress } from "@/lib/progress";
+import { kursSimgesi } from "@/lib/simge";
 
 type Props = { songs: PopularSong[]; courseTitles: Record<string, string>; rehber?: boolean };
 type Siralama = "sik" | "kolay" | "zor" | "yeni" | "isim";
@@ -103,7 +106,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
   const adim = songs.filter((s) => s.rehber).sort((a, b) => a.rehber!.adim - b.rehber!.adim);
 
   const kart = (s: PopularSong) => (
-    <article key={`${s.artist}-${s.title}-${s.kind}`} className="flex flex-col card p-4">
+    <article key={`${s.artist}-${s.title}-${s.kind}`} data-renk={kursSimgesi(s.courses?.[0] ?? "").renk} className="renkli-kart yukselen flex flex-col card p-4 pt-5">
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="font-semibold leading-tight">
@@ -151,15 +154,9 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
         </p>
       )}
       <div className="flex-1" />
-      <a
-        href={songUrl(s)}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => acildi(anahtar(s))}
-        className="btn-primary mt-4 self-stretch px-4 py-2 text-sm"
-      >
+      <SongsterrBag q={songUrl(s)} onAc={() => acildi(anahtar(s))} className="btn-primary mt-4 self-stretch px-4 py-2 text-sm">
         Songsterr&apos;de Aç <ExternalLink size={15} />
-      </a>
+      </SongsterrBag>
     </article>
   );
 
@@ -168,7 +165,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
       {rehber ? (
         <div className="flex gap-2">
           <button type="button" className={chip(gorunum === "rehber")} onClick={() => setGorunum("rehber")}>
-            Rehber Görünümü
+            Rehber Şarkılar
           </button>
           <button type="button" className={chip(gorunum === "tum")} onClick={() => setGorunum("tum")}>
             Tüm Şarkılar
@@ -177,50 +174,26 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
       ) : null}
 
       {gorunum === "rehber" ? (
-        <div className="space-y-3">
-          <p className="text-sm text-muted">
-            {adim.length} adımlık şarkı yolu: önce hazırlayan teknik bölümünü çalış, sonra şarkıya geç. Kilit yok: her adım açık. Profil Puanın (tamamlanan ders sayın: {puan}) önerilen eşiğin altındaysa adımda önerilen ders sayısı yazar.
+        <div className="space-y-10" data-rehber-gorunumu>
+          <p className="max-w-3xl text-[17px] text-muted">
+            {adim.length} adımlık şarkı yolu (GuitarBear Şarkı Rehberi sırası): önce hazırlayan teknik bölümünü çalış, sonra şarkıya geç. Kilit yok, her adım açık.
+            Profil Puanın (tamamlanan ders sayın) şu an <b className="font-semibold text-text">{puan}</b>; önerilen eşiğin altındaki adımlarda önerilen ders sayısı yazar.
           </p>
-          <ol className="space-y-2">
-            {adim.map((s) => {
-              const kilitli = puan < s.rehber!.puan;
-              return (
-                <li key={anahtar(s)} className="flex flex-wrap items-center gap-3 card p-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-ink">{s.rehber!.adim}</span>
-                  <div className="min-w-48 flex-1">
-                    <p className="font-semibold leading-tight">
-                      {s.title} <span className="font-normal text-muted">– {s.artist}</span>
-                    </p>
-                    <p className="text-xs text-muted">
-                      <span className="uppercase">{s.kind}</span> · {madalyaOf(s)} ({s.rehber!.seviye}) · {s.koken} · Hazırlık:{" "}
-                      {s.rehber!.bolumler.map((b, i) => (
-                        <span key={b.ad}>
-                          {i > 0 && ", "}
-                          <Link href={`/calis/${b.kurs}`} className="font-semibold text-text hover:text-accent">
-                            {courseTitles[b.kurs] ?? b.kurs} {b.bolum}. Bölüm
-                          </Link>
-                        </span>
-                      ))}
-                    </p>
-                  </div>
-                  {kilitli && (
-                    <span className="text-xs font-medium text-muted" title="Önerilen Profil Puanı: bu şarkıdan önce çalışman önerilen ders sayısı (kilit değil)">
-                      Önerilen: {s.rehber!.puan} ders
-                    </span>
-                  )}
-                  <a
-                    href={songUrl(s)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => acildi(anahtar(s))}
-                    className={`${kilitli ? "btn-secondary" : "btn-primary"} px-3.5 py-1.5 text-sm`}
-                  >
-                    Aç <ExternalLink size={14} />
-                  </a>
-                </li>
-              );
-            })}
-          </ol>
+          {rehberBolumleri(adim).map((bolum, bi) => (
+            <section key={bolum.puan} aria-labelledby={`rehber-bolum-${bi}`}>
+              <h3 id={`rehber-bolum-${bi}`} className="mb-4 flex flex-wrap items-baseline gap-x-3 text-[28px] font-semibold leading-tight">
+                Bölüm {bi + 1}
+                <span className="text-[17px] font-normal text-muted">
+                  {bolum.puan ? `Önerilen: ${bolum.puan} tamamlanmış ders` : "Hemen başla"} · Adım {bolum.sarkilar[0].rehber!.adim}–{bolum.sarkilar[bolum.sarkilar.length - 1].rehber!.adim}
+                </span>
+              </h3>
+              <ol className="relative space-y-3 before:absolute before:bottom-6 before:left-[27px] before:top-6 before:w-0.5 before:rounded-full before:bg-ink/10">
+                {bolum.sarkilar.map((s) => (
+                  <RehberAdimi key={anahtar(s)} s={s} puan={puan} courseTitles={courseTitles} onAc={() => acildi(anahtar(s))} />
+                ))}
+              </ol>
+            </section>
+          ))}
         </div>
       ) : (
         <>
@@ -283,5 +256,78 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
         </>
       )}
     </div>
+  );
+}
+
+/** Rehber adımları önerilen eşiğe (Profil Puanı) göre bölümlere ayrılır; sıra aynen korunur */
+function rehberBolumleri(adim: PopularSong[]) {
+  const out: { puan: number; sarkilar: PopularSong[] }[] = [];
+  for (const s of adim) {
+    const son = out[out.length - 1];
+    if (son && son.puan === s.rehber!.puan) son.sarkilar.push(s);
+    else out.push({ puan: s.rehber!.puan, sarkilar: [s] });
+  }
+  return out;
+}
+
+/** Rehberin büyük adım kartı: adım numarası, şarkı, tür ve madalya, hazırlayan kurs bölümleri (kurs renkleriyle), Songsterr */
+function RehberAdimi({ s, puan, courseTitles, onAc }: { s: PopularSong; puan: number; courseTitles: Record<string, string>; onAc: () => void }) {
+  const r = s.rehber!;
+  const ilk = kursSimgesi(r.bolumler[0]?.kurs ?? s.courses?.[0] ?? "");
+  const onerilen = puan < r.puan;
+  return (
+    <li data-renk={ilk.renk} className="relative flex items-start gap-4">
+      <span
+        className="relative z-[1] mt-4 flex size-14 shrink-0 items-center justify-center rounded-full text-[21px] font-semibold tabular-nums text-white shadow-[0_0_0_4px_var(--bg)]"
+        style={{ background: "var(--r2)" }}
+        aria-label={`Adım ${r.adim}`}
+      >
+        {r.adim}
+      </span>
+      <article className="renkli-kart yukselen card flex min-w-0 flex-1 flex-wrap items-center gap-x-6 gap-y-3 p-5 pt-6">
+        <div className="min-w-[16rem] flex-1">
+          <h4 className="text-[24px] font-semibold leading-tight">
+            <SongsterrBag q={songUrl(s)} onAc={onAc} className="hover:underline">
+              {s.title}
+            </SongsterrBag>
+          </h4>
+          <p className="text-[17px] text-muted">{s.artist}</p>
+          <p className="mt-2 flex flex-wrap gap-1.5 text-xs">
+            <span className="rounded-full px-2.5 py-0.5 font-semibold text-white" style={{ background: "var(--r2)" }}>
+              {s.kind[0].toLocaleUpperCase("tr") + s.kind.slice(1)}
+            </span>
+            <span className={`rounded-full border px-2.5 py-0.5 font-semibold ${MADALYA_STYLE[madalyaOf(s)]}`}>
+              {madalyaOf(s)} · {r.seviye}
+            </span>
+            {s.bpm ? <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 tabular-nums text-muted">{s.bpm} BPM</span> : null}
+            {s.koken ? <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 text-muted">{s.koken}</span> : null}
+            {onerilen && (
+              <span className="rounded-full bg-ink/[0.07] px-2.5 py-0.5 text-muted" title="Önerilen Profil Puanı: bu şarkıdan önce çalışman önerilen ders sayısı (kilit değil)">
+                Önerilen: {r.puan} ders
+              </span>
+            )}
+          </p>
+        </div>
+        <div className="min-w-[14rem] flex-1">
+          <p className="mb-1.5 text-xs font-semibold text-muted">Bu şarkı için çalış</p>
+          <ul className="flex flex-wrap gap-2">
+            {r.bolumler.map((b) => (
+              <li key={b.ad}>
+                <Link
+                  href={`/calis/${b.kurs}`}
+                  className="flex items-center gap-2 rounded-full border border-ink/10 bg-[var(--bg)] py-1 pl-1 pr-3 text-sm font-semibold transition hover:border-ink/25"
+                >
+                  <UygulamaSimgesi simge={kursSimgesi(b.kurs)} boyut={24} />
+                  {courseTitles[b.kurs] ?? b.kurs} · {b.bolum}. Bölüm
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <SongsterrBag q={songUrl(s)} onAc={onAc} className={`${onerilen ? "btn-secondary" : "btn-primary"} shrink-0 px-5 py-2 text-[15px]`}>
+          Songsterr&apos;de aç <ExternalLink size={15} aria-hidden />
+        </SongsterrBag>
+      </article>
+    </li>
   );
 }

@@ -12,10 +12,12 @@ import { dosyaSil, useDosyalarim, type DosyaKaydi } from "@/lib/dosyalarim";
 import { dosyaKimlik, favoriDegistir, kimlikUnut, ozgunKimlik, useFavoriler, useSonCalinanlar, type SarkiKimligi } from "@/lib/kutuphane-yerel";
 import type { LibrarySummary } from "@/lib/kutuphane";
 import EnstrumanSimgesi from "@/components/oynatici/EnstrumanSimgesi";
+import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
+import { turSimgesi } from "@/lib/simge";
 import { BirakmaAlani, DosyaSecici, EklemeRaporu, useDosyaEkle } from "./DosyaEkle";
 import { izEnstrumani, SeviyeEtiketi, sure } from "./ortak";
 
-// Şarkı Kütüphanesi ana listesi: büyük arama, sekmeler (Tümü / Benim dosyalarım / Favoriler / Son çalınanlar),
+// Tab Oynatıcı ve Dosyalarım (/kutuphane) ana listesi: büyük arama, sekmeler (Tümü / Benim dosyalarım / Favoriler / Son çalınanlar),
 // enstrüman ailesi, zorluk ve tür süzgeçleri; GuitarFlex şarkıları ile kullanıcının kendi dosyaları tek listede.
 
 type Sekme = "tumu" | "dosyalar" | "favoriler" | "son";
@@ -345,12 +347,15 @@ function SatirOgesi({ s, favori, onSil }: { s: Satir; favori: boolean; onSil: ()
       >
         <Star size={16} fill={favori ? "currentColor" : "none"} />
       </button>
-      <Link href={s.href} className="min-w-0 py-0.5">
-        <span className="block truncate text-[17px] font-semibold leading-snug group-hover:underline">{s.baslik}</span>
-        <span className="block truncate text-sm text-muted">
-          {s.alt}
-          {s.dosya ? " · Benim dosyam" : ` · ${s.tur}`}
-          {s.ton ? ` · ${s.ton}` : ""}
+      <Link href={s.href} className="flex min-w-0 items-center gap-3 py-0.5">
+        <UygulamaSimgesi simge={s.dosya ? { glif: "nota-kagidi", renk: "grafit" } : turSimgesi(s.tur)} boyut={32} />
+        <span className="min-w-0">
+          <span className="block truncate text-[17px] font-semibold leading-snug group-hover:underline">{s.baslik}</span>
+          <span className="block truncate text-sm text-muted">
+            {s.alt}
+            {s.dosya ? " · Benim dosyam" : ` · ${s.tur}`}
+            {s.ton ? ` · ${s.ton}` : ""}
+          </span>
         </span>
       </Link>
       <span className="col-start-2 flex flex-wrap items-center gap-2 text-muted md:col-start-auto" title={s.aileler.map((a) => AILELER.find((x) => x.id === a)!.ad).join(", ")}>

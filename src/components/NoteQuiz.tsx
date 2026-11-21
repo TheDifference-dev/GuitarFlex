@@ -82,7 +82,7 @@ export default function NoteQuiz() {
             type="button"
             disabled={!running}
             onClick={() => answer(i)}
-            className="btn-secondary py-3 disabled:opacity-40"
+            className="btn-secondary py-3 disabled:opacity-60"
           >
             {n}
             <span className="block text-xs font-normal text-muted">{SOLFEGE[i]}</span>

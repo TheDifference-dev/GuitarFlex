@@ -4,20 +4,18 @@ import { SITE } from "@/config/site";
 import { Bant, SayfaBasi } from "@/components/site/Vitrin";
 import UygulamaSimgesi, { type SimgeBoyutu } from "@/components/site/UygulamaSimgesi";
 import { OZGUN_GLIF_ADI, OZGUN_GLIFLER, type OzgunGlif } from "@/components/site/glifler/Glifler";
-import { RENK_ADI, SIMGE_DOKUMU, SIMGE_RENKLERI, kursSimgesi, type SimgeRengi } from "@/lib/simge";
+import { KURS_SIMGELERI, RENK_ADI, SIMGE_DOKUMU, SIMGE_RENKLERI, kursSimgesi, type SimgeRengi } from "@/lib/simge";
 
 export const metadata: Metadata = { title: "Marka" };
 
-/** Renk paleti: beyaz, uzay grisi, siyah ve etkileşim için laciverden maviye (globals.css değişkenleriyle aynı değerler) */
+/** Renk paleti: beyaz, uzay grisi, siyah ve etkileşim için mavi (globals.css değişkenleriyle aynı değerler) */
 const PALETTE = [
   { group: "Beyaz", colors: [{ c: "#FFFFFF", ad: "Zemin" }, { c: "#F5F5F7", ad: "Açık gri" }, { c: "#D2D2D7", ad: "Çizgi" }] },
   { group: "Uzay grisi", colors: [{ c: "#48484A", ad: "Uzay grisi 3" }, { c: "#3A3A3C", ad: "Uzay grisi 2" }, { c: "#2C2C2E", ad: "Uzay grisi 1" }] },
   { group: "Siyah", colors: [{ c: "#000000", ad: "Siyah" }, { c: "#1D1D1F", ad: "Metin" }, { c: "#6E6E73", ad: "İkincil metin" }] },
   {
-    group: "Lacivert ve mavi",
+    group: "Mavi (etkileşim)",
     colors: [
-      { c: "#0A1630", ad: "Derin lacivert" },
-      { c: "#0A2A6B", ad: "Lacivert" },
       { c: "#0071E3", ad: "Düğme mavisi" },
       { c: "#0066CC", ad: "Bağlantı" },
       { c: "#2997FF", ad: "Bağlantı (koyu)" },
@@ -29,13 +27,13 @@ const PALETTE = [
 const KONTRAST = [
   { on: "#FFFFFF", arka: "#0066CC", oran: "5,57", nerede: "Seçili sekme / çip yazısı; bağlantı beyaz zeminde" },
   { on: "#0066CC", arka: "#F5F5F7", oran: "5,11", nerede: "Bağlantı açık gri bantta" },
-  { on: "#FFFFFF", arka: "#0071E3", oran: "4,70", nerede: "Birincil düğme (geçişin en açık ucu)" },
-  { on: "#FFFFFF", arka: "#0A2A6B", oran: "13,5", nerede: "Birincil düğme (lacivert ucu)" },
+  { on: "#FFFFFF", arka: "#0071E3", oran: "4,70", nerede: "Birincil düğme" },
   { on: "#2997FF", arka: "#000000", oran: "6,96", nerede: "Bağlantı ve vurgu koyu bantta / koyu modda" },
-  { on: "#2997FF", arka: "#0A1630", oran: "5,95", nerede: "Bağlantı koyu bandın lacivert dibinde" },
+  { on: "#2997FF", arka: "#1D1D1F", oran: "5,58", nerede: "Bağlantı uzay grisi bantta" },
   { on: "#2997FF", arka: "#1C1C1E", oran: "5,64", nerede: "Vurgu koyu moddaki kartta" },
   { on: "#001433", arka: "#2997FF", oran: "6,07", nerede: "Koyu modda seçili çip yazısı" },
-  { on: "#FFFFFF", arka: "#1F5FD6", oran: "5,73", nerede: "Teknik simgesindeki beyaz glif (açık uç)" },
+  { on: "#FFFFFF", arka: "#D49300 → #A66400", oran: "2,63 → 4,73", nerede: "En açık simge rengi (sarı): glif geçişin ortasında ≥ 3,5" },
+  { on: "#FFFFFF", arka: "#BC5208", oran: "4,83", nerede: "Renkli rozet / adım numarası (rengin koyu tonu, en açığı turuncu)" },
 ];
 
 const ICON_SIZES = [
@@ -57,12 +55,13 @@ const USES = [
 
 const BOYUTLAR: SimgeBoyutu[] = [152, 96, 60, 44, 32, 24];
 
-const AILE_ACIKLAMA: Record<SimgeRengi, string> = {
-  teknik: "Bütün gitar tekniği kursları, rehberler, akorlar, seviyeler",
-  akustik: "Akustik kursları: teknik ailesinin sıcak, derin tonu",
-  teori: "Teori yolları, bölümler, araçlar, ders türleri, ödüller",
-  tur: "Şarkı Kütüphanesi ve eşlik türleri",
-};
+/** Her rengi kullanan kurslar (marka sayfasındaki renk dökümü) */
+const RENK_KURSLARI: Record<SimgeRengi, string[]> = Object.fromEntries(
+  SIMGE_RENKLERI.map((r) => [r, Object.entries(KURS_SIMGELERI).filter(([, x]) => x.renk === r).map(([slug]) => slug)]),
+) as Record<SimgeRengi, string[]>;
+
+/** Glif kataloğunda her glif, onu kullanan ilk kursun renginde (yoksa grafit) */
+const glifRengi = (g: OzgunGlif): SimgeRengi => Object.values(KURS_SIMGELERI).find((x) => x.glif === g)?.renk ?? (["ritim", "klavye", "kulak", "okuma", "armoni"].includes(g) ? "indigo" : "grafit");
 
 const GLIFLER = Object.keys(OZGUN_GLIFLER) as OzgunGlif[];
 
@@ -73,7 +72,7 @@ export default function BrandPage() {
         ton="koyu"
         kirinti={[{ label: "Marka" }]}
         baslik="Marka"
-        alt="Arda Uğur'un kendi fotoğrafından yaptığı karakalem gitarist çizimi. Çizim çerçevesiz durur, zemini sayfanın zeminine karışır. Siyahtan laciverte zemin, mavi vurgu."
+        alt="Arda Uğur'un kendi fotoğrafından yaptığı karakalem gitarist çizimi. Çizim çerçevesiz durur, zemini sayfanın zeminine karışır. Beyaz, uzay grisi ve siyah zemin; renk kurs simgelerinde."
         ek={<img src="/marka/cizim-koyu.png" alt={`${SITE.name} çizimi`} width={1024} height={1024} className="mx-auto mt-8 block h-[420px] w-auto [mask-image:linear-gradient(to_bottom,#000_70%,transparent)]" />}
         className="!pb-0"
       />
@@ -127,8 +126,8 @@ export default function BrandPage() {
       <Bant ton="beyaz" id="simgeler" className="scroll-mt-12">
         <h2 className="baslik-orta mb-3 text-center">Uygulama simgeleri</h2>
         <p className="mx-auto mb-10 max-w-[760px] text-center text-muted">
-          Uygulamadaki tek simge türü: yuvarlatılmış kare, dikey geçişli zemin, ortada beyaz çizgi glif. Zeminler üç ailedir; glif, tekniğin kendisini gösteren
-          sade bir müzik ya da tab işaretidir. {SIMGE_DOKUMU.reduce((n, g) => n + g.simgeler.length, 0)} eşleme.
+          Uygulamadaki tek simge türü (iPhone simgesi gibi): yuvarlatılmış kare, üstten alta hafifçe koyulaşan tek renk zemin, ortada beyaz, tek kalınlıkta
+          çizgi glif. Her kursun kendi rengi vardır; glif, tekniğin kendisini gösteren sade bir müzik ya da tab işaretidir. {SIMGE_DOKUMU.reduce((n, g) => n + g.simgeler.length, 0)} eşleme.
         </p>
         <div className="mx-auto max-w-[1100px] space-y-12">
           <div className="flex flex-wrap items-end justify-center gap-8">
@@ -139,12 +138,12 @@ export default function BrandPage() {
               </figure>
             ))}
           </div>
-          <ul className="mx-auto grid max-w-[900px] grid-cols-2 gap-3 md:grid-cols-4" aria-label="Simge zemin aileleri">
+          <ul className="mx-auto grid max-w-[1100px] grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7" aria-label="Simge renkleri">
             {SIMGE_RENKLERI.map((r) => (
-              <li key={r} className="card flex flex-col items-center gap-2 p-5 text-center">
-                <UygulamaSimgesi simge={{ glif: r === "tur" ? "nota" : r === "teori" ? "kulak" : "slide", renk: r }} boyut={60} />
+              <li key={r} data-renk={r} className="card renkli-kart flex flex-col items-center gap-2 p-4 pt-5 text-center">
+                <UygulamaSimgesi simge={{ glif: "nota", renk: r }} boyut={60} />
                 <span className="text-[15px] font-semibold">{RENK_ADI[r]}</span>
-                <span className="text-xs text-muted">{AILE_ACIKLAMA[r]}</span>
+                <span className="text-xs text-muted">{RENK_KURSLARI[r].length ? RENK_KURSLARI[r].join(", ") : "araçlar, ödüller"}</span>
               </li>
             ))}
           </ul>
@@ -157,9 +156,9 @@ export default function BrandPage() {
             <ul className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-x-3 gap-y-6">
               {GLIFLER.map((g) => (
                 <li key={g} className="flex flex-col items-center gap-2 text-center text-xs">
-                  <UygulamaSimgesi simge={{ glif: g, renk: g === "ritim" || g === "klavye" || g === "kulak" || g === "okuma" || g === "armoni" ? "teori" : "teknik" }} boyut={152} />
+                  <UygulamaSimgesi simge={{ glif: g, renk: glifRengi(g) }} boyut={152} />
                   <span className="flex items-center gap-2">
-                    <UygulamaSimgesi simge={{ glif: g, renk: g === "ritim" || g === "klavye" || g === "kulak" || g === "okuma" || g === "armoni" ? "teori" : "teknik" }} boyut={32} />
+                    <UygulamaSimgesi simge={{ glif: g, renk: glifRengi(g) }} boyut={32} />
                     {OZGUN_GLIF_ADI[g]}
                   </span>
                 </li>

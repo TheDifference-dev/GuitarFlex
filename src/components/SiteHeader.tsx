@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
-import { ChevronDown, ChevronLeft, Menu as MenuIcon, User, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ExternalLink, Menu as MenuIcon, User, X } from "lucide-react";
 import { SITE } from "@/config/site";
 import UygulamaSimgesi from "./site/UygulamaSimgesi";
+import SongsterrBag from "./SongsterrBag";
 import { kursSimgesi, yerSimgesi, type SimgeTanim } from "@/lib/simge";
 
-type Bag = { href: string; label: string };
+/** songsterr: bağlantı Şarkı Kütüphanesini (Songsterr) uygulama içi pencerede açar; href yalnız web'de yedek */
+type Bag = { href: string; label: string; songsterr?: boolean };
 type Sutun = { baslik: string; items: Bag[] };
 type Menu = {
   id: string;
@@ -93,20 +95,53 @@ const MENULER: Menu[] = [
   },
   {
     id: "kutuphane",
-    label: "Kütüphane",
-    href: "/kutuphane",
-    active: (p) => p.startsWith("/kutuphane") || p.startsWith("/sarkilar") || p.startsWith("/oynatici"),
+    label: "Şarkı Kütüphanesi",
+    href: "/sarki-kutuphanesi",
+    active: (p) => p.startsWith("/sarki-kutuphanesi"),
     buyuk: [
-      { href: "/kutuphane", label: "Şarkı Kütüphanesi", simge: yerSimgesi("kutuphane") },
-      { href: "/sarkilar", label: "Popüler Şarkılar", simge: yerSimgesi("sarkilar") },
+      { href: "/sarki-kutuphanesi", label: "Şarkı Kütüphanesi", simge: yerSimgesi("sarki-kutuphanesi") },
+      { href: "https://www.songsterr.com/", label: "Songsterr'i aç", simge: yerSimgesi("sarki-kutuphanesi"), songsterr: true },
     ],
     sutunlar: [
       {
+        baslik: "Songsterr'in bütün tabları",
+        items: [
+          { href: "/sarki-kutuphanesi", label: "Şarkı veya sanatçı ara" },
+          { href: "https://www.songsterr.com/", label: "Songsterr ana sayfası", songsterr: true },
+        ],
+      },
+      {
+        baslik: "Öğren",
+        items: [
+          { href: "/sarkilar", label: "Rehber Şarkılar" },
+          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "sarkilar",
+    label: "Şarkılarla Öğren",
+    href: "/sarkilar",
+    active: (p) => p.startsWith("/sarkilar"),
+    buyuk: [
+      { href: "/sarkilar", label: "Rehber Şarkılar", simge: yerSimgesi("sarkilar") },
+      { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal", simge: yerSimgesi("dogaclama") },
+    ],
+    sutunlar: [
+      {
+        baslik: "Şarkılar",
+        items: [
+          { href: "/sarkilar", label: "Şarkı Rehberi" },
+          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
+          { href: "/sarki-kutuphanesi", label: "Tüm Kütüphane" },
+        ],
+      },
+      {
         baslik: "Çal",
         items: [
-          { href: "/oynatici", label: "Tabla Keşfet" },
           { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
-          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
+          { href: "/oynatici", label: "Tabla Keşfet" },
         ],
       },
     ],
@@ -115,11 +150,11 @@ const MENULER: Menu[] = [
     id: "araclar",
     label: "Araçlar",
     href: "/araclar",
-    active: (p) => p.startsWith("/araclar"),
+    active: (p) => p.startsWith("/araclar") || p.startsWith("/kutuphane") || p.startsWith("/oynatici"),
     buyuk: [
       { href: "/araclar#metronom", label: "Metronom", simge: yerSimgesi("metronom") },
       { href: "/araclar#nota-testi", label: "Nota Testi", simge: yerSimgesi("nota-testi") },
-      { href: "/teori#sap", label: "Sap Gezgini", simge: yerSimgesi("sap-gezgini") },
+      { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım", simge: yerSimgesi("kutuphane") },
     ],
     sutunlar: [
       {
@@ -128,6 +163,13 @@ const MENULER: Menu[] = [
           { href: "/araclar#metronom", label: "Metronom" },
           { href: "/araclar#nota-testi", label: "Nota Bulma Testi" },
           { href: "/teori#sap", label: "Sap Gezgini" },
+        ],
+      },
+      {
+        baslik: "Tablar",
+        items: [
+          { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım" },
+          { href: "/oynatici", label: "Tabla Keşfet" },
         ],
       },
     ],
@@ -146,10 +188,20 @@ const MENULER: Menu[] = [
           { href: "/profil", label: "Madalyalar ve başarımlar" },
         ],
       },
-      { baslik: "GuitarFlex", items: [{ href: "/marka", label: "Marka" }] },
+      {
+        baslik: "GuitarFlex",
+        items: [
+          { href: "/profil#gorunum", label: "Görünüm (tema)" },
+          { href: "/marka", label: "Marka" },
+        ],
+      },
     ],
   },
 ];
+
+const BUYUK_BAG =
+  "inline-flex items-center gap-3 rounded-md font-[family-name:var(--font-display)] text-[24px] font-semibold leading-[1.1667] tracking-[0.009em] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-4";
+const KUCUK_BAG = "rounded text-[12px] font-semibold leading-[1.34] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-2";
 
 export default function SiteHeader() {
   const pathname = usePathname();
@@ -300,9 +352,15 @@ export default function SiteHeader() {
                           <ul className="space-y-2.5">
                             {m.buyuk.map((b) => (
                               <li key={b.href + b.label}>
-                                <Link href={b.href} className="inline-flex items-center gap-3 rounded-md font-[family-name:var(--font-display)] text-[24px] font-semibold leading-[1.1667] tracking-[0.009em] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-4">
-                                  <UygulamaSimgesi simge={b.simge} boyut={32} /> {b.label}
-                                </Link>
+                                {b.songsterr ? (
+                                  <SongsterrBag className={BUYUK_BAG}>
+                                    <UygulamaSimgesi simge={b.simge} boyut={32} /> {b.label} <ExternalLink size={16} aria-hidden className="opacity-70" />
+                                  </SongsterrBag>
+                                ) : (
+                                  <Link href={b.href} className={BUYUK_BAG}>
+                                    <UygulamaSimgesi simge={b.simge} boyut={32} /> {b.label}
+                                  </Link>
+                                )}
                               </li>
                             ))}
                           </ul>
@@ -313,9 +371,15 @@ export default function SiteHeader() {
                             <ul className="space-y-2.5">
                               {s.items.map((b) => (
                                 <li key={b.href + b.label}>
-                                  <Link href={b.href} className="inline-block rounded text-[12px] font-semibold leading-[1.34] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-2">
-                                    {b.label}
-                                  </Link>
+                                  {b.songsterr ? (
+                                    <SongsterrBag className={`${KUCUK_BAG} inline-flex items-center gap-1`}>
+                                      {b.label} <ExternalLink size={11} aria-hidden />
+                                    </SongsterrBag>
+                                  ) : (
+                                    <Link href={b.href} className={`${KUCUK_BAG} inline-block`}>
+                                      {b.label}
+                                    </Link>
+                                  )}
                                 </li>
                               ))}
                             </ul>
@@ -364,16 +428,28 @@ export default function SiteHeader() {
               {MENULER.map((m) => (
                 <div key={m.id}>
                   <p className="mb-1 text-xs text-muted">{m.label}</p>
-                  {m.buyuk.map((b) => (
-                    <Link key={b.href + b.label} href={b.href} className="block py-1 text-2xl font-semibold tracking-tight">
-                      {b.label}
-                    </Link>
-                  ))}
-                  {m.sutunlar.flatMap((s) => s.items).map((b) => (
-                    <Link key={b.href + b.label} href={b.href} className="block py-1 text-sm font-semibold text-text/85">
-                      {b.label}
-                    </Link>
-                  ))}
+                  {m.buyuk.map((b) =>
+                    b.songsterr ? (
+                      <SongsterrBag key={b.href + b.label} className="block py-1 text-2xl font-semibold tracking-tight">
+                        {b.label}
+                      </SongsterrBag>
+                    ) : (
+                      <Link key={b.href + b.label} href={b.href} className="block py-1 text-2xl font-semibold tracking-tight">
+                        {b.label}
+                      </Link>
+                    ),
+                  )}
+                  {m.sutunlar.flatMap((s) => s.items).map((b) =>
+                    b.songsterr ? (
+                      <SongsterrBag key={b.href + b.label} className="block py-1 text-sm font-semibold text-text/85">
+                        {b.label}
+                      </SongsterrBag>
+                    ) : (
+                      <Link key={b.href + b.label} href={b.href} className="block py-1 text-sm font-semibold text-text/85">
+                        {b.label}
+                      </Link>
+                    ),
+                  )}
                 </div>
               ))}
             </div>

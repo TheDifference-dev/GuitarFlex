@@ -57,7 +57,7 @@ export default function DosyaSarkiView({ id }: { id: string }) {
     };
   }, [caliyor, kayit, kimlik]);
 
-  const kirinti = [{ href: "/kutuphane", label: "Şarkı Kütüphanesi" }, { label: kayit?.meta.baslik || "Benim dosyam" }];
+  const kirinti = [{ href: "/kutuphane", label: "Tab Oynatıcı" }, { label: kayit?.meta.baslik || "Benim dosyam" }];
   if (durum === null) return <SayfaBasi kirinti={kirinti} baslik="Yükleniyor…" boyut="buyuk" />;
   if (durum === "yok" || durum === "hata" || !kayit || !source)
     return (

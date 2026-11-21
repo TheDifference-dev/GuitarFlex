@@ -2,7 +2,7 @@ import type { ComponentType, ReactNode } from "react";
 
 /**
  * GuitarFlex'in özgün glifleri: tekniğin kendisini gösteren sade müzik / tab işaretleri.
- * Kurallar (SF Symbols ruhu, ama kopya değil): 24×24 ızgara, 1,75 birim çizgi, yuvarlak uç ve köşe, dolgusuz çizgi;
+ * Kurallar (SF Symbols ruhu, ama kopya değil): 24×24 ızgara, tek kalınlıkta 1,75 birim çizgi, yuvarlak uç ve köşe, dolgusuz çizgi;
  * dolu öğeler yalnız nota başı ve perde noktası (aynı optik ağırlık için yarıçap ~2). İkincil çizgiler (teller,
  * perdeler, porte) %50 örtücülükte: ana işaret öne çıkar, 32 px'de de okunur.
  * Uygulama simgesi (UygulamaSimgesi.tsx) bunları beyaz olarak, simgenin %56'sı boyutunda çizer.
@@ -149,11 +149,12 @@ const Alternate = glif(
   </>,
 );
 
-/** Economy: tek yönde iki teli birden geçen süpürme oku */
+/** Economy: tek yönde iki teli birden geçen ok ve pena */
 const Economy = glif(
   <>
-    {ikincil("M3 8.5h18M3 15.5h18")}
-    {ok(7.5, 3.5, 15.5, 20.5)}
+    {ikincil("M3 9.5h18M3 15.5h18")}
+    {ok(10, 3.5, 17.5, 20.5)}
+    <path d="M2.8 4.6c0-1.1.8-1.4 3.2-1.4s3.2.3 3.2 1.4c0 1.9-2 4.9-3.2 4.9S2.8 6.5 2.8 4.6Z" />
   </>,
 );
 
@@ -197,7 +198,7 @@ const Kromatik = glif(
 /** Akor: akor diyagramı ızgarası (eşik, teller, perdeler, basılan noktalar) */
 const Akor = glif(
   <>
-    <path d="M4.5 4h15" strokeWidth={2.75} />
+    <path d="M4.5 4h15" />
     {ikincil("M4.5 4v16.5M9.5 4v16.5M14.5 4v16.5M19.5 4v16.5M4.5 9.5h15M4.5 15h15M4.5 20.5h15")}
     {nokta(9.5, 6.75)}
     {nokta(14.5, 12.25)}
@@ -229,7 +230,8 @@ const NotaCift = glif(
     {bas(6.5, 18.5)}
     {bas(16.5, 16.5)}
     <path d="M8.5 17.9V6.5M18.5 15.9V4.5" />
-    <path d="m8.5 6.5 10-2" strokeWidth={2.75} />
+    <path d="m8.5 6.5 10-2" />
+    <path d="m8.5 9.5 10-2" />
   </>,
 );
 
@@ -251,7 +253,7 @@ const Ritim = glif(
     {bas(11.5, 19)}
     {bas(18.5, 19)}
     <path d="M6.5 18.4V5M13.5 18.4V5M20.5 18.4V5" />
-    <path d="M6.5 5h14" strokeWidth={2.5} />
+    <path d="M6.5 5h14" />
     <path d="M6.5 8.75h14" />
   </>,
 );

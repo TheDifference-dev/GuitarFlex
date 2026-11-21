@@ -5,7 +5,7 @@ import { Bant, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import { getCourses } from "@/lib/courses";
 import { getPopularSongs } from "@/lib/songs";
 
-export const metadata: Metadata = { title: "Popüler Şarkılar" };
+export const metadata: Metadata = { title: "Şarkılarla Öğren" };
 
 export default async function SongsPage() {
   const [songs, courses] = await Promise.all([getPopularSongs(), getCourses()]);
@@ -15,12 +15,12 @@ export default async function SongsPage() {
       <SongsNav />
       <SayfaBasi
         bas={false}
-        kirinti={[{ href: "/elektro", label: "Elektro Gitar" }, { label: "Popüler Şarkılar" }]}
-        baslik="Popüler Şarkılar"
-        alt="Ünlü şarkı ve sololar zorluk ve tekniğe göre. Tablar Songsterr'de açılır; her şarkının altında o şarkıya hazırlayan kurslar var."
+        kirinti={[{ label: "Şarkılarla Öğren" }]}
+        baslik="Şarkılarla Öğren"
+        alt="GuitarFlex Şarkı Rehberi: hazırlayan teknik bölümünden şarkıya, adım adım. Tablar Songsterr'de açılır."
       >
-        <MetinBag href="/kutuphane" buyuk>
-          Şarkı Kütüphanesi
+        <MetinBag href="/sarki-kutuphanesi" buyuk>
+          Tüm Kütüphane
         </MetinBag>
         <MetinBag href="/akustik/sarkilar" buyuk>
           Akustik şarkılar

@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",
+    "@fontsource-variable/inter": "^5.3.0",
     "generaluser": "1.47.1",
     "lucide-react": "^1.51.0",
     "next": "16.3.8",

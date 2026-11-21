@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import LibrarySongView from "@/components/kutuphane/LibrarySongView";
 import { SeviyeEtiketi, sure } from "@/components/kutuphane/ortak";
 import { getLibrarySong } from "@/lib/kutuphane";
+import { turSimgesi } from "@/lib/simge";
 
 export async function generateMetadata(props: PageProps<"/kutuphane/[sarki]">): Promise<Metadata> {
   const { sarki } = await props.params;
-  return { title: (await getLibrarySong(decodeURIComponent(sarki)))?.title ?? "Şarkı Kütüphanesi" };
+  return { title: (await getLibrarySong(decodeURIComponent(sarki)))?.title ?? "Tab Oynatıcı ve Dosyalarım" };
 }
 
 export default async function LibrarySongPage(props: PageProps<"/kutuphane/[sarki]">) {
@@ -18,9 +19,10 @@ export default async function LibrarySongPage(props: PageProps<"/kutuphane/[sark
   return (
     <div className="space-y-6">
       <SayfaBasi
-        kirinti={[{ href: "/kutuphane", label: "Şarkı Kütüphanesi" }, { label: song.title }]}
+        kirinti={[{ href: "/kutuphane", label: "Tab Oynatıcı" }, { label: song.title }]}
         ust={`${song.genre} · ${song.source.startsWith("Özgün") ? "Özgün (GuitarFlex)" : `Kamu malı · GuitarFlex düzenlemesi${song.origin ? ` · ${song.origin}` : ""}`}`}
         baslik={song.title}
+        simge={turSimgesi(song.genre)}
         alt={song.description}
         boyut="buyuk"
         className="!pb-10"

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Bant, SayfaBasi } from "@/components/site/Vitrin";
+import { Bant, BolumBasi, SayfaBasi } from "@/components/site/Vitrin";
+import TemaSecici from "@/components/site/TemaSecici";
 import ProgressDashboard, { type CourseInfo } from "@/components/ProgressDashboard";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { getCourses } from "@/lib/courses";
@@ -35,6 +36,10 @@ export default async function ProfilePage() {
       />
       <Bant ton="gri" className="pt-12">
         <ProgressDashboard courses={info} oyun={oyun} kurslar={kurslar} />
+      </Bant>
+      <Bant ton="beyaz" id="gorunum" className="scroll-mt-16 text-center">
+        <BolumBasi baslik="Görünüm" alt="Açık tema varsayılandır. Koyu temayı seçebilir ya da işletim sisteminin ayarına uydurabilirsin." className="!mb-6" />
+        <TemaSecici />
       </Bant>
     </div>
   );

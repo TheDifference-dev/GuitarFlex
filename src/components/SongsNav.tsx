@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { YerelNav } from "./site/Vitrin";
 
 const TABS = [
-  { href: "/sarkilar", label: "Popüler Şarkılar", match: (p: string) => p === "/sarkilar" },
+  { href: "/sarkilar", label: "Şarkılarla Öğren", match: (p: string) => p === "/sarkilar" },
+  { href: "/sarki-kutuphanesi", label: "Şarkı Kütüphanesi", match: (p: string) => p.startsWith("/sarki-kutuphanesi") },
   { href: "/oynatici", label: "Tabla Keşfet", match: (p: string) => p.startsWith("/oynatici") },
   { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal", match: (p: string) => p.startsWith("/sarkilar/dogaclama") },
 ];
@@ -14,7 +15,7 @@ const TABS = [
 export default function SongsNav() {
   const pathname = usePathname();
   return (
-    <YerelNav baslik="Şarkı ve Sololar" href="/sarkilar">
+    <YerelNav baslik="Şarkılar" href="/sarkilar">
       {TABS.map((t) => {
         const active = t.match(pathname);
         return (

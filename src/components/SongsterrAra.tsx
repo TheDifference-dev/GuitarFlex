@@ -1,14 +1,18 @@
+"use client";
+
 import { ExternalLink } from "lucide-react";
 import { songUrl, type PopularSong } from "@/content/sarkilar";
+import { songsterrAdresi } from "@/lib/songsterr";
+import SongsterrBag from "./SongsterrBag";
 
 /** Songsterr'de arama adresi. Tablar uygulamada tutulmaz; arama Songsterr'in kendi sayfasında açılır. */
 export function songsterrAramaAdresi(q: string): string {
-  return `https://www.songsterr.com/?pattern=${encodeURIComponent(q.trim())}`;
+  return songsterrAdresi(q.trim() || " ");
 }
 
 /**
- * Arama kutusunun altında: yazılan şarkı/sanatçıyı Songsterr'in tüm kataloğunda arar.
- * Masaüstü uygulamasında bağlantı varsayılan tarayıcıda açılır.
+ * Arama kutusunun altında: yazılan şarkı/sanatçıyı Şarkı Kütüphanesinde (Songsterr'in bütün kataloğu) arar.
+ * Masaüstü uygulamasında Songsterr uygulama içi pencerede, web'de yeni sekmede açılır (bkz. SongsterrBag).
  */
 export default function SongsterrAra({
   q,
@@ -29,10 +33,8 @@ export default function SongsterrAra({
         >
           {oneriler.map((s) => (
             <li key={`${s.artist}-${s.title}`}>
-              <a
-                href={songUrl(s)}
-                target="_blank"
-                rel="noopener noreferrer"
+              <SongsterrBag
+                q={songUrl(s)}
                 className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-[var(--panel-on-band)] px-4 py-2.5 text-sm transition-colors hover:border-[var(--accent)]"
               >
                 <span className="min-w-0 flex-1">
@@ -48,15 +50,13 @@ export default function SongsterrAra({
                   className="shrink-0 text-muted"
                   aria-hidden
                 />
-              </a>
+              </SongsterrBag>
             </li>
           ))}
         </ul>
       )}
-      <a
-        href={songsterrAramaAdresi(q)}
-        target="_blank"
-        rel="noopener noreferrer"
+      <SongsterrBag
+        q={q}
         data-songsterr-ara
         className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-[var(--panel-on-band)] px-4 py-3 text-sm transition-colors hover:border-[var(--accent)]"
       >
@@ -76,7 +76,7 @@ export default function SongsterrAra({
             Songsterr&apos;in bütün tab kataloğu tarayıcıda açılır.
           </span>
         </span>
-      </a>
+      </SongsterrBag>
     </div>
   );
 }

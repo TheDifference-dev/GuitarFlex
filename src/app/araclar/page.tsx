@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Bant, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import Metronome from "@/components/Metronome";
 import NoteQuiz from "@/components/NoteQuiz";
@@ -20,6 +21,9 @@ export default function ToolsPage() {
         <MetinBag href="/teori#sap" buyuk>
           Sap gezgini
         </MetinBag>
+        <MetinBag href="/kutuphane" buyuk>
+          Tab oynatıcı ve dosyalarım
+        </MetinBag>
       </SayfaBasi>
 
       <Bant ton="gri">
@@ -38,6 +42,24 @@ export default function ToolsPage() {
             <NoteQuiz />
           </div>
         </section>
+      </Bant>
+      <Bant ton="beyaz">
+        <ul className="mx-auto grid max-w-[1100px] gap-3 sm:grid-cols-2">
+          {[
+            { href: "/kutuphane", ad: "Tab Oynatıcı ve Dosyalarım", not: "GuitarFlex'in çalınabilir çok track'li parçaları ve kendi Guitar Pro dosyaların.", simge: yerSimgesi("kutuphane") },
+            { href: "/oynatici", ad: "Tabla Keşfet", not: "Herhangi bir tab dosyasını aç, mikserle çal.", simge: yerSimgesi("oynatici") },
+          ].map((x) => (
+            <li key={x.href}>
+              <Link href={x.href} data-renk={x.simge.renk} className="card renkli-kart yukselen flex h-full items-center gap-4 p-5 pt-6">
+                <UygulamaSimgesi simge={x.simge} boyut={60} />
+                <span className="min-w-0">
+                  <span className="block text-[19px] font-semibold leading-tight">{x.ad}</span>
+                  <span className="mt-1 block text-sm text-muted">{x.not}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </Bant>
     </div>
   );

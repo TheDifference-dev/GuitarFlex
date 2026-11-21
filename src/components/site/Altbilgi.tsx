@@ -24,12 +24,11 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
     ],
   },
   {
-    baslik: "Kütüphane",
+    baslik: "Şarkılar",
     items: [
-      { href: "/kutuphane", label: "Şarkı Kütüphanesi" },
-      { href: "/sarkilar", label: "Popüler Şarkılar" },
+      { href: "/sarki-kutuphanesi", label: "Şarkı Kütüphanesi" },
+      { href: "/sarkilar", label: "Şarkılarla Öğren" },
       { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
-      { href: "/oynatici", label: "Tabla Keşfet" },
       { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
     ],
   },
@@ -39,12 +38,15 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
       { href: "/araclar#metronom", label: "Metronom" },
       { href: "/araclar#nota-testi", label: "Nota Bulma Testi" },
       { href: "/teori#sap", label: "Sap Gezgini" },
+      { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım" },
+      { href: "/oynatici", label: "Tabla Keşfet" },
     ],
   },
   {
     baslik: "Profil",
     items: [
       { href: "/profil", label: "İlerleme ve görevler" },
+      { href: "/profil#gorunum", label: "Görünüm" },
       { href: "/marka", label: "Marka" },
     ],
   },
@@ -65,7 +67,7 @@ export default function Altbilgi() {
       <div className="mx-auto max-w-[1024px] px-[22px] pb-5 pt-[17px]">
         <p className="border-b border-line pb-[11px] pt-[3px]">
           {SITE.name} kişisel bir gitar akademisidir. İlerlemen bu bilgisayarda saklanır; hiçbir ders kilitli değildir. Şarkı
-          kütüphanesindeki parçalar özgün ya da kamu malı düzenlemelerdir.
+          Kütüphanesi Songsterr&apos;in sitesini açar; tablar GuitarFlex&apos;e kopyalanmaz. Tab Oynatıcı&apos;daki parçalar özgün ya da kamu malı düzenlemelerdir.
         </p>
         <nav aria-label="Site haritası" className="grid grid-cols-5 gap-x-5 pt-5">
           {SUTUNLAR.map((s) => (

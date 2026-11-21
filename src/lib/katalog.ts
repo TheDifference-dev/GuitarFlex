@@ -6,7 +6,7 @@ import { dersTuru, type DersTuru } from "./simge";
 
 /** Katalogdaki grup (GuitarBear'deki "teknik seçici" sırasına benzer): rehberler, akor yolu, elektro teknikler,
  *  ek kurslar, akustik teknikler, müzik teorisi */
-export type KursGrubu = "rehber" | "akor" | "elektro" | "ek" | "akustik" | "teori";
+export type KursGrubu = "rehber" | "akor" | "elektro" | "ileri" | "ek" | "akustik" | "teori";
 /** Kursun ait olduğu bölüm: menüdeki Elektro Gitar / Akustik Gitar / Müzik Teorisi */
 export type KursAilesi = "elektro" | "akustik" | "teori";
 
@@ -14,7 +14,8 @@ export const GRUP_ADI: Record<KursGrubu, string> = {
   rehber: "Başlangıç Rehberleri",
   akor: "Akor Yolu",
   elektro: "Elektro Gitar Teknikleri",
-  ek: "Müzisyenlik ve Stiller",
+  ileri: "Orta–İleri · L3–L5",
+  ek: "Müzisyenlik ve Isınma",
   akustik: "Akustik Gitar Teknikleri",
   teori: "Müzik Teorisi",
 };
@@ -24,6 +25,8 @@ export const AILE_ADI: Record<KursAilesi, string> = { elektro: "Elektro Gitar", 
 export const AILE_ADRESI: Record<KursAilesi, string> = { elektro: "/elektro", akustik: "/akustik", teori: "/teori" };
 
 const EK_KURSLAR = new Set(["gf-ekler", "gf-stiller", "kromatik-isinma"]);
+/** Orta–ileri (L3–L5) ek kurslar: katalogda kendi grubunda, "Ek kurs" etiketiyle (Stiller: bölümleri L2–L5, ağırlığı L3–L5) */
+const ILERI_KURSLAR = new Set(["gf-stiller"]);
 const AKOR_KURSLARI = new Set(["akor-yolu", "akorlar"]);
 
 export function kursAilesi(c: Course): KursAilesi {
@@ -37,6 +40,7 @@ export function kursGrubu(c: Course): KursGrubu {
   if (c.slug.endsWith("-rehberi")) return "rehber";
   if (c.kind === "acoustic") return "akustik";
   if (AKOR_KURSLARI.has(c.slug)) return "akor";
+  if (ILERI_KURSLAR.has(c.slug)) return "ileri";
   if (EK_KURSLAR.has(c.slug) || /\(Ek Kurs\)/.test(c.title)) return "ek";
   return "elektro";
 }

@@ -1,27 +1,36 @@
-// Uygulama simgeleri: her kursun, ders türünün, teori yolunun, kütüphane türünün ve aracın sabit glifi ve zemini.
-// Uygulamadaki bütün simgeler tek biçimdedir (bkz. components/site/UygulamaSimgesi.tsx): yuvarlatılmış kare, dikey
-// geçişli zemin, ortada beyaz çizgi glif. Zeminler en fazla üç ailedir (gökkuşağı yok):
-//   teknik  · bütün gitar tekniği kursları, rehberler, akorlar: laciverden maviye (akustik karşılıkları aynı ailenin
-//             daha sıcak / derin tonu: "akustik")
-//   teori   · teori yolları, bölümler, araçlar, ders türleri, ödüller: uzay grisinden laciverde
-//   tur     · Şarkı Kütüphanesi ve eşlik türleri: gece laciverdinden çivite
-// Eşleme belirlenimcidir: aynı anahtar her yerde aynı simgeyi verir. Sunucuda da istemcide de çalışır.
+// Uygulama simgeleri: her kursun, ders türünün, teori yolunun, kütüphane türünün ve aracın sabit glifi ve rengi.
+// Uygulamadaki bütün simgeler tek biçimdedir (bkz. components/site/UygulamaSimgesi.tsx): iPhone uygulama simgesi gibi
+// yuvarlatılmış kare (süper elips), hafif dikey geçişli tek renk zemin, ortada beyaz, tek kalınlıkta çizgi glif.
+// Renkler apple sistem renkleri ailesindendir (değerler globals.css › --simge-<renk>); her kursun kendi rengi vardır,
+// katalogda yan yana ve alt alta duran kurslar farklı renktedir. Bir tekniğin elektro ve akustik kursu aynı tekniği
+// öğrettiği için aynı glifi ve rengi taşır. Eşleme belirlenimcidir: aynı anahtar her yerde aynı simgeyi verir.
+// Sunucuda da istemcide de çalışır.
 import type { Lesson } from "@/content/types";
 import type { OzgunGlif } from "@/components/site/glifler/Glifler";
 
-/** Simge zemin aileleri (değerler globals.css › --simge-*): hepsi beyaz glifle en az 3:1 kontrast verir */
-export const SIMGE_RENKLERI = ["teknik", "akustik", "teori", "tur"] as const;
+/** Simge zemin renkleri (değerler globals.css › --simge-*): hepsi beyaz glifle geçişin ortasında en az 3,5:1 */
+export const SIMGE_RENKLERI = ["mavi", "lacivert", "indigo", "mor", "pembe", "kirmizi", "turuncu", "sari", "yesil", "nane", "camgobegi", "kahve", "gri", "grafit"] as const;
 export type SimgeRengi = (typeof SIMGE_RENKLERI)[number];
 export const RENK_ADI: Record<SimgeRengi, string> = {
-  teknik: "Teknik",
-  akustik: "Akustik",
-  teori: "Teori ve araçlar",
-  tur: "Kütüphane",
+  mavi: "Mavi",
+  lacivert: "Lacivert",
+  indigo: "İndigo",
+  mor: "Mor",
+  pembe: "Pembe",
+  kirmizi: "Kırmızı",
+  turuncu: "Turuncu",
+  sari: "Sarı",
+  yesil: "Yeşil",
+  nane: "Nane",
+  camgobegi: "Camgöbeği",
+  kahve: "Kahve",
+  gri: "Gri",
+  grafit: "Grafit",
 };
 
 /**
  * Glif adları. Özgün glifler (teknikler, teori yolları): components/site/glifler/Glifler.tsx.
- * Diğerleri (bölümler, araçlar, ödüller) lucide çizgi simgeleridir; aynı 24'lük ızgara ve 1,75 çizgiyle çizilir.
+ * Diğerleri (bölümler, araçlar, ödüller) lucide çizgi simgeleridir; aynı 24'lük ızgara ve aynı çizgi kalınlığıyla çizilir.
  */
 export type GlifAdi =
   | OzgunGlif
@@ -30,45 +39,53 @@ export type GlifAdi =
   | "mezuniyet" | "simsek" | "kulaklik" | "kalem" | "mikrofon" | "liste" | "gitar" | "metronom" | "gosterge" | "hedef"
   | "oynat" | "kutuphane" | "yildiz" | "kisi" | "sekiller" | "doseme" | "madalya" | "odul" | "elmas" | "tac" | "kupa"
   | "ayak-izi" | "takvim" | "saat" | "halter" | "ay" | "gun-dogumu" | "kronometre" | "karistir" | "isilti" | "kalkan"
-  | "ampul" | "onay" | "piyano" | "gunes" | "basak" | "parmak-izi" | "nabiz" | "palmiye" | "dag" | "kurukafa" | "anit" | "alev";
+  | "ampul" | "onay" | "piyano" | "gunes" | "basak" | "parmak-izi" | "nabiz" | "palmiye" | "dag" | "kurukafa" | "anit" | "alev"
+  | "ara" | "klasor";
 
 export type SimgeTanim = { glif: GlifAdi; renk: SimgeRengi };
 const s = (glif: GlifAdi, renk: SimgeRengi): SimgeTanim => ({ glif, renk });
-const t = (glif: GlifAdi) => s(glif, "teknik");
-const a = (glif: GlifAdi) => s(glif, "akustik");
-const o = (glif: GlifAdi) => s(glif, "teori");
 
-// ── Kurslar ──────────────────────────────────────────────────────────────────
-// Glif tekniğin kendisini gösterir; bütün teknik kursları aynı zemini (teknik), akustik karşılıkları aynı glifi
-// akustik tonunda taşır. Armoni bir teori kursudur (teori zemini).
-const KURS: Record<string, SimgeTanim> = {
-  "sifirdan-baslangic-rehberi": t("rehber-baslangic"),
-  "baslangic-orta-rehberi": t("rehber"),
-  "akor-yolu": t("akor"),
-  akorlar: t("akor"),
-  "kromatik-isinma": t("kromatik"),
-  "alternatif-pena": t("alternate"),
-  "economy-pena": t("economy"),
-  "hybrid-picking": t("hybrid"),
-  sweep: t("sweep"),
-  arpej: t("arpej"),
-  "hammer-on-pull-off": t("hammer-on"),
-  legato: t("legato"),
-  tapping: t("tapping"),
-  slide: t("slide"),
-  "bend-vibrato": t("bend-vibrato"),
-  "palm-mute": t("palm-mute"),
-  "ritim-tarama": t("strumming"),
-  "gf-ekler": t("nota-cift"),
-  "gf-stiller": t("stiller"),
-  armoni: o("armoni"),
-  "akustik-baslangic-rehberi": a("rehber-baslangic"),
-  "akustik-alternatif-pena": a("alternate"),
-  "akustik-arpej": a("arpej"),
-  "akustik-bend-vibrato": a("bend-vibrato"),
-  "akustik-hopo": a("hammer-on"),
-  "akustik-slide": a("slide"),
+// ── Kurslar: renk + glif tablosu (tek yer) ───────────────────────────────────
+// Glif tekniğin kendisini gösterir (bend: yukarı kavisli ok, slide: eğik kayma çizgisi, palm mute: avuç + tel,
+// tapping: parmak ucu ve nokta, sweep: telleri süpüren ok, legato: bağ yayı, arpej: basamaklı notalar, alternate:
+// aşağı/yukarı pena işaretleri, economy: tek yön ok + pena, hybrid: pena + parmak, strumming: tarama okları,
+// akorlar: akor diyagramı). Renkler katalog sırasında komşu kurslar ayırt edilsin diye dağıtıldı (3 sütunlu ızgarada
+// yan yana ve alt alta aynı renk yok).
+export const KURS_SIMGELERI: Record<string, SimgeTanim> = {
+  // Başlangıç rehberleri
+  "sifirdan-baslangic-rehberi": s("rehber-baslangic", "yesil"),
+  "baslangic-orta-rehberi": s("rehber", "indigo"),
+  "akustik-baslangic-rehberi": s("rehber-baslangic", "turuncu"),
+  // Akor yolu
+  "akor-yolu": s("akor", "mavi"),
+  akorlar: s("akor", "kirmizi"),
+  // Elektro gitar teknikleri (katalog sırası)
+  "alternatif-pena": s("alternate", "kirmizi"),
+  arpej: s("arpej", "mor"),
+  "bend-vibrato": s("bend", "turuncu"),
+  "economy-pena": s("economy", "camgobegi"),
+  "hammer-on-pull-off": s("hammer-on", "yesil"),
+  "hybrid-picking": s("hybrid", "pembe"),
+  legato: s("legato", "mavi"),
+  "palm-mute": s("palm-mute", "kahve"),
+  slide: s("slide", "nane"),
+  "ritim-tarama": s("strumming", "sari"),
+  sweep: s("sweep", "indigo"),
+  tapping: s("tapping", "lacivert"),
+  // Ek kurslar
+  "kromatik-isinma": s("kromatik", "gri"),
+  "gf-ekler": s("nota-cift", "camgobegi"),
+  "gf-stiller": s("stiller", "pembe"),
+  // Müzik teorisi
+  armoni: s("armoni", "mor"),
+  // Akustik teknikler: elektro karşılığının glifi ve rengi
+  "akustik-alternatif-pena": s("alternate", "kirmizi"),
+  "akustik-arpej": s("arpej", "mor"),
+  "akustik-bend-vibrato": s("bend", "turuncu"),
+  "akustik-hopo": s("hammer-on", "yesil"),
+  "akustik-slide": s("slide", "nane"),
 };
+const KURS = KURS_SIMGELERI;
 
 /** Simge ızgarasındaki kısa adlar (uzun kurs adları için); yoksa kursun kart adı kullanılır */
 const KISA_AD: Record<string, string> = {
@@ -90,29 +107,29 @@ const KISA_AD: Record<string, string> = {
 };
 export const kisaAd = (slug: string, ad: string) => KISA_AD[slug] ?? ad;
 
-/** Kursun simgesi. Bilinmeyen akustik kurs elektro karşılığının glifini akustik tonunda, diğerleri nota glifini teknik zeminde alır. */
+/** Kursun simgesi. Bilinmeyen akustik kurs elektro karşılığının simgesini, diğerleri nota glifini gri zeminde alır. */
 export function kursSimgesi(slug: string): SimgeTanim {
   const k = KURS[slug];
   if (k) return k;
-  if (slug.startsWith("akustik-")) return a(KURS[slug.slice(8)]?.glif ?? "gitar");
-  if (slug.endsWith("-rehberi")) return t("rehber");
-  return t("nota-cift");
+  if (slug.startsWith("akustik-")) return KURS[slug.slice(8)] ?? s("gitar", "kahve");
+  if (slug.endsWith("-rehberi")) return s("rehber", "indigo");
+  return s("nota-cift", "gri");
 }
 
 // ── Ders türleri ─────────────────────────────────────────────────────────────
 /** Dersin simge türü: drill dışındaki ders türleri, teori kartları ve tabsız okuma adımı */
 export type DersTuru = "etut" | "okuma" | "quickstudy" | "transkripsiyon" | "kompozisyon" | "resital" | "egitim" | "pratik" | "ek";
 const DERS: Record<DersTuru | "drill", SimgeTanim> = {
-  drill: t("gitar"),
-  etut: o("mezuniyet"),
-  okuma: o("okuma"),
-  quickstudy: o("simsek"),
-  transkripsiyon: o("kulaklik"),
-  kompozisyon: o("kalem"),
-  resital: o("mikrofon"),
-  egitim: o("kitap-yazi"),
-  pratik: o("liste"),
-  ek: o("gitar"),
+  drill: s("gitar", "grafit"),
+  etut: s("mezuniyet", "sari"),
+  okuma: s("okuma", "yesil"),
+  quickstudy: s("simsek", "turuncu"),
+  transkripsiyon: s("kulaklik", "pembe"),
+  kompozisyon: s("kalem", "mor"),
+  resital: s("mikrofon", "kirmizi"),
+  egitim: s("kitap-yazi", "indigo"),
+  pratik: s("liste", "yesil"),
+  ek: s("gitar", "kahve"),
 };
 export const DERS_TURU_ADI: Record<DersTuru | "drill", string> = {
   drill: "Drill",
@@ -141,128 +158,132 @@ export const dersSimgesi = (tur?: DersTuru, kurs?: string): SimgeTanim => (tur ?
 
 // ── Teori yolları, bölümler, araçlar ─────────────────────────────────────────
 const YOL: Record<string, SimgeTanim> = {
-  ritim: o("ritim"),
-  klavye: o("klavye"),
-  kulak: o("kulak"),
-  okuma: o("okuma"),
-  armoni: o("armoni"),
+  ritim: s("ritim", "turuncu"),
+  klavye: s("klavye", "mavi"),
+  kulak: s("kulak", "pembe"),
+  okuma: s("okuma", "yesil"),
+  armoni: s("armoni", "mor"),
 };
-export const yolSimgesi = (slug: string): SimgeTanim => YOL[slug] ?? o("liste");
+export const yolSimgesi = (slug: string): SimgeTanim => YOL[slug] ?? s("liste", "gri");
 
 /** Bölümler, sayfalar ve araçlar (mega menü, ana sayfa döşemeleri, araçlar sayfası) */
 const YER = {
-  elektro: t("simsek"),
-  akustik: a("gitar"),
-  teori: o("kitap"),
-  "teori-dersi": o("kitap-yazi"),
-  seviye: t("seviye-3"),
-  kurslar: t("doseme"),
-  rehber: t("rehber"),
-  kutuphane: s("kutuphane", "tur"),
-  sarkilar: s("yildiz", "tur"),
-  oynatici: o("oynat"),
-  dogaclama: s("mikrofon", "tur"),
-  araclar: o("gosterge"),
-  metronom: o("metronom"),
-  "nota-testi": o("hedef"),
-  "sap-gezgini": o("klavye"),
-  akort: o("gosterge"),
-  caged: o("akor"),
-  profil: o("kisi"),
-  marka: o("sekiller"),
-  "muzik-bilgisi": o("nota"),
-  ipucu: o("ampul"),
+  elektro: s("simsek", "mavi"),
+  akustik: s("gitar", "kahve"),
+  teori: s("kitap", "indigo"),
+  "teori-dersi": s("kitap-yazi", "indigo"),
+  seviye: s("seviye-3", "yesil"),
+  kurslar: s("doseme", "grafit"),
+  rehber: s("rehber", "indigo"),
+  /** Şarkı Kütüphanesi: Songsterr'in bütün kataloğu (uygulama içi pencerede) */
+  "sarki-kutuphanesi": s("ara", "kirmizi"),
+  /** Şarkılarla Öğren: GuitarBear Şarkı Rehberi sırası */
+  sarkilar: s("yildiz", "pembe"),
+  /** Tab Oynatıcı ve dosyalarım: çalınabilir çok track'li parçalar ve kullanıcının dosyaları */
+  kutuphane: s("klasor", "grafit"),
+  oynatici: s("oynat", "gri"),
+  dogaclama: s("mikrofon", "turuncu"),
+  araclar: s("gosterge", "gri"),
+  metronom: s("metronom", "grafit"),
+  "nota-testi": s("hedef", "kirmizi"),
+  "sap-gezgini": s("klavye", "mavi"),
+  akort: s("gosterge", "gri"),
+  caged: s("akor", "lacivert"),
+  profil: s("kisi", "gri"),
+  marka: s("sekiller", "indigo"),
+  "muzik-bilgisi": s("nota", "indigo"),
+  ipucu: s("ampul", "sari"),
   // Profil özet kutuları
-  seri: o("alev"),
-  kalkan: o("kalkan"),
-  gorev: o("liste"),
-  puan: o("kupa"),
+  seri: s("alev", "turuncu"),
+  kalkan: s("kalkan", "mavi"),
+  gorev: s("liste", "yesil"),
+  puan: s("kupa", "sari"),
   // Seviye Yolu eksenleri
-  technique: t("bend"),
-  fretboard: o("klavye"),
-  rhythm: o("ritim"),
-  theory_ear: o("kulak"),
+  technique: s("bend", "kirmizi"),
+  fretboard: s("klavye", "mavi"),
+  rhythm: s("ritim", "turuncu"),
+  theory_ear: s("kulak", "pembe"),
 } satisfies Record<string, SimgeTanim>;
 export type YerAdi = keyof typeof YER;
 export const yerSimgesi = (ad: YerAdi): SimgeTanim => YER[ad];
 
-/** Seviye simgeleri: dolan beş basamak, teknik zemininde */
+/** Seviye simgeleri: dolan beş basamak; renk yeşilden (L1) mora (L5) ilerler */
+const SEVIYE_RENGI: SimgeRengi[] = ["yesil", "camgobegi", "mavi", "indigo", "mor"];
 export function seviyeSimgesi(seviye: string | number): SimgeTanim {
   const n = Math.min(5, Math.max(1, typeof seviye === "number" ? seviye : Number(seviye.replace(/\D/g, "")) || 1));
-  return t(`seviye-${n as 1 | 2 | 3 | 4 | 5}`);
+  return s(`seviye-${n as 1 | 2 | 3 | 4 | 5}`, SEVIYE_RENGI[n - 1]);
 }
 
-// ── Kütüphane ve eşlik türleri (üçüncü aile) ─────────────────────────────────
-const u = (glif: GlifAdi) => s(glif, "tur");
+// ── Müzik türleri (çalınabilir parçalar, doğaçlama eşlikleri) ────────────────
 const TUR: Record<string, SimgeTanim> = {
-  Blues: u("nota-uclu"),
-  Rock: u("gitar"),
-  Funk: u("nabiz"),
-  Metal: u("kurukafa"),
-  Pop: u("isilti"),
-  Caz: u("piyano"),
-  "Bossa Nova": u("palmiye"),
-  Reggae: u("gunes"),
-  Country: u("basak"),
-  Fingerstyle: u("parmak-izi"),
-  "Türk Halk Müziği": u("dag"),
-  Klasik: u("anit"),
-  Groove: u("ritim"),
+  Blues: s("nota-uclu", "mavi"),
+  Rock: s("gitar", "kirmizi"),
+  Funk: s("nabiz", "turuncu"),
+  Metal: s("kurukafa", "grafit"),
+  Pop: s("isilti", "pembe"),
+  Caz: s("piyano", "indigo"),
+  "Bossa Nova": s("palmiye", "yesil"),
+  Reggae: s("gunes", "sari"),
+  Country: s("basak", "kahve"),
+  Fingerstyle: s("parmak-izi", "nane"),
+  "Türk Halk Müziği": s("dag", "camgobegi"),
+  Klasik: s("anit", "mor"),
+  Groove: s("ritim", "lacivert"),
 };
-/** Müzik türünün simgesi (Şarkı Kütüphanesi, doğaçlama eşlikleri) */
-export const turSimgesi = (tur: string): SimgeTanim => TUR[tur] ?? u("nota");
+/** Müzik türünün simgesi (çalınabilir parçalar, doğaçlama eşlikleri) */
+export const turSimgesi = (tur: string): SimgeTanim => TUR[tur] ?? s("nota", "gri");
 
-// ── Madalyalar, rozetler, başarımlar (teori ve araçlar ailesi) ───────────────
+// ── Madalyalar, rozetler, başarımlar ─────────────────────────────────────────
 const MADALYA: Record<string, SimgeTanim> = {
-  Bronz: o("madalya"),
-  Gümüş: o("madalya"),
-  Altın: o("madalya"),
-  Platin: o("odul"),
-  Elmas: o("elmas"),
-  Usta: o("tac"),
+  Bronz: s("madalya", "kahve"),
+  Gümüş: s("madalya", "gri"),
+  Altın: s("madalya", "sari"),
+  Platin: s("odul", "camgobegi"),
+  Elmas: s("elmas", "mavi"),
+  Usta: s("tac", "mor"),
 };
-export const madalyaSimgesi = (metal: string): SimgeTanim => MADALYA[metal] ?? o("madalya");
+export const madalyaSimgesi = (metal: string): SimgeTanim => MADALYA[metal] ?? s("madalya", "sari");
 
 const ROZET: Record<string, SimgeTanim> = {
-  "ilk-adim": o("ayak-izi"),
-  "uc-gun": o("alev"),
-  "yedi-gun": o("takvim"),
-  "bir-saat": o("saat"),
-  "on-saat": o("halter"),
-  "on-egzersiz": o("onay"),
-  "teknik-ustasi": o("odul"),
-  hizli: o("simsek"),
-  kulak: o("kulak"),
+  "ilk-adim": s("ayak-izi", "yesil"),
+  "uc-gun": s("alev", "turuncu"),
+  "yedi-gun": s("takvim", "kirmizi"),
+  "bir-saat": s("saat", "grafit"),
+  "on-saat": s("halter", "gri"),
+  "on-egzersiz": s("onay", "yesil"),
+  "teknik-ustasi": s("odul", "sari"),
+  hizli: s("simsek", "turuncu"),
+  kulak: s("kulak", "pembe"),
 };
 /** Profil rozeti (lib/ranks.ts): rozet kimliğine göre */
-export const rozetSimgesi = (id: string): SimgeTanim => ROZET[id] ?? o("odul");
+export const rozetSimgesi = (id: string): SimgeTanim => ROZET[id] ?? s("odul", "sari");
 
 /** Başarım (içerik paketindeki oyun.json): ölçüsüne göre */
 const BASARIM: Record<string, SimgeTanim> = {
-  streak_days: o("alev"),
-  night_practice: o("ay"),
-  morning_practice: o("gun-dogumu"),
-  daily_practice_minutes: o("kronometre"),
-  first_lesson: o("ayak-izi"),
-  pathways_with_lessons: o("sekiller"),
-  completed_sections: o("liste"),
-  techniques_with_completed_section: o("karistir"),
-  pathways_completed: o("mezuniyet"),
+  streak_days: s("alev", "turuncu"),
+  night_practice: s("ay", "indigo"),
+  morning_practice: s("gun-dogumu", "turuncu"),
+  daily_practice_minutes: s("kronometre", "gri"),
+  first_lesson: s("ayak-izi", "yesil"),
+  pathways_with_lessons: s("sekiller", "mor"),
+  completed_sections: s("liste", "yesil"),
+  techniques_with_completed_section: s("karistir", "camgobegi"),
+  pathways_completed: s("mezuniyet", "sari"),
   bronze_count: MADALYA.Bronz,
   silver_count: MADALYA.Gümüş,
   gold_count: MADALYA.Altın,
   platinum_count: MADALYA.Platin,
   diamond_count: MADALYA.Elmas,
   master_count: MADALYA.Usta,
-  account_exists: o("isilti"),
-  account_age_days: o("takvim"),
-  distinct_saved_tabs: o("nota-kagidi"),
+  account_exists: s("isilti", "pembe"),
+  account_age_days: s("takvim", "kirmizi"),
+  distinct_saved_tabs: s("nota-kagidi", "grafit"),
 };
-export const basarimSimgesi = (olcu: string): SimgeTanim => BASARIM[olcu] ?? o("kupa");
+export const basarimSimgesi = (olcu: string): SimgeTanim => BASARIM[olcu] ?? s("kupa", "sari");
 
 // ── Döküm (marka sayfası) ────────────────────────────────────────────────────
 export type SimgeDokumu = { baslik: string; simgeler: { ad: string; simge: SimgeTanim }[] }[];
-const dok = (o: Record<string, SimgeTanim>) => Object.entries(o).map(([ad, simge]) => ({ ad, simge }));
+const dok = (x: Record<string, SimgeTanim>) => Object.entries(x).map(([ad, simge]) => ({ ad, simge }));
 
 /** Bütün eşlemeler, gruplarıyla (marka sayfasındaki döküm ve eşleme sayısı için) */
 export const SIMGE_DOKUMU: SimgeDokumu = [

@@ -39,14 +39,16 @@
      --gnav      global gezinme ve mega menü zemini (yarı saydam koyu, buzlu)
      --uzay      uzay grisi yüzey             --altbilgi-yazi  alt bilgi yazısı
      --nav-h     üst gezinme çubuğunun yüksekliği (yapışkan öğeler bunun altına oturur)
-   Uygulama simgeleri (tek simge türü; en fazla üç zemin ailesi)
-     --simge-<aile> / --simge-<aile>-2  zemin üst / alt tonu: teknik (lacivert → mavi), akustik (teknik ailesinin
-       sıcak / derin tonu), teori (uzay grisi → lacivert), tur (gece laciverdi → çivit)
+   Uygulama ve kurs renkleri (apple sistem renkleri ailesi; her kursun kendi rengi, bkz. src/lib/simge.ts)
+     --simge-<renk> / --simge-<renk>-2  simge zemininin üst (açık) / alt (koyu) tonu: mavi, lacivert, indigo, mor,
+       pembe, kirmizi, turuncu, sari, yesil, nane, camgobegi, kahve, gri, grafit. Beyaz glif geçişin ortasında ≥ 3,5:1.
+     [data-renk="<renk>"] öğeye --r1 / --r2 verir: simge zemini, renkli kurs kartı, ilerleme halkası bunları kullanır.
      --simge-glif (beyaz)  --simge-kenar (zeminden ayıran ince iç çizgi)
    Ölçüler
      --radius-card (18 px)  --radius-control  --shadow-pop (açılır menü)  --shadow-seg
-   Mod: sistem tercihine uyar (prefers-color-scheme). İleride bir seçici eklenirse
-   html[data-mod="acik" | "koyu"] sistemi geçersiz kılar.
+   Tema: varsayılan AÇIK (apple.com gibi; işletim sistemi koyu modda olsa bile). Kullanıcı Profil › Görünüm'den ya da
+   masaüstü Görünüm menüsünden seçer: html[data-mod="acik" | "koyu" | "sistem"] (bkz. src/lib/tema.ts; layout.tsx'teki
+   satır içi betik ilk boyamadan önce koyar). "sistem" prefers-color-scheme'e uyar.
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: light;
@@ -63,11 +65,13 @@
   --heading: #1d1d1f;
   --muted: #6e6e73;
 
-  --gnav: rgb(29 29 31 / 0.8);
+  --gnav: rgb(22 22 23 / 0.92);
   --uzay: #2c2c2e;
   --vitrin: #000000;
   --lacivert-derin: #0a1630;
-  --vitrin-zemin: linear-gradient(180deg, #000000 0%, #000000 28%, var(--lacivert-derin) 100%);
+  --vitrin-zemin: #000000;
+  /* Ana sayfanın uzay grisi bandı */
+  --uzay-bant: #1d1d1f;
   --band: #f5f5f7;
   --panel-on-band: #ffffff;
   --panel-2-on-band: #e8e8ed;
@@ -81,8 +85,8 @@
   --primary-2: #0a2a6b;
   --primary-ink: #ffffff;
   --primary-hover: #0068d1;
-  --primary-bg: linear-gradient(115deg, var(--primary-2) 0%, #0050b8 45%, var(--primary) 100%);
-  --primary-hover-bg: linear-gradient(115deg, #0b3a8c 0%, #005ccc 45%, var(--primary) 100%);
+  --primary-bg: var(--primary);
+  --primary-hover-bg: #0077ed;
   --nota-ikincil: #6e6e73;
 
   --ok: #1e7a37;
@@ -106,22 +110,42 @@
   --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.04);
   --scroll-thumb: #c7c7cc;
 
-  /* Uygulama simgeleri: zemin üst / alt tonu (dikey geçiş). Hepsi beyaz glifle ≥ 3:1; koyu modda biraz daha parlak */
-  --simge-teknik: #0b1e4a;
-  --simge-teknik-2: #1f5fd6;
-  --simge-akustik: #1b2540;
-  --simge-akustik-2: #3a4e7a;
-  --simge-teori: #48484a;
-  --simge-teori-2: #13254f;
-  --simge-tur: #1e1a4d;
-  --simge-tur-2: #5e5ce6;
+  /* Kurs ve uygulama simge renkleri: üst (açık) / alt (koyu) ton. İki temada aynı. */
+  --simge-mavi: #2f8cff;
+  --simge-mavi-2: #0a5fd1;
+  --simge-lacivert: #3657c4;
+  --simge-lacivert-2: #1a2d82;
+  --simge-indigo: #6d6bf2;
+  --simge-indigo-2: #3f3cc4;
+  --simge-mor: #b264e6;
+  --simge-mor-2: #7b32b8;
+  --simge-pembe: #f2507f;
+  --simge-pembe-2: #c41a52;
+  --simge-kirmizi: #f5503f;
+  --simge-kirmizi-2: #c4241a;
+  --simge-turuncu: #ea7a10;
+  --simge-turuncu-2: #bc5208;
+  --simge-sari: #d49300;
+  --simge-sari-2: #a66400;
+  --simge-yesil: #26a446;
+  --simge-yesil-2: #137a34;
+  --simge-nane: #14a598;
+  --simge-nane-2: #0a776f;
+  --simge-camgobegi: #1b96d2;
+  --simge-camgobegi-2: #0a6aa6;
+  --simge-kahve: #a8805a;
+  --simge-kahve-2: #7a5534;
+  --simge-gri: #8a8a90;
+  --simge-gri-2: #58585d;
+  --simge-grafit: #5a5a5f;
+  --simge-grafit-2: #2c2c2e;
   --simge-glif: #ffffff;
   --simge-kenar: rgb(0 0 0 / 0.08);
 }
 
-/* Koyu mod: siyah zemin, uzay grisi kartlar */
+/* Koyu tema (yalnız kullanıcı seçerse): siyah zemin, uzay grisi kartlar. "Sistem" seçiliyse işletim sistemine uyar. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-mod="acik"]) {
+  :root[data-mod="sistem"] {
     color-scheme: dark;
     --bg: #000000;
     --panel: #1c1c1e;
@@ -159,14 +183,6 @@
     --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.4);
     --scroll-thumb: #545458;
     --simge-kenar: rgb(255 255 255 / 0.14);
-    --simge-teknik: #12306e;
-    --simge-teknik-2: #2f7bff;
-    --simge-akustik: #24315a;
-    --simge-akustik-2: #4a6196;
-    --simge-teori: #5a5a5e;
-    --simge-teori-2: #1c3570;
-    --simge-tur: #2a2566;
-    --simge-tur-2: #6e6cf0;
   }
 }
 :root[data-mod="koyu"] {
@@ -207,14 +223,6 @@
   --shadow-seg: 0 1px 3px rgb(0 0 0 / 0.4);
   --scroll-thumb: #545458;
   --simge-kenar: rgb(255 255 255 / 0.14);
-  --simge-teknik: #12306e;
-  --simge-teknik-2: #2f7bff;
-  --simge-akustik: #24315a;
-  --simge-akustik-2: #4a6196;
-  --simge-teori: #5a5a5e;
-  --simge-teori-2: #1c3570;
-  --simge-tur: #2a2566;
-  --simge-tur-2: #6e6cf0;
 }
 
 @theme inline {
@@ -239,11 +247,12 @@
   --color-bad: var(--bad);
   --color-bad-ink: var(--bad-ink);
   --color-band: var(--band);
-  /* apple.com yazı tipi yığını: SF Pro (Text gövdede, Display başlıklarda); bulunmayan sistemlerde
-     Inter (optik boyutlu, SF'ye en yakın), sonra Helvetica / Arial */
-  --font-sans: "SF Pro Text", "SF Pro Icons", -apple-system, BlinkMacSystemFont, "Helvetica Neue", var(--font-inter), Inter, Helvetica, Arial, sans-serif;
-  --font-display: "SF Pro Display", "SF Pro Icons", -apple-system, BlinkMacSystemFont, "Helvetica Neue", var(--font-inter), Inter, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", var(--font-geist-mono), Menlo, Consolas, monospace;
+  /* Yazı tipi: Inter Variable (optik boyutlu; @fontsource-variable/inter, OFL 1.1, uygulamayla birlikte gelir,
+     çevrimdışı çalışır, Türkçe harfler latin-ext dilimde). Apple cihazlarda sistem yazısı (San Francisco) önce gelir.
+     Başlıklarda optik boyut büyür ("Display" kesimi gibi sıkı). */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI Variable Text", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI Variable Display", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
 }
 
 html {
@@ -293,6 +302,10 @@ h3 {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+/* Şarkı Kütüphanesi araması: odak halkasını kutunun kendisi (focus-within kenarlığı) gösterir */
+input[data-sarki-ara]:focus-visible {
+  outline: none;
 }
 
 input[type="range"],
@@ -405,7 +418,7 @@ select option:checked {
   }
   .btn-primary:disabled,
   .btn-secondary:disabled {
-    opacity: 0.4;
+    opacity: 0.55;
     transform: none;
   }
   /* İlerleme çubuğu dolgusu: lacivertten vurgu mavisine */
@@ -439,6 +452,7 @@ select option:checked {
   }
   /* Koyu kapsam: siyah → lacivert vitrin bandı, uzay grisi bant, global gezinme. Renk değişkenleri koyu zemine göre döner. */
   .bant-koyu,
+  .bant-uzaygri,
   .uzay-kapsam {
     color-scheme: dark;
     --band: #161617;
@@ -465,6 +479,37 @@ select option:checked {
   .bant-koyu {
     --bg: var(--vitrin);
     background: var(--vitrin-zemin);
+  }
+  /* Uzay grisi bant (#1D1D1F): siyah bantla açık bantlar arasında */
+  .bant-uzaygri {
+    --bg: var(--uzay-bant);
+    --panel: #2c2c2e;
+    --panel-2: #3a3a3c;
+    --panel-on-band: #2c2c2e;
+    background: var(--uzay-bant);
+  }
+  /* Zorunlu açık kapsam: ana sayfanın açık bantları koyu temada da açık kalır (açık / koyu sırası korunur) */
+  .acik-kapsam {
+    color-scheme: light;
+    --bg: #ffffff;
+    --panel: #f5f5f7;
+    --panel-2: #e8e8ed;
+    --band: #f5f5f7;
+    --panel-on-band: #ffffff;
+    --panel-2-on-band: #e8e8ed;
+    --line: #d2d2d7;
+    --ink: #1d1d1f;
+    --seg: #ffffff;
+    --elevated: #ffffff;
+    --text: #1d1d1f;
+    --heading: #1d1d1f;
+    --muted: #6e6e73;
+    --accent: #0066cc;
+    --accent-ink: #ffffff;
+    --link: #0066cc;
+    --nota-ikincil: #6e6e73;
+    --simge-kenar: rgb(0 0 0 / 0.08);
+    color: var(--text);
   }
   .uzay-kapsam {
     --bg: var(--uzay);
@@ -588,9 +633,38 @@ select option:checked {
   .doseme-ana.bant-koyu {
     background: var(--vitrin-zemin);
   }
+  /* Ana sayfanın son bölümü (döşemeler): tam genişlik, alt bilgiye yapışır */
+  .ana-doseme {
+    margin-inline: calc(50% - 50vw);
+  }
+  .ana-sayfa > :last-child {
+    margin-bottom: -5rem;
+  }
+  /* Ana sayfa bandı (apple.com): tam genişlik, ortalı kısa büyük başlık, bir cümle, 1–2 bağlantı, altında görsel */
+  .ana-bant {
+    margin-inline: calc(50% - 50vw);
+    padding: 72px calc(50vw - 50%) 80px;
+    text-align: center;
+  }
 
-  /* Uygulama simgesi (tek simge türü; bkz. components/site/UygulamaSimgesi.tsx): yuvarlatılmış kare, dikey geçişli
-     zemin (üç aile), beyaz glif. Gölge yok; zeminden yarım pikselli iç çizgiyle ayrılır. */
+  /* Renk kapsamı: [data-renk] öğeye kendi renginin iki tonunu verir (simge zemini, renkli kart, ilerleme) */
+  [data-renk="mavi"] { --r1: var(--simge-mavi); --r2: var(--simge-mavi-2); }
+  [data-renk="lacivert"] { --r1: var(--simge-lacivert); --r2: var(--simge-lacivert-2); }
+  [data-renk="indigo"] { --r1: var(--simge-indigo); --r2: var(--simge-indigo-2); }
+  [data-renk="mor"] { --r1: var(--simge-mor); --r2: var(--simge-mor-2); }
+  [data-renk="pembe"] { --r1: var(--simge-pembe); --r2: var(--simge-pembe-2); }
+  [data-renk="kirmizi"] { --r1: var(--simge-kirmizi); --r2: var(--simge-kirmizi-2); }
+  [data-renk="turuncu"] { --r1: var(--simge-turuncu); --r2: var(--simge-turuncu-2); }
+  [data-renk="sari"] { --r1: var(--simge-sari); --r2: var(--simge-sari-2); }
+  [data-renk="yesil"] { --r1: var(--simge-yesil); --r2: var(--simge-yesil-2); }
+  [data-renk="nane"] { --r1: var(--simge-nane); --r2: var(--simge-nane-2); }
+  [data-renk="camgobegi"] { --r1: var(--simge-camgobegi); --r2: var(--simge-camgobegi-2); }
+  [data-renk="kahve"] { --r1: var(--simge-kahve); --r2: var(--simge-kahve-2); }
+  [data-renk="gri"] { --r1: var(--simge-gri); --r2: var(--simge-gri-2); }
+  [data-renk="grafit"] { --r1: var(--simge-grafit); --r2: var(--simge-grafit-2); }
+
+  /* Uygulama simgesi (tek simge türü; bkz. components/site/UygulamaSimgesi.tsx): iPhone simgesi gibi yuvarlatılmış
+     kare, üstten alta hafif koyulaşan tek renk zemin, beyaz glif. Gölge yok; zeminden yarım pikselli iç çizgiyle ayrılır. */
   .uyg-simge {
     display: inline-flex;
     flex: none;
@@ -598,21 +672,49 @@ select option:checked {
     justify-content: center;
     border-radius: 22.5%;
     color: var(--simge-glif);
-    background: linear-gradient(180deg, var(--s1, var(--simge-teknik)), var(--s2, var(--simge-teknik-2)));
-    box-shadow: inset 0 0 0 0.5px var(--simge-kenar);
+    background: linear-gradient(180deg, var(--r1, var(--simge-gri)), var(--r2, var(--simge-gri-2)));
+    box-shadow:
+      inset 0 0 0 0.5px var(--simge-kenar),
+      inset 0 1px 0 rgb(255 255 255 / 0.18);
   }
-  .uyg-simge[data-renk="akustik"] {
-    --s1: var(--simge-akustik);
-    --s2: var(--simge-akustik-2);
+
+  /* Renkli kurs kartı: kursun renginde ince üst şerit ve üstte o rengin çok açık tonu (metin her zaman --text, AA) */
+  .renkli-kart {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--r1) 11%, var(--panel)) 0%, var(--panel) 62%) padding-box;
   }
-  .uyg-simge[data-renk="teori"] {
-    --s1: var(--simge-teori);
-    --s2: var(--simge-teori-2);
+  .renkli-kart::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: linear-gradient(90deg, var(--r1), var(--r2));
   }
-  .uyg-simge[data-renk="tur"] {
-    --s1: var(--simge-tur);
-    --s2: var(--simge-tur-2);
+  /* Kursun renginde ilerleme dolgusu */
+  .renkli-dolgu {
+    background: linear-gradient(90deg, var(--r1), var(--r2));
   }
+
+  /* Mikro-animasyon: üzerine gelince kart hafifçe yükselir, simge hafifçe büyür (180 ms) */
+  .yukselen {
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .yukselen:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px -14px rgb(0 0 0 / 0.28);
+  }
+  .yukselen .uyg-simge {
+    transition: transform 0.18s ease;
+  }
+  .yukselen:hover .uyg-simge {
+    transform: scale(1.05);
+  }
+
   /* Simge ızgarası (ana ekran gibi): 8 sütun, simgenin altında kısa ad */
   .simge-izgara {
     display: grid;
@@ -712,8 +814,15 @@ select option:checked {
   .mega-perde {
     animation: none;
   }
-  .simge-izgara a .uyg-simge {
+  .simge-izgara a .uyg-simge,
+  .yukselen,
+  .yukselen .uyg-simge {
     transition: none;
+  }
+  .yukselen:hover,
+  .yukselen:hover .uyg-simge,
+  .simge-izgara a:hover .uyg-simge {
+    transform: none;
   }
 }
 

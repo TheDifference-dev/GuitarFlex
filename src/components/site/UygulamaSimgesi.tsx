@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import {
-  Activity, Award, BookOpen, BookOpenText, CalendarDays, Check, Clock, Crown, Dumbbell, FileMusic, Fingerprint, Flame, Footprints,
+  Activity, Award, FolderOpen, Search, BookOpen, BookOpenText, CalendarDays, Check, Clock, Crown, Dumbbell, FileMusic, Fingerprint, Flame, Footprints,
   Gauge, Gem, GraduationCap, Guitar, Headphones, Landmark, LayoutGrid, LibraryBig, Lightbulb, ListChecks, Medal, Metronome, MicVocal,
   Moon, Mountain, Music, Music3, Piano, PenLine, CirclePlay, Shapes, Shield, Shuffle, Skull, Sparkles, Star, Sun, Sunrise, Target,
   Timer, TreePalm, Trophy, User, Wheat, Zap,
@@ -9,12 +9,11 @@ import type { GlifAdi, SimgeTanim } from "@/lib/simge";
 import { OZGUN_GLIFLER, type GlifOzellik } from "./glifler/Glifler";
 
 /**
- * Uygulamanın tek simge türü: yuvarlatılmış kare (köşe %22,5; destekleyen tarayıcıda süper elips), dikey geçişli zemin
- * (üç aile: teknik laciverden maviye, teori uzay grisinden laciverde, kütüphane gece laciverdinden çivite), ortada beyaz,
- * tek ağırlıkta çizgi glif. Gölge yok; zeminden ince bir iç çizgiyle ayrılır.
- * Renkler globals.css › --simge-* değişkenlerinden gelir (.uyg-simge). Hangi kurs / ders türü / araç hangi simgeyi
- * alır: src/lib/simge.ts. Glifler: ./glifler/Glifler.tsx (özgün) ve lucide (aynı ızgara, aynı çizgi). Sunucu ve
- * istemci bileşenlerinde kullanılabilir.
+ * Uygulamanın tek simge türü (iPhone uygulama simgesi gibi): yuvarlatılmış kare (köşe %22,5; destekleyen tarayıcıda
+ * süper elips), üstten alta hafifçe koyulaşan tek renk zemin, ortada beyaz, tek kalınlıkta çizgi glif.
+ * Renkler globals.css › --simge-<renk> değişkenlerinden gelir ([data-renk] → --r1/--r2). Hangi kurs / ders türü / araç
+ * hangi renk ve glifi alır: src/lib/simge.ts (kurslar için tek tablo: KURS_SIMGELERI). Glifler: ./glifler/Glifler.tsx
+ * (özgün) ve lucide (aynı ızgara, aynı çizgi). Sunucu ve istemci bileşenlerinde kullanılabilir.
  */
 export type SimgeBoyutu = 24 | 32 | 44 | 60 | 96 | 152;
 
@@ -22,7 +21,7 @@ export type SimgeBoyutu = 24 | 32 | 44 | 60 | 96 | 152;
 const seviye = (n: number) =>
   function Seviye({ size = 24, strokeWidth = 1.75 }: GlifOzellik) {
     return (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={Number(strokeWidth) * 1.15} strokeLinecap="round" aria-hidden>
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" aria-hidden>
         {[0, 1, 2, 3, 4].map((i) => (
           <path key={i} d={`M${4 + i * 4} 20V${17 - i * 3.25}`} opacity={i < n ? 1 : 0.4} />
         ))}
@@ -85,6 +84,8 @@ const GLIF: Record<GlifAdi, ComponentType<GlifOzellik>> = {
   dag: Mountain,
   kurukafa: Skull,
   anit: Landmark,
+  ara: Search,
+  klasor: FolderOpen,
 };
 
 export default function UygulamaSimgesi({

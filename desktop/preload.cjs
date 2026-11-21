@@ -10,6 +10,10 @@ contextBridge.exposeInMainWorld("guitarflexMasaustu", {
   metronomMiniKapat: () => ipcRenderer.send("metronom-mini-kapat"),
   /** Ana pencereyi öne getirir; kapatılmışsa yeniden açar */
   anaPencereyeDon: () => ipcRenderer.send("metronom-ana-pencere"),
+  /** Şarkı Kütüphanesi: Songsterr'i uygulama içi pencerede açar (açıksa öne getirir). q: arama metni ya da Songsterr bağlantısı */
+  sarkiKutuphanesiAc: (q) => ipcRenderer.invoke("sarki-kutuphanesi-ac", { q: typeof q === "string" ? q : "" }),
+  /** Görünüm teması değişti ("acik" | "koyu" | "sistem"): pencere zemini ve Görünüm menüsü buna uyar */
+  temaBildir: (tema) => ipcRenderer.send("tema-degisti", String(tema)),
   /** Ana süreçten küçük pencereye gelen komutlar ("cal") */
   metronomKomutDinle: (fn) => {
     if (typeof fn !== "function") return () => {};

@@ -25,7 +25,9 @@ const DURUMLAR: [Durum, string][] = [
   ["yeni", "Başlanmamış"],
   ["bitti", "Tamamlanan"],
 ];
-const SIRA: KursGrubu[] = ["rehber", "akor", "elektro", "ek", "akustik", "teori"];
+const SIRA: KursGrubu[] = ["rehber", "akor", "elektro", "ileri", "ek", "akustik", "teori"];
+/** Grup başlığının yanındaki kısa açıklama */
+const GRUP_NOTU: Partial<Record<KursGrubu, string>> = { ileri: "orta-ileri seviye ek kurslar" };
 
 const kucult = (s: string) => s.toLocaleLowerCase("tr");
 const chip = (on: boolean) =>
@@ -90,7 +92,7 @@ export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yol
       {gruplar.map(({ g, liste }) => (
         <section key={g} id={`grup-${g}`} className="scroll-mt-24 space-y-3">
           <h2 className="flex items-baseline gap-2 text-xl font-semibold">
-            {GRUP_ADI[g]} <span className="text-sm font-medium text-muted">{liste.length} kurs</span>
+            {GRUP_ADI[g]} <span className="text-sm font-medium text-muted">{GRUP_NOTU[g] ? `${GRUP_NOTU[g]} · ` : ""}{liste.length} kurs</span>
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {liste.map((k) => (
@@ -107,7 +109,7 @@ export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yol
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {yollar.map((y) => (
-              <Link key={y.href} href={y.href} className="card group flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:border-ink/15">
+              <Link key={y.href} href={y.href} data-renk={yolSimgesi(y.slug).renk} className="card renkli-kart yukselen group flex items-center gap-3 p-4 pt-5 hover:border-ink/15">
                 <UygulamaSimgesi simge={yolSimgesi(y.slug)} boyut={44} />
                 <span className="min-w-0 flex-1">
                   <span className="eyebrow">{y.etiket}</span>

@@ -3,19 +3,22 @@ import { Bant, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import LibraryBrowser from "@/components/kutuphane/LibraryBrowser";
 import { getLibrary, summary } from "@/lib/kutuphane";
 
-export const metadata: Metadata = { title: "Şarkı Kütüphanesi" };
+export const metadata: Metadata = { title: "Tab Oynatıcı ve Dosyalarım" };
 
 export default async function LibraryPage() {
   const songs = (await getLibrary()).map(summary);
   return (
     <div>
       <SayfaBasi
-        kirinti={[{ label: "Şarkı Kütüphanesi" }]}
-        baslik="Şarkı Kütüphanesi"
-        alt="Gitar, bas, davul, klavye, yaylı ve üflemeli çok track'li parçalar: GuitarFlex'in özgün şarkıları, kamu malı ezgilerin düzenlemeleri ve kendi Guitar Pro dosyaların."
+        kirinti={[{ href: "/araclar", label: "Araçlar" }, { label: "Tab Oynatıcı ve Dosyalarım" }]}
+        baslik="Tab Oynatıcı ve Dosyalarım"
+        alt="GuitarFlex'in çalınabilir çok track'li parçaları (gitar, bas, davul, klavye…) ve kendi Guitar Pro dosyaların: aç, kapa, yavaşlat."
       >
+        <MetinBag href="/sarki-kutuphanesi" buyuk>
+          Şarkı Kütüphanesi
+        </MetinBag>
         <MetinBag href="/sarkilar" buyuk>
-          Popüler şarkılar
+          Şarkılarla Öğren
         </MetinBag>
         <MetinBag href="/oynatici" buyuk>
           Tabla keşfet
