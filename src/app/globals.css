@@ -646,6 +646,18 @@ select option:checked {
     padding: 72px calc(50vw - 50%) 80px;
     text-align: center;
   }
+  /* Kapak: simsiyah yerine uzay grisi; çizimin altından aşağıdaki beyaz banda yumuşak geçiş */
+  .ana-bant.bant-kapak {
+    background: linear-gradient(
+      180deg,
+      #1d1d1f 0%,
+      #2c2c2e 38%,
+      #3a3a3c 58%,
+      #6e6e73 74%,
+      #c7c7cc 88%,
+      #ffffff 100%
+    );
+  }
 
   /* Renk kapsamı: [data-renk] öğeye kendi renginin iki tonunu verir (simge zemini, renkli kart, ilerleme) */
   [data-renk="mavi"] { --r1: var(--simge-mavi); --r2: var(--simge-mavi-2); }

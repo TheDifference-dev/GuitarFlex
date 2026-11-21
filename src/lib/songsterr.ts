@@ -32,6 +32,9 @@ export function sarkiKutuphanesiAc(q?: string): boolean {
   if (typeof window === "undefined") return false;
   const m = (window as unknown as { guitarflexMasaustu?: Masaustu }).guitarflexMasaustu;
   if (typeof m?.sarkiKutuphanesiAc !== "function") return false;
-  void m.sarkiKutuphanesiAc(q?.trim() || undefined);
+  // Ana süreç bu kanalı tanımıyorsa (ör. güncelleme sonrası eski sürüm çalışıyorsa) bağlantıyı yine de aç
+  Promise.resolve()
+    .then(() => m.sarkiKutuphanesiAc!(q?.trim() || undefined))
+    .catch(() => window.open(songsterrAdresi(q), "_blank", "noopener,noreferrer"));
   return true;
 }

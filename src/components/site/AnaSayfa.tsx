@@ -112,13 +112,13 @@ export default function AnaSayfa({
       {/* Günlük görevler ve seri: apple.com'un üstteki ince duyuru şeridi gibi */}
       <GorevSeridi oyun={oyun} />
 
-      {/* Kapak: siyah bant, kullanıcının kendi çizimi */}
+      {/* Kapak: uzay grisinden beyaza yumuşak geçen bant, kullanıcının kendi çizimi */}
       <AnaBant
         ton="siyah"
         h1
-        className="!pb-0"
+        className="bant-kapak !pb-0"
         baslik="GuitarFlex"
-        alt="Gitarı adım adım öğren. Hiçbir ders kilitli değil."
+        alt="Gitarı adım adım öğren."
         eylemler={
           <>
             <HapBag href={sifirdan ? "/calis/sifirdan-baslangic-rehberi" : "/kurslar"}>Başlayın</HapBag>
@@ -158,7 +158,7 @@ export default function AnaSayfa({
       {/* Kurslar: her teknik kendi renginde */}
       <AnaBant
         ton="beyaz"
-        baslik="Her teknik, kendi rengi."
+        baslik="İstediğin teknikten başla."
         alt="Rehberler, akorlar, elektro ve akustik teknikler, teori yolları."
         eylemler={
           <>

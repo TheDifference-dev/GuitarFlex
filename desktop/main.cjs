@@ -131,6 +131,16 @@ function simgeyiTazele() {
   simgeleriYenile({ ikon: path.join(__dirname, "icon.ico"), klasor: app.getPath("userData") }).catch(() => {});
 }
 
+/** desktop/*.cjs dosyalarının özeti: güncellemeden önce ve sonra karşılaştırılır */
+function masaustuOzeti() {
+  const h = require("node:crypto").createHash("sha1");
+  for (const f of fs.readdirSync(__dirname).filter((n) => n.endsWith(".cjs")).sort()) {
+    h.update(f);
+    h.update(fs.readFileSync(path.join(__dirname, f)));
+  }
+  return h.digest("hex");
+}
+
 function relaunchWithUpdate() {
   app.relaunch({ args: [path.join(__dirname, "main.cjs"), "--guncelle"] });
   app.exit(0);
@@ -290,8 +300,19 @@ async function createWindow(yeniden = false) {
   if (AUTO_UPDATE) {
     try {
       const { prepare } = require("./guncelle.cjs");
+      const onceki = masaustuOzeti();
       const { mode, notes } = await prepare(ROOT, setStatus);
       PROD = mode === "prod";
+      // Güncelleme masaüstü dosyalarını (main/preload/…) değiştirdiyse bu süreç eski kodla çalışıyor:
+      // yeni pencereler yeni preload'u alır ama ana süreçte karşılığı olmaz (ör. Şarkı Kütüphanesi düğmesi yanıt vermez).
+      // Güncellemeyi tekrarlamadan, derlenmiş sürümle yeniden başlat.
+      if (masaustuOzeti() !== onceki) {
+        setStatus("Yeni sürüm hazır, yeniden başlatılıyor…");
+        await new Promise((r) => setTimeout(r, 800));
+        app.relaunch({ args: [path.join(__dirname, "main.cjs"), ...(PROD ? ["--prod"] : [])] });
+        app.exit(0);
+        return;
+      }
       if (notes.length) {
         setStatus(notes.join(" "));
         await new Promise((r) => setTimeout(r, 2500));
