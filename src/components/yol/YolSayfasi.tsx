@@ -5,8 +5,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import type { Yol, YolBolum } from "@/lib/alistirma/tipler";
 import { useProgress } from "@/lib/progress";
-import { MODUL_METIN } from "@/content/yol-modulleri";
-import CagedTablosu from "./CagedTablosu";
+import ModulDersi from "../teori/ModulDersi";
 import { SayfaBasi } from "../site/Vitrin";
 import UygulamaSimgesi from "../site/UygulamaSimgesi";
 import { yerSimgesi, yolSimgesi } from "@/lib/simge";
@@ -26,7 +25,6 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
   const ekAdimlar = adimlariOf(ekBolumler);
   const gecilen = anaAdimlar.filter((a) => sonuc(a.kod)?.passed).length;
   const ekGecilen = ekAdimlar.filter((a) => sonuc(a.kod)?.passed).length;
-  const metin = MODUL_METIN[yol.slug]?.[yol.modul.sekmeler[sekme]] ?? [];
 
   const bolumGoster = (b: YolBolum) => {
     const adimlar = yol.adimlar.filter((a) => a.bolum === b.no);
@@ -116,12 +114,7 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
               </button>
             ))}
           </div>
-          <div className="max-w-3xl space-y-2 leading-relaxed">
-            {metin.map((p) => (
-              <p key={p}>{p}</p>
-            ))}
-          </div>
-          {yol.slug === "klavye" && yol.modul.sekmeler[sekme] === "CAGED Sistemi" ? <CagedTablosu /> : null}
+          <ModulDersi yol={yol.slug} yolAdi={yol.ad} sekme={yol.modul.sekmeler[sekme]} />
         </section>
       ) : null}
 

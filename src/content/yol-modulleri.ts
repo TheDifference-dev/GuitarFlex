@@ -1,120 +1,17 @@
-// Teori yollarının "Temeller" modülündeki sekmelerin anlatımları (sekme adına göre).
+// Teori yollarının "Temeller" modülündeki sekmeler (sekme adına göre). Her sekme tek A4 sayfalık bir ders:
+// içerik src/content/teori/moduller.ts'te. MODUL_METIN, dersin tanım paragraflarını düz metin olarak verir.
+import { MODUL_DERS } from "./teori/moduller.ts";
 
-export const MODUL_METIN: Record<string, Record<string, string[]>> = {
-  ritim: {
-    "Vuruş ve Tempo": [
-      "Vuruş (beat), müziğin içinde ayağınla tuttuğun sabit nabızdır. Tempo bu nabzın hızıdır ve dakikadaki vuruş sayısıyla (BPM) ölçülür: 60 BPM saniyede bir vuruş, 120 BPM saniyede iki vuruştur.",
-      'Ritim çalışmasında önce nabzı sağlamlaştır: metronomu aç, her tıkla birlikte say ("1, 2, 3, 4") ve ayağınla vur. Hızlanmak için tempoyu 4–5 BPM\'lik küçük adımlarla artır.',
-    ],
-    "Nota Süreleri": [
-      '4/4\'te bir dörtlük nota bir vuruş sürer. İkilik iki, birlik dört vuruştur. Bir dörtlüğü ikiye bölersen iki sekizlik ("1 ve"), dörde bölersen dört onaltılık ("1 e ve a") elde edersin.',
-      'Noktalı nota kendi süresinin yarısı kadar uzar: noktalı sekizlik = sekizlik + onaltılık = üç onaltılık. Noktalı sekizlik + onaltılık, bir vuruşu "uzun–kısa" olarak böler.',
-      'Üçleme (triole), bir vuruşu ikiye değil üçe eşit böler: "1 – ve – a" yerine "1 – trip – let". Üçlemenin üstünde ya da altında "3" yazar.',
-      "Her nota süresinin bir de sus (es) karşılığı vardır; sus da sayılır, sadece çalınmaz.",
-    ],
-    "Ölçü ve Tartım": [
-      "Ölçü işaretinin üstteki sayısı bir ölçüdeki vuruş sayısını, alttaki sayısı vuruşu hangi nota değerinin aldığını gösterir. 4/4'te ölçüde dört dörtlük, 3/4'te üç dörtlük vardır.",
-      'Ölçü çizgileri sayımı düzenler: her ölçünün ilk vuruşu ("1") genellikle en güçlü vuruştur. Çalarken kaybolursan bir sonraki "1"e yetiş.',
-    ],
-    "Vurgular ve Senkop": [
-      "4/4'te 1. ve 3. vuruşlar güçlü, 2. ve 4. vuruşlar zayıf sayılır; rock ve pop'ta trampet 2 ve 4'e vurur (backbeat).",
-      'Senkop, vurgunun beklenmeyen bir yere, çoğunlukla vuruşun arasına ("ve") kaymasıdır. Sekizlik – dörtlük – sekizlik kalıbında dörtlük nota 1\'in "ve"sinde başlar ve 2. vuruşun üstünden uzar; 2. vuruşta yeni atak yoktur.',
-      'Offbeat (vuruş arası) notaları çalarken sayımı yüksek sesle söyle: "1 VE 2 VE". El aşağı-yukarı hareketini durdurma; sadece çalmayacağın yerlerde teli vurma.',
-    ],
-    "Tab Üzerinde Süreler": [
-      "Tablatür hangi tel ve perdeye basılacağını gösterir; süreleri ise tabın altındaki ya da üstündeki ritim işaretleri (saplar, kirişler, bayraklar) verir.",
-      "Kirişler aynı vuruş içindeki notaları birbirine bağlar: tek kiriş sekizlik, çift kiriş onaltılık demektir. Sapı olmayan rakam çoğunlukla uzun bir notadır (ikilik ya da birlik).",
-      "Uygulamadaki tab oynatıcısında ritim satırı tabın üstünde gösterilir; yavaş tempoda dinleyip sayarak okumayı alıştır.",
-    ],
-  },
-  klavye: {
-    "Klavye Anatomisi": [
-      "Standart akortta teller inceden kalına 1'den 6'ya numaralanır: 1 ince Mi (E), 2 Si (B), 3 Sol (G), 4 Re (D), 5 La (A), 6 kalın Mi (E).",
-      "Her perde bir yarım ses yükseltir. 12. perdede notalar bir oktav yukarıda tekrarlanır; 3, 5, 7, 9, 12, 15 ve 17. perdelerdeki işaretler yön bulmana yardım eder.",
-    ],
-    "Tab Okuma": [
-      "Tab altı çizgiden oluşur. En üstteki çizgi 1. tel (ince Mi), en alttaki 6. tel (kalın Mi)'dir. Çizgideki rakam o telde basılacak perdedir; 0 açık tel demektir.",
-      "Alt alta yazılmış rakamlar aynı anda (akor), yan yana yazılanlar sırayla çalınır. h (hammer-on), p (pull-off), / \\ (slide), b (bend) gibi harfler tekniği gösterir.",
-    ],
-    "Akor Diyagramları": [
-      "Akor diyagramı sapı dik olarak gösterir: dikey çizgiler teller (solda kalın Mi), yatay çizgiler perdelerdir. Üstteki kalın çizgi eşiktir.",
-      "Noktalar basılacak yerleri, üstteki ○ açık teli, ✕ çalınmayacak teli gösterir. Diyagram eşikten başlamıyorsa yanında başlangıç perdesi yazar; boydan boya çizgi barre demektir.",
-    ],
-    "Notalar ve Oktavlar": [
-      "Doğal notalar Do Re Mi Fa Sol La Si'dir (C D E F G A B). Mi–Fa ve Si–Do arasında yarım ses, diğer komşu doğal notalar arasında tam ses (iki perde) vardır.",
-      "Diyez (#) notayı yarım ses yükseltir, bemol (♭) yarım ses alçaltır; Fa# ile Sol♭ aynı perdedir (enarmonik).",
-      "Oktav şekilleri: 6. ya da 5. teldeki notanın oktavı iki tel yukarıda, iki perde ileridedir. 4. ya da 3. telden ise Si teli yüzünden üç perde ileridedir. Aynı telde oktav 12 perde yukarıdadır.",
-    ],
-    "CAGED Sistemi": [
-      "CAGED, majör akorun beş açık akor şeklinin (C, A, G, E, D) sap boyunca kaydırılarak her tonda çalınmasıdır. Beş şekil birbirine bağlanır ve sapı kaplar.",
-      "Her formun kök notaları sabit tellerdedir: C formu 5. ve 2. tel, A formu 5. ve 3. tel, G formu 6., 3. ve 1. tel, E formu 6., 4. ve 1. tel, D formu 4. ve 2. tel.",
-      "Bir açık şekli tam ses (2 perde) yukarı taşıdığında açık teller boş kalamaz: işaret parmağı onların yerine geçer (barre ya da tek parmak) ve diğer parmaklar birer numara kayar. Böylece C şekli D, A şekli B, G şekli A, E şekli G, D şekli E akorunu verir.",
-      "Aynı kural minör şekillerde de geçerlidir: Cm şekli Dm, Am şekli Bm, Gm şekli Am, Em şekli Gm, Dm şekli Em olur. Şekli kaç perde kaydırırsan akor o kadar yarım ses yükselir; aşağıdaki diyagramlarda her şeklin açık ve taşınmış hâlini parmak numaralarıyla çalış.",
-    ],
-    "Pentatonik Şekiller": [
-      "Minör pentatonik beş notadır: 1, ♭3, 4, 5, ♭7 (La minörde La Do Re Mi Sol). Sap üzerinde her telde iki nota olacak şekilde beş kutu (şekil) oluşturur.",
-      "1. şekil 6. teldeki kökten başlar. Şekiller hareketlidir: kökü başka bir perdeye kaydırırsan aynı şekil yeni tonda çalar. Majör pentatonik, göreceli minörüyle aynı şekilleri kullanır (Do majör = La minör).",
-    ],
-    Aralıklar: [
-      "Aralık iki nota arasındaki uzaklıktır ve yarım ses sayısıyla ölçülür: küçük 2'li 1, büyük 2'li 2, küçük 3'lü 3, büyük 3'lü 4, tam 4'lü 5, tritone 6, tam 5'li 7, küçük 6'lı 8, büyük 6'lı 9, küçük 7'li 10, büyük 7'li 11, oktav 12 yarım ses.",
-      "Sapta aralıklar şekil olarak tekrarlanır: aynı telde 7 perde yukarısı ya da bir ince telde 2 perde ilerisi tam 5'lidir (Si teline geçerken bir perde kayar).",
-    ],
-    "Klavye Keşfi": [
-      "Sapı ezberlemenin en hızlı yolu her gün kısa turlar atmaktır: bir nota seç ve onu 6 telin hepsinde bul; sonra oktav şekilleriyle kontrol et.",
-      "Notaları söyleyerek çal, gam derecelerini (1, 3, 5) akor şekillerinin içinde gör. Bu yoldaki adımlar tam bu alışkanlığı kurar.",
-    ],
-  },
-  kulak: {
-    "Kulak Eğitimi Nedir?": [
-      "Kulak eğitimi, duyduğun sesleri tanıyıp adlandırma becerisidir: iki ses arasındaki aralık, bir akorun türü, bir şarkının akor yürüyüşü.",
-      "Gitarcı için en büyük kazanç, duyduğunu sapta hızlıca bulabilmektir. Her gün 10 dakikalık kısa çalışmalar uzun ve seyrek çalışmalardan daha etkilidir.",
-    ],
-    "Tiz/Pes ve Oktav": [
-      "Tiz ses ince (yüksek frekanslı), pes ses kalın (düşük frekanslı) sestir. Gitarda perdeler ilerledikçe ve ince tellere geçtikçe ses tizleşir.",
-      "Oktav, frekansın iki katına çıkmasıdır; iki ses aynı nota adını taşır ve birbirine çok benzer duyulur.",
-    ],
-    Aralıklar: [
-      "Aralıkları tanımak için bildiğin şarkıların ilk iki notasından yararlan; ama en sağlam yöntem aralığın karakterini öğrenmektir: küçük 2'li gergin, tam 5'li boş ve güçlü, büyük 3'lü parlak, küçük 3'lü hüzünlü duyulur.",
-    ],
-    "Akor Türleri": [
-      "Majör akor (1–3–5) parlak, minör akor (1–♭3–5) hüzünlü, eksik (dim, 1–♭3–♭5) gergin ve sıkışık, artık (aug, 1–3–♯5) askıda ve gizemli duyulur.",
-      "Sus akorlarında 3'lü yoktur: sus2 (1–2–5) açık, sus4 (1–4–5) çözülmek isteyen bir ses verir. Dört sesli akorlar bu üçlülere 7'li ya da 6'lı ekler.",
-    ],
-    "Gam Aileleri": [
-      "Majör gam (Ionian) parlak, doğal minör (Aeolian) hüzünlüdür. Modlar majör gamın farklı derecelerinden başlar ve her birinin ayırt edici notası vardır: Dorian'da büyük 6'lı, Phrygian'da küçük 2'li, Lydian'da artık 4'lü, Mixolydian'da küçük 7'li.",
-      "Pentatonik gamlar beş notalıdır; blues gamı minör pentatoniğe ♭5 (blue note) ekler.",
-    ],
-    "Akor İlerlemeleri": [
-      "Akor yürüyüşleri Roma rakamlarıyla yazılır: büyük harf majör (I, IV, V), küçük harf minör (ii, iii, vi) akordur. Do majörde I = Do, IV = Fa, V = Sol, vi = La minör.",
-      "Bası (en kalın notayı) takip et: I'e dönüş \"eve varma\" hissi verir, V gerilim yaratır ve I'e çözülmek ister.",
-    ],
-    "Alıştırma Tipleri": [
-      "Cevaplamadan önce sesi içinden tekrar söyle. Emin değilsen tekrar dinle; tahmin etme alışkanlığı kulağını geliştirmez.",
-      "Yanlış yaptığın soruların açıklamasını oku ve o sesi gitarında çal. Duyduğunu sapta bulmak, kulak ve klavye bilgisini birlikte geliştirir.",
-    ],
-  },
-  okuma: {
-    "Porte ve Sol Anahtarı": [
-      "Porte beş çizgi ve dört aralıktan oluşur; notalar çizgilerin ya da aralıkların üstüne yazılır ve yukarı çıktıkça tizleşir. Sol anahtarı ikinci çizgiyi Sol yapar: alttan çizgiler Mi – Sol – Si – Re – Fa, aralıklar Fa – La – Do – Mi.",
-      "Portenin altına ya da üstüne taşan notalar kısa ek çizgilere yazılır. Diyez (#) notayı yarım ses yükseltir, bemol (♭) yarım ses alçaltır, natürel (♮) işareti arızayı kaldırır. Bir arıza, ölçünün sonuna kadar aynı yerdeki bütün notalara geçerlidir.",
-      "Anahtarın yanındaki donanım, parça boyunca hangi notaların diyezli ya da bemollü çalınacağını söyler: tek diyez (Fa#) Sol majör, iki diyez (Fa#, Do#) Re majör, tek bemol (Si♭) Fa majör, iki bemol (Si♭, Mi♭) Si♭ majördür.",
-    ],
-    "Gitarda Porte": [
-      "Gitar notası, sol anahtarının altındaki küçük 8 rakamının söylediği gibi yazıldığından bir oktav pes duyulur. Portenin alt çizgisindeki Mi, 4. telin 2. perdesidir; boş kalın Mi teli portenin altında üç ek çizginin de altına yazılır.",
-      "Açık pozisyonda (boş teller ve 1.–4. perdeler) her nota çoğunlukla tek yerde bulunur; Si notası hem boş 2. tel hem 3. telin 4. perdesidir. 5. pozisyon 5.–8. perdeleri, 7. pozisyon 7.–10. perdeleri kapsar: sol el bu dört perdede kalır, her parmak bir perdeye bakar.",
-      "Okurken önce donanıma bak, sonra notanın çizgi mi aralık mı olduğunu bul ve bildiğin bir referans notadan (Sol çizgisi, orta Si, ek çizgideki Do) sayarak ilerle.",
-    ],
-    "Ritim Sayımı": [
-      'Her vuruşu sayıyla say: "1 2 3 4". Sekizlikler vuruşu ikiye böler: "1 ve 2 ve". Onaltılıklar dörde böler: "1 e ve a". Notanın başladığı heceyi söyle, susta yalnız say.',
-      "Noktalı sekizlik + onaltılık vuruşu uzun–kısa böler (1 … a); onaltılık + noktalı sekizlik kısa–uzun böler (1 e …). Senkopta vurgu vuruş arasına (ve) kayar: sekizlik – dörtlük – sekizlik kalıbında 2. vuruşta yeni nota yoktur.",
-    ],
-    "Akor Şeması": [
-      "Akor şeması (chart) yalnız akorları ve süreleri gösterir. Her eğik çizgi (/) bir vuruştur; akor adı başladığı vuruşun üstüne yazılır ve yeni bir akor gelene kadar sürer.",
-      "Slash akor, bastaki notayı söyler: C/E, basta Mi olan Do akorudur; Am/G basta Sol olan La minördür. Slash akorlar çoğunlukla adım adım inen ya da çıkan bas yürüyüşleri kurar.",
-    ],
-    "Tekrar ve Yönlendirme": [
-      "|: ve :| arasındaki ölçüler iki kez çalınır. 1. son (volta 1) ilk geçişte çalınır; tekrarda atlanır ve 2. sonla devam edilir.",
-      "D.S. al Fine: segno işaretine (𝄋) dön, Fine yazan ölçüde bitir. D.S. al Coda: segno'ya dön, To Coda yazan ölçüden sonra Coda bölümüne (𝄌) atla. D.S. dönüşünde tekrar işaretleri yeniden alınmaz.",
-    ],
-  },
-};
+/** Sekme adı değişen eski içerik paketleri için: eski ad → yeni ad */
+const ESKI_AD: Record<string, Record<string, string>> = { kulak: { "Alıştırma Tüyoları": "Alıştırma Tipleri" } };
+
+/** Sekmenin dersi (eski sekme adlarını da tanır) */
+export function modulDersi(yol: string, sekme: string) {
+  return MODUL_DERS[yol]?.[sekme] ?? MODUL_DERS[yol]?.[ESKI_AD[yol]?.[sekme] ?? ""];
+}
+
+export { MODUL_DERS };
+
+export const MODUL_METIN: Record<string, Record<string, string[]>> = Object.fromEntries(
+  Object.entries(MODUL_DERS).map(([yol, sekmeler]) => [yol, Object.fromEntries(Object.entries(sekmeler).map(([ad, d]) => [ad, d.tanim.map((p) => p.replace(/\*\*/g, ""))]))]),
+);
