@@ -73,6 +73,7 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
+- **Teori yollarında kilit kalktı**: Ritim, Klavye, Kulak, Armoni ve Okuma yollarındaki bütün adımlar her zaman açık; sıra yalnız öneri. GuitarBear'den gelen derslerin ilk kısımlarındaki birkaç açık hata (başka tele geçen bağ, sol ele çok yakın tap, tap'e bağla varan hammer-on) düzeltildi
 - **Songsterr'de ara**: Şarkı Kütüphanesi'nde ve Popüler Şarkılar'da aradığın şarkı burada yoksa, aramanın altında "Songsterr'de ara" çıkıyor ve Songsterr'in bütün tab kataloğunu tarayıcıda açıyor; eşleşen popüler şarkılar da bağlantı olarak listeleniyor. Popüler Şarkılar'a Songsterr'de en çok açılan 28 şarkı daha eklendi (tablar Songsterr'de açılır). Koyu modda açılır listelerdeki grup başlıkları (Gamlar, Akorlar) artık okunuyor
 - **Masaüstü simgesi her yerde yeni çizim**: güncelleme simgeyi değiştirince pencere simgesi ve açılış ekranı hemen yenileniyor; Windows'taki masaüstü ve Başlat menüsü kısayolları da simge önbelleğine takılmadan yeni çizime geçiyor
 - **Songsterr benzeri kompakt tab ekranı**: bütün kontroller tek ince çubukta: Çal, başa dön, konum, ölçü, hız, döngü, metronom, sayım, kısım (Tümü/A/A′/B/C), ana ses, mikser ve ayarlar. Çubuk sayfa kayınca üstte kalıyor. Seyrek ayarlar (akort, görünüm, metronom ve sayım ses seviyeleri, kademeli hız, sap paneli) açılır panellerde. Tab kendi kutusunda değil, sayfa boyunca aşağı uzuyor; çalarken sayfa çalınan satırı takip ediyor. Ders başlığı ve sayaç küçüldü, sap paneli altta kapatılabilir ince şerit
