@@ -190,6 +190,7 @@ const YER = {
   akort: s("gosterge", "gri"),
   caged: s("akor", "lacivert"),
   profil: s("kisi", "gri"),
+  defter: s("kalem", "sari"),
   marka: s("sekiller", "indigo"),
   "muzik-bilgisi": s("nota", "indigo"),
   ipucu: s("ampul", "sari"),

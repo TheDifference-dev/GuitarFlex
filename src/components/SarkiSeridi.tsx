@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import SongsterrBag from "@/components/SongsterrBag";
+import { defterIsle, kayitAc, songsterrKaydi } from "@/lib/defter";
 import type { SimgeTanim } from "@/lib/simge";
 
 export type SeritSarki = { title: string; artist: string; kind: string; madalya: string; bpm?: number; url: string; simge: SimgeTanim; adim?: number };
@@ -86,7 +87,7 @@ export default function SarkiSeridi({ baslik, alt, sarkilar }: { baslik: string;
       >
         {sarkilar.map((s) => (
           <li key={`${s.artist}|${s.title}`} className="w-[248px] shrink-0 snap-start">
-            <SongsterrBag q={s.url} data-renk={s.simge.renk} className="yukselen card group flex h-full flex-col overflow-hidden !p-0">
+            <SongsterrBag q={s.url} onAc={() => defterIsle((v) => kayitAc(v, songsterrKaydi(s.title, s.artist, s.url)))} data-renk={s.simge.renk} className="yukselen card group flex h-full flex-col overflow-hidden !p-0">
               <span className="relative flex h-[132px] items-center justify-center" style={{ background: "linear-gradient(135deg, var(--r1), var(--r2))" }}>
                 <span className="absolute left-3 top-3 rounded-full bg-black/30 px-2.5 py-0.5 text-xs font-semibold text-white">{s.madalya}</span>
                 <span className="absolute right-3 top-3 rounded-full bg-black/30 px-2.5 py-0.5 text-xs font-semibold text-white">

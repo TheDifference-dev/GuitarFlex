@@ -55,6 +55,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         title={lesson.title}
         parts={lesson.parts}
         guitarProgram={gitarProgrami(lesson.tips, course.slug)}
+        defter={{ kurs: course.cardTitle ?? course.title, href: `/calis/${course.slug}/${encodeURIComponent(lesson.id)}` }}
         baslik={
           // Kompakt başlık: küçük simge, kurs adı, ders adı ve kısa açıklama; tab ekranın üstüne yakın başlar
           <header className="flex min-w-0 items-start gap-3.5">

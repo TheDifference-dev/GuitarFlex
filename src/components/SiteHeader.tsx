@@ -147,6 +147,30 @@ const MENULER: Menu[] = [
     ],
   },
   {
+    id: "defter",
+    label: "Çalışma Defteri",
+    href: "/defter",
+    active: (p) => p.startsWith("/defter"),
+    buyuk: [{ href: "/defter", label: "Çalışma Defteri", simge: yerSimgesi("defter") }],
+    sutunlar: [
+      {
+        baslik: "Defter",
+        items: [
+          { href: "/defter#devam", label: "Devam edenler" },
+          { href: "/defter#ogrendim", label: "Öğrendiklerim" },
+          { href: "/defter#gitarlar", label: "Gitarlarım" },
+        ],
+      },
+      {
+        baslik: "Plan",
+        items: [
+          { href: "/defter#takvim", label: "Çalışma takvimi" },
+          { href: "/defter#plan", label: "Haftalık plan ve hedef" },
+        ],
+      },
+    ],
+  },
+  {
     id: "araclar",
     label: "Araçlar",
     href: "/araclar",

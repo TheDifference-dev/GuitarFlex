@@ -4,9 +4,12 @@ import { useState } from "react";
 import { ExternalLink, Search, X } from "lucide-react";
 import { sarkiKutuphanesiAc, songsterrAdresi } from "@/lib/songsterr";
 import SongsterrBag from "./SongsterrBag";
+import { songsterrAramasiAcildi } from "@/lib/defter";
 
 /** Songsterr'de aramayı uygulama içi pencerede (masaüstü) ya da yeni sekmede (web) açar */
 function ara(q: string) {
+  // Çalışma Defteri: aranan şarkı "açıldı" olarak düşer (süresi defterde elle girilir)
+  songsterrAramasiAcildi(q);
   if (!sarkiKutuphanesiAc(q)) window.open(songsterrAdresi(q), "_blank", "noopener,noreferrer");
 }
 
@@ -57,7 +60,7 @@ export default function SarkiKutuphanesiArama({ ornekler = [] }: { ornekler?: st
         <p className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
           Örnek:
           {ornekler.map((o) => (
-            <SongsterrBag key={o} q={o} className="rounded-full border border-ink/10 bg-ink/[0.04] px-3 py-1 font-semibold text-text transition hover:border-ink/25">
+            <SongsterrBag key={o} q={o} onAc={() => songsterrAramasiAcildi(o)} className="rounded-full border border-ink/10 bg-ink/[0.04] px-3 py-1 font-semibold text-text transition hover:border-ink/25">
               {o}
             </SongsterrBag>
           ))}

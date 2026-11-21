@@ -10,12 +10,18 @@ import { calindi, ozgunKimlik } from "@/lib/kutuphane-yerel";
 import EnstrumanSimgesi from "@/components/oynatici/EnstrumanSimgesi";
 import { izEnstrumani, ROL_ADI } from "./ortak";
 import FavoriDugmesi from "./FavoriDugmesi";
+import DefterSeridi from "@/components/defter/DefterSeridi";
+import { useDefterBagi } from "@/components/defter/kanca";
+import { kutuphaneKaydi } from "@/lib/defter";
 
 /** Şarkı sayfası: çok track'li tab oynatıcı, kısım listesi, akorlar, çalışma ipuçları ve track bilgisi */
 export default function LibrarySongView({ song }: { song: LibrarySong }) {
   const source = useMemo<TabSource>(() => ({ kind: "tex", tex: song.tex }), [song.tex]);
   // Çalarken geçen süre "Serbest Çalışma" görevine yazılır (5 sn'de bir; Doğaçlama sayfasındaki gibi)
   const [caliyor, setCaliyor] = useState(false);
+  // Çalışma Defteri: aynı saniyeler (çalarken) deftere de yazılır; kısım tabdaki kısımlardan
+  const bilgi = useMemo(() => kutuphaneKaydi(song.slug, song.title, `Şarkı Kütüphanesi · ${song.genre}`), [song.slug, song.title, song.genre]);
+  const { onDurum, canliKisim, devam, devamEt, yaz } = useDefterBagi(bilgi, song.parts);
   useEffect(() => {
     if (!caliyor) return;
     calindi(ozgunKimlik(song.slug));
@@ -24,21 +30,24 @@ export default function LibrarySongView({ song }: { song: LibrarySong }) {
     const id = window.setInterval(() => {
       if (++bekleyen >= 5) {
         addPracticeTime(key, bekleyen, song.bpm, Number.MAX_SAFE_INTEGER);
+        yaz(bekleyen);
         bekleyen = 0;
       }
     }, 1000);
     return () => {
       window.clearInterval(id);
       if (bekleyen) addPracticeTime(key, bekleyen, song.bpm, Number.MAX_SAFE_INTEGER);
+      yaz(bekleyen);
     };
-  }, [caliyor, song.slug, song.bpm]);
+  }, [caliyor, song.slug, song.bpm, yaz]);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
         <FavoriDugmesi id={ozgunKimlik(song.slug)} />
       </div>
-      <TabPlayer source={source} onPlayingChange={setCaliyor} mikserKaydi={ozgunKimlik(song.slug)} />
+      <DefterSeridi bilgi={bilgi} canliKisim={canliKisim} onDevam={devamEt} />
+      <TabPlayer source={source} onPlayingChange={setCaliyor} mikserKaydi={ozgunKimlik(song.slug)} onDurum={onDurum} devam={devam} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section className="card p-5">

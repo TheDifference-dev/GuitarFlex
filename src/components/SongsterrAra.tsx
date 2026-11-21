@@ -3,6 +3,7 @@
 import { ExternalLink } from "lucide-react";
 import { songUrl, type PopularSong } from "@/content/sarkilar";
 import { songsterrAdresi } from "@/lib/songsterr";
+import { defterIsle, kayitAc, populerKaydi, songsterrAramasiAcildi } from "@/lib/defter";
 import SongsterrBag from "./SongsterrBag";
 
 /** Songsterr'de arama adresi. Tablar uygulamada tutulmaz; arama Songsterr'in kendi sayfasında açılır. */
@@ -35,6 +36,7 @@ export default function SongsterrAra({
             <li key={`${s.artist}-${s.title}`}>
               <SongsterrBag
                 q={songUrl(s)}
+                onAc={() => defterIsle((v) => kayitAc(v, populerKaydi(s)))}
                 className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-[var(--panel-on-band)] px-4 py-2.5 text-sm transition-colors hover:border-[var(--accent)]"
               >
                 <span className="min-w-0 flex-1">
@@ -57,6 +59,8 @@ export default function SongsterrAra({
       )}
       <SongsterrBag
         q={q}
+        // Uygulama dışında çalınır: deftere "açıldı" olarak düşer, süresi defterde elle girilir
+        onAc={() => songsterrAramasiAcildi(q)}
         data-songsterr-ara
         className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-[var(--panel-on-band)] px-4 py-3 text-sm transition-colors hover:border-[var(--accent)]"
       >

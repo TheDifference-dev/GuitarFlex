@@ -13,6 +13,9 @@ import { noteName } from "@/lib/music";
 import { addPracticeTime } from "@/lib/progress";
 import { SERBEST } from "@/lib/oyun";
 import FavoriDugmesi from "./FavoriDugmesi";
+import DefterSeridi from "@/components/defter/DefterSeridi";
+import { useDefterBagi } from "@/components/defter/kanca";
+import { dosyaKaydi } from "@/lib/defter";
 import { Onay } from "./LibraryBrowser";
 import { sure } from "./ortak";
 
@@ -38,6 +41,9 @@ export default function DosyaSarkiView({ id }: { id: string }) {
   const kayit = typeof durum === "object" && durum ? durum.kayit : null;
   const source = useMemo<TabSource | null>(() => (typeof durum === "object" && durum ? { kind: "file", data: durum.veri, name: durum.kayit.dosyaAdi } : null), [durum]);
   const kimlik = dosyaKimlik(id);
+  // Çalışma Defteri: aynı saniyeler (çalarken) deftere de yazılır
+  const bilgi = useMemo(() => (kayit ? dosyaKaydi(id, kayit.meta.baslik || kayit.dosyaAdi, kayit.meta.sanatci || "Benim dosyam") : null), [id, kayit]);
+  const { onDurum, canliKisim, devam, devamEt, yaz } = useDefterBagi(bilgi);
 
   // Çalma: "Son çalınanlar" ve Serbest Çalışma süresi
   useEffect(() => {
@@ -48,14 +54,16 @@ export default function DosyaSarkiView({ id }: { id: string }) {
     const t = window.setInterval(() => {
       if (++bekleyen >= 5) {
         addPracticeTime(key, bekleyen, kayit.meta.tempo, Number.MAX_SAFE_INTEGER);
+        yaz(bekleyen);
         bekleyen = 0;
       }
     }, 1000);
     return () => {
       window.clearInterval(t);
       if (bekleyen) addPracticeTime(key, bekleyen, kayit.meta.tempo, Number.MAX_SAFE_INTEGER);
+      yaz(bekleyen);
     };
-  }, [caliyor, kayit, kimlik]);
+  }, [caliyor, kayit, kimlik, yaz]);
 
   const kirinti = [{ href: "/kutuphane", label: "Tab Oynatıcı" }, { label: kayit?.meta.baslik || "Benim dosyam" }];
   if (durum === null) return <SayfaBasi kirinti={kirinti} baslik="Yükleniyor…" boyut="buyuk" />;
@@ -96,7 +104,8 @@ export default function DosyaSarkiView({ id }: { id: string }) {
           <Trash2 size={15} /> Kütüphaneden sil
         </button>
       </div>
-      <TabPlayer source={source} onPlayingChange={setCaliyor} mikserKaydi={kimlik} />
+      {bilgi && <DefterSeridi bilgi={bilgi} canliKisim={canliKisim} onDevam={devamEt} />}
+      <TabPlayer source={source} onPlayingChange={setCaliyor} mikserKaydi={kimlik} onDurum={onDurum} devam={devam} />
 
       <section className="card p-5">
         <h2 className="flex items-center gap-2 text-lg font-semibold">

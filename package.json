@@ -18,7 +18,8 @@
     "desktop:prod": "npm run build && electron desktop/main.cjs --prod",
     "kisayol": "node desktop/kisayol-olustur.cjs",
     "test:oynatici": "node --no-warnings --experimental-strip-types scripts/oynatici-testi.mjs",
-    "test:yol-goc": "node --no-warnings --experimental-strip-types scripts/yol-goc-testi.ts"
+    "test:yol-goc": "node --no-warnings --experimental-strip-types scripts/yol-goc-testi.ts",
+    "test:defter": "node --no-warnings --experimental-strip-types scripts/defter-testi.ts"
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",

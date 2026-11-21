@@ -9,6 +9,8 @@ import { ExternalLink, Search } from "lucide-react";
 import { MADALYALAR, songUrl, type Madalya, type PopularSong } from "@/content/sarkilar";
 import { useProgress } from "@/lib/progress";
 import { kursSimgesi } from "@/lib/simge";
+import { defterIsle, kayitAc, populerKaydi } from "@/lib/defter";
+import SarkiDefterKutusu from "@/components/defter/SarkiDefterKutusu";
 
 type Props = { songs: PopularSong[]; courseTitles: Record<string, string>; rehber?: boolean };
 type Siralama = "sik" | "kolay" | "zor" | "yeni" | "isim";
@@ -48,6 +50,11 @@ function acilislar(): Record<string, number> {
   return acilisOnbellek.data;
 }
 const BOS: Record<string, number> = {};
+/** Songsterr'de açıldı: "Sık çalışılan" sayımı ve Çalışma Defteri'ne "açıldı" kaydı */
+function songsterrAcildi(s: PopularSong) {
+  acildi(anahtar(s));
+  defterIsle((v) => kayitAc(v, populerKaydi(s)));
+}
 function acildi(k: string) {
   const d = { ...acilislar(), [k]: (acilislar()[k] ?? 0) + 1 };
   try {
@@ -153,8 +160,11 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
               ))}
         </p>
       )}
+      <div className="mt-3 border-t border-line/60 pt-3">
+        <SarkiDefterKutusu bilgi={populerKaydi(s)} />
+      </div>
       <div className="flex-1" />
-      <SongsterrBag q={songUrl(s)} onAc={() => acildi(anahtar(s))} className="btn-primary mt-4 self-stretch px-4 py-2 text-sm">
+      <SongsterrBag q={songUrl(s)} onAc={() => songsterrAcildi(s)} className="btn-primary mt-4 self-stretch px-4 py-2 text-sm">
         Songsterr&apos;de Aç <ExternalLink size={15} />
       </SongsterrBag>
     </article>
@@ -189,7 +199,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
               </h3>
               <ol className="relative space-y-3 before:absolute before:bottom-6 before:left-[27px] before:top-6 before:w-0.5 before:rounded-full before:bg-ink/10">
                 {bolum.sarkilar.map((s) => (
-                  <RehberAdimi key={anahtar(s)} s={s} puan={puan} courseTitles={courseTitles} onAc={() => acildi(anahtar(s))} />
+                  <RehberAdimi key={anahtar(s)} s={s} puan={puan} courseTitles={courseTitles} onAc={() => songsterrAcildi(s)} />
                 ))}
               </ol>
             </section>
@@ -323,6 +333,9 @@ function RehberAdimi({ s, puan, courseTitles, onAc }: { s: PopularSong; puan: nu
               </li>
             ))}
           </ul>
+        </div>
+        <div className="w-full border-t border-line/60 pt-3">
+          <SarkiDefterKutusu bilgi={populerKaydi(s)} sureli={false} />
         </div>
         <SongsterrBag q={songUrl(s)} onAc={onAc} className={`${onerilen ? "btn-secondary" : "btn-primary"} shrink-0 px-5 py-2 text-[15px]`}>
           Songsterr&apos;de aç <ExternalLink size={15} aria-hidden />

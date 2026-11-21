@@ -1,0 +1,92 @@
+/* Çalışma Defteri durum düğmeleri: sarı "Devam ediyorum", yeşil "Öğrendim".
+   Renkler: sarı #FFD60A (simge açıkta #8A6A00), yeşil #30D158 (simge açıkta #248A3D).
+   Kontrast (WCAG AA): basılıyken koyu yazı sarıda 11,9:1 (#1D1D1F/#FFD60A), yeşilde 8,3:1 (#04230C/#30D158);
+   basılı değilken yazı --text, simge açıkta #8A6A00 5,1:1 ve #248A3D 4,4:1 (beyaz), koyuda #FFD60A 12:1 ve
+   #30D158 8,4:1 (#1C1C1E). Her iki temada aynı dolgu kullanılır; yalnız basılı olmayan simge rengi temaya göre. */
+
+.dugme {
+  --sari-simge: #8a6a00;
+  --yesil-simge: #248a3d;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.dugme:hover {
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+}
+.dugme:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.dugme:disabled {
+  opacity: 0.4;
+}
+
+.sari .simge {
+  color: var(--sari-simge);
+}
+.yesil .simge {
+  color: var(--yesil-simge);
+}
+.sari[aria-pressed="true"] {
+  background: #ffd60a;
+  border-color: #ffd60a;
+  color: #1d1d1f;
+}
+.sari[aria-pressed="true"]:hover {
+  background: #f5cc00;
+}
+.yesil[aria-pressed="true"] {
+  background: #30d158;
+  border-color: #30d158;
+  color: #04230c;
+}
+.yesil[aria-pressed="true"]:hover {
+  background: #2bc451;
+}
+.dugme[aria-pressed="true"] .simge {
+  color: inherit;
+}
+
+/* Koyu tema: sistem tercihi (html[data-mod="acik"] yoksa) ya da html[data-mod="koyu"] */
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-mod="acik"])) .dugme {
+    --sari-simge: #ffd60a;
+    --yesil-simge: #30d158;
+  }
+}
+:global(:root[data-mod="koyu"]) .dugme {
+  --sari-simge: #ffd60a;
+  --yesil-simge: #30d158;
+}
+
+.normal {
+  height: 2rem;
+  padding: 0 0.875rem;
+  font-size: 0.875rem;
+}
+.kompakt {
+  height: 1.75rem;
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+}
+
+/* Takvim ve listelerde küçük durum işareti */
+.isaretSari {
+  background: #ffd60a;
+  color: #1d1d1f;
+}
+.isaretYesil {
+  background: #30d158;
+  color: #04230c;
+}

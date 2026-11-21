@@ -10,6 +10,7 @@ import { formatDuration, streak, today, totalSeconds, useProgress } from "@/lib/
 import type { Level } from "@/content/types";
 import { kursSimgesi, seviyeSimgesi, yerSimgesi, yolSimgesi, type SimgeRengi } from "@/lib/simge";
 import SongsterrBag from "@/components/SongsterrBag";
+import { defterIsle, kayitAc, songsterrKaydi } from "@/lib/defter";
 import SimgeIzgarasi, { type IzgaraOgesi } from "./SimgeIzgarasi";
 import UygulamaSimgesi from "./UygulamaSimgesi";
 import IlerlemeHalkasi from "./IlerlemeHalkasi";
@@ -243,7 +244,7 @@ export default function AnaSayfa({
           <ol className="mx-auto mt-12 grid max-w-[1024px] grid-cols-4 gap-3 text-left" aria-label="Şarkı Rehberi'nin ilk adımları">
             {rehber.map((s) => (
               <li key={`${s.adim}-${s.title}`}>
-                <SongsterrBag q={s.url} data-renk={s.renk} className="renkli-kart yukselen card flex h-full flex-col p-5">
+                <SongsterrBag q={s.url} onAc={() => defterIsle((v) => kayitAc(v, songsterrKaydi(s.title, s.artist, s.url)))} data-renk={s.renk} className="renkli-kart yukselen card flex h-full flex-col p-5">
                   <span className="flex items-center justify-between">
                     <span className="flex size-9 items-center justify-center rounded-full text-[15px] font-semibold text-white" style={{ background: "var(--r2)" }}>
                       {s.adim}

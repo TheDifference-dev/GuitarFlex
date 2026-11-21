@@ -49,6 +49,21 @@ export type TabSource =
   | { kind: "url"; url: string }
   | { kind: "file"; data: ArrayBuffer; name: string };
 
+/** Oynatıcının o anki çalışma durumu (Çalışma Defteri için; bkz. onDurum) */
+export type OynaticiDurumu = {
+  /** Bulunulan ölçü (0'dan) */
+  olcu: number;
+  /** Hız (%) */
+  hiz: number;
+  bpm: number;
+  /** Döngü aralığı (ölçü, 0'dan, kapsayıcı); seçim yoksa null */
+  aralik: [number, number] | null;
+  /** Seçili ders kısmı (A / A′ / B / C); yoksa null */
+  kisim: string | null;
+};
+/** Dışarıdan "kaldığın yerden devam": `n` her değiştiğinde (oynatıcı hazır olunca) bir kez uygulanır */
+export type DevamKomutu = { n: number; olcu?: number; aralik?: [number, number] | null; hiz?: number | null };
+
 type View = OynaticiAyarlari["gorunum"];
 /** Ders alanı `stave` → oynatıcının ilk görünümü (verilmezse kayıtlı tercih) */
 const STAVE_VIEW: Record<Stave, View> = { score: "score", tab: "tab", both: "score-tab" };
@@ -82,6 +97,10 @@ type Props = {
   guitarProgram?: number;
   /** Verilirse mikser (ana ses, track ses/pan/solo/sessiz) bu anahtarla bu bilgisayarda saklanır (ör. "s:<slug>", "d:<id>") */
   mikserKaydi?: string;
+  /** Ölçü, hız, döngü aralığı ya da kısım değişince (Çalışma Defteri). Oynatıcının işleyişini değiştirmez. */
+  onDurum?: (d: OynaticiDurumu) => void;
+  /** Kaldığın yerden devam: döngüyü/konumu ve hızı verilen ölçüye taşır */
+  devam?: DevamKomutu;
 };
 
 const SPEEDS = [50, 75, 100];
@@ -141,6 +160,8 @@ function Player({
   parts,
   guitarProgram,
   mikserKaydi,
+  onDurum,
+  devam,
   bank,
 }: Props & { bank: OynaticiAyarlari["sesBankasi"] }) {
   const playerId = useId();
@@ -213,7 +234,7 @@ function Player({
   const barClicks = metronome && ayarlar.metronomKipi === "olcu";
 
   // Callback'leri ve ayarları ref'te tut: değişmeleri player'ı yeniden kurmasın.
-  const callbacks = useRef({ onBpmChange, onPlayingChange, onScore, onBar, onFinished });
+  const callbacks = useRef({ onBpmChange, onPlayingChange, onScore, onBar, onFinished, onDurum });
   const display = useRef({ view, zoom, horizontal });
   /** Kurulumda okunur: değişirse oynatıcı yeniden kurulmaz (Quick Study'de sabit) */
   const rangeRef = useRef(barRange);
@@ -234,7 +255,7 @@ function Player({
   const shiftRef = useRef(false);
   const anchorBar = useRef<number | null>(null);
   useEffect(() => {
-    callbacks.current = { onBpmChange, onPlayingChange, onScore, onBar, onFinished };
+    callbacks.current = { onBpmChange, onPlayingChange, onScore, onBar, onFinished, onDurum };
     panelRef.current = panel;
     display.current = { view, zoom, horizontal };
     playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi };
@@ -842,6 +863,31 @@ function Player({
   const activePart = parts?.find((p) => rangeBars && rangeBars[0] === p.bars[0] - 1 && rangeBars[1] === p.bars[1] - 1);
 
   const bpm = Math.round((meta.tempo * speed) / 100);
+
+  // Çalışma Defteri: ölçü, hız, aralık ya da kısım değişince bildir (yalnız okur)
+  const durumA = rangeBars ? rangeBars[0] : -1;
+  const durumB = rangeBars ? rangeBars[1] : -1;
+  const durumKisim = activePart?.name ?? null;
+  useEffect(() => {
+    if (!meta.bars) return;
+    callbacks.current.onDurum?.({ olcu: currentBar, hiz: speed, bpm, aralik: durumA >= 0 ? [durumA, durumB] : null, kisim: durumKisim });
+  }, [meta.bars, currentBar, speed, bpm, durumA, durumB, durumKisim]);
+
+  // Kaldığın yerden devam: oynatıcı hazır olunca bir kez (n değişince yeniden)
+  const devamUygulandi = useRef(0);
+  useEffect(() => {
+    if (!devam || !playerReady || devam.n === devamUygulandi.current) return;
+    // Bir sonraki karede uygulanır (oynatıcı hazır olduğu karede ölçü bilgisi tamamlanmış olsun)
+    const id = requestAnimationFrame(() => {
+      devamUygulandi.current = devam.n;
+      if (devam.hiz) setSpeed(devam.hiz);
+      const ar = devam.aralik;
+      if (ar) selectBars(ar[0], ar[1]);
+      if (devam.olcu !== undefined && (!ar || (devam.olcu > ar[0] && devam.olcu <= ar[1]))) gotoBar(devam.olcu);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [devam, playerReady, selectBars, gotoBar, setSpeed]);
+
   const multiTrack = tracks.length > 1 && mutedTracks === undefined && !audioOnly;
   const showParts = !!parts?.length && !barRange && meta.bars > 0;
   const shownTrack = tracks.find((t) => t.index === shown);
