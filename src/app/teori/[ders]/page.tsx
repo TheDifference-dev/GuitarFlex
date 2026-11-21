@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { SayfaBasi } from "@/components/site/Vitrin";
-import { yerSimgesi } from "@/lib/simge";
+import Kirinti from "@/components/site/Kirinti";
 import { notFound } from "next/navigation";
 import { THEORY, getLesson } from "@/content/theory";
 import FretboardExplorer from "@/components/FretboardExplorer";
@@ -21,17 +20,11 @@ export default async function LessonPage(props: PageProps<"/teori/[ders]">) {
   if (!lesson) notFound();
 
   return (
-    <article className="space-y-6">
-      <SayfaBasi
-        simge={yerSimgesi("teori-dersi")}
-        kirinti={[{ href: "/teori", label: "Müzik Teorisi" }, { label: lesson.baslik }]}
-        ust={`Seviye ${lesson.seviye ?? 1}`}
-        baslik={lesson.baslik}
-        alt={lesson.ozet}
-        boyut="buyuk"
-      />
+    <article className="space-y-4">
+      <Kirinti halkalar={[{ href: "/teori", label: "Müzik Teorisi" }, { label: lesson.baslik }]} className="print:hidden" />
+      <h1 className="sr-only">{lesson.baslik}</h1>
 
-      <div className="mx-auto max-w-[820px]">
+      <div>
         <DersGovdesi ders={lesson} ust={`Müzik Teorisi · Seviye ${lesson.seviye ?? 1}`} />
       </div>
 

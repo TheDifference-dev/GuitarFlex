@@ -39,11 +39,8 @@ export default function Dinle({ ornekler }: { ornekler: DinleOrnek[] }) {
   return (
     <div className="ders-dinle flex flex-wrap gap-2">
       {ornekler.map((o) => (
-        <button key={o.ad} type="button" onClick={() => oynat(o)} className="btn-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-[14px] print:px-0 print:py-0">
-          <Volume2 size={15} aria-hidden className="print:hidden" />
-          <span className="hidden print:inline" aria-hidden>
-            ▸{" "}
-          </span>
+        <button key={o.ad} type="button" onClick={() => oynat(o)} className="inline-flex items-center">
+          <Volume2 size={15} aria-hidden />
           {o.ad}
         </button>
       ))}
