@@ -4,10 +4,10 @@
 // Zincirdeki bir düğüm buraya bırakılırsa zincirden kalkar.
 import { useMemo, useState, type DragEvent } from "react";
 import { Camera, Pencil, Plus, Search, Star, X } from "lucide-react";
-import EkipmanCizimi from "./Cizimler";
+import EkipmanGorseli from "./Gorsel";
 import s from "./Rig.module.css";
 import { VERI_TURU, type Kaynak } from "./Zincir";
-import { CIZIMLER, KATALOG, KATEGORILER, type Ekipman, type Kategori, type RigDepo } from "@/lib/rig-cekirdek";
+import { CIZIMLER, KATALOG, KATEGORILER, cizimEtiketi, type Ekipman, type Kategori, type RigDepo } from "@/lib/rig-cekirdek";
 
 type Sekme = Kategori | "hepsi";
 
@@ -115,6 +115,12 @@ export default function Kitaplik({
         </button>
       </div>
 
+      {benim && (
+        <p className="mt-3 rounded-xl bg-ink/[0.04] px-3 py-2 text-[12px] leading-4 text-muted">
+          Buradaki adlar senin gerçek ekipmanının etiketidir; görseller türe uygun genel GuitarFlex çizimleridir (marka logosu yok). Gerçek görünüm için kalemle düzenleyip kendi fotoğrafını ekleyebilirsin.
+        </p>
+      )}
+
       {dugumSurukleniyor && <p className="mt-3 rounded-lg py-2 text-center text-sm font-semibold">Zincirden kaldırmak için buraya bırak</p>}
 
       <div id="kitaplik-izgara" role="tabpanel" className="-mx-1 mt-3 grid max-h-[460px] min-h-[180px] grid-cols-3 content-start gap-2 overflow-y-auto px-1 pb-1">
@@ -136,9 +142,9 @@ export default function Kitaplik({
               title={`${e.ad} · ${CIZIMLER[e.cizim].ad}\nTıkla ya da zincire sürükle`}
             >
               <span className={s.resim}>
-                <EkipmanCizimi cizim={e.cizim} renk={e.renk} golge={false} />
+                <EkipmanGorseli e={e} />
               </span>
-              <span className={`${s.etiket} block`}>{e.ad}</span>
+              <span className={`${s.etiket} block`}>{cizimEtiketi(e) ?? e.ad}</span>
               <span className="block truncate text-[10.5px] text-muted">{CIZIMLER[e.cizim].ad}</span>
             </button>
             {(e.benim || e.fotoId) && (

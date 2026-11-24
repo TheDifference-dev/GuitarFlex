@@ -4,9 +4,9 @@
 // sürükle-bırak ile ekleme / sıralama / yollara ve FX loop'a taşıma; klavyede ←/→ taşır, Delete siler.
 import { useState, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
 import { AudioLines, Cable, SlidersVertical } from "lucide-react";
-import EkipmanCizimi from "./Cizimler";
+import EkipmanGorseli from "./Gorsel";
 import s from "./Rig.module.css";
-import { ANA, CIZIMLER, donguKapiMi, kapA, kapB, kapDongu, paralelMi, type Dugum, type Ekipman, type Kap, type Paralel, type Rig } from "@/lib/rig-cekirdek";
+import { ANA, donguKapiMi, kapA, kapB, kapDongu, paralelMi, type Dugum, type Ekipman, type Kap, type Paralel, type Rig } from "@/lib/rig-cekirdek";
 
 export type Kaynak = { tur: "ekipman"; id: string } | { tur: "dugum"; id: string; dongulu: boolean; paralel: boolean } | null;
 
@@ -54,7 +54,6 @@ function Yuva({ o, kap, indeks, uzun = false, children }: { o: Ortak; kap: Kap; 
 
 function DugumKarti({ o, d }: { o: Ortak; d: Dugum }) {
   const e = o.bul(d.ekipmanId);
-  const cizim = e?.cizim ?? "boost";
   const ad = e?.ad ?? "Silinmiş ekipman";
   const tasiniyor = o.kaynak?.tur === "dugum" && o.kaynak.id === d.id;
   return (
@@ -79,7 +78,7 @@ function DugumKarti({ o, d }: { o: Ortak; d: Dugum }) {
       onDragEnd={() => o.setKaynak(null)}
     >
       <span className={s.resim}>
-        <EkipmanCizimi cizim={cizim} renk={e?.renk ?? "#555555"} degerler={CIZIMLER[cizim].dugmeler.map((a) => d.ayar[a] ?? 5)} acik={!d.kapali} golge={false} />
+        <EkipmanGorseli e={e} dugum={d} />
       </span>
       <span className={s.etiket}>{ad}</span>
     </button>

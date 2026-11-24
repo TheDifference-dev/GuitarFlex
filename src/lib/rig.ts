@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { baslangicDeposu, goc, type RigDepo } from "./rig-cekirdek";
+import type { Goruntu } from "./rig-foto";
 
 export * from "./rig-cekirdek";
+export { arkaPlaniTemizle, type Goruntu, type KesimSonucu } from "./rig-foto";
 
 // Rig'im bu tarayıcıda (localStorage "gf-rig") saklanır; defter.ts ile aynı düzen (önbellek, abonelik, sekmeler arası).
 // Kullanıcının ekipman fotoğrafları ayrı: IndexedDB "guitarflex-rig" (yalnız bu bilgisayarda; hiçbir yere gönderilmez).
@@ -101,22 +103,47 @@ function islem<T>(kip: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest<
   );
 }
 
-/** Fotoğrafı en çok 1200 px'e küçültüp saklar; anahtarını döndürür */
-export async function fotoKaydet(dosya: File): Promise<string> {
+/** Fotoğraf dosyasını en çok `enCok` piksele küçültüp piksel verisine çevirir (fotoğraftan ekipman için) */
+export async function fotoGoruntusu(dosya: Blob, enCok = 900): Promise<Goruntu> {
   if (!dosya.type.startsWith("image/")) throw new Error("Bu bir resim dosyası değil.");
-  let blob: Blob = dosya;
+  let bmp: ImageBitmap;
   try {
-    const bmp = await createImageBitmap(dosya);
-    const olcek = Math.min(1, 1200 / Math.max(bmp.width, bmp.height));
-    const tuval = document.createElement("canvas");
-    tuval.width = Math.round(bmp.width * olcek);
-    tuval.height = Math.round(bmp.height * olcek);
-    tuval.getContext("2d")!.drawImage(bmp, 0, 0, tuval.width, tuval.height);
-    bmp.close();
-    blob = await new Promise<Blob>((res, rej) => tuval.toBlob((b) => (b ? res(b) : rej(new Error("Resim dönüştürülemedi"))), "image/webp", 0.86));
+    bmp = await createImageBitmap(dosya);
   } catch {
-    // Küçültülemedi (ör. desteklenmeyen biçim): özgün dosya saklanır
+    throw new Error("Resim açılamadı (desteklenmeyen biçim olabilir).");
   }
+  const olcek = Math.min(1, enCok / Math.max(bmp.width, bmp.height));
+  const tuval = document.createElement("canvas");
+  tuval.width = Math.max(1, Math.round(bmp.width * olcek));
+  tuval.height = Math.max(1, Math.round(bmp.height * olcek));
+  const c = tuval.getContext("2d", { willReadFrequently: true })!;
+  c.drawImage(bmp, 0, 0, tuval.width, tuval.height);
+  bmp.close();
+  const v = c.getImageData(0, 0, tuval.width, tuval.height);
+  return { width: v.width, height: v.height, data: v.data };
+}
+
+function tuvale(g: Goruntu): HTMLCanvasElement {
+  const tuval = document.createElement("canvas");
+  tuval.width = g.width;
+  tuval.height = g.height;
+  tuval.getContext("2d")!.putImageData(new ImageData(new Uint8ClampedArray(g.data), g.width, g.height), 0, 0);
+  return tuval;
+}
+
+/** Önizleme adresi (data: URL, PNG; saydamlık korunur) */
+export const goruntuAdresi = (g: Goruntu): string => tuvale(g).toDataURL("image/png");
+
+/** Görüntüyü saklar (WebP, saydamlık korunur; desteklenmezse PNG); anahtarını döndürür */
+export async function goruntuKaydet(g: Goruntu): Promise<string> {
+  const tuval = tuvale(g);
+  const blob = await new Promise<Blob>((res, rej) =>
+    tuval.toBlob((b) => (b && b.type === "image/webp" ? res(b) : tuval.toBlob((p) => (p ? res(p) : rej(new Error("Resim dönüştürülemedi"))), "image/png")), "image/webp", 0.9),
+  );
+  return fotoBlobKaydet(blob);
+}
+
+async function fotoBlobKaydet(blob: Blob): Promise<string> {
   const id = `foto-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   await islem("readwrite", (s) => s.put(blob, id));
   fotoOnbellek.delete(id);

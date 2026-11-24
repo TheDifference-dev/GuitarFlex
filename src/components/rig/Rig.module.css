@@ -360,9 +360,61 @@
   height: 64px;
 }
 
-/* Büyük görsel */
+/* Büyük görsel: sahne (arka duvar, spot ışığı, ahşap zemin). Tema ne olursa olsun koyu bir sahnedir: çizimlerin
+   ışığı ve gölgesi bu zeminde doğal görünür (AmpliTube'daki sahne gibi). */
+.vitrin {
+  --duvar-ust: #3b3a3f;
+  --duvar-alt: #19191c;
+  --zemin-1: #4a3324;
+  --zemin-2: #2c1d14;
+  position: relative;
+  height: 470px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 26px 24px 34px;
+  overflow: hidden;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background:
+    radial-gradient(55% 60% at 50% 30%, rgb(255 236 200 / 0.22) 0%, transparent 70%),
+    linear-gradient(180deg, var(--duvar-ust) 0%, var(--duvar-alt) 74%);
+  isolation: isolate;
+}
+.vitrin::before {
+  /* ahşap sahne zemini: perspektifli tahtalar */
+  content: "";
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: 0;
+  height: 25%;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / 0.55) 0%, transparent 35%, rgb(0 0 0 / 0.35) 100%),
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.35) 0 1.5px, transparent 1.5px 9.5%),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 0.6%, transparent 0.6% 2.3%),
+    linear-gradient(180deg, var(--zemin-1), var(--zemin-2));
+  transform: perspective(380px) rotateX(38deg);
+  transform-origin: 50% 100%;
+}
+.vitrin::after {
+  /* spot ışığının zemindeki izi */
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 4%;
+  height: 16%;
+  z-index: -1;
+  background: radial-gradient(50% 50% at 50% 50%, rgb(255 230 190 / 0.2), transparent 70%);
+}
 .buyuk {
-  height: 300px;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  /* boyutu sahneden alır; içindeki geniş SVG ızgarayı genişletmez */
+  contain: size;
+  max-width: 820px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -372,10 +424,29 @@
   max-height: 100%;
   max-width: 100%;
 }
-.buyuk > img {
-  border-radius: 12px;
+/* SVG kutusu sahneyi doldurur (içerik xMidYMax ile ortada ve zeminde); kendi genişliği ızgarayı taşırmaz */
+.buyuk > svg {
+  height: 100%;
+  width: 100%;
+}
+/* Fotoğraftan kesilen ekipman: saydam kenarın altında yumuşak gölge */
+.kesik {
   object-fit: contain;
-  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.5);
+  filter: drop-shadow(0 14px 16px rgb(0 0 0 / 0.45)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.35));
+}
+.resim img {
+  max-height: 100%;
+  max-width: 100%;
+}
+.dama {
+  background-color: #f4f4f6;
+  background-image:
+    linear-gradient(45deg, #e2e2e7 25%, transparent 25%, transparent 75%, #e2e2e7 75%),
+    linear-gradient(45deg, #e2e2e7 25%, transparent 25%, transparent 75%, #e2e2e7 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    8px 8px;
 }
 
 .cop {

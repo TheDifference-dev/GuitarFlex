@@ -26,49 +26,90 @@ export const KATEGORILER: { id: Kategori; ad: string; tekil: string }[] = [
 
 type CizimTanim = {
   kategori: Kategori;
-  /** Tür adı (kitaplıkta ve formda) */
+  /** Tür adı (kitaplıkta ve formda): genel tür, marka ya da model adı değil */
   ad: string;
   /** Sade "düğme" ayarları (yalnız görsel; 0–10) */
   dugmeler: string[];
   /** Zincirdeki olağan sıra: kitaplıktan tıklayarak eklerken öneri yeri bulunur (küçük önce) */
   sira: number;
+  /** Seçmeli ayarlar (ör. kabinde hoparlör türü); değer, düğümün `ayar` kaydında seçeneğin sırasıdır (0, 1, 2…) */
+  secenekler?: Secenek[];
 };
 
-const c = (kategori: Kategori, ad: string, sira: number, dugmeler: string[] = []): CizimTanim => ({ kategori, ad, sira, dugmeler });
+export type Secenek = { ad: string; degerler: string[] };
+
+const c = (kategori: Kategori, ad: string, sira: number, dugmeler: string[] = [], secenekler?: Secenek[]): CizimTanim => ({ kategori, ad, sira, dugmeler, ...(secenekler ? { secenekler } : {}) });
 const AMFI_DUGMELERI = ["Kazanç", "Bas", "Orta", "Tiz", "Parlaklık", "Ana ses"];
 const EQ_BANTLARI = ["Bas", "Alt orta", "Orta", "Üst orta", "Tiz"];
 
-/** Bütün çizim türleri (her biri src/components/rig/Cizimler.tsx'te özgün bir SVG çizimdir) */
+/** Kabinlerin hoparlör seçeneği: GuitarFlex'in kendi hoparlör türleri (gerçek bir hoparlör modelini adlandırmaz) */
+export const HOPARLORLER = ["GF Kor · sıcak, yumuşak tepe", "GF Kılıç · orta-tepe vurgulu", "GF Kristal · temiz, geniş"];
+const HOPARLOR: Secenek[] = [{ ad: "Hoparlör", degerler: HOPARLORLER }];
+
+/**
+ * Bütün çizim türleri. Her biri src/components/rig/cizim/ altında özgün bir SVG çizimdir: klasik ekipman TÜRLERİNİN
+ * genel görünümünden yola çıkar (ör. "yeşil kutulu yumuşak overdrive", "altın panelli İngiliz kafa"), hiçbir ürünün
+ * birebir kopyası, görseli ya da logosu değildir. Eski kayıtlarla uyum için ilk sürümün anahtarları korunur.
+ */
 export const CIZIMLER = {
+  // Gitarlar
   "gitar-tek-kesik": c("gitar", "Elektro gitar · tek kesik", 0, ["Ses", "Ton"]),
   "gitar-cift-kesik": c("gitar", "Elektro gitar · çift kesik", 0, ["Ses", "Ton"]),
   "gitar-akustik": c("gitar", "Akustik gitar", 0, ["Ses"]),
-  tuner: c("pedal", "Akort (tuner)", 1),
-  wah: c("pedal", "Wah", 3, ["Konum"]),
-  kompresor: c("pedal", "Kompresör", 3, ["Sıkıştırma", "Atak", "Seviye"]),
-  "gurultu-kapisi": c("pedal", "Gürültü kapısı", 3, ["Eşik", "Bırakma"]),
-  boost: c("pedal", "Boost", 3, ["Seviye"]),
-  overdrive: c("pedal", "Overdrive", 3, ["Kazanç", "Ton", "Seviye"]),
-  distortion: c("pedal", "Distorsiyon", 3, ["Kazanç", "Ton", "Seviye"]),
-  fuzz: c("pedal", "Fuzz", 3, ["Fuzz", "Seviye"]),
-  eq: c("pedal", "EQ pedalı", 3, EQ_BANTLARI),
-  chorus: c("pedal", "Chorus", 3, ["Hız", "Derinlik", "Karışım"]),
-  phaser: c("pedal", "Phaser", 3, ["Hız"]),
+  "bas-gitar": c("gitar", "Bas gitar · dört telli", 0, ["Ses", "Ton"]),
+  // Pedallar: akort, dinamik, kazanç, filtre, modülasyon, zaman, perde, döngü
+  tuner: c("pedal", "Akort pedalı (tuner)", 1),
+  wah: c("pedal", "Wah · basma pedallı", 3, ["Konum"]),
+  "zarf-filtresi": c("pedal", "Zarf filtresi (envelope)", 3, ["Duyarlılık", "Rezonans", "Karışım"]),
+  kompresor: c("pedal", "Kompresör · beyaz kutu", 3, ["Sıkıştırma", "Atak", "Seviye"]),
+  "gurultu-kapisi": c("pedal", "Gürültü kapısı (gate)", 3, ["Eşik", "Bırakma"]),
+  boost: c("pedal", "Boost · mini kutu", 3, ["Seviye"]),
+  overdrive: c("pedal", "Overdrive · yumuşak (yeşil kutu)", 3, ["Kazanç", "Ton", "Seviye"]),
+  "overdrive-seffaf": c("pedal", "Overdrive · şeffaf (kehribar)", 3, ["Kazanç", "Bas", "Tiz", "Seviye"]),
+  "overdrive-krem": c("pedal", "Overdrive · blues (krem)", 3, ["Kazanç", "Ton", "Seviye"]),
+  distortion: c("pedal", "Distorsiyon · klasik (turuncu)", 3, ["Kazanç", "Ton", "Seviye"]),
+  "distortion-modern": c("pedal", "Distorsiyon · yüksek kazanç (mat siyah)", 3, ["Kazanç", "Bas", "Orta", "Tiz", "Seviye"]),
+  fuzz: c("pedal", "Fuzz · büyük kutu", 3, ["Fuzz", "Ton", "Seviye"]),
+  "fuzz-yuvarlak": c("pedal", "Fuzz · yuvarlak gövde", 3, ["Fuzz", "Seviye"]),
+  eq: c("pedal", "EQ pedalı · 5 bant", 3, EQ_BANTLARI),
+  chorus: c("pedal", "Chorus · mavi kutu", 3, ["Hız", "Derinlik", "Karışım"]),
+  phaser: c("pedal", "Phaser · tek düğme", 3, ["Hız"]),
   flanger: c("pedal", "Flanger", 3, ["Hız", "Derinlik", "Geri besleme"]),
-  delay: c("pedal", "Delay", 3, ["Zaman", "Geri besleme", "Karışım"]),
-  reverb: c("pedal", "Reverb", 3, ["Süre", "Ton", "Karışım"]),
+  tremolo: c("pedal", "Tremolo", 3, ["Hız", "Derinlik", "Şekil"]),
+  vibe: c("pedal", "Vibe (dönen ses)", 3, ["Hız", "Yoğunluk", "Seviye"]),
+  delay: c("pedal", "Delay · analog", 3, ["Zaman", "Geri besleme", "Karışım"]),
+  "delay-dijital": c("pedal", "Delay · dijital (tap tempo)", 3, ["Zaman", "Geri besleme", "Karışım", "Ton"]),
+  "reverb-yay": c("pedal", "Reverb · yay (spring)", 3, ["Yoğunluk", "Ton", "Karışım"]),
+  reverb: c("pedal", "Reverb · salon (hall)", 3, ["Süre", "Ton", "Karışım"]),
+  oktav: c("pedal", "Perde / oktav", 3, ["Alt oktav", "Üst oktav", "Doğrudan"]),
+  volum: c("pedal", "Volüm pedalı", 3, ["Konum"]),
   looper: c("pedal", "Looper", 3.5, ["Seviye"]),
-  "amfi-kafa": c("amfi", "Amfi kafası", 4, AMFI_DUGMELERI),
-  "amfi-kombo": c("amfi", "Tüplü kombo amfi", 4, ["Kazanç", "Bas", "Orta", "Tiz", "Reverb", "Ana ses"]),
-  "amfi-kombo-kucuk": c("amfi", "Modelleme kombo amfi", 4, ["Tür", "Kazanç", "Ton", "Ses"]),
-  "kabin-4x12": c("kabin", "4x12 kabin", 5),
-  "kabin-2x12": c("kabin", "2x12 kabin", 5),
-  "kabin-1x12": c("kabin", "1x12 kabin", 5),
-  mikrofon: c("studyo", "Mikrofon", 6, ["Mesafe", "Eksen"]),
-  "rack-kompresor": c("rack", "Rack kompresör", 7, ["Eşik", "Oran", "Atak", "Bırakma", "Çıkış"]),
-  "rack-eq": c("rack", "Rack EQ", 7, EQ_BANTLARI),
-  "rack-delay": c("rack", "Rack delay", 7, ["Zaman", "Geri besleme", "Karışım"]),
-  "rack-reverb": c("rack", "Rack reverb", 7, ["Süre", "Ön gecikme", "Karışım"]),
+  // Amfiler
+  "amfi-kafa": c("amfi", "Kafa · İngiliz crunch (altın panel)", 4, AMFI_DUGMELERI),
+  "amfi-modern": c("amfi", "Kafa · yüksek kazançlı modern", 4, ["Kazanç", "Bas", "Orta", "Tiz", "Parlaklık", "Ana ses"]),
+  "amfi-butik": c("amfi", "Kafa · butik lead (krem tolex)", 4, ["Kazanç", "Bas", "Orta", "Tiz", "Ana ses"]),
+  "amfi-mini": c("amfi", "Mini kafa · metal kutu", 4, ["Kazanç", "Ton", "Ses"]),
+  "amfi-bas": c("amfi", "Bas amfi kafası", 4, ["Kazanç", "Bas", "Alt orta", "Üst orta", "Tiz", "Ana ses"]),
+  "amfi-kombo": c("amfi", "Kombo · İngiliz crunch (1x12)", 4, ["Kazanç", "Bas", "Orta", "Tiz", "Reverb", "Ana ses"]),
+  "amfi-amerikan": c("amfi", "Kombo · Amerikan temiz (siyah panel, 2x12)", 4, ["Ses", "Tiz", "Orta", "Bas", "Reverb", "Tremolo"]),
+  "amfi-cinlayan": c("amfi", "Kombo · İngiliz çınlayan (2x12)", 4, ["Ses", "Tiz", "Bas", "Kesim", "Ana ses"]),
+  "amfi-vintage": c("amfi", "Kombo · vintage küçük (tvid)", 4, ["Ses", "Tiz", "Bas"]),
+  "amfi-kombo-kucuk": c("amfi", "Kombo · modelleme (dijital)", 4, ["Tür", "Kazanç", "Ton", "Ses"]),
+  // Kabinler (hoparlör türü seçilir)
+  "kabin-4x12": c("kabin", "Kabin · 4x12 kapalı", 5, [], HOPARLOR),
+  "kabin-4x12-modern": c("kabin", "Kabin · 4x12 eğik, metal ızgara", 5, [], HOPARLOR),
+  "kabin-2x12": c("kabin", "Kabin · 2x12 kapalı", 5, [], HOPARLOR),
+  "kabin-2x12-acik": c("kabin", "Kabin · 2x12 açık arka", 5, [], HOPARLOR),
+  "kabin-1x12": c("kabin", "Kabin · 1x12", 5, [], HOPARLOR),
+  "kabin-4x10-bas": c("kabin", "Bas kabini · 4x10", 5, [], HOPARLOR),
+  // Stüdyo ve rack (mikrofon yok: kullanıcının isteğiyle kaldırıldı; eski kayıtlarda göçle çıkarılır)
+  "rack-kompresor": c("rack", "Stüdyo kompresör (VU göstergeli)", 7, ["Eşik", "Oran", "Atak", "Bırakma", "Çıkış"]),
+  "rack-limiter": c("rack", "Limiter", 7, ["Eşik", "Tavan", "Bırakma"]),
+  "rack-eq": c("rack", "Grafik EQ (rack)", 7, EQ_BANTLARI),
+  "rack-parametrik": c("rack", "Parametrik EQ (rack)", 7, ["Bas", "Alt orta", "Üst orta", "Tiz", "Genişlik", "Çıkış"]),
+  "rack-delay": c("rack", "Rack delay (dijital)", 7, ["Zaman", "Geri besleme", "Karışım"]),
+  "rack-reverb": c("rack", "Plate reverb (rack)", 7, ["Süre", "Ön gecikme", "Karışım"]),
+  "rack-coklu": c("rack", "Çoklu efekt (rack)", 7, ["Giriş", "Parametre", "Karışım", "Çıkış"]),
   di: c("studyo", "DI kutusu", 2, ["Seviye"]),
   "ses-karti": c("studyo", "Ses kartı", 8, ["Kazanç", "Çıkış"]),
   yazilim: c("studyo", "Yazılım (amfi simülasyonu)", 9, ["Giriş", "Çıkış"]),
@@ -92,47 +133,82 @@ export type Ekipman = {
   ozel?: boolean;
   /** Kullanıcının kendi fotoğrafı (IndexedDB anahtarı; yalnız bu bilgisayarda) */
   fotoId?: string;
+  /** Fotoğraf varsa hangisi gösterilir (varsayılan: fotoğraf) */
+  gorsel?: "foto" | "cizim";
 };
 
-const k = (id: string, ad: string, cizim: Cizim, renk: string): Ekipman => ({ id, ad, cizim, renk });
+/** Kitaplığın yerleşik modelleri: hepsi GuitarFlex adlı, özgün çizimli (gerçek ürün adı, logosu ya da görseli yok) */
+const k = (cizim: Cizim, ad: string, renk: string): Ekipman => ({ id: `k-${cizim}`, ad: `GuitarFlex ${ad}`, cizim, renk });
 
-/** Yerleşik kitaplık: genel (markasız) ekipman */
 export const KATALOG: Ekipman[] = [
-  k("k-gitar-tek-kesik", "Tek kesik elektro", "gitar-tek-kesik", "#b5452a"),
-  k("k-gitar-cift-kesik", "Çift kesik elektro", "gitar-cift-kesik", "#2f6f9f"),
-  k("k-gitar-akustik", "Akustik gitar", "gitar-akustik", "#c98b4a"),
-  k("k-tuner", "Akort pedalı", "tuner", "#2b2d33"),
-  k("k-wah", "Wah", "wah", "#3a3c42"),
-  k("k-kompresor", "Kompresör", "kompresor", "#2f6fd6"),
-  k("k-gurultu-kapisi", "Gürültü kapısı", "gurultu-kapisi", "#5a5e66"),
-  k("k-boost", "Temiz boost", "boost", "#d9d4c7"),
-  k("k-overdrive", "Overdrive", "overdrive", "#2e9a57"),
-  k("k-distortion", "Distorsiyon", "distortion", "#e07a1f"),
-  k("k-fuzz", "Fuzz", "fuzz", "#8c3fb8"),
-  k("k-eq", "Grafik EQ", "eq", "#c9ccd2"),
-  k("k-chorus", "Chorus", "chorus", "#3fb6c9"),
-  k("k-phaser", "Phaser", "phaser", "#e8b51e"),
-  k("k-flanger", "Flanger", "flanger", "#7e5bd6"),
-  k("k-delay", "Delay", "delay", "#1f8fd6"),
-  k("k-reverb", "Reverb", "reverb", "#2c4a8f"),
-  k("k-looper", "Looper", "looper", "#c23a4c"),
-  k("k-amfi-kafa", "Tüplü kafa", "amfi-kafa", "#1c1c1e"),
-  k("k-amfi-kombo", "Tüplü kombo", "amfi-kombo", "#2a2622"),
-  k("k-amfi-kombo-kucuk", "Modelleme kombo", "amfi-kombo-kucuk", "#3b3e44"),
-  k("k-kabin-4x12", "4x12 kabin", "kabin-4x12", "#1c1c1e"),
-  k("k-kabin-2x12", "2x12 kabin", "kabin-2x12", "#2a2622"),
-  k("k-kabin-1x12", "1x12 kabin", "kabin-1x12", "#1c1c1e"),
-  k("k-rack-kompresor", "Stüdyo kompresör", "rack-kompresor", "#34363c"),
-  k("k-rack-eq", "Grafik EQ (rack)", "rack-eq", "#c9ccd2"),
-  k("k-rack-delay", "Dijital delay", "rack-delay", "#1e2a3a"),
-  k("k-rack-reverb", "Salon reverb", "rack-reverb", "#2d2340"),
-  k("k-mikrofon", "Dinamik mikrofon", "mikrofon", "#4a4d55"),
-  k("k-di", "DI kutusu", "di", "#c8a12c"),
-  k("k-ses-karti", "Ses kartı", "ses-karti", "#45474d"),
-  k("k-yazilim", "Amfi simülasyonu", "yazilim", "#2a2c31"),
+  k("gitar-tek-kesik", "Single Cut", "#7a1f1c"),
+  k("gitar-cift-kesik", "Double Cut S", "#2f6f9f"),
+  k("gitar-akustik", "Dread Akustik", "#c98b4a"),
+  k("bas-gitar", "Low Four Bas", "#1d1c1f"),
+  k("tuner", "Pitch Eye", "#2b2d33"),
+  k("wah", "Howl Wah", "#2a2b2f"),
+  k("zarf-filtresi", "Bloom Filter", "#b6c43a"),
+  k("kompresor", "Squeeze Comp", "#eceae4"),
+  k("gurultu-kapisi", "Silent Gate", "#5a5e66"),
+  k("boost", "Lift Boost", "#d9d4c7"),
+  k("overdrive", "Verde OD", "#2e8f4e"),
+  k("overdrive-seffaf", "Amber Drive", "#c8902a"),
+  k("overdrive-krem", "Crema OD", "#e9dfc6"),
+  k("distortion", "Furnace", "#e2711d"),
+  k("distortion-modern", "Iron Dist", "#26272b"),
+  k("fuzz", "Mor Duman Fuzz", "#6b3fa0"),
+  k("fuzz-yuvarlak", "Fuzz Moon", "#b8282e"),
+  k("eq", "Contour EQ", "#c9ccd2"),
+  k("chorus", "Aqua Chorus", "#5fb8d8"),
+  k("phaser", "Orbit Phase", "#e8741e"),
+  k("flanger", "Jet Stream Flanger", "#6a56c9"),
+  k("tremolo", "Pulse Trem", "#2f7f78"),
+  k("vibe", "Swirl Vibe", "#7a2433"),
+  k("delay", "Dusk Echo", "#24463a"),
+  k("delay-dijital", "Prism Delay", "#9aa6b4"),
+  k("reverb-yay", "Coil Spring", "#56b3a8"),
+  k("reverb", "Hall Verb", "#22305e"),
+  k("oktav", "Octa Shift", "#c2245c"),
+  k("volum", "Swell Volume", "#1f2023"),
+  k("looper", "Loop Lab", "#b02a3e"),
+  k("amfi-kafa", "Brit 50 Head", "#1c1c1e"),
+  k("amfi-modern", "Titan 120 Head", "#18181a"),
+  k("amfi-butik", "Velvet Lead Head", "#e8dcc2"),
+  k("amfi-mini", "Lunchbox 20", "#2f8f8a"),
+  k("amfi-bas", "Low Down Bass Head", "#202124"),
+  k("amfi-kombo", "Brit Crunch Combo", "#1f1e1c"),
+  k("amfi-amerikan", "Coast Clean 2x12", "#151517"),
+  k("amfi-cinlayan", "Bell Chime 2x12", "#5a1d22"),
+  k("amfi-vintage", "Fawn 15 Tvid", "#c9a86a"),
+  k("amfi-kombo-kucuk", "Studio Mini Combo", "#34373d"),
+  k("kabin-4x12", "412 Brit Cab", "#1c1c1e"),
+  k("kabin-4x12-modern", "412 Titan Cab", "#161618"),
+  k("kabin-2x12", "212 Closed Cab", "#202022"),
+  k("kabin-2x12-acik", "212 Open Back Cab", "#5b3a26"),
+  k("kabin-1x12", "112 Compact Cab", "#1c1c1e"),
+  k("kabin-4x10-bas", "410 Bass Cab", "#1b1b1d"),
+  k("rack-kompresor", "Opto Studio Comp", "#7f8c99"),
+  k("rack-limiter", "Peak Limiter", "#1d1e21"),
+  k("rack-eq", "15-Band Graphic", "#c9ccd2"),
+  k("rack-parametrik", "Para EQ 4", "#2b3442"),
+  k("rack-delay", "Time Rack Delay", "#1e2a3a"),
+  k("rack-reverb", "Plate Verb", "#c8b48a"),
+  k("rack-coklu", "Multi FX Rack", "#232428"),
+  k("di", "DI Box", "#c8a12c"),
+  k("ses-karti", "Duo Interface", "#45474d"),
+  k("yazilim", "Sim Studio", "#2a2c31"),
 ];
 
-/** Kullanıcının bildiği ekipman: "Ekipmanım" önayarları (düzenlenebilir; çizimler genel, gerçek ürünü taklit etmez) */
+/** Kitaplık modelinin çizim üstündeki adı ("GuitarFlex Verde OD" → "Verde OD"); kullanıcı ekipmanında yok (etiket yerine tür yazılır) */
+export function cizimEtiketi(e: Ekipman | null | undefined): string | undefined {
+  if (!e || e.ozel || !e.ad.startsWith("GuitarFlex ")) return undefined;
+  return e.ad.slice("GuitarFlex ".length);
+}
+
+/**
+ * Kullanıcının bildiği ekipman: "Ekipmanım" önayarları (düzenlenebilir). Adlar kullanıcının kendi ekipmanının
+ * ETİKETİDİR; çizimler türe uygun genel GuitarFlex çizimleridir (marka taklidi yok). Kendi fotoğrafını ekleyebilir.
+ */
 export const ONAYAR_EKIPMAN: Ekipman[] = [
   { id: "e-les-paul-custom", ad: "Epiphone Les Paul Custom", cizim: "gitar-tek-kesik", renk: "#1d1c1f", benim: true, ozel: true },
   { id: "e-dsl20cr", ad: "Marshall DSL20CR", cizim: "amfi-kombo", renk: "#1f1e1c", benim: true, ozel: true },
@@ -383,6 +459,10 @@ export const gecis = (rig: Rig, id: string, kapali?: boolean): Rig => dugumIsle(
 export const ekipmanDegistir = (rig: Rig, id: string, ekipmanId: string): Rig => dugumIsle(rig, id, (d) => ({ ...d, ekipmanId }));
 
 export const dugmeDegeri = (d: Dugum, dugme: string) => d.ayar[dugme] ?? 5;
+/** Seçmeli ayarın sırası (yoksa 0; listenin dışındaysa sınırlanır) */
+export const secenekDegeri = (d: Pick<Dugum, "ayar">, s: Secenek) => Math.max(0, Math.min(s.degerler.length - 1, Math.round(d.ayar[s.ad] ?? 0)));
+/** Seçmeli ayarı yazar (sıra) */
+export const secenekSec = (rig: Rig, id: string, s: Secenek, sira: number): Rig => ayarla(rig, id, s.ad, Math.max(0, Math.min(s.degerler.length - 1, Math.round(sira))));
 
 export type DuzDugum = { dugum: Dugum; kap: Kap; indeks: number };
 /** Bütün düğümler, zincirdeki görünüş sırasıyla (amfi, döngüsünden önce; A yolu B'den önce) */
@@ -403,7 +483,7 @@ export function duzListe(rig: Rig): DuzDugum[] {
 
 /**
  * Kitaplıktan tıklayarak eklerken ana zincirdeki öneri sırası: türlerin olağan sırasına göre (gitar → akort → DI →
- * pedallar → amfi → kabin → mikrofon → rack → ses kartı → yazılım) aynı ya da daha küçük sıralı son öğenin arkası.
+ * pedallar → amfi → kabin → rack → ses kartı → yazılım) aynı ya da daha küçük sıralı son öğenin arkası.
  */
 export function oneriIndeksi(rig: Rig, yeniSira: number, siraBul: (d: Dugum) => number): number {
   let i = 0;
@@ -490,7 +570,7 @@ export function ekipmanSil(depo: RigDepo, id: string): RigDepo {
 }
 
 /**
- * Örnek rig: Les Paul → akort → kompresör → overdrive → DSL20CR (FX loop'ta delay + reverb) → 1x12 kabin → mikrofon → Scarlett Solo.
+ * Örnek rig: Les Paul → akort → kompresör → overdrive → DSL20CR (FX loop'ta delay + reverb) → 1x12 kabin → Scarlett Solo.
  * Önayar ekipman silinmişse yerleşik karşılıkları kullanılır.
  */
 export function ornekZincir(depo: Pick<RigDepo, "ekipman">): Oge[] {
@@ -503,7 +583,6 @@ export function ornekZincir(depo: Pick<RigDepo, "ekipman">): Oge[] {
     d("k-overdrive", { Kazanç: 4.5, Ton: 6, Seviye: 7 }),
     { ...d(sec("e-dsl20cr", "k-amfi-kombo"), { Kazanç: 6, Bas: 5, Orta: 6.5, Tiz: 6, Reverb: 2, "Ana ses": 4 }), dongu: [d("k-delay", { Zaman: 4, "Geri besleme": 3, Karışım: 3 }), d("k-reverb", { Süre: 6, Ton: 5, Karışım: 3.5 })] },
     d("k-kabin-1x12"),
-    d("k-mikrofon", { Mesafe: 3, Eksen: 4 }),
     d(sec("e-scarlett-solo", "k-ses-karti"), { Kazanç: 6, Çıkış: 5 }),
   ];
 }
@@ -556,6 +635,7 @@ function ekipmanTemizle(x: unknown): Ekipman | null {
   const e: Ekipman = { id, ad: metin(o.ad) || CIZIMLER[o.cizim].ad, cizim: o.cizim, renk: renkGecerli(o.renk) ? o.renk.toLowerCase() : "#3a3c42", ozel: true };
   if (o.benim === true) e.benim = true;
   if (typeof o.fotoId === "string" && o.fotoId.length <= 80) e.fotoId = o.fotoId;
+  if (o.gorsel === "foto" || o.gorsel === "cizim") e.gorsel = o.gorsel;
   return e;
 }
 
@@ -565,11 +645,33 @@ function rigTemizle(x: unknown): Rig | null {
   return { id: metin(o.id, 60) || yeniId("r"), ad: metin(o.ad, 60) || "Rig", zincir: zincirTemizle(o.zincir), guncelleme: typeof o.guncelleme === "string" ? o.guncelleme : simdiIso() };
 }
 
+/** Kaldırılan çizim türleri (mikrofonlar): bunları kullanan ekipman ve düğümler göçte sessizce çıkarılır */
+const KALDIRILAN_CIZIM = /^mikrofon/;
+const KALDIRILAN_KIMLIK = /^k-mikrofon/;
+
+/** Kaldırılan türlere bağlı ekipman kimlikleri (kitaplık + saklanan kullanıcı ekipmanı) */
+function kaldirilanKimlikler(hamEkipman: unknown): Set<string> {
+  const s = new Set<string>();
+  if (Array.isArray(hamEkipman))
+    for (const x of hamEkipman) if (x && typeof x === "object" && typeof (x as Ekipman).cizim === "string" && KALDIRILAN_CIZIM.test((x as Ekipman).cizim) && typeof (x as Ekipman).id === "string") s.add((x as Ekipman).id);
+  return s;
+}
+
+/** Zincirden verilen ekipman kimliklerini kullanan bütün düğümleri çıkarır (döngüler ve paralel yollar dahil) */
+function dugumleriCikar(r: Rig, kaldir: (ekipmanId: string) => boolean): Rig {
+  const temiz = (l: Dugum[]): Dugum[] => l.filter((d) => !kaldir(d.ekipmanId)).map((d) => (d.dongu ? { ...d, dongu: temiz(d.dongu) } : d));
+  // Silinen bir amfinin döngüsündeki efektler kaybolmasın: sil() gibi aynı yere geçer
+  const duz = (l: Dugum[]): Dugum[] => l.flatMap((d) => (kaldir(d.ekipmanId) ? temiz(d.dongu ?? []) : [d.dongu ? { ...d, dongu: temiz(d.dongu) } : d]));
+  return { ...r, zincir: r.zincir.flatMap((o): Oge[] => (paralelMi(o) ? [{ ...o, a: duz(o.a), b: duz(o.b) }] : duz([o]))) };
+}
+
 /** Saklanan (ya da bozuk) veriyi geçerli bir depoya çevirir */
 export function goc(ham: unknown): RigDepo {
   if (!ham || typeof ham !== "object") return baslangicDeposu();
   const o = ham as Record<string, unknown>;
-  const rigler = Array.isArray(o.rigler) ? o.rigler.map(rigTemizle).filter((r): r is Rig => !!r) : [];
+  const kaldirilan = kaldirilanKimlikler(o.ekipman);
+  const kaldir = (id: string) => KALDIRILAN_KIMLIK.test(id) || kaldirilan.has(id);
+  const rigler = Array.isArray(o.rigler) ? o.rigler.map(rigTemizle).filter((r): r is Rig => !!r).map((r) => dugumleriCikar(r, kaldir)) : [];
   const ekipman = Array.isArray(o.ekipman) ? o.ekipman.map(ekipmanTemizle).filter((e): e is Ekipman => !!e) : ONAYAR_EKIPMAN.map((e) => ({ ...e }));
   if (!rigler.length) rigler.push(bosRig("Temiz"));
   const secili = typeof o.seciliRig === "string" && rigler.some((r) => r.id === o.seciliRig) ? o.seciliRig : rigler[0].id;
@@ -581,7 +683,7 @@ export function disaAktar(depo: RigDepo, rigId?: string): string {
   const rigler = rigId ? depo.rigler.filter((r) => r.id === rigId) : depo.rigler;
   const kullanilan = new Set(rigler.flatMap((r) => duzListe(r).map((d) => d.dugum.ekipmanId)));
   const ekipman = rigId ? depo.ekipman.filter((e) => kullanilan.has(e.id)) : depo.ekipman;
-  return JSON.stringify({ tur: DISA_TUR, surum: 1, disaAktarim: simdiIso(), rigler, ekipman: ekipman.map(({ fotoId: _f, ...e }) => (void _f, e)) }, null, 2);
+  return JSON.stringify({ tur: DISA_TUR, surum: 1, disaAktarim: simdiIso(), rigler, ekipman: ekipman.map(({ fotoId: _f, gorsel: _g, ...e }) => (void _f, void _g, e)) }, null, 2);
 }
 
 /**

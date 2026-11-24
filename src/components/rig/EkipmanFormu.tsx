@@ -1,23 +1,30 @@
 "use client";
 
-// Kendi ekipmanını ekleme / düzenleme: ad, tür (çizim), renk ve isteğe bağlı fotoğraf (yalnız bu bilgisayarda, IndexedDB).
-import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Trash2, X } from "lucide-react";
+// Kendi ekipmanını ekleme / düzenleme: ad, tür (çizim), renk ve isteğe bağlı fotoğraf. Fotoğraftan ekipman: yüklenen
+// fotoğrafın arka planı bu bilgisayarda otomatik ayrılır ve ekipman kırpılır (src/lib/rig-foto.ts; ağ yok). Fotoğraf
+// yalnız bu bilgisayarda (IndexedDB) saklanır.
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { ImagePlus, Trash2, Wand2, X } from "lucide-react";
 import EkipmanCizimi from "./Cizimler";
+import s from "./Rig.module.css";
 import { CIZIMLER, CIZIM_LISTESI, KATEGORILER, yeniId, type Cizim, type Ekipman } from "@/lib/rig-cekirdek";
-import { fotoKaydet, fotoSil, useFotoUrl } from "@/lib/rig";
+import { arkaPlaniTemizle, fotoGoruntusu, fotoSil, goruntuAdresi, goruntuKaydet, useFotoUrl, type Goruntu } from "@/lib/rig";
 
-const RENKLER = ["#1d1c1f", "#f2efe6", "#b5452a", "#c23a4c", "#e07a1f", "#e8b51e", "#2e9a57", "#3fb6c9", "#1f8fd6", "#2c4a8f", "#7e5bd6", "#c98b4a", "#3a3c42", "#c9ccd2"];
+const RENKLER = ["#1d1c1f", "#f2efe6", "#b5452a", "#c23a4c", "#e07a1f", "#e8b51e", "#2e8f4e", "#3fb6c9", "#1f8fd6", "#2c4a8f", "#7e5bd6", "#c98b4a", "#3a3c42", "#c9ccd2"];
 
 export default function EkipmanFormu({ ilk, onKaydet, onSil, onKapat }: { ilk: Ekipman | null; onKaydet: (e: Ekipman) => void; onSil?: (e: Ekipman) => void; onKapat: () => void }) {
   const [ad, setAd] = useState(ilk?.ad ?? "");
   const [cizim, setCizim] = useState<Cizim>(ilk?.cizim ?? "overdrive");
-  const [renk, setRenk] = useState(ilk?.renk ?? "#2e9a57");
+  const [renk, setRenk] = useState(ilk?.renk ?? "#2e8f4e");
   const [benim, setBenim] = useState(ilk?.benim ?? true);
+  // Kayıtlı fotoğraf (düzenlemede) ve bu oturumda yüklenen yeni fotoğraf (kaydedilince saklanır)
   const [fotoId, setFotoId] = useState(ilk?.fotoId);
+  const [yeni, setYeni] = useState<Goruntu | null>(null);
+  const [temizle, setTemizle] = useState(true);
+  const [tolerans, setTolerans] = useState(34);
+  const tol = useDeferredValue(tolerans);
   const [hata, setHata] = useState<string | null>(null);
-  const [yukleniyor, setYukleniyor] = useState(false);
-  const yeniFotolar = useRef<string[]>([]);
+  const [mesgul, setMesgul] = useState(false);
   const dosya = useRef<HTMLInputElement>(null);
   const kutu = useRef<HTMLDivElement>(null);
   const fotoUrl = useFotoUrl(fotoId);
@@ -27,32 +34,47 @@ export default function EkipmanFormu({ ilk, onKaydet, onSil, onKapat }: { ilk: E
     return () => onceki?.focus?.();
   }, []);
 
-  const kapat = () => {
-    // Kaydedilmeyen yeni fotoğraflar silinir
-    yeniFotolar.current.forEach((f) => void fotoSil(f));
-    onKapat();
-  };
+  const kesim = useMemo(() => (yeni && temizle ? arkaPlaniTemizle(yeni, { tolerans: tol }) : null), [yeni, temizle, tol]);
+  const secilen = yeni ? (kesim?.basarili ? kesim.goruntu : yeni) : null;
+  const onizleme = useMemo(() => (secilen ? goruntuAdresi(secilen) : null), [secilen]);
+  const gosterilen = onizleme ?? fotoUrl;
 
-  const kaydet = () => {
-    const e: Ekipman = { id: ilk?.id ?? yeniId("e"), ad: ad.trim() || CIZIMLER[cizim].ad, cizim, renk, ozel: true, ...(benim ? { benim: true } : {}), ...(fotoId ? { fotoId } : {}) };
-    // Değiştirilen ya da kaldırılan eski fotoğraf ve kullanılmayan yeni yüklemeler silinir
-    if (ilk?.fotoId && ilk.fotoId !== fotoId) void fotoSil(ilk.fotoId);
-    yeniFotolar.current.filter((f) => f !== fotoId).forEach((f) => void fotoSil(f));
-    yeniFotolar.current = [];
-    onKaydet(e);
+  const kaydet = async () => {
+    setHata(null);
+    setMesgul(true);
+    try {
+      let id = fotoId;
+      if (secilen) id = await goruntuKaydet(secilen);
+      // Değiştirilen ya da kaldırılan eski fotoğraf silinir
+      if (ilk?.fotoId && ilk.fotoId !== id) void fotoSil(ilk.fotoId);
+      const e: Ekipman = {
+        id: ilk?.id ?? yeniId("e"),
+        ad: ad.trim() || CIZIMLER[cizim].ad,
+        cizim,
+        renk,
+        ozel: true,
+        ...(benim ? { benim: true } : {}),
+        ...(id ? { fotoId: id, gorsel: secilen ? "foto" : (ilk?.gorsel ?? "foto") } : {}),
+      };
+      onKaydet(e);
+    } catch (err) {
+      setHata((err as Error).message || "Fotoğraf saklanamadı.");
+    } finally {
+      setMesgul(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={kapat}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onKapat}>
       <div
         ref={kutu}
         role="dialog"
         aria-modal="true"
         aria-labelledby="ekipman-formu-baslik"
-        className="bg-elevated max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-[var(--radius-card)] p-6 shadow-[var(--shadow-pop)]"
+        className="bg-elevated max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[var(--radius-card)] p-6 shadow-[var(--shadow-pop)]"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
-          if (e.key === "Escape") kapat();
+          if (e.key === "Escape") onKapat();
           // Odak iletişim kutusunda kalsın
           if (e.key === "Tab" && kutu.current) {
             const o = [...kutu.current.querySelectorAll<HTMLElement>("button, input, select, [tabindex]:not([tabindex='-1'])")].filter((x) => !x.hasAttribute("disabled"));
@@ -69,19 +91,19 @@ export default function EkipmanFormu({ ilk, onKaydet, onSil, onKapat }: { ilk: E
           <h2 id="ekipman-formu-baslik" className="text-[21px] font-semibold">
             {ilk ? "Ekipmanı düzenle" : "Kendi ekipmanını ekle"}
           </h2>
-          <button type="button" onClick={kapat} aria-label="Kapat" className="flex size-8 items-center justify-center rounded-full text-muted hover:bg-ink/10 hover:text-text">
+          <button type="button" onClick={onKapat} aria-label="Kapat" className="flex size-8 items-center justify-center rounded-full text-muted hover:bg-ink/10 hover:text-text">
             <X size={16} />
           </button>
         </div>
 
-        <div className="mt-4 grid gap-5 sm:grid-cols-[160px_1fr]">
+        <div className="mt-4 grid gap-5 sm:grid-cols-[220px_1fr]">
           <div className="flex flex-col items-center gap-2">
-            <div className="flex h-[180px] w-full items-end justify-center rounded-2xl bg-panel p-3">
-              {fotoUrl ? (
+            <div className={`flex h-[220px] w-full items-end justify-center rounded-2xl p-3 ${gosterilen ? s.dama : "bg-panel"}`}>
+              {gosterilen ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={fotoUrl} alt={`${ad || "Ekipman"} fotoğrafı`} className="max-h-full max-w-full rounded-lg object-contain" />
+                <img src={gosterilen} alt={`${ad || "Ekipman"} fotoğrafı`} className={`max-h-full max-w-full object-contain ${s.kesik}`} />
               ) : (
-                <EkipmanCizimi cizim={cizim} renk={renk} className="max-h-full max-w-full" />
+                <EkipmanCizimi cizim={cizim} renk={renk} ayrinti="tam" pikselGenislik={190} className="max-h-full max-w-full" />
               )}
             </div>
             <input
@@ -94,29 +116,56 @@ export default function EkipmanFormu({ ilk, onKaydet, onSil, onKapat }: { ilk: E
                 ev.target.value = "";
                 if (!f) return;
                 setHata(null);
-                setYukleniyor(true);
+                setMesgul(true);
                 try {
-                  const id = await fotoKaydet(f);
-                  yeniFotolar.current.push(id);
-                  setFotoId(id);
+                  setYeni(await fotoGoruntusu(f));
+                  setTemizle(true);
                 } catch (e) {
                   setHata((e as Error).message);
                 } finally {
-                  setYukleniyor(false);
+                  setMesgul(false);
                 }
               }}
             />
             <div className="flex flex-wrap justify-center gap-1.5">
-              <button type="button" onClick={() => dosya.current?.click()} className="btn-secondary px-3 py-1 text-[13px]" disabled={yukleniyor}>
-                <ImagePlus size={14} aria-hidden /> {fotoId ? "Değiştir" : "Fotoğraf"}
+              <button type="button" onClick={() => dosya.current?.click()} className="btn-secondary px-3 py-1 text-[13px]" disabled={mesgul}>
+                <ImagePlus size={14} aria-hidden /> {gosterilen ? "Fotoğrafı değiştir" : "Fotoğraf ekle"}
               </button>
-              {fotoId && (
-                <button type="button" onClick={() => setFotoId(undefined)} className="rounded-full px-3 py-1 text-[13px] text-bad hover:bg-bad/10">
+              {gosterilen && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setYeni(null);
+                    setFotoId(undefined);
+                  }}
+                  className="rounded-full px-3 py-1 text-[13px] text-bad hover:bg-bad/10"
+                >
                   Kaldır
                 </button>
               )}
             </div>
-            <p className="text-center text-[11px] leading-4 text-muted">Fotoğraf yalnız bu bilgisayarda saklanır.</p>
+            {yeni && (
+              <div className="w-full rounded-xl bg-ink/[0.04] p-2.5 text-[12px]">
+                <label className="flex items-center gap-2 font-semibold">
+                  <input type="checkbox" checked={temizle} onChange={(e) => setTemizle(e.target.checked)} className="size-4" />
+                  <Wand2 size={13} aria-hidden /> Arka planı temizle ve kırp
+                </label>
+                {temizle && (
+                  <>
+                    <label className="mt-2 grid gap-1 text-muted">
+                      <span className="flex justify-between">
+                        Hassasiyet <span className="tabular-nums">{tolerans}</span>
+                      </span>
+                      <input type="range" min={5} max={90} value={tolerans} onChange={(e) => setTolerans(Number(e.target.value))} aria-label="Arka plan hassasiyeti" />
+                    </label>
+                    <p className="mt-1 leading-4 text-muted" aria-live="polite">
+                      {kesim?.basarili ? `Ekipman ayrıldı (fotoğrafın %${Math.round(kesim.onPlan * 100)}'i). Kenarda arka plan kaldıysa hassasiyeti artır, ekipman kesildiyse azalt.` : "Arka plan ayrılamadı; fotoğraf olduğu gibi kullanılacak. Düz bir zemin önünde çekilmiş fotoğraf en iyi sonucu verir."}
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+            <p className="text-center text-[11px] leading-4 text-muted">Fotoğraf yalnız bu bilgisayarda saklanır; arka plan da burada ayrılır, hiçbir yere gönderilmez.</p>
           </div>
 
           <div className="grid content-start gap-4">
@@ -125,7 +174,7 @@ export default function EkipmanFormu({ ilk, onKaydet, onSil, onKapat }: { ilk: E
               <input value={ad} onChange={(e) => setAd(e.target.value)} placeholder="ör. Benim overdrive'ım" maxLength={80} autoFocus className="h-10 rounded-xl border border-ink/10 bg-ink/[0.05] px-3 outline-none focus:border-accent" />
             </label>
             <label className="grid gap-1 text-sm">
-              <span className="font-semibold">Tür</span>
+              <span className="font-semibold">Tür (çizim)</span>
               <select value={cizim} onChange={(e) => setCizim(e.target.value as Cizim)} className="h-10 rounded-xl border border-ink/10 bg-ink/[0.05] px-3">
                 {KATEGORILER.map((k) => (
                   <optgroup key={k.id} label={k.ad}>
@@ -162,6 +211,7 @@ export default function EkipmanFormu({ ilk, onKaydet, onSil, onKapat }: { ilk: E
               <input type="checkbox" checked={benim} onChange={(e) => setBenim(e.target.checked)} className="size-4" />
               “Ekipmanım” listesinde göster
             </label>
+            <p className="text-[12px] leading-4 text-muted">Ad, ekipmanının etiketidir. Çizim, seçtiğin türe uygun genel bir GuitarFlex çizimidir (marka logosu ya da ürün görseli yok); gerçek görünüm için kendi fotoğrafını ekle.</p>
             {hata && (
               <p role="alert" className="text-sm text-bad">
                 {hata}
@@ -179,10 +229,10 @@ export default function EkipmanFormu({ ilk, onKaydet, onSil, onKapat }: { ilk: E
             <span />
           )}
           <div className="flex gap-2">
-            <button type="button" onClick={kapat} className="btn-secondary px-4 py-2 text-sm">
+            <button type="button" onClick={onKapat} className="btn-secondary px-4 py-2 text-sm">
               Vazgeç
             </button>
-            <button type="button" onClick={kaydet} className="btn-primary px-5 py-2 text-sm" disabled={yukleniyor}>
+            <button type="button" onClick={kaydet} className="btn-primary px-5 py-2 text-sm" disabled={mesgul}>
               {ilk ? "Kaydet" : "Ekle"}
             </button>
           </div>

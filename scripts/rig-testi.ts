@@ -2,10 +2,11 @@
 // Çalıştırma: npm run test:rig
 import assert from "node:assert/strict";
 import {
-  ANA, CIZIMLER, KATALOG, ONAYAR_EKIPMAN, ayarla, baslangicDeposu, bosRig, disaAktar, donguAc, donguKapat, duzListe, ekipmanBul, ekipmanKaydet, ekipmanSil, ekle,
+  ANA, CIZIMLER, CIZIM_LISTESI, HOPARLORLER, KATALOG, ONAYAR_EKIPMAN, cizimEtiketi, secenekDegeri, secenekSec, ayarla, baslangicDeposu, bosRig, disaAktar, donguAc, donguKapat, duzListe, ekipmanBul, ekipmanKaydet, ekipmanSil, ekle,
   gecis, goc, iceAktar, kapA, kapB, kapDongu, kaydir, konumBul, oneriIndeksi, ornekZincir, paralelBlok, paralelEkle, paralelKaldir, paralelMi, paralelSar,
   rigAdlandir, rigEkle, rigKopyala, rigSil, seciliRig, sil, tasi, type Dugum, type Rig,
 } from "../src/lib/rig-cekirdek.ts";
+import { arkaPlaniTemizle, kenarRenkleri, type Goruntu } from "../src/lib/rig-foto.ts";
 
 const testler: [string, () => void][] = [];
 const test = (ad: string, f: () => void) => testler.push([ad, f]);
@@ -142,7 +143,7 @@ test("oneriIndeksi: türlerin olağan sırasına göre yer", () => {
   const { rig } = kur("gitar", "amfi", "kabin");
   const s = (d: Dugum) => sira[d.ekipmanId] ?? 9;
   assert.equal(oneriIndeksi(rig, 3, s), 1, "pedal amfiden önce");
-  assert.equal(oneriIndeksi(rig, 6, s), 3, "mikrofon kabinden sonra");
+  assert.equal(oneriIndeksi(rig, 7, s), 3, "rack kabinden sonra");
   assert.equal(oneriIndeksi(rig, 0, s), 1, "ikinci gitar ilk gitarın arkasına");
 });
 
@@ -170,7 +171,7 @@ test("depo: başlangıç, rig ekle/adlandır/kopyala/sil, benzersiz ad", () => {
 test("örnek rig: istenen zincir ve FX loop", () => {
   const d = baslangicDeposu();
   const r: Rig = { ...bosRig("Örnek"), zincir: ornekZincir(d) };
-  assert.equal(yaz(r), "e-les-paul-custom k-tuner k-kompresor k-overdrive e-dsl20cr{k-delay k-reverb} k-kabin-1x12 k-mikrofon e-scarlett-solo");
+  assert.equal(yaz(r), "e-les-paul-custom k-tuner k-kompresor k-overdrive e-dsl20cr{k-delay k-reverb} k-kabin-1x12 e-scarlett-solo");
   for (const x of duzListe(r)) assert.ok(ekipmanBul(d, x.dugum.ekipmanId), `ekipman var: ${x.dugum.ekipmanId}`);
 });
 
@@ -230,6 +231,137 @@ test("goc: bozuk veri güvenli depoya döner; ikinci paralel blok düzleşir; ge
   assert.deepEqual((r.zincir[3] as Dugum).ayar, { Kazanç: 10 });
   assert.equal(g.seciliRig, "r1");
   assert.deepEqual(g.ekipman.map((e) => e.id), ["v"]);
+});
+
+// ── Katalog (GuitarFlex modelleri) ──
+
+/** İlk sürümün kitaplık kimlikleri: eski rig'ler çözülmeye devam etmeli */
+const ESKI_KIMLIKLER = ["k-gitar-tek-kesik", "k-gitar-cift-kesik", "k-gitar-akustik", "k-tuner", "k-wah", "k-kompresor", "k-gurultu-kapisi", "k-boost", "k-overdrive", "k-distortion", "k-fuzz", "k-eq", "k-chorus", "k-phaser", "k-flanger", "k-delay", "k-reverb", "k-looper", "k-amfi-kafa", "k-amfi-kombo", "k-amfi-kombo-kucuk", "k-kabin-4x12", "k-kabin-2x12", "k-kabin-1x12", "k-rack-kompresor", "k-rack-eq", "k-rack-delay", "k-rack-reverb", "k-di", "k-ses-karti", "k-yazilim"];
+
+/** Katalogda geçmemesi gereken gerçek marka / model adları ve onlara çağrışım yapan sayı-ad birleşimleri */
+const YASAK = /\b(marshall|fender|vox|mesa|boogie|orange|peavey|ampeg|ibanez|boss|mxr|dunlop|electro|ehx|strymon|tc ?electronic|line ?6|kemper|celestion|jensen|eminence|shure|sennheiser|royer|neumann|focusrite|universal audio|teletronix|urei|klon|tube ?screamer|ts-?\d+|808|9 ?volt|jcm|plexi|deluxe|twin|bassman|princeton|champ|ac ?30|ac ?15|rectifier|dual rectifier|big ?muff|rat|ds-?1|cry ?baby|uni-?vibe|whammy|g12|v30|vintage 30|greenback|sm ?57|sm ?58|r-?121|la-?2a|1176|cub|epiphone|gibson|les paul|stratocaster|telecaster|strat|tele|amplitube)\b/i;
+
+test("katalog: istenen çeşitlilik (amfi, kabin, pedal türleri, rack, DI, ses kartı); mikrofon yok", () => {
+  const say = (k: string) => KATALOG.filter((e) => CIZIMLER[e.cizim].kategori === k).length;
+  assert.ok(say("amfi") >= 8, `amfi ${say("amfi")}`);
+  assert.ok(say("kabin") >= 5, `kabin ${say("kabin")}`);
+  assert.ok(say("pedal") >= 20, `pedal ${say("pedal")}`);
+  assert.ok(say("rack") >= 6, `rack ${say("rack")}`);
+  const tur = (c: string) => KATALOG.filter((e) => e.cizim === c || e.cizim.startsWith(`${c}-`)).length;
+  assert.ok(tur("overdrive") >= 3 && tur("distortion") >= 2 && tur("fuzz") >= 2 && tur("delay") >= 2 && tur("reverb") >= 2, "pedal türleri");
+  for (const c of ["boost", "kompresor", "gurultu-kapisi", "wah", "zarf-filtresi", "chorus", "phaser", "flanger", "tremolo", "vibe", "oktav", "looper", "tuner", "eq", "volum"]) assert.equal(tur(c) >= 1, true, c);
+  assert.ok(tur("di") >= 1 && tur("ses-karti") >= 1, "stüdyo");
+  assert.ok(!CIZIM_LISTESI.some((c) => c.startsWith("mikrofon")) && !KATALOG.some((e) => /mikrofon|\bmic\b/i.test(`${e.id} ${e.ad} ${CIZIMLER[e.cizim].ad}`)), "mikrofon kaldırıldı");
+  assert.ok(KATALOG.some((e) => e.cizim === "kabin-4x10-bas") && KATALOG.some((e) => e.cizim === "amfi-bas"), "bas amfi ve bas kabini");
+  assert.equal(HOPARLORLER.length, 3, "üç hoparlör türü");
+});
+
+test("katalog: her model GuitarFlex adlı, benzersiz, her çizim türü kitaplıkta; eski kimlikler korunur", () => {
+  assert.equal(new Set(KATALOG.map((e) => e.id)).size, KATALOG.length, "kimlikler benzersiz");
+  assert.equal(new Set(KATALOG.map((e) => e.ad)).size, KATALOG.length, "adlar benzersiz");
+  for (const e of KATALOG) {
+    assert.ok(e.ad.startsWith("GuitarFlex "), e.ad);
+    assert.ok(cizimEtiketi(e), `etiket: ${e.ad}`);
+    assert.ok(/^#[0-9a-f]{6}$/.test(e.renk), `renk: ${e.ad}`);
+  }
+  for (const c of CIZIM_LISTESI) assert.ok(KATALOG.some((e) => e.cizim === c), `kitaplıkta yok: ${c}`);
+  const d = baslangicDeposu();
+  for (const id of ESKI_KIMLIKLER) assert.ok(ekipmanBul(d, id), `eski kimlik çözülmeli: ${id}`);
+  for (const e of ONAYAR_EKIPMAN) assert.equal(cizimEtiketi(e), undefined, "kullanıcı ekipmanına GuitarFlex etiketi basılmaz");
+});
+
+test("katalog: gerçek marka / model adı ya da çağrışımı yok (kitaplık, türler, hoparlörler)", () => {
+  const metinler = [...KATALOG.map((e) => e.ad), ...CIZIM_LISTESI.map((c) => CIZIMLER[c].ad), ...HOPARLORLER];
+  for (const m of metinler) assert.ok(!YASAK.test(m), `yasak ad: ${m}`);
+  // Ekipmanım önayarları kullanıcının kendi ekipmanının etiketidir (marka adı olabilir) ve aynen kalır
+  assert.deepEqual(ONAYAR_EKIPMAN.map((e) => e.ad), ["Epiphone Les Paul Custom", "Marshall DSL20CR", "Boss Dual Cube LX", "Focusrite Scarlett Solo", "AmpliTube 5"]);
+  assert.ok(ONAYAR_EKIPMAN.every((e) => e.benim && e.ozel));
+});
+
+test("hoparlör seçeneği: kabinde seçilir, sınırlanır; diğer türlerde yok", () => {
+  const sc = CIZIMLER["kabin-4x12"].secenekler![0];
+  const { rig, id } = kur("k-kabin-4x12");
+  const d0 = rig.zincir[0] as Dugum;
+  assert.equal(secenekDegeri(d0, sc), 0, "varsayılan ilk hoparlör");
+  const r1 = secenekSec(rig, id["k-kabin-4x12"], sc, 2);
+  assert.equal(secenekDegeri(r1.zincir[0] as Dugum, sc), 2);
+  const r2 = secenekSec(rig, id["k-kabin-4x12"], sc, 9);
+  assert.equal(secenekDegeri(r2.zincir[0] as Dugum, sc), 2, "listenin dışı sınırlanır");
+  assert.ok(CIZIM_LISTESI.filter((c) => CIZIMLER[c].secenekler).every((c) => CIZIMLER[c].kategori === "kabin"));
+});
+
+// ── Fotoğraftan ekipman ──
+
+/** Sınama görüntüsü: hafif geçişli açık zemin, ortada koyu kırmızı dikdörtgen (ekipman), köşede küçük leke */
+function ornekGoruntu(w = 120, h = 90): Goruntu {
+  const data = new Uint8ClampedArray(w * h * 4);
+  let tohum = 7;
+  const gurultu = () => ((tohum = (tohum * 1103515245 + 12345) % 2147483648) / 2147483648 - 0.5) * 8;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const ekipman = x >= 40 && x < 82 && y >= 25 && y < 70;
+      const leke = x >= 6 && x < 9 && y >= 6 && y < 9;
+      const zemin = 232 - y * 0.35 - x * 0.1;
+      const [r, g, b] = ekipman ? [150, 32, 30] : leke ? [60, 60, 60] : [zemin, zemin - 2, zemin - 6];
+      data[i] = r + gurultu();
+      data[i + 1] = g + gurultu();
+      data[i + 2] = b + gurultu();
+      data[i + 3] = 255;
+    }
+  return { width: w, height: h, data };
+}
+
+test("fotoğraf: arka plan ayrılır, ekipman kırpılır, küçük leke atılır", () => {
+  const g = ornekGoruntu();
+  const renk = kenarRenkleri(g);
+  assert.ok(renk.length >= 1 && renk[0][0] > 190, "kenar rengi açık zemin");
+  const s = arkaPlaniTemizle(g, { pay: 0 });
+  assert.equal(s.basarili, true);
+  assert.ok(Math.abs(s.kutu.x - 40) <= 1 && Math.abs(s.kutu.y - 25) <= 1, `kutu başı ${JSON.stringify(s.kutu)}`);
+  assert.ok(Math.abs(s.kutu.w - 42) <= 2 && Math.abs(s.kutu.h - 45) <= 2, `kutu boyu ${JSON.stringify(s.kutu)}`);
+  assert.ok(Math.abs(s.onPlan - (42 * 45) / (120 * 90)) < 0.01, `ön plan oranı ${s.onPlan}`);
+  const a = (x: number, y: number) => s.goruntu.data[(y * s.goruntu.width + x) * 4 + 3];
+  assert.equal(a(20, 20), 255, "ekipmanın ortası opak");
+  assert.ok(a(0, 0) >= 100 && a(0, 0) < 255, "köşe kenar yumuşatması");
+  // Pay ile kırpınca kenarda saydam zemin kalır
+  const p = arkaPlaniTemizle(g, { pay: 0.1 });
+  assert.ok(p.kutu.w > s.kutu.w && p.goruntu.data[3] === 0, "payda arka plan saydam");
+});
+
+test("fotoğraf: düz renk ya da her yeri kaplayan görüntüde ayırma başarısız sayılır (özgün döner)", () => {
+  const w = 40;
+  const h = 30;
+  const duz: Goruntu = { width: w, height: h, data: new Uint8ClampedArray(w * h * 4).fill(200) };
+  const s = arkaPlaniTemizle(duz);
+  assert.equal(s.basarili, false);
+  assert.equal(s.goruntu.width, w);
+  assert.deepEqual(s.kutu, { x: 0, y: 0, w, h });
+  assert.equal(arkaPlaniTemizle({ width: 2, height: 2, data: new Uint8ClampedArray(16) }).basarili, false);
+});
+
+test("goc: eski kayıtlardaki mikrofonlar sessizce çıkar (kitaplık ve kullanıcı mikrofonu; döngü ve yollarda da)", () => {
+  const g = goc({
+    rigler: [
+      {
+        id: "r1",
+        ad: "Eski",
+        zincir: [
+          { ekipmanId: "k-overdrive" },
+          { ekipmanId: "k-amfi-kombo", dongu: [{ ekipmanId: "k-mikrofon" }, { ekipmanId: "k-delay" }] },
+          { tur: "paralel", a: [{ ekipmanId: "u-mic" }, { ekipmanId: "k-chorus" }], b: [{ ekipmanId: "k-mikrofon-serit" }] },
+          { ekipmanId: "k-kabin-1x12" },
+          { ekipmanId: "k-mikrofon", ayar: { Mesafe: 3 } },
+          { ekipmanId: "u-mic" },
+          { ekipmanId: "e-scarlett-solo" },
+        ],
+      },
+    ],
+    ekipman: [{ id: "u-mic", ad: "Benim mikrofonum", cizim: "mikrofon", renk: "#333333" }, ...ONAYAR_EKIPMAN],
+  });
+  assert.equal(yaz(g.rigler[0]), "k-overdrive k-amfi-kombo{k-delay} [A: k-chorus | B: ] k-kabin-1x12 e-scarlett-solo");
+  assert.ok(!g.ekipman.some((e) => e.id === "u-mic"), "kullanıcının mikrofon ekipmanı da çıkar");
+  assert.equal(g.ekipman.length, ONAYAR_EKIPMAN.length);
 });
 
 let gecen = 0;

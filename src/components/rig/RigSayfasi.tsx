@@ -12,7 +12,7 @@ import Zincir, { type Kaynak } from "./Zincir";
 import s from "./Rig.module.css";
 import {
   ANA, CIZIMLER, ayarla, disaAktar, donguAc, donguKapat, dugumBul, ekipmanBul, ekipmanKaydet, ekipmanSil, ekle, gecis, iceAktar, kapAdi, kaydir,
-  konumBul, liste, oneriIndeksi, ornekZincir, paralelBlok, paralelEkle, paralelKaldir, rigAdlandir, rigEkle, rigGuncelle, rigIsle, rigKopyala, rigSec, rigSil,
+  konumBul, liste, oneriIndeksi, secenekSec, ornekZincir, paralelBlok, paralelEkle, paralelKaldir, rigAdlandir, rigEkle, rigGuncelle, rigIsle, rigKopyala, rigSec, rigSil,
   seciliRig, sil, tasi, useRigDepo, fotoSil, type Ekipman, type Kap, type Rig,
 } from "@/lib/rig";
 
@@ -170,7 +170,7 @@ export default function RigSayfasi() {
   };
 
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
       {/* Rig seçici ve araçlar */}
       <div className="flex flex-wrap items-center gap-2">
         <div role="group" aria-label="Rig'lerim" className="flex flex-wrap items-center gap-1 rounded-full bg-ink/[0.05] p-1">
@@ -261,6 +261,12 @@ export default function RigSayfasi() {
           dugum={seciliDugum}
           bul={bul}
           onAyar={(a, v) => secili && rigDegis((r) => ayarla(r, secili, a, v))}
+          onSecenek={(sc, i) => {
+            if (!secili) return;
+            rigDegis((r) => secenekSec(r, secili, sc, i));
+            setDuyuru(`${sc.ad}: ${sc.degerler[i]}`);
+          }}
+          onGorsel={(e, g) => rigIsle((d) => ekipmanKaydet(d, { ...e, gorsel: g }))}
           onGecis={() => secili && rigDegis((r) => gecis(r, secili))}
           onKaydir={(yon) => secili && adimla(secili, yon)}
           onSil={() => secili && dugumSil(secili)}
