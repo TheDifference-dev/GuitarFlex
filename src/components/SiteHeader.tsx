@@ -42,10 +42,11 @@ export const MENULER: Menu[] = [
     ],
     sutunlar: [
       {
-        // Başlık "Elektro Gitar" = /elektro (eski "Elektro Gitar" büyük bağlantısı ve "Teknik Egzersizler" bunun yerine)
+        // Elektro Gitar başlığı altında "Teknik Egzersizler" = /elektro (12 tekniğin sayfası). Arda, 24.11: teknikler menüde tek tek değil.
+        // Başlık bağlantısız: aynı sayfaya iki seçenek olmasın (menuDenetle).
         baslik: "Elektro Gitar",
-        href: "/elektro",
         items: [
+          { href: "/elektro", label: "Teknik Egzersizler" },
           // W5: Sıfırdan Başlangıç ve Akor Yolu arşivde; yerlerine Akorlar ve Günlük Rutin. Akustik Gitar sütunu arşivde.
           { href: "/calis/akorlar", label: "Akorlar" },
           { href: "/rutin", label: "Günlük Rutin" },
