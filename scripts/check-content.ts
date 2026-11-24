@@ -68,6 +68,54 @@ for (const c of BUILTIN_COURSES) {
   }
 }
 
+// ── Yerleşik kurs dersleri: tek alt bölüm ve kısa döngü ─────────────────────────
+// Bir egzersizde bir kısım sekizlik (vuruş başına 2), başka kısım triole (3) ya da on altılık (4) olmaz. Ölçünün
+// ızgarası içindeki en kısa değerdir (tutulan dörtlük ve üstü sayılmaz; galopta sekizlik + iki on altılık = on altılık
+// ızgara): ızgarası olan bütün ölçüler aynı ızgarada olmalı ve aynı ölçüde ikili/üçlü bölünme karışmamalı. Her ders en çok 4 ölçülük döngüdür (src/content/dongu.ts › DONGU_OLCU).
+function altBolumSorunlari(tex: string): string[] {
+  const importer = new alphaTab.importer.AlphaTexImporter();
+  importer.initFromString(tex, new alphaTab.Settings());
+  const score = importer.readScore();
+  const p: string[] = [];
+  const izgaralar = new Set<number>();
+  score.tracks[0].staves[0].bars.forEach((bar, i) => {
+    let ikili = false;
+    let uclu = false;
+    let enInce = 0;
+    for (const beat of bar.voices[0].beats) {
+      const oran = beat.hasTuplet ? beat.tupletNumerator / beat.tupletDenominator : 1;
+      let g = (beat.duration / 4) * oran;
+      if (beat.dots) g *= 2;
+      if (g < 2 - 1e-9) continue;
+      const r = Math.round(g);
+      enInce = Math.max(enInce, r);
+      if (r % 3 === 0) uclu = true;
+      else ikili = true;
+    }
+    if (enInce) izgaralar.add(enInce);
+    if (ikili && uclu) p.push(`ölçü ${i + 1}: aynı ölçüde ikili ve üçlü bölünme (karışık alt bölüm)`);
+  });
+  if (izgaralar.size > 1) p.push(`karışık alt bölüm: ölçülerin ızgarası vuruş başına ${[...izgaralar].sort((a, b) => a - b).join(", ")} nota (tek alt bölüm olmalı; dersi böl)`);
+  if (score.masterBars.length > 4) p.push(`${score.masterBars.length} ölçü: ders en çok 4 ölçülük döngü olmalı`);
+  return p;
+}
+let altBolumHatasi = 0;
+for (const c of BUILTIN_COURSES)
+  for (const l of flatLessons(c)) {
+    if (!l.tex) continue;
+    let p: string[] = [];
+    try {
+      p = altBolumSorunlari(l.tex);
+    } catch {
+      continue; // ayrıştırma hatası aşağıda check() ile yazılır
+    }
+    if (p.length) {
+      altBolumHatasi++;
+      failures++;
+      console.log(`✗ döngü:${c.slug}/${l.id} — ${l.title}\n  ${p.join("\n  ")}`);
+    }
+  }
+
 // Kişisel içerik paketindeki kurslar (varsa)
 let packLessons = 0;
 const packCourses: Course[] = [];
@@ -376,5 +424,6 @@ for (const root of PRIVATE_ROOTS) {
 }
 if (librarySongs) console.log(`Şarkı Kütüphanesi: ${librarySongs} şarkı kontrol edildi.`);
 
+if (altBolumHatasi) console.log(`Tek alt bölüm / döngü kuralı: ${altBolumHatasi} yerleşik ders hatalı.`);
 console.log(`${courseLessons} ders, ${packLessons} paket dersi, ${SONGS.length} şarkı ve ${BACKINGS.length} eşlik kaydı kontrol edildi, ${failures} hatalı.`);
 process.exit(failures ? 1 : 0);

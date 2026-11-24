@@ -24,36 +24,24 @@ type Menu = {
   sutunlar: Sutun[];
 };
 
-/** Üst gezinme ve mega menüler (apple.com'daki gibi: büyük bağlantılı ilk sütun, yanında başlıklı listeler) */
+/**
+ * Üst gezinme ve mega menüler (apple.com'daki gibi: büyük bağlantılı ilk sütun, yanında başlıklı listeler).
+ * Kural: bir menüde aynı sayfaya giden (yalnız #çapası farklı olanlar dahil) tek bağlantı bulunur. Bütün seçenekleri
+ * aynı sayfaya giden menüde (Çalışma Defteri) alt sütun yoktur; yalnız o sayfanın bağlantısı kalır.
+ */
 const MENULER: Menu[] = [
   {
     id: "calis",
     label: "Gitar Çalış",
     href: "/kurslar",
-    active: (p) => ["/calis", "/akustik", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
+    active: (p) => ["/calis", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
     buyuk: [
       { href: "/elektro", label: "Elektro Gitar", simge: yerSimgesi("elektro") },
-      { href: "/akustik", label: "Akustik Gitar", simge: yerSimgesi("akustik") },
+      { href: "/calis/gunluk-isinma", label: "Günlük Isınma", simge: yerSimgesi("seri") },
       { href: "/seviye", label: "Seviye Yolu", simge: yerSimgesi("seviye") },
       { href: "/kurslar", label: "Tüm Kurslar", simge: yerSimgesi("kurslar") },
     ],
     sutunlar: [
-      {
-        baslik: "Elektro Gitar",
-        items: [
-          { href: "/elektro", label: "Teknik Egzersizler" },
-          { href: "/seviye", label: "Seviye Yolu" },
-          { href: "/calis/sifirdan-baslangic-rehberi", label: "Sıfırdan Başlangıç" },
-          { href: "/calis/akor-yolu", label: "Akor Yolu" },
-        ],
-      },
-      {
-        baslik: "Akustik Gitar",
-        items: [
-          { href: "/akustik", label: "Teknik Egzersizler" },
-          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
-        ],
-      },
       {
         baslik: "Müzisyenlik",
         items: [
@@ -85,13 +73,6 @@ const MENULER: Menu[] = [
           { href: "/teori/yol/armoni", label: "Armoni Pratikleri" },
         ],
       },
-      {
-        baslik: "Keşfet",
-        items: [
-          { href: "/teori#sap", label: "Sap Gezgini" },
-          { href: "/teori#dersler", label: "Teori Dersleri" },
-        ],
-      },
     ],
   },
   {
@@ -103,22 +84,7 @@ const MENULER: Menu[] = [
       { href: "/sarki-kutuphanesi", label: "Şarkı Kütüphanesi", simge: yerSimgesi("sarki-kutuphanesi") },
       { href: "https://www.songsterr.com/", label: "Songsterr'i aç", simge: yerSimgesi("sarki-kutuphanesi"), songsterr: true },
     ],
-    sutunlar: [
-      {
-        baslik: "Songsterr'in bütün tabları",
-        items: [
-          { href: "/sarki-kutuphanesi", label: "Şarkı veya sanatçı ara" },
-          { href: "https://www.songsterr.com/", label: "Songsterr ana sayfası", songsterr: true },
-        ],
-      },
-      {
-        baslik: "Öğren",
-        items: [
-          { href: "/sarkilar", label: "Rehber Şarkılar" },
-          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
-        ],
-      },
-    ],
+    sutunlar: [],
   },
   {
     id: "sarkilar",
@@ -133,15 +99,7 @@ const MENULER: Menu[] = [
       {
         baslik: "Şarkılar",
         items: [
-          { href: "/sarkilar", label: "Şarkı Rehberi" },
-          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
           { href: "/sarki-kutuphanesi", label: "Tüm Kütüphane" },
-        ],
-      },
-      {
-        baslik: "Çal",
-        items: [
-          { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
           { href: "/oynatici", label: "Tabla Keşfet" },
         ],
       },
@@ -153,23 +111,7 @@ const MENULER: Menu[] = [
     href: "/defter",
     active: (p) => p.startsWith("/defter"),
     buyuk: [{ href: "/defter", label: "Çalışma Defteri", simge: yerSimgesi("defter") }],
-    sutunlar: [
-      {
-        baslik: "Defter",
-        items: [
-          { href: "/defter#devam", label: "Devam edenler" },
-          { href: "/defter#ogrendim", label: "Öğrendiklerim" },
-          { href: "/defter#gitarlar", label: "Gitarlarım" },
-        ],
-      },
-      {
-        baslik: "Plan",
-        items: [
-          { href: "/defter#takvim", label: "Çalışma takvimi" },
-          { href: "/defter#plan", label: "Haftalık plan ve hedef" },
-        ],
-      },
-    ],
+    sutunlar: [],
   },
   {
     id: "araclar",
@@ -177,25 +119,14 @@ const MENULER: Menu[] = [
     href: "/araclar",
     active: (p) => p.startsWith("/araclar") || p.startsWith("/kutuphane") || p.startsWith("/oynatici"),
     buyuk: [
-      { href: "/araclar#metronom", label: "Metronom", simge: yerSimgesi("metronom") },
-      { href: "/araclar#nota-testi", label: "Nota Testi", simge: yerSimgesi("nota-testi") },
+      { href: "/araclar", label: "Metronom ve Nota Testi", simge: yerSimgesi("metronom") },
+      { href: "/teori#sap", label: "Sap Gezgini", simge: yerSimgesi("sap-gezgini") },
       { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım", simge: yerSimgesi("kutuphane") },
     ],
     sutunlar: [
       {
-        baslik: "Pratik araçları",
-        items: [
-          { href: "/araclar#metronom", label: "Metronom" },
-          { href: "/araclar#nota-testi", label: "Nota Bulma Testi" },
-          { href: "/teori#sap", label: "Sap Gezgini" },
-        ],
-      },
-      {
         baslik: "Tablar",
-        items: [
-          { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım" },
-          { href: "/oynatici", label: "Tabla Keşfet" },
-        ],
+        items: [{ href: "/oynatici", label: "Tabla Keşfet" }],
       },
     ],
   },
@@ -205,15 +136,8 @@ const MENULER: Menu[] = [
     href: "/rig",
     active: (p) => p.startsWith("/rig"),
     buyuk: [{ href: "/rig", label: "Rig'im", simge: RIG_SIMGESI }],
-    sutunlar: [
-      {
-        baslik: "Rig oluşturucu",
-        items: [
-          { href: "/rig", label: "Sinyal zinciri" },
-          { href: "/rig#kitaplik", label: "Ekipman kitaplığı" },
-        ],
-      },
-    ],
+    // Sinyal zinciri ve ekipman kitaplığı aynı /rig sayfasında: tek bağlantı yeter
+    sutunlar: [],
   },
   {
     id: "profil",
@@ -223,18 +147,8 @@ const MENULER: Menu[] = [
     buyuk: [{ href: "/profil", label: "Profil", simge: yerSimgesi("profil") }],
     sutunlar: [
       {
-        baslik: "İlerleme",
-        items: [
-          { href: "/profil", label: "Günlük görevler ve seri" },
-          { href: "/profil", label: "Madalyalar ve başarımlar" },
-        ],
-      },
-      {
         baslik: "GuitarFlex",
-        items: [
-          { href: "/profil#gorunum", label: "Görünüm (tema)" },
-          { href: "/marka", label: "Marka" },
-        ],
+        items: [{ href: "/marka", label: "Marka" }],
       },
     ],
   },

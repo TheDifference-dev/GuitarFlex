@@ -53,9 +53,6 @@ export const ETUTLER = "etutler";
 /** Bitirme koşulu (§3): tablı drill'lerin en az bu oranı tamamlanmalı */
 export const BITIRME_ORANI = 0.7;
 
-/** Akustik içerik Seviye Yolu'na girmez (K7) */
-export const isAcoustic = (c: Course) => c.kind === "acoustic" || c.slug.startsWith("akustik");
-
 /** Dersin geçerli etiketleri: ders alanı varsa alt bölümünkünü ezer (§4) */
 export function lessonTags(ch: Chapter, l: Lesson) {
   return { level: l.level ?? ch.level, axes: l.axes ?? ch.axes, skills: l.skills ?? ch.skills };
@@ -63,16 +60,14 @@ export function lessonTags(ch: Chapter, l: Lesson) {
 
 /** Rehber kopyası mı (Seviye Yolu'nda çift sayılmasın diye).
  *  Ölçüt: kind "guide" olan bir kurstaki ders, `tex`'i (ref çözüldükten sonra, getCourses() çıktısında)
- *  kind "guide" OLMAYAN bir elektro kurstaki bir dersin `tex`'iyle birebir aynıysa kopyadır. Akustik kurslar
- *  karşılaştırmaya girmez: Seviye Yolu'nda yer almadıkları için onlarla aynı olan ders çift sayılmaz
- *  (Akor Yolu'nun 45 dersi Akustik Başlangıç Rehberi'ndekilerle aynı tab'ı taşır ve kalmalıdır). Böyle dersler
+ *  kind "guide" OLMAYAN bir kurstaki bir dersin `tex`'iyle birebir aynıysa kopyadır. Böyle dersler
  *  Seviye Yolu'nun listesine, sayımlarına ve %70 koşuluna girmez; bütün dersleri kopya olan alt bölüm
- *  satırı da düşer. Özgün rehber dersleri (Akor Yolu, rehberlerin kendi dersleri, tabsız okuma adımları) kalır.
+ *  satırı da düşer. Özgün rehber dersleri (rehberlerin kendi dersleri, tabsız okuma adımları) kalır.
  *  Kurs sayfaları bundan etkilenmez. */
 export function guideCopyTest(courses: Course[]): (course: Course, l: Lesson) => boolean {
   const texts = new Set<string>();
   for (const c of courses)
-    if (c.kind !== "guide" && !isAcoustic(c)) for (const s of c.sections) for (const ch of s.chapters) for (const l of ch.lessons) if (l.tex) texts.add(l.tex);
+    if (c.kind !== "guide") for (const s of c.sections) for (const ch of s.chapters) for (const l of ch.lessons) if (l.tex) texts.add(l.tex);
   return (course, l) => course.kind === "guide" && !!l.tex && texts.has(l.tex);
 }
 

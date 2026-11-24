@@ -22,7 +22,7 @@ export default function KursKartiKucuk({ k, p, etiket }: { k: KursKarti; p: Prog
       <UygulamaSimgesi simge={simge} boyut={60} />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="flex items-start justify-between gap-2">
-          <span lang={k.grup === "elektro" || k.grup === "akustik" ? "en" : undefined} className="font-semibold leading-tight">
+          <span lang={k.grup === "elektro" ? "en" : undefined} className="font-semibold leading-tight">
             {ek ? k.title.replace(EK_KURS, "").trim() : k.title}
           </span>
           {yakinda ? (

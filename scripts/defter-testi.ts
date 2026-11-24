@@ -7,7 +7,8 @@ import assert from "node:assert/strict";
 import { register } from "node:module";
 import {
   birlestir, bos, disaAktar, durumAyarla, elleEkle, gitarBasina, gitarEkle, gitarSil, goc, gunToplami, gunlukToplamlar, gununOturumlari,
-  haftaBasi, haftaOzeti, iceAktarMetin, kademe, kayitAc, konumYaz, listele, planAyarla, sureEkle, yerelGun, type KayitBilgisi,
+  haftaBasi, haftaOzeti, iceAktarMetin, kademe, kayitAc, kayitSil, konumYaz, listele, ogrenecekKayitlari, ogrenecekTasi, ogreneceklerdenCikar, ogreneceklereEkle, olcumEkle,
+  planAyarla, planlananlar, siradakiPlan, sureEkle, takvimdenCikar, takvimeEkle, yerelGun, type KayitBilgisi,
 } from "../src/lib/defter-cekirdek.ts";
 
 // progress.ts ve oyun.ts uygulama içinde uzantısız göreli içe aktarım kullanır ("./progress"); Node bu yolları .ts ile
@@ -210,6 +211,8 @@ test("goc v1 → v1: dışa aktar / içe aktar gidiş-dönüş kayıpsız", () =
   v = sureEkle(v, DERS, 125, { kisim: "B", konum: 18, hiz: 80, tempo: 96, aralik: [16, 23] }, an("2026-11-21T10:00:00"));
   v = durumAyarla(v, DERS, "devam", "B", an("2026-11-21T10:05:00"));
   v = planAyarla(v, 1, { hedefDk: 30, not: "sweep 4.1 + Metallica riff" });
+  v = takvimeEkle(v, SARKI, "2026-11-28", an("2026-11-21T10:06:00"));
+  v = ogreneceklereEkle(v, SARKI, an("2026-11-21T10:07:00"));
   const geri = iceAktarMetin(disaAktar(v));
   assert.deepEqual(geri, v);
   assert.throws(() => iceAktarMetin("{bozuk"), /JSON/);
@@ -218,13 +221,92 @@ test("goc v1 → v1: dışa aktar / içe aktar gidiş-dönüş kayıpsız", () =
 
 /* ── Diğer ── */
 
-test("durumAyarla, listele: devam edenler öğrenilmemişleri, öğrendiklerim yeşilleri gösterir", () => {
+test("durumAyarla, listele: Öğreniyorum yalnız turuncuları, Öğrendiklerim yeşilleri, Tümü işaretsizleri de gösterir", () => {
+  const ESKI: KayitBilgisi = { id: "egzersiz:eski/1", tur: "egzersiz", baslik: "Eski otomatik kayıt", altBaslik: "", href: "/calis/eski/1" };
   let v = durumAyarla(bos(), DERS, "ogrendim", null, an("2026-11-21T10:00:00"));
-  v = kayitAc(v, SARKI, an("2026-11-21T11:00:00"));
+  v = durumAyarla(v, SARKI, "devam", "Riff", an("2026-11-21T11:00:00"));
+  v = sureEkle(v, ESKI, 60, {}, an("2026-11-21T09:00:00")); // eski sürümün kendiliğinden açtığı, işaretsiz kayıt
   const f = { tur: "" as const, gitar: "", q: "", sira: "son" as const };
   assert.deepEqual(listele(v, { ...f, durum: "devam" }).map((k) => k.id), [SARKI.id]);
   assert.deepEqual(listele(v, { ...f, durum: "ogrendim" }).map((k) => k.id), [DERS.id]);
   assert.deepEqual(listele(v, { ...f, durum: "tumu", q: "metallica" }).map((k) => k.id), [SARKI.id]);
+  assert.equal(listele(v, { ...f, durum: "tumu" }).length, 3, "işaretsiz eski kayıt silinmez, Tümü'nde görünür");
+});
+
+/* ── Kendiliğinden ekleme yok ── */
+
+test("kayitAc ve olcumEkle: defterde olmayan kayıt açılmaz (açmak ya da çalmak deftere yazmaz)", () => {
+  const v0 = bos();
+  assert.equal(kayitAc(v0, SARKI, an("2026-11-21T10:00:00")), v0);
+  assert.equal(olcumEkle(v0, DERS, 120, { konum: 4, hiz: 80 }, an("2026-11-21T10:00:00")), v0);
+  assert.equal(Object.keys(v0.kayitlar).length, 0);
+});
+
+test("olcumEkle: kullanıcı deftere aldıktan sonra ölçülen süre ve kaldığın yer yazılır", () => {
+  let v = durumAyarla(bos(), DERS, "devam", null, an("2026-11-21T10:00:00"));
+  v = olcumEkle(v, DERS, 120, { konum: 4, hiz: 80, elle: true }, an("2026-11-21T10:05:00"));
+  const k = v.kayitlar[DERS.id];
+  assert.equal(k.toplamSure, 120);
+  assert.equal(k.konum, 4);
+  assert.equal(k.oturumlar[0].elle, undefined, "oynatıcı ölçümü her zaman 'ölçüldü' sayılır");
+  v = kayitAc(v, DERS, an("2026-11-21T10:06:00"));
+  assert.ok(v.kayitlar[DERS.id].acildi, "var olan kayıtta açılış işaretlenir");
+});
+
+/* ── Takvime al ── */
+
+test("takvimeEkle / takvimdenCikar: gün eklenir, tekrar etmez, sıralı kalır; planlananlar güne göre", () => {
+  let v = takvimeEkle(bos(), SARKI, "2026-11-28", an("2026-11-21T10:00:00"));
+  assert.ok(v.kayitlar[SARKI.id], "Takvime al kayıt açar (kullanıcı isteği)");
+  v = takvimeEkle(v, SARKI, "2026-11-25");
+  const ayni = takvimeEkle(v, SARKI, "2026-11-25");
+  assert.equal(ayni, v, "aynı gün ikinci kez eklenmez");
+  assert.equal(takvimeEkle(v, SARKI, "28.11.2026"), v, "geçersiz tarih yok sayılır");
+  assert.deepEqual(v.kayitlar[SARKI.id].takvim, ["2026-11-25", "2026-11-28"]);
+  v = takvimeEkle(v, DERS, "2026-11-25");
+  assert.deepEqual(planlananlar(v, "2026-11-25").map((k) => k.id).sort(), [DERS.id, SARKI.id].sort());
+  assert.equal(siradakiPlan(v.kayitlar[SARKI.id], "2026-11-26"), "2026-11-28");
+  assert.equal(siradakiPlan(v.kayitlar[SARKI.id], "2026-12-01"), "2026-11-28", "gelecek plan yoksa son plan");
+  v = takvimdenCikar(v, SARKI.id, "2026-11-25");
+  assert.deepEqual(v.kayitlar[SARKI.id].takvim, ["2026-11-28"]);
+  v = takvimdenCikar(v, SARKI.id);
+  assert.deepEqual(v.kayitlar[SARKI.id].takvim, []);
+  const f = { tur: "" as const, gitar: "", q: "", sira: "son" as const };
+  assert.deepEqual(listele(v, { ...f, durum: "takvim" }).map((k) => k.id), [DERS.id]);
+});
+
+/* ── Kütüphaneye ekle (Öğreneceklerim) ── */
+
+test("ogreneceklereEkle / ogrenecekTasi / ogreneceklerdenCikar: sıralı liste", () => {
+  const C: KayitBilgisi = { id: "sarki:kutuphane/c", tur: "sarki", baslik: "C", altBaslik: "", href: "/kutuphane/c" };
+  let v = ogreneceklereEkle(bos(), DERS);
+  v = ogreneceklereEkle(v, SARKI);
+  v = ogreneceklereEkle(v, C);
+  assert.equal(ogreneceklereEkle(v, SARKI), v, "ikinci kez eklenmez");
+  assert.deepEqual(v.ogrenecekler, [DERS.id, SARKI.id, C.id]);
+  v = ogrenecekTasi(v, C.id, -1);
+  assert.deepEqual(v.ogrenecekler, [DERS.id, C.id, SARKI.id]);
+  assert.equal(ogrenecekTasi(v, DERS.id, -1), v, "en üstteki yukarı taşınamaz");
+  assert.equal(ogrenecekTasi(v, SARKI.id, 1), v, "en alttaki aşağı taşınamaz");
+  const f = { tur: "" as const, gitar: "", q: "", sira: "son" as const };
+  assert.deepEqual(listele(v, { ...f, durum: "ogrenecek" }).map((k) => k.id), [DERS.id, C.id, SARKI.id], "liste kullanıcının sırasıyla");
+  v = ogreneceklerdenCikar(v, C.id);
+  assert.deepEqual(ogrenecekKayitlari(v).map((k) => k.id), [DERS.id, SARKI.id]);
+  assert.ok(v.kayitlar[C.id], "listeden çıkarmak kaydı silmez");
+  v = kayitSil(v, DERS.id);
+  assert.deepEqual(v.ogrenecekler, [SARKI.id], "silinen kayıt listeden de çıkar");
+});
+
+test("goc: eski defter (takvim ve Öğreneceklerim yok) bozulmadan açılır; bozuk liste temizlenir", () => {
+  const eski = { surum: 1, kayitlar: { [DERS.id]: { id: DERS.id, tur: "egzersiz", baslik: "Tek tel", durum: "devam", oturumlar: [{ tarih: "2026-11-20", sure: 90 }] } }, gitarlar: [] };
+  const v = goc(eski);
+  assert.deepEqual(v.kayitlar[DERS.id].takvim, []);
+  assert.deepEqual(v.ogrenecekler, []);
+  assert.equal(v.kayitlar[DERS.id].toplamSure, 90);
+  assert.equal(v.kayitlar[DERS.id].durum, "devam");
+  const v2 = goc({ ...eski, kayitlar: { [DERS.id]: { ...eski.kayitlar[DERS.id], takvim: ["2026-11-28", "bozuk", "2026-11-25", "2026-11-28"] } }, ogrenecekler: [DERS.id, "yok:1", DERS.id, 5] });
+  assert.deepEqual(v2.kayitlar[DERS.id].takvim, ["2026-11-25", "2026-11-28"]);
+  assert.deepEqual(v2.ogrenecekler, [DERS.id]);
 });
 
 test("gitarSil: kayıt seçimi kalkar, varsayılan sıradakine geçer, geçmiş korunur", () => {
@@ -263,6 +345,12 @@ test("birlestir: aynı kayıtta son güncellenen kalır, yeni kayıtlar eklenir"
   const m = birlestir(a, b);
   assert.equal(m.kayitlar[DERS.id].toplamSure, 300);
   assert.equal(Object.keys(m.kayitlar).length, 2);
+});
+
+test("birlestir: Öğreneceklerim yerel sırası korunur, yedekteki yeniler sona eklenir", () => {
+  const a = ogreneceklereEkle(bos(), DERS);
+  const b = ogreneceklereEkle(ogreneceklereEkle(bos(), SARKI), DERS);
+  assert.deepEqual(birlestir(a, b).ogrenecekler, [DERS.id, SARKI.id]);
 });
 
 for (const [ad, f] of testler) {

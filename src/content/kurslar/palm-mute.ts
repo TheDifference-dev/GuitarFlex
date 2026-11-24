@@ -102,15 +102,14 @@ const s3 = section(3, "Riff'ler", [
   ]),
 ]);
 
-const etude = [
-  e("eeeGeeAe", true), e("eeeGeeDC", true), s("x-xxx-xxF-ffx-xx"), s("x-xxx-xxG-ggx-xx"),
-  e("Eeeeeeee", true), e("Cccccccc", true), s("xxxxxxGxxxxxxxAx"), s("C---D---E-------"),
-];
+// Etüt iki alt bölümde: sekizlik riff'ler (rock, punk) ve on altılık riff'ler (galop, senkop); karışık ölçü yok
+const etude8 = [e("eeeGeeAe", true), e("eeeGeeDC", true), e("Eeeeeeee", true), e("Cccccccc", true)];
+const etude16 = [s("x-xxx-xxF-ffx-xx"), s("x-xxx-xxG-ggx-xx"), s("xxxxxxGxxxxxxxAx"), s("C---D---E-------")];
 const s4 = section(4, "Etüt", [
-  chapter(P, 4, 0, "Palm Mute Etüdü", ["Etüt rock riff'i, galop, punk ve senkop kalıplarını sekiz ölçüde birleştirir. Ritim sürekli değişirken avuç içinin yeri sabit kalmalı."], [
-    ders("Yavaş", 90, tex(90, etude), "Sekiz ölçülük etüt.", "Ritim değişimlerini önceden say.", "", 2),
-    ders("Orta", 110, tex(110, etude), "Daha hızlı.", "Galop ölçülerinde sağ el gevşek.", "", 2),
-    ders("Hedef Tempo", 130, tex(130, etude), "Hedef tempoda.", "Bunu temiz çalabiliyorsan palm mute'un temellerine hakimsin.", "", 3),
+  chapter(P, 4, 0, "Palm Mute Etüdü", ["Etüt rock riff'i, galop, punk ve senkop kalıplarını birleştirir. Her ders tek alt bölümde: önce sekizlik riff'ler, sonra on altılık riff'ler; avuç içinin yeri sabit kalmalı."], [
+    ders("Sekizlik Riff'ler", 90, tex(90, etude8), "Etüdün sekizlik kısmı: rock riff'i ve punk akorları, hep aşağı pena.", "Açık vuruşlarda avuç içini kaldır, hemen geri koy.", "", 2),
+    ders("On Altılık Riff'ler", 110, tex(110, etude16), "Etüdün on altılık kısmı: galop, senkop ve kapanış.", "Galop ölçülerinde sağ el gevşek.", "", 2),
+    ders("Hedef Tempo", 130, tex(130, etude16), "On altılık riff'ler hedef tempoda.", "Bunu temiz çalabiliyorsan palm mute'un temellerine hakimsin.", "", 3),
   ]),
 ]);
 

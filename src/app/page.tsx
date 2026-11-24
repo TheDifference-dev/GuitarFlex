@@ -16,7 +16,6 @@ export default async function Home() {
   const aile = (a: string) => kartlar.filter((k) => k.aile === a);
   const dersSay = (ks: typeof kartlar) => ks.reduce((n, k) => n + k.ders, 0);
   const elektro = aile("elektro");
-  const akustik = aile("akustik");
 
   const seviyeler: SeviyeBasamagi[] = LEVELS.map((l) => ({ level: l, ad: SEVIYE[l].ad, etut: SEVIYE[l].etut }));
   const yollar: TeoriYolu[] = (
@@ -58,8 +57,8 @@ export default async function Home() {
       yollar={yollar}
       rehber={rehber}
       rehberSayisi={rehberli.length}
-      sayilar={{ elektroKurs: elektro.length, elektroDers: dersSay(elektro), akustikKurs: akustik.length, akustikDers: dersSay(akustik), eslik: BACKINGS.length }}
-      sifirdan={kartlar.some((k) => k.slug === "sifirdan-baslangic-rehberi")}
+      sayilar={{ elektroKurs: elektro.length, elektroDers: dersSay(elektro), eslik: BACKINGS.length }}
+      isinma={kartlar.some((k) => k.slug === "gunluk-isinma")}
       oyun={oyun}
     />
   );

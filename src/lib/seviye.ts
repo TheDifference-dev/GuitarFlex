@@ -11,7 +11,6 @@ import {
   LEVELS,
   STIL_KURSU,
   guideCopyTest,
-  isAcoustic,
   lessonTags,
   type SeviyeGrubu,
   type SeviyeSatiri,
@@ -157,12 +156,12 @@ async function yolAdimlari(): Promise<Record<Level, SeviyeYolu[]>> {
   return out;
 }
 
-/** Beş seviyenin Seviye Yolu verisi. Akustik kurslar (K7) dahil edilmez. */
+/** Beş seviyenin Seviye Yolu verisi. */
 export async function getSeviyeYolu(): Promise<Record<Level, SeviyeVerisi>> {
   const [courses, sozluk, yollar] = await Promise.all([getCourses(), readSozluk(), yolAdimlari()]);
   const depthOf = depthFn(sozluk);
   const isCopy = guideCopyTest(courses);
-  const elektro = courses.filter((c) => !isAcoustic(c));
+  const elektro = courses;
 
   const all = new Map<string, Aday[]>();
   elektro.forEach((c, i) => all.set(c.slug, rowsOf(c, i, depthOf, sozluk, isCopy)));

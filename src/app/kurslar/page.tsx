@@ -8,7 +8,7 @@ import { getYol, YOLLAR, yolSayim } from "@/lib/yollar";
 
 export const metadata: Metadata = { title: "Tüm Kurslar" };
 
-/** Kurs kataloğu: rehberler, akor yolu, elektro ve akustik teknikler, ek kurslar, müzik teorisi ve pratik yolları */
+/** Kurs kataloğu: günlük ısınma, akorlar, elektro teknikler, ek kurslar, müzik teorisi ve pratik yolları */
 export default async function CatalogPage() {
   const courses = await getCourses();
   const kartlar = courses.map((c) => kursKarti(c));

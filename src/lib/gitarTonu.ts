@@ -3,13 +3,12 @@ export const GITAR_PROGRAMI = { naylon: 24, celik: 25, temiz: 27, overdrive: 29,
 
 /**
  * Dersin ton ipucundan ("Ton: yüksek gain (7/10) …", "Ton ve eşlik: temiz, boyun pikabı …") oynatıcının
- * gitar sesini seçer. Ton ipucu yoksa ya da akustik kurssa `undefined` (tabdaki/alphaTab'ın varsayılan sesi kalır).
+ * gitar sesini seçer. Ton ipucu yoksa temiz elektro gitar (uygulama elektro gitar odaklı; alphaTab'ın varsayılanı çelik telli akustiktir).
  * "Ton: Sol majör …" gibi tonalite ipuçları dikkate alınmaz.
  */
-export function gitarProgrami(tips: string[] | undefined, kursSlug?: string): number | undefined {
-  if (kursSlug?.startsWith("akustik")) return undefined;
+export function gitarProgrami(tips: string[] | undefined): number | undefined {
   const ipucu = tips?.find((t) => /^Ton( ve eşlik)?:/.test(t) && !/^Ton: [A-ZÇĞİÖŞÜa-zçğıöşü]+ (majör|minör)/.test(t));
-  if (!ipucu) return undefined;
+  if (!ipucu) return GITAR_PROGRAMI.temiz;
   const ton = ipucu.replace(/^Ton( ve eşlik)?:\s*/, "").toLocaleLowerCase("tr");
   if (/^(temiz|clean)/.test(ton)) return GITAR_PROGRAMI.temiz;
   // "gain (6–7/10)" → 7, "gain 4/10" → 4

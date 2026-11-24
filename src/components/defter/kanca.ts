@@ -2,14 +2,15 @@
 
 import { useCallback, useRef, useState } from "react";
 import type { DevamKomutu, OynaticiDurumu } from "@/components/TabPlayer";
-import { defterIsle, kayitGitari, sureEkle, type Ek, type Kayit, type KayitBilgisi } from "@/lib/defter";
+import { defterIsle, kayitGitari, olcumEkle, type Ek, type Kayit, type KayitBilgisi } from "@/lib/defter";
 
 type Kisim = { name: string; bars: [number, number] };
 
 /**
  * Oynatıcı ile Çalışma Defteri arasındaki bağ (kütüphane şarkıları, içe aktarılan dosyalar): oynatıcının son durumu
  * (ölçü, hız, aralık, kısım) ve "kaldığın yerden devam" komutu. Süre, sayfanın kendi çalma sayacından `yaz(sn)` ile
- * yazılır: ilerleme kaydına giden saniyelerin aynısı (çift sayma yok, bkz. lib/defter-cekirdek.ts).
+ * yazılır: ilerleme kaydına giden saniyelerin aynısı (çift sayma yok, bkz. lib/defter-cekirdek.ts). Yalnız kullanıcının
+ * deftere aldığı kayda yazılır; çalmak tek başına deftere kayıt açmaz (olcumEkle).
  */
 export function useDefterBagi(bilgi: KayitBilgisi | null, kisimlar?: Kisim[]) {
   const durumRef = useRef<OynaticiDurumu | null>(null);
@@ -33,12 +34,12 @@ export function useDefterBagi(bilgi: KayitBilgisi | null, kisimlar?: Kisim[]) {
     return d ? { kisim: kisimOf(d), konum: d.olcu + 1, hiz: d.hiz, tempo: d.bpm, aralik: d.aralik } : {};
   }, [kisimOf]);
 
-  /** Çalınan saniyeleri (0: yalnız son konum) deftere yaz */
+  /** Çalınan saniyeleri (0: yalnız son konum) deftere yaz: kayıt defterde yoksa hiçbir şey yazılmaz */
   const yaz = useCallback(
     (sn: number) => {
       if (!bilgi) return;
       const e = ek();
-      defterIsle((v) => sureEkle(v, bilgi, sn, { ...e, gitar: kayitGitari(v, v.kayitlar[bilgi.id]) }));
+      defterIsle((v) => olcumEkle(v, bilgi, sn, { ...e, gitar: kayitGitari(v, v.kayitlar[bilgi.id]) }));
     },
     [bilgi, ek],
   );

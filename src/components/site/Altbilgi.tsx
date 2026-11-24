@@ -7,7 +7,7 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
     baslik: "Gitar Çalış",
     items: [
       { href: "/elektro", label: "Elektro Gitar" },
-      { href: "/akustik", label: "Akustik Gitar" },
+      { href: "/calis/gunluk-isinma", label: "Günlük Isınma" },
       { href: "/seviye", label: "Seviye Yolu" },
       { href: "/kurslar", label: "Tüm Kurslar" },
       { href: "/nasil-calismaliyim", label: "Nasıl Çalışmalıyım?" },
@@ -28,7 +28,6 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
     items: [
       { href: "/sarki-kutuphanesi", label: "Şarkı Kütüphanesi" },
       { href: "/sarkilar", label: "Şarkılarla Öğren" },
-      { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
       { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
     ],
   },

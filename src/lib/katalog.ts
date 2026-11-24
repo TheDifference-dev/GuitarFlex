@@ -4,41 +4,41 @@ import type { Course, Lesson } from "@/content/types";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { dersTuru, type DersTuru } from "./simge";
 
-/** Katalogdaki grup (GuitarBear'deki "teknik seçici" sırasına benzer): rehberler, akor yolu, elektro teknikler,
- *  ek kurslar, akustik teknikler, müzik teorisi */
-export type KursGrubu = "rehber" | "akor" | "elektro" | "ileri" | "ek" | "akustik" | "teori";
-/** Kursun ait olduğu bölüm: menüdeki Elektro Gitar / Akustik Gitar / Müzik Teorisi */
-export type KursAilesi = "elektro" | "akustik" | "teori";
+/** Katalogdaki grup (GuitarBear'deki "teknik seçici" sırasına benzer): rehberler (içerik paketinden), ısınma,
+ *  akorlar, elektro teknikler, ek kurslar, müzik teorisi */
+export type KursGrubu = "rehber" | "isinma" | "akor" | "elektro" | "ileri" | "ek" | "teori";
+/** Kursun ait olduğu bölüm: menüdeki Elektro Gitar / Müzik Teorisi */
+export type KursAilesi = "elektro" | "teori";
 
 export const GRUP_ADI: Record<KursGrubu, string> = {
-  rehber: "Başlangıç Rehberleri",
-  akor: "Akor Yolu",
+  rehber: "Rehberler",
+  isinma: "Günlük Isınma",
+  akor: "Akorlar · CAGED",
   elektro: "Elektro Gitar Teknikleri",
   ileri: "Orta–İleri · L3–L5",
   ek: "Müzisyenlik ve Isınma",
-  akustik: "Akustik Gitar Teknikleri",
   teori: "Müzik Teorisi",
 };
 
-export const AILE_ADI: Record<KursAilesi, string> = { elektro: "Elektro Gitar", akustik: "Akustik Gitar", teori: "Müzik Teorisi" };
+export const AILE_ADI: Record<KursAilesi, string> = { elektro: "Elektro Gitar", teori: "Müzik Teorisi" };
 /** Ailenin ana sayfası (kırıntıdaki ikinci halka) */
-export const AILE_ADRESI: Record<KursAilesi, string> = { elektro: "/elektro", akustik: "/akustik", teori: "/teori" };
+export const AILE_ADRESI: Record<KursAilesi, string> = { elektro: "/elektro", teori: "/teori" };
 
 const EK_KURSLAR = new Set(["gf-ekler", "gf-stiller", "kromatik-isinma"]);
 /** Orta–ileri (L3–L5) ek kurslar: katalogda kendi grubunda, "Ek kurs" etiketiyle (Stiller: bölümleri L2–L5, ağırlığı L3–L5) */
 const ILERI_KURSLAR = new Set(["gf-stiller"]);
-const AKOR_KURSLARI = new Set(["akor-yolu", "akorlar"]);
+const AKOR_KURSLARI = new Set(["akorlar"]);
+const ISINMA_KURSLARI = new Set(["gunluk-isinma"]);
 
 export function kursAilesi(c: Course): KursAilesi {
   if (c.kind === "theory") return "teori";
-  if (c.kind === "acoustic") return "akustik";
   return "elektro";
 }
 
 export function kursGrubu(c: Course): KursGrubu {
   if (c.kind === "theory") return "teori";
   if (c.slug.endsWith("-rehberi")) return "rehber";
-  if (c.kind === "acoustic") return "akustik";
+  if (ISINMA_KURSLARI.has(c.slug)) return "isinma";
   if (AKOR_KURSLARI.has(c.slug)) return "akor";
   if (ILERI_KURSLAR.has(c.slug)) return "ileri";
   if (EK_KURSLAR.has(c.slug) || /\(Ek Kurs\)/.test(c.title)) return "ek";

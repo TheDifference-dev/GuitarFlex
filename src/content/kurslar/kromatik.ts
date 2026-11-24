@@ -71,10 +71,10 @@ const s3 = section(3, "Günlük Rutin", [
     ders("Orta Perdelerde", 60, e8(60, upDownPerm("1235", 7)), "Aynı esneme 7. pozisyonda.", "Başparmak sapın arkasında aşağı iner; el açılır."),
     ders("Geniş Esneme", 50, e8(50, upDownPerm("1246", 9)), "1-2-4-6: altı perdelik açıklık.", "Sadece ısındıktan sonra.", "", 2),
   ]),
-  chapter(P, 3, 2, "Hız Merdiveni", ["Hız merdiveni: aynı kalıbı sekizlik, triole ve on altılıkla art arda çalmak. Tempo sabit kalırken nota yoğunluğu artar."], [
-    ders("Sekizlik → On Altılık", 60, tex(60, [...measures(":8", strokes(perm("1234", 5, [6, 5, 4, 3])), 8), ...measures(":16", strokes(perm("1234", 5, [2, 1, 2, 1])), 16)]), "İki ölçü sekizlik (kalın dört tel), bir ölçü on altılık (ince iki tel).", "Geçişte tempo kaymasın: on altılıkta el iki kat sık salınır, vuruş aynı kalır."),
-    ders("Üç Basamak", 60, tex(60, [...measures(":8", strokes(perm("1234", 5, [6, 5])), 8), ...measures(":8", strokes(perm("123", 5, [4, 3, 2, 1])), 12, 3), ...measures(":16", strokes(perm("1234", 5, [1, 2, 3, 4])), 16)]), "Sekizlik, triole, on altılık.", "Triolede üç parmak kullan."),
-    ders("Hedef Tempo", 80, tex(80, [...measures(":8", strokes(perm("1234", 5, [6, 5])), 8), ...measures(":8", strokes(perm("123", 5, [4, 3, 2, 1])), 12, 3), ...measures(":16", strokes(perm("1234", 5, [1, 2, 3, 4])), 16)]), "Hedef tempoda.", "Bunu temiz çalabiliyorsan parmakların her çalışmaya hazır.", "", 2),
+  chapter(P, 3, 2, "Hız Basamakları", ["Hız basamakları: aynı kalıbı önce sekizlik, sonra triole, sonra on altılık çal. Her ders tek alt bölümde kalır; tempo aynı, nota yoğunluğu ders ders artar."], [
+    ders("Sekizlik", 60, tex(60, measures(":8", strokes(perm("1234", 5, [6, 5, 4, 3])), 8)), "1-2-3-4 kalın dört telde, sekizlik.", "El vuruş başına iki kez salınır; metronomun vuruşu aşağı pena."),
+    ders("Triole", 60, tex(60, measures(":8", strokes(perm("123", 5, [4, 3, 2, 1])), 12, 3)), "1-2-3 dört telde, triole sekizlik.", "Triolede üç parmak kullan; vuruş başı her seferinde başka yöne düşer."),
+    ders("On Altılık", 80, tex(80, measures(":16", strokes(perm("1234", 5, [6, 5, 4, 3, 2, 1, 2, 3])), 16)), "1-2-3-4 bütün tellerde, on altılık, hedef tempoda.", "Bunu temiz çalabiliyorsan parmakların her çalışmaya hazır.", "", 2),
   ]),
 ]);
 
@@ -89,7 +89,7 @@ const ETIKET: Record<string, Tags> = {
   "2.2": { level: "L3", axes: ["technique"], skills: ["T.string_skip"] }, // Tel Atlama
   "3.0": { level: "L1", axes: ["technique"], skills: ["T.chromatic_1234"] }, // Beş Dakikalık Isınma
   "3.1": { level: "L2", axes: ["fretboard"], skills: ["F.stretch"] }, // Esneme
-  "3.2": { level: "L2", axes: ["rhythm", "technique"], skills: ["R.sixteenth", "T.chromatic_1234"] }, // Hız Merdiveni
+  "3.2": { level: "L2", axes: ["rhythm", "technique"], skills: ["R.sixteenth", "T.chromatic_1234"] }, // Hız Basamakları
 };
 
 export const kromatikCourse: Course = {

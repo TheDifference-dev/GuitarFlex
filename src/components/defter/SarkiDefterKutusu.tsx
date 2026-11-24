@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { defterIsle, durumAyarla, kayitGitari, kayitGuncelle, sureEkle, sureYaz, useDefter, type KayitBilgisi } from "@/lib/defter";
-import { DurumDugmeleri, KisimSecici, SureEkle } from "./Parcalar";
+import { defterIsle, kayitGitari, kayitGuncelle, sureEkle, sureYaz, useDefter, type KayitBilgisi } from "@/lib/defter";
+import { KisimSecici, SureEkle } from "./Parcalar";
+import DefterDugmeleri from "./DefterDugmeleri";
 
 /**
- * Şarkı kartındaki defter kutusu (Popüler Şarkılar, Songsterr): kısım, iki durum düğmesi ve (defterdeyse) elle süre.
+ * Şarkı kartındaki defter kutusu (Rehber Şarkılar, Songsterr): kısım, dört defter düğmesi (Öğrendim, Öğreniyorum,
+ * Takvime al, Kütüphaneye ekle) ve (defterdeyse) elle süre. Şarkıyı açmak deftere kayıt açmaz.
  * Songsterr'de çalınan süre uygulamada ölçülemez; "+5 / +10 / +15 dk" ya da dakika alanıyla girilir.
  */
 export default function SarkiDefterKutusu({ bilgi, kompakt = true, sureli = true }: { bilgi: KayitBilgisi; kompakt?: boolean; sureli?: boolean }) {
@@ -26,7 +28,7 @@ export default function SarkiDefterKutusu({ bilgi, kompakt = true, sureli = true
             if (kayit) defterIsle((v) => kayitGuncelle(v, bilgi.id, { kisim: k }));
           }}
         />
-        <DurumDugmeleri durum={kayit?.durum} kisim={kisim} kompakt={kompakt} ad={bilgi.baslik} onDurum={(d) => defterIsle((v) => durumAyarla(v, bilgi, d, kisim))} />
+        <DefterDugmeleri bilgi={bilgi} kisim={kisim} kompakt={kompakt} />
       </div>
       {kayit && sureli && (
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">

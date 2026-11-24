@@ -22,10 +22,13 @@ export function coursePercent(p: Progress, keys: string[]) {
   return Math.round((keys.filter((k) => p.exercises[k]?.completed).length / keys.length) * 100);
 }
 
-/** Teknik egzersiz merkezi: rehberler, akor yolu kartı, kurs kartları ve şarkı bağlantıları (elektro ya da akustik) */
-export default function HomeView({ texts, courses, songs = "elektro", eyebrow }: { texts: SiteTexts; courses: CourseSummary[]; songs?: "elektro" | "akustik"; eyebrow?: string }) {
+/** Elektro gitar teknik egzersiz merkezi: günlük ısınma kartı, akorlar (CAGED) kartı, kurs kartları ve şarkı bağlantıları */
+export default function HomeView({ texts, courses, eyebrow }: { texts: SiteTexts; courses: CourseSummary[]; eyebrow?: string }) {
   const p = useProgress();
-  const songCards = songs === "akustik" ? acousticSongCards(texts.chordCard.slug) : SONG_CARDS;
+  const songCards = SONG_CARDS;
+  // İçerik paketinin site.json'u kaldırılmış bir rehbere bağlanıyorsa o bağlantı gösterilmez
+  const guides = texts.hero.guides.filter((g) => courses.some((c) => c.slug === g.slug));
+  const akorVar = courses.some((c) => c.slug === texts.chordCard.slug);
   const renderCard = (c: CourseSummary) => {
     const pct = coursePercent(p, c.keys);
     const disabled = !!c.status;
@@ -66,38 +69,36 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
     );
   };
 
-  const bolum = eyebrow ?? (songs === "akustik" ? "Akustik Gitar" : "Elektro Gitar");
+  const bolum = eyebrow ?? "Elektro Gitar";
   return (
     <div>
       {/* Sayfa başı: ortalı dev başlık, rehber ve tüm kurslara geçiş */}
       <SayfaBasi
-        simge={yerSimgesi(songs === "akustik" ? "akustik" : "elektro")}
+        simge={yerSimgesi("elektro")}
         kirinti={[{ label: bolum }, { label: "Teknik Egzersizler" }]}
         ust={bolum}
-        baslik={songs === "akustik" ? "Akustik Gitar Teknikleri" : "Gitar Teknik Egzersizleri"}
-        alt="Bir rehberle sırayla ilerle ya da istediğin tekniğe doğrudan geç. Hiçbir ders kilitli değil."
+        baslik="Elektro Gitar Teknikleri"
+        alt="Orta ve ileri seviye: kısa döngülerle çalış, her bölümü sınavla bitir. Hiçbir ders kilitli değil."
       >
-        {texts.hero.guides[0] && <HapBag href={`/calis/${texts.hero.guides[0].slug}`}>Rehberle Başlayın</HapBag>}
+        {guides[0] && <HapBag href={`/calis/${guides[0].slug}`}>Isınarak Başlayın</HapBag>}
         <MetinBag href="/kurslar" buyuk>
           Tüm kurslar
         </MetinBag>
-        {songs !== "akustik" && (
-          <MetinBag href="/seviye" buyuk>
-            Seviye Yolu
-          </MetinBag>
-        )}
+        <MetinBag href="/seviye" buyuk>
+          Seviye Yolu
+        </MetinBag>
       </SayfaBasi>
       <Bant ton="gri" className="space-y-14 pt-12">
 
       <section className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-        {/* Başlangıç rehberleri */}
+        {/* Günlük ısınma ve önerilen kurslar */}
         <div className="card relative overflow-hidden p-7 sm:p-8">
           
           <p className="eyebrow">{texts.hero.eyebrow}</p>
           <h2 className="baslik-orta mt-2">{texts.hero.title}</h2>
           <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-muted">{texts.hero.text}</p>
-          <div className={`mt-7 grid gap-3 ${texts.hero.guides.length > 1 ? "sm:grid-cols-2" : ""}`}>
-            {texts.hero.guides.map((g) => {
+          <div className={`mt-7 grid gap-3 ${guides.length > 1 ? "sm:grid-cols-2" : ""}`}>
+            {guides.map((g) => {
               return (
                 <Link key={g.slug} href={`/calis/${g.slug}`} className="group flex items-center gap-4 rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-4 transition hover:bg-ink/[0.08]">
                   <UygulamaSimgesi simge={kursSimgesi(g.slug)} boyut={44} />
@@ -114,7 +115,8 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
           </div>
         </div>
 
-        {/* Akor yolu */}
+        {/* Akorlar (CAGED) */}
+        {akorVar && (
         <div className="card relative overflow-hidden p-7 sm:p-8">
           <ChordDiagram />
           <p className="eyebrow mt-10">{texts.chordCard.eyebrow}</p>
@@ -124,6 +126,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
             {texts.chordCard.button} <ArrowRight size={16} />
           </Link>
         </div>
+        )}
       </section>
 
       {/* Kurs kartları */}
@@ -138,7 +141,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
 
       {/* Şarkı ve Sololar */}
       <section>
-        <h2 className="baslik-orta mb-6">{songs === "akustik" ? "Şarkılar" : "Şarkı ve Sololar"}</h2>
+        <h2 className="baslik-orta mb-6">Şarkı ve Sololar</h2>
         <div className="grid gap-5 md:grid-cols-3">
           {songCards.map(({ href, title, text, simge }) => (
             <Link key={href} href={href} className="card group flex gap-4 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15">
@@ -164,11 +167,6 @@ const SONG_CARDS: SarkiKarti[] = [
   { href: "/sarkilar", title: "Şarkılarla Öğren", text: "Şarkı Rehberi: teknik bölümünden şarkıya, adım adım; tablar Songsterr'de açılır.", simge: yerSimgesi("sarkilar") },
   { href: "/oynatici", title: "Tabla Keşfet", text: "Kendi Guitar Pro arşivini ve örnek şarkıları çok kanallı oynatıcıda çal.", simge: yerSimgesi("oynatici") },
   { href: "/sarkilar/dogaclama", title: "Doğaçlama Çal", text: "Davul, bas ve gitar eşliğinde önerilen gamlarla solo çal.", simge: yerSimgesi("dogaclama") },
-];
-
-const acousticSongCards = (chordSlug: string): SarkiKarti[] => [
-  { href: "/akustik/sarkilar", title: "Akustik Şarkılar", text: "Akorlarla çalınan şarkılar zorluğa göre; tablar Songsterr'de açılır.", simge: yerSimgesi("sarkilar") },
-  { href: `/calis/${chordSlug}`, title: "Akorları Çal", text: "Şarkılara hazırlık: akorlar, geçişler ve ritim kalıpları.", simge: kursSimgesi(chordSlug) },
 ];
 
 /** İlerleme halkası: dolu kısım vurgu renginde (siyah / açık gri), yüzde ortada */

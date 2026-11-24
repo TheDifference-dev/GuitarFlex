@@ -1,195 +1,178 @@
-// Akorlar — 6 bölüm, özgün egzersizler. Akor notaları sözlükten hesaplanır.
-import type { Course, Tags } from "../types.ts";
+// Akorlar (CAGED) — orta–ileri elektro gitarist için kompakt akor kursu: akorların yapısı (kök – üçlü – beşli,
+// majör / minör / eksik / artık, 7'li, sus ve 9'lu), aynı akorun sap boyunca C-A-G-E-D şekilleriyle beş pozisyonda
+// basılması, şekil bağlantıları ve triad çevrimleri. Açık akor / ilk akor dersleri yoktur.
+// Ders kimlikleri "akc-…" (eski açık akor kursunun "ak-…" kimlikleriyle çakışmasın: eski ilerleme yeni derse geçmez).
+import type { Course } from "../types.ts";
 import { tex } from "../tex.ts";
-import { AKOR, akorNotalari } from "./diziler.ts";
-import { chapter, ders, etiketle, section } from "./ortak.ts";
+import { chapter, section, type LessonInput } from "./ortak.ts";
 
-const P = "ak";
-/** "1" birlik, "2" ikilik, "4" dörtlük, "8" sekizlik tarama kalıbı, "s" shuffle (uzun – kısa) */
-type R = "1" | "2" | "4" | "8" | "s";
-const chord = (name: string) => `(${AKOR[name]})`;
-/** Hava vuruşu: el tellere değmez, akor bağla sürer */
-const bag = (name: string) => `(${AKOR[name].split(" ").map((n) => `${n}{t}`).join(" ")})`;
+const P = "akc";
 
-/** Tarama kalıbı (sekizlik): D = aşağı, U = yukarı, - = hava vuruşu (el yine salınır, akor çınlar) */
-function strum(name: string, r: R, kalip = "D-DU-UDU"): string {
-  const c = chord(name);
-  if (r === "1") return `:1 ${c}{bd}`;
-  if (r === "2") return `:2 ${c}{bd} ${c}{bd}`;
-  if (r === "4") return `:4 ${c}{bd} ${c}{bd} ${c}{bd} ${c}{bd}`;
-  // Shuffle: vuruş üçe bölünür; aşağı vuruş ilk iki bölüm sürer (bağ), yukarı vuruş üçüncüde
-  if (r === "s") return `:8 ${Array.from({ length: 4 }, () => `${c}{bd tu 3} ${bag(name).replace(/\{t\}/g, "{t tu 3}")} ${c}{bu tu 3}`).join(" ")}`;
-  return `:8 ${[...kalip].map((x) => (x === "-" ? bag(name) : `${c}{${x === "D" ? "bd" : "bu"}}`)).join(" ")}`;
+/** Akor sesleri pesten tize ("perde.tel" boşlukla) */
+type V = string;
+const notalar = (v: V) => v.split(" ");
+/** Sekizlik arpej: akor seslerinde çık ve in, ölçüyü (8 sekizlik) dolduracak kadar döner; alternatif pena */
+function arp(v: V): string {
+  const n = notalar(v);
+  const tur = [...n, ...n.slice(1, -1).reverse()];
+  const sekiz = Array.from({ length: 8 }, (_, i) => tur[i % tur.length]);
+  return `:8 ${sekiz.map((x, i) => `${x}{${i % 2 ? "su" : "sd"}}`).join(" ")}`;
 }
-const play = (bpm: number, chords: string[], r: R, kalip?: string) => tex(bpm, chords.map((c) => strum(c, r, kalip)));
-const KALIP_AD: Record<string, string> = { D: "aşağı", U: "yukarı", "-": "(boş)" };
-const kalipYaz = (k: string) => [...k].map((x) => KALIP_AD[x]).join(" – ");
-const notes = (chords: string[]) => [...new Set(chords)].map((c) => `${c}: ${akorNotalari(c)}`).join(" · ");
-/**
- * Bir akor dizisi için üç ders: bütün, dörtlük, tarama kalıbı. Kalıp bölüm bölüm zorlaşır:
- * önce sürekli sekizlik (DUDU), sonra D-DU, sonra D-DU-UDU.
- */
-function trio(chords: string[], tips: string[], bpm = 70, kalip = "D-DU-UDU") {
-  return [
-    ders("Ölçü Başına Bir Vuruş", 60, play(60, chords, "1"), `${chords.join(" – ")}: her ölçüde bir kez vur ve akorun çınlamasını dinle.`, tips, `Notalar: ${notes(chords)}.`),
-    ders("Dörtlük", bpm, play(bpm, chords, "4"), "Her vuruşta bir aşağı tarama.", tips),
-    ders("Tarama Kalıbı", bpm, play(bpm, chords, "8", kalip), `${kalipYaz(kalip)}.`, ["El hiç durmadan aşağı-yukarı salınır: vuruşta aşağı, arada yukarı. Boş yerlerde tellere değmez, akor çınlamaya devam eder.", ...tips], "", 2),
-  ];
-}
-
-const T1 = ["Parmak uçlarıyla, perdenin hemen arkasına bas.", "Her teli tek tek çalıp boğuk tel var mı kontrol et."];
-
-// ── Bölüm 1: İlk Akorlar ─────────────────────────────────────────────────────
-const s1 = section(1, "İlk Akorlar", [
-  chapter(P, 1, 0, "Em ve Am", [
-    "Akor, aynı anda çalınan en az üç notadır. En temel akor türü üçlüdür: kök, üçlü ve beşli.",
-    "Em'nin iki parmağı (5. ve 4. tel, 2. perde) bir tel aşağı kayıp Si teline 1. perde eklenince Am olur.",
-  ], trio(["Em", "Am", "Em", "Am"], T1, 60, "DUDUDUDU")),
-  chapter(P, 1, 1, "E, A ve D", [
-    "Majör akorlar parlak, minör akorlar hüzünlü duyulur. Farkı tek bir nota yaratır: üçlü (majörde 4, minörde 3 yarım ses).",
-    "A – D – E: La majörün I – IV – V akorları. Blues ve rock'n'roll'un temel dizisi.",
-  ], trio(["A", "D", "E", "A"], [...T1, "D akorunda sadece ince dört teli çal."], 70, "D-DUD-DU")),
-  chapter(P, 1, 2, "G, C ve D", ["G – C – D: Sol majörün I – IV – V akorları. Yüzlerce halk ve pop şarkısı yalnızca bu üç akorla çalınır."], trio(["G", "C", "D", "G"], [...T1, "C'de 6. teli çalma: La telindeki yüzük parmağının ucu kalın Mi'ye hafifçe değerek onu sustursun."])),
-]);
-
-// ── Bölüm 2: Geçişler ────────────────────────────────────────────────────────
-const s2 = section(2, "Geçişler", [
-  chapter(P, 2, 0, "Sol Majör Dizisi", ["G – Em – C – D (I – vi – IV – V): 1950'lerden beri pop şarkılarının en sevilen dizisi."], trio(["G", "Em", "C", "D"], ["Geçişi vuruştan önce bitir: parmaklar havada toplanıp birlikte iner.", "Ortak parmakları (ör. G ve Em arasında) yerinde bırak."])),
-  chapter(P, 2, 1, "La Minör Dizisi", [
-    "Am – Dm – E – Am (i – iv – V – i): minör tonun temel kadansı.",
-    "E majör akoru La minör gamında yoktur (Sol yerine Sol#). Bu 'ödünç' Sol#, La'ya güçlü bir çekim yaratır: armonik minörün sesi.",
-  ], trio(["Am", "Dm", "E", "Am"], ["Am ile E aynı şekli kullanır, sadece bir tel kayar.", "Dm'de 5. ve 6. telleri çalma."])),
-  chapter(P, 2, 2, "Hızlı Geçiş", ["Akor geçişini hızlandırmanın yolu: en az parmak hareketiyle geçmek. Ortak notaları (ve parmakları) yerinde bırak."], [
-    ders("Yarım Ölçü", 70, tex(70, ["C", "Am", "G", "Em", "C", "Am", "D", "G"].reduce<string[]>((acc, c, i, arr) => (i % 2 ? acc : [...acc, `:2 ${chord(c)}{bd} ${chord(arr[i + 1])}{bd}`]), [])), "Her ölçüde iki akor.", "C ile Am iki parmağı paylaşır: sadece yüzük parmağı hareket eder.", `Notalar: ${notes(["C", "Am", "G", "Em", "D"])}.`),
-    ders("Her Vuruş", 60, tex(60, [["G", "C", "D", "Em"], ["C", "D", "G", "G"], ["G", "C", "D", "Em"], ["C", "D", "G", "G"]].map((b) => `:4 ${b.map((c) => `${chord(c)}{bd}`).join(" ")}`)), "Her vuruşta yeni akor.", "Akor tam basılmamış olsa bile vuruşu kaçırma; ritim önce gelir."),
-    ders("Bir Dakika Testi", 80, tex(80, Array.from({ length: 20 }, (_, i) => `:4 ${["Am", "C", "Am", "C"].map((c, j) => `${chord(i % 2 ? (j % 2 ? "G" : "Em") : c)}{bd}`).join(" ")}`)), "Am–C ve Em–G arasında hızlı gidip gel: 80 BPM'de 20 ölçü tam bir dakika.", "Bir dakikada kaç temiz geçiş yaptığını say; her gün sayıyı artır.", "", 2),
-  ]),
-]);
-
-// ── Bölüm 3: Barre Akorlar ───────────────────────────────────────────────────
-const s3 = section(3, "Barre Akorlar", [
-  chapter(P, 3, 0, "F Akoru", [
-    "Barre: işaret parmağı bütün telleri aynı perdede basar ve 'hareketli bir eşik' görevi görür. F, E akorunun bir perde yukarı taşınmış halidir.",
-  ], trio(["C", "F", "C", "F"], ["İşaret parmağını hafifçe yana yatır: kemikli kenar telleri daha iyi basar.", "Başparmak sapın arkasında, orta parmak hizasında."], 60)),
-  chapter(P, 3, 1, "Bm Akoru", ["Bm, Am şeklinin 2. perdeye taşınmış halidir (5. telden barre). D – Bm – G – A: Re majörün I – vi – IV – V akorları."], trio(["D", "Bm", "G", "A"], ["Bm'de 6. teli çalma.", "Barre zorluyorsa önce sadece ince dört teli bas."], 60)),
-  chapter(P, 3, 2, "Hareketli Barre", [
-    "Barre şekilleri sapta kaydırılarak her akoru verir: E şekli 3. perdede G, 5. perdede A; A şekli 3. perdede C, 5. perdede D.",
-    "Kök hangi teldeyse (6. ya da 5.) akorun adı o notadır.",
-  ], [
-    ders("Majör Barre", 70, play(70, ["G (barre)", "C (barre)", "D (barre)", "G (barre)"], "4"), "G – C – D – G, hepsi barre.", "G (E şekli, 3. perde) → C (A şekli, 3. perde): barre aynı perdede kalır, şekil değişir. C → D: aynı şekil iki perde kayar. D → G: E şekline dönerken el iki perde iner.", `Notalar: ${notes(["G (barre)", "C (barre)", "D (barre)"])}.`),
-    ders("Minör Barre", 70, play(70, ["Am (barre)", "Dm (barre)", "G (barre)", "C (barre)"], "4"), "Am – Dm – G – C: Do majörde vi – ii – V – I.", "E şeklinde (Am, kök kalın Mi'de) minör için majör şekildeki orta parmak kalkar. A şeklinde (Dm, kök La telinde) minör şekil, açık Am şeklinin barreli halidir: orta, yüzük ve serçe parmak işaret parmağının önünde.", `Notalar: ${notes(["Am (barre)", "Dm (barre)", "G (barre)", "C (barre)"])}.`),
-    ders("Sol Minör", 70, play(70, ["Gm (barre)", "Cm (barre)", "D (barre)", "Gm (barre)"], "8"), "Gm – Cm – D – Gm: Sol minörde i – iv – V – i.", "D akoru majör: armonik minör.", `Notalar: ${notes(["Gm (barre)", "Cm (barre)", "D (barre)"])}.`, 2),
-  ]),
-]);
-
-// ── Bölüm 4: 7'li Akorlar ────────────────────────────────────────────────────
-const blues = ["A7", "A7", "A7", "A7", "D7", "D7", "A7", "A7", "E7", "D7", "A7", "E7"];
-const s4 = section(4, "7'li Akorlar", [
-  chapter(P, 4, 0, "Dominant 7", [
-    "Dominant 7 akoru majör üçlüye küçük yedili ekler (1 – 3 – 5 – b7). Gerilimlidir ve bir dörtlü yukarıdaki akora çözülmek ister.",
-  ], [
-    ders("A7 – D7 – E7", 70, play(70, ["A7", "D7", "E7", "A7"], "4"), "Blues'un üç akoru.", "Açık 7'li akorlar genellikle tam akordan bir parmak eksiktir.", `Notalar: ${notes(["A7", "D7", "E7"])}.`),
-    ders("G7 → C", 70, play(70, ["G7", "C", "G7", "C"], "4"), "Dominant 7'nin çözülmesi: V7 → I.", "G7'deki Fa, C'deki Mi'ye; Si ise Do'ya yarım sesle iner/çıkar.", `Notalar: ${notes(["G7", "C"])}.`),
-    ders("B7 → Em", 70, play(70, ["Em", "B7", "Em", "B7"], "8"), "Minörde V7 → i: B7 – Em.", "B7'de dört parmak: önce yavaş.", `Notalar: ${notes(["Em", "B7"])}. B7'deki Re#, Mi'ye yarım sesle çözülür.`, 2),
-  ]),
-  chapter(P, 4, 1, "Majör 7 ve Minör 7", ["Majör 7 (1 – 3 – 5 – 7) yumuşak ve açık, minör 7 (1 – b3 – 5 – b7) sıcak ve dingin duyulur."], [
-    ders("Cmaj7 – Fmaj7", 60, play(60, ["Cmaj7", "Fmaj7", "Cmaj7", "Fmaj7"], "2"), "İki majör 7.", "Fmaj7'de 5. ve 6. telleri çalma.", `Notalar: ${notes(["Cmaj7", "Fmaj7"])}.`),
-    ders("Am7 – Dm7 – Em7", 60, play(60, ["Am7", "Dm7", "Em7", "Am7"], "4"), "Üç minör 7.", "Minör 7 akorları açık tellerle kolay çalınır.", `Notalar: ${notes(["Am7", "Dm7", "Em7"])}.`),
-    ders("I – vi – ii – V", 70, play(70, ["Cmaj7", "Am7", "Dm7", "G7"], "8"), "Cmaj7 – Am7 – Dm7 – G7: caz standartlarının döngüsü.", "Akorların sesi 'kayıyor' gibi: ortak notalar çok.", `Notalar: ${notes(["Cmaj7", "Am7", "Dm7", "G7"])}.`, 2),
-  ]),
-  chapter(P, 4, 2, "12 Ölçü Blues", [
-    "12 ölçü blues: I – I – I – I – IV – IV – I – I – V – IV – I – V. La'da: A7 – D7 – E7.",
-    "Bluesta bütün akorlar dominant 7'dir; bu da türün 'kirli', gerilimli sesini verir.",
-  ], [
-    ders("Bütün Notalar", 60, play(60, blues, "1"), "12 ölçünün akorlarını tanı.", "Ölçüleri say: 4 + 4 + 4.", `Notalar: ${notes(["A7", "D7", "E7"])}.`),
-    ders("Dörtlük", 80, play(80, blues, "4"), "Her vuruşta tarama.", "5. ve 9. ölçüdeki akor değişimlerini önceden hazırla.", "", 2),
-    ders("Shuffle", 80, play(80, blues, "s"), "Shuffle ile 12 ölçü: her vuruş üçe bölünür, aşağı vuruş uzun (ilk iki bölüm), yukarı vuruş kısa (üçüncü bölüm).", "Son ölçüdeki E7 başa dönüşü (turnaround) hazırlar; shuffle hissi bluesun salınımıdır, düz sekizlik gibi çalma.", "", 3),
-  ]),
-]);
-
-// ── Bölüm 5: Renkler ─────────────────────────────────────────────────────────
-const s5 = section(5, "Renkler", [
-  chapter(P, 5, 0, "Sus Akorları", [
-    "Sus (suspended, asılı) akorlarda üçlünün yerini ikili (sus2) ya da dörtlü (sus4) alır. Akor ne majör ne minördür; 'asılı' kalır ve genellikle majöre çözülür.",
-  ], [
-    ders("D ve Sus'ları", 70, play(70, ["D", "Dsus4", "D", "Dsus2"], "4"), "D – Dsus4 – D – Dsus2.", "Sadece serçe ya da orta parmak hareket eder.", `Notalar: ${notes(["D", "Dsus4", "Dsus2"])}.`),
-    ders("A ve Sus'ları", 70, play(70, ["A", "Asus4", "A", "Asus2"], "4"), "A – Asus4 – A – Asus2.", "Asus2'de Si teli açık.", `Notalar: ${notes(["A", "Asus4", "Asus2"])}.`),
-    ders("Sus Süslemesi", 80, tex(80, [["D", "Dsus4"], ["D", "Dsus2"], ["A", "Asus4"], ["A", "Asus2"]].map(([a, b]) => `:8 ${chord(a)}{bd} r ${chord(a)}{bd} ${chord(b)}{bu} r ${chord(a)}{bu} ${chord(a)}{bd} ${chord(a)}{bu}`)), "Tarama sırasında sus akoruna kısa dokunuşlar.", "Rock ve folk eşliklerinin klasik süsü.", "", 2),
-  ]),
-  chapter(P, 5, 1, "Add9 ve Rock G", ["Add9 akoru majör üçlüye dokuzlu (bir oktav üstteki ikili) ekler: Cadd9 = Do–Mi–Sol + Re. Yüzük ve serçe parmaklar Si ve ince Mi tellerinde sabit kalır: akustik pop'un 'çınlayan' sesi."], [
-    ders("Sabit Parmaklar", 60, play(60, ["G (rock)", "Cadd9", "Dsus4", "Em7 (rock)"], "2"), "G – Cadd9 – Dsus4 – Em7, hepsi Si ve ince Mi tellerinde 3. perdeyle.", "3. perdedeki iki parmak (yüzük Si, serçe ince Mi) hiç kalkmaz; sadece alttaki parmaklar yer değiştirir.", `Notalar: ${notes(["G (rock)", "Cadd9", "Dsus4", "Em7 (rock)"])}.`),
-    ders("Dörtlük", 70, play(70, ["G (rock)", "Cadd9", "Dsus4", "Em7 (rock)"], "4"), "Her vuruşta tarama.", "İnce iki teldeki Re ve Sol bütün akorlarda ortak: geçişler kolay, dizi 'çınlar'."),
-    ders("Tarama Kalıbı", 80, play(80, ["Em7 (rock)", "G (rock)", "Dsus4", "Cadd9"], "8"), "Farklı sırayla, tarama kalıbı.", "Akustik gitarda bu dizi çok dolgun duyulur.", "", 2),
-  ]),
-  chapter(P, 5, 2, "Bas Yürüyüşü", ["Slash akor (ör. D/F#): akorun bası kök dışında bir nota. Bas notaları adım adım ilerleyince akorlar arasında akıcı bir 'yürüyüş' oluşur."], [
-    ders("Sol'dan İnen Bas", 70, play(70, ["G", "D/F#", "Em", "C"], "4"), "G – D/F# – Em – C: bas Sol – Fa# – Mi – Do.", "D/F#'de başparmak 6. teli basabilir ya da işaret parmağı kullanılır.", `Notalar: ${notes(["G", "D/F#", "Em", "C"])}.`),
-    ders("Do'dan İnen Bas", 70, play(70, ["C", "C/B", "Am", "Am/G"], "4"), "C – C/B – Am – Am/G: bas Do – Si – La – Sol.", "C → C/B: sadece La telindeki parmak bir perde iner. Am ve Am/G'de üstteki akor aynı kalır, bas Sol'a (kalın Mi 3) iner; La teli çalınmaz.", `Notalar: ${notes(["C", "C/B", "Am", "Am/G"])}.`),
-    ders("Minör Bas İnişi", 70, play(70, ["Am", "Am/G", "Am/F#", "E"], "8"), "Am üzerinde bas La – Sol – Fa# diye iner, E ile Mi'ye varır.", "Üstteki Am şekli sabit; hareket basta. Am/G ve Am/F#'de La teli susturulur (bas parmağının ucu ona değer).", "Bu iniş klasik bir 'hüzünlü' harekettir: minör akorun altında bas tam seslerle iner (La – Sol – Fa#, melodik minörün inişi), V akoru E ile dönüş hazırlanır.", 2),
-  ]),
-]);
-
-// ── Bölüm 6: Tonlar ──────────────────────────────────────────────────────────
-const s6 = section(6, "Tonlar ve Diziler", [
-  chapter(P, 6, 0, "Sol Majör Tonu", [
-    "Bir tonun akorları gamın her notasına üçlü kurularak bulunur. Majör tonda sıra hep aynıdır: I majör, ii minör, iii minör, IV majör, V majör, vi minör (vii eksik).",
-    "Sol majörde: G – Am – Bm – C – D – Em.",
-  ], [
-    ders("Tonun Akorları", 60, play(60, ["G", "Am", "Bm", "C", "D", "Em", "D", "G"], "1"), "Sol majörün altı akoru sırayla.", "Sıralı çalınca akorların gamı 'merdiven' gibi çıktığını duy.", `Notalar: ${notes(["G", "Am", "Bm", "C", "D", "Em"])}.`),
-    ders("I – IV – V", 70, play(70, ["G", "C", "D", "G"], "8"), "Tonun üç ana akoru.", "Bu üç akor tonun bütün notalarını içerir."),
-    ders("ii – V – I", 70, play(70, ["Am", "D", "G", "G"], "8"), "Am – D – G: en güçlü kadans hareketlerinden biri.", "ii – V – I caz ve pop'ta 'eve dönüş' hissi verir.", "", 2),
-  ]),
-  chapter(P, 6, 1, "Do Majör Tonu", ["Do majörün akorları: C – Dm – Em – F – G – Am. Hiç diyez/bemol yok: hepsi beyaz tuşlar."], [
-    ders("Tonun Akorları", 60, play(60, ["C", "Dm", "Em", "F", "G", "Am", "G", "C"], "1"), "Do majörün altı akoru sırayla.", "F barre: zorlarsa Fmaj7 ile değiştir.", `Notalar: ${notes(["C", "Dm", "Em", "F", "G", "Am"])}.`),
-    ders("I – vi – IV – V", 70, play(70, ["C", "Am", "F", "G"], "8"), "C – Am – F – G.", "50'lerin dizisi Do majörde."),
-    ders("ii – V – I", 70, play(70, ["Dm", "G7", "C", "C"], "8"), "Dm – G7 – C.", "G7'deki Fa → Mi ve Si → Do çözülmelerini dinle.", "", 2),
-  ]),
-  chapter(P, 6, 2, "La Minör Tonu", ["La minörün akorları: Am – (Bdim) – C – Dm – Em – F – G. V akoru çoğunlukla majör (E) çalınır: armonik minörden ödünç Sol#."], [
-    ders("i – iv – v ve V", 60, play(60, ["Am", "Dm", "Em", "Am", "Am", "Dm", "E", "Am"], "4"), "Önce Em ile, sonra E ile aynı dizi.", "Farkı dinle: E akoru dönüşü çok daha 'kesin' yapar.", `Notalar: ${notes(["Am", "Dm", "Em", "E"])}.`),
-    ders("Endülüs Kadansı", 70, play(70, ["Am", "G", "F", "E"], "8"), "Am – G – F – E.", "Bas La – Sol – Fa – Mi diye iner."),
-    ders("i – VI – III – VII", 80, play(80, ["Am", "F", "C", "G"], "8"), "Am – F – C – G: minör tonda pop dizisi.", "Bunu akıcı çalabiliyorsan akorların temellerine hakimsin.", "", 2),
-  ]),
-]);
-
-// Müfredat etiketleri (Spec v2.2 §4): alt bölüm → seviye, eksenler (ilki ana eksen), beceriler.
-// Kaynak: içerik paketi belgeler/mufredat/seviye-esleme.csv, "YERLESIK/akorlar" satırları.
-const ETIKET: Record<string, Tags> = {
-  "1.0": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // Em ve Am
-  "1.1": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // E, A ve D
-  "1.2": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // G, C ve D
-  "2.0": { level: "L2", axes: ["theory_ear", "technique"], skills: ["E.diatonic_chords", "T.open_chords"] }, // Sol Majör Dizisi
-  "2.1": { level: "L2", axes: ["theory_ear", "technique"], skills: ["E.diatonic_chords", "T.open_chords"] }, // La Minör Dizisi
-  "2.2": { level: "L1", axes: ["technique", "rhythm"], skills: ["T.open_chords", "R.quarter"] }, // Hızlı Geçiş
-  "3.0": { level: "L2", axes: ["technique"], skills: ["T.barre_chord"] }, // F Akoru
-  "3.1": { level: "L2", axes: ["technique"], skills: ["T.barre_chord"] }, // Bm Akoru
-  "3.2": { level: "L2", axes: ["technique"], skills: ["T.barre_chord"] }, // Hareketli Barre
-  "4.0": { level: "L3", axes: ["theory_ear", "technique"], skills: ["E.seventh_chords"] }, // Dominant 7
-  "4.1": { level: "L3", axes: ["theory_ear", "technique"], skills: ["E.seventh_chords"] }, // Majör 7 ve Minör 7
-  "4.2": { level: "L2", axes: ["theory_ear"], skills: ["E.progressions"] }, // 12 Ölçü Blues
-  "5.0": { level: "L3", axes: ["theory_ear"], skills: ["E.sus_add"] }, // Sus Akorları
-  "5.1": { level: "L3", axes: ["theory_ear"], skills: ["E.sus_add"] }, // Add9 ve Rock G
-  "5.2": { level: "L2", axes: ["technique"], skills: ["T.bass_walk"] }, // Bas Yürüyüşü
-  "6.0": { level: "L2", axes: ["theory_ear"], skills: ["E.diatonic_chords", "E.progressions"] }, // Sol Majör Tonu
-  "6.1": { level: "L2", axes: ["theory_ear"], skills: ["E.diatonic_chords", "E.progressions"] }, // Do Majör Tonu
-  "6.2": { level: "L3", axes: ["theory_ear"], skills: ["E.minor_key", "E.progressions"] }, // La Minör Tonu
+/** Dörtlük tarama: dört aşağı vuruş */
+const tara = (v: V) => `:4 ${Array.from({ length: 4 }, () => `(${v}){bd}`).join(" ")}`;
+/** İkilik tarama: ölçüde iki akor */
+const iki = (a: V, b: V) => `:2 (${a}){bd} (${b}){bd}`;
+/** Üç sesli triad arpeji (sekizlik): 1-2-3-2 iki kez */
+const triad = (v: V) => {
+  const [a, b, c] = notalar(v);
+  return `:8 ${[a, b, c, b, a, b, c, b].map((x, i) => `${x}{${i % 2 ? "su" : "sd"}}`).join(" ")}`;
 };
+
+function ders(title: string, bpm: number, bars: string[], description: string, tips: string[], theory: string[] = [], minutes = 1, caged = false): LessonInput {
+  return { title, bpm, minutes, tex: tex(bpm, bars), description, tips, theory, ...(caged ? { caged: true } : {}) };
+}
+
+// ── Sesler (kalın telden inceye) ─────────────────────────────────────────────
+// Bölüm 1: La kökü 5. perdede (E şekli) ve Re kökü 5. perdede (A şekli)
+const A_MAJ = "5.6 7.5 7.4 6.3 5.2 5.1";
+const A_MIN = "5.6 7.5 7.4 5.3 5.2 5.1";
+// Re–Sol–Si tellerinde La üçlüleri (kök 7.4)
+const T_MAJ = "7.4 6.3 5.2";
+const T_MIN = "7.4 5.3 5.2";
+const T_DIM = "7.4 5.3 4.2";
+const T_AUG = "7.4 6.3 6.2";
+const AMAJ7 = "5.6 6.4 6.3 5.2";
+const A7 = "5.6 5.4 6.3 5.2";
+const AM7 = "5.6 5.4 5.3 5.2";
+const AM7B5 = "5.6 5.4 5.3 4.2";
+const D = "5.5 7.4 7.3 7.2 5.1";
+const DSUS4 = "5.5 7.4 7.3 8.2 5.1";
+const DSUS2 = "5.5 7.4 7.3 5.2 5.1";
+const DMAJ9 = "5.5 4.4 6.3 5.2";
+const D9 = "5.5 4.4 5.3 5.2";
+const DM9 = "5.5 3.4 5.3 5.2";
+// Bölüm 2: Do majörün beş CAGED şekli
+const C_C = "3.5 2.4 0.3 1.2 0.1"; // C şekli, açık
+const C_A = "3.5 5.4 5.3 5.2 3.1"; // A şekli, 3. perde
+const C_G = "8.6 7.5 5.4 5.3 5.2 8.1"; // G şekli, 5. perde
+const C_E = "8.6 10.5 10.4 9.3 8.2 8.1"; // E şekli, 8. perde
+const C_D = "10.4 12.3 13.2 12.1"; // D şekli, 10. perde
+const C_C12 = "15.5 14.4 12.3 13.2 12.1"; // C şekli bir oktav yukarıda
+// Bölüm 3: La minörün beş şekli ve 5. pozisyonda akor dizileri
+const AM_A = "0.5 2.4 2.3 1.2 0.1"; // A şekli, açık
+const AM_G = "5.6 2.4 5.3 5.2 5.1"; // G şekli, 2–5. perde
+const AM_E = "5.6 7.5 7.4 5.3 5.2 5.1"; // E şekli, 5. perde
+const AM_D = "7.4 9.3 10.2 8.1"; // D şekli, 7. perde
+const AM_C = "12.5 10.4 9.3 10.2"; // C şekli, 9–12. perde
+const D_A5 = "5.5 7.4 7.3 7.2 5.1"; // Re majör, A şekli
+const DM_A5 = "5.5 7.4 7.3 6.2 5.1"; // Re minör, A şekli
+const E_C = "7.5 6.4 4.3 5.2"; // Mi majör, C şekli (4–7. perde)
+// Bölüm 4: Do majör triad çevrimleri
+const C_KOK = "5.3 5.2 3.1"; // Do – Mi – Sol
+const C_1 = "9.3 8.2 8.1"; // Mi – Sol – Do
+const C_2 = "12.3 13.2 12.1"; // Sol – Do – Mi
+const C_KOK2 = "17.3 17.2 15.1";
+const C4_KOK = "10.4 9.3 8.2";
+const C4_1 = "14.4 12.3 13.2";
+const C4_2 = "5.4 5.3 5.2";
+const F_KOK = "10.3 10.2 8.1"; // Fa – La – Do
+const G_2 = "7.3 8.2 7.1"; // Re – Sol – Si
+const AM_1 = "5.3 5.2 5.1"; // Do – Mi – La
+const DM_KOK = "7.3 6.2 5.1"; // Re – Fa – La
+const E_2 = "4.3 5.2 4.1"; // Si – Mi – Sol#
+
+// ── Bölüm 1: Akor Yapısı ─────────────────────────────────────────────────────
+const s1 = section(1, "Akor Yapısı", [
+  chapter(P, 1, 0, "Kök – Üçlü – Beşli", [
+    "Üçlü (triad): kök, üçlü ve beşli. Üçlünün ve beşlinin büyüklüğü akorun türünü belirler: majör 1 – 3 – 5 (büyük üçlü + küçük üçlü), minör 1 – ♭3 – 5, eksik (dim) 1 – ♭3 – ♭5, artık (aug) 1 – 3 – ♯5.",
+    "Majörden minöre geçerken yalnız üçlü yarım ses iner: La majörde Do#, La minörde Do.",
+  ], [
+    ders("La Majör ve La Minör", 70, [arp(A_MAJ), tara(A_MAJ), arp(A_MIN), tara(A_MIN)], "E şekli 5. perdede: önce arpej (tek tek akor sesleri), sonra tarama; majör ve minör.", ["Arpejde kök notalarını (5. perde kalın Mi, 7. perde Re, 5. perde ince Mi) duy.", "Majörden minöre yalnız Sol telindeki parmak kalkar."], ["La majör: La – Do# – Mi · La minör: La – Do – Mi."]),
+    ders("Dört Üçlü Türü", 70, [triad(T_MAJ), triad(T_MIN), triad(T_DIM), triad(T_AUG)], "Re–Sol–Si tellerinde La kökünden dört üçlü: majör, minör, eksik, artık.", ["Kök (Re telinde 7. perde) hiç kalkmaz; yalnız üçlü ve beşli hareket eder.", "Her türün rengini adlandır: parlak, hüzünlü, gergin, belirsiz."], ["A: La – Do# – Mi · Am: La – Do – Mi · Adim: La – Do – Mi♭ · Aaug: La – Do# – Mi#."]),
+  ]),
+  chapter(P, 1, 1, "7'li Akorlar", [
+    "7'li akor üçlüye yedili ekler: maj7 1 – 3 – 5 – 7, dominant 7 1 – 3 – 5 – ♭7, m7 1 – ♭3 – 5 – ♭7, m7♭5 (yarım eksik) 1 – ♭3 – ♭5 – ♭7.",
+    "Bu dört ses kalın Mi kökünden atlamalı (5. teli atlayan) bir dizilişle basılır: caz ve funk'ın kompakt sesi.",
+  ], [
+    ders("Dört 7'li Akor", 70, [arp(AMAJ7), arp(A7), arp(AM7), arp(AM7B5)], "La kökünde Amaj7 – A7 – Am7 – Am7♭5: her ölçüde bir ses değişir.", ["La telini işaret parmağının ucu sustursun.", "Ölçüden ölçüye tek bir parmak yer değiştirir; hangisi olduğunu bul."], ["Amaj7: La – Do# – Mi – Sol# · A7: La – Do# – Mi – Sol · Am7: La – Do – Mi – Sol · Am7♭5: La – Do – Mi♭ – Sol."]),
+    ders("7'li Tarama", 80, [iki(AMAJ7, A7), iki(AM7, AM7B5), iki(AMAJ7, A7), iki(AM7, A7)], "Aynı dört akor, ölçüde iki akor; kısa ve vurgulu tarama.", ["Akoru çaldıktan sonra sol eli hafif gevşetip kısa kes (staccato)."]),
+  ]),
+  chapter(P, 1, 2, "Sus ve 9'lu Akorlar", [
+    "Sus (asılı) akorda üçlünün yerini dörtlü (sus4) ya da ikili (sus2) alır; akor ne majör ne minördür ve genellikle majöre çözülür.",
+    "Genişletilmiş akorlar 7'li akorun üstüne 9, 11, 13 ekler. 9'lu: maj9 1 – 3 – 7 – 9, dominant 9 1 – 3 – ♭7 – 9, m9 1 – ♭3 – ♭7 – 9 (beşli çoğunlukla atlanır).",
+  ], [
+    ders("D – Dsus4 – D – Dsus2", 70, [arp(D), arp(DSUS4), arp(D), arp(DSUS2)], "A şekli 5. perdede Re majör ve sus akorları.", ["Sus4'te serçe Si telinde 8. perdeye, sus2'de Si teli işaret parmağıyla 5. perdeye iner."], ["D: Re – Fa# – La · Dsus4: Re – Sol – La · Dsus2: Re – Mi – La."]),
+    ders("9'lu Akorlar", 70, [arp(DMAJ9), arp(D9), arp(DM9), arp(D9)], "Re kökünde Dmaj9 – D9 – Dm9 – D9: beşli yok, dokuzlu (Mi) Si telinde 5. perdede.", ["Bu dizilişler funk ve neo-soul'un temel sesidir; kalın Mi'yi ve ince Mi'yi sustur."], ["Dmaj9: Re – Fa# – Do# – Mi · D9: Re – Fa# – Do – Mi · Dm9: Re – Fa – Do – Mi."]),
+  ]),
+]);
+
+// ── Bölüm 2: CAGED — Bir Akor, Beş Şekil ────────────────────────────────────
+const s2 = section(2, "CAGED: Bir Akor, Beş Şekil", [
+  chapter(P, 2, 0, "C ve A Şekli", [
+    "CAGED: beş açık akor şekli (C, A, G, E, D) sapta yukarı kaydırılınca her akoru beş pozisyonda verir. Şekiller bu sırayla birbirine bağlanır ve 12. perdede baştan başlar.",
+    "Do majör: C şekli açık pozisyonda, A şekli 3. perdede (kök La telinde).",
+  ], [
+    ders("C Şekli", 70, [arp(C_C), tara(C_C)], "Do majör, C şekli (açık): arpej ve tarama.", ["Kökler La telinde 3. perde ve Si telinde 1. perde."], [], 1, true),
+    ders("A Şekli", 70, [arp(C_A), tara(C_A)], "Do majör, A şekli 3. perdede.", ["A şeklinin kökü (3. perde La teli) C şeklininkiyle aynı nota: iki şekil kökü paylaşır."], [], 1, true),
+    ders("C → A", 70, [iki(C_C, C_A), iki(C_A, C_C), iki(C_C, C_A), tara(C_A)], "İki şekil arasında git gel: ortak kök 3. perdede.", ["El kayarken işaret parmağı La telindeki kökün üstünde kalsın."], [], 2, true),
+  ]),
+  chapter(P, 2, 1, "G ve E Şekli", ["G şekli 5. perdede (kök kalın Mi 8. perde ve Sol teli 5. perde), E şekli 8. perdede (kök kalın Mi 8. perde): iki şekil kalın Mi'deki kökü paylaşır."], [
+    ders("G Şekli", 70, [arp(C_G), tara(C_G)], "Do majör, G şekli 5. perdede.", ["G şeklini tam basmak zordur; tarama için alt dört teli (8.6 7.5 5.4 5.3) ya da üst dört teli kullanabilirsin."], [], 1, true),
+    ders("E Şekli", 70, [arp(C_E), tara(C_E)], "Do majör, E şekli 8. perdede (barre).", ["Barre'yi işaret parmağının kemikli kenarıyla bas."], [], 1, true),
+    ders("A → G → E", 70, [iki(C_A, C_G), iki(C_G, C_E), iki(C_E, C_G), iki(C_G, C_A)], "Üç şekil arasında yukarı ve aşağı.", ["Her geçişte paylaşılan kökü bul: A–G arasında Sol telindeki Do (5. perde), G–E arasında kalın Mi'deki Do (8. perde)."], [], 2, true),
+  ]),
+  chapter(P, 2, 2, "D Şekli ve Bütün Sap", ["D şekli 10. perdede (kök Re telinde 10. perde ve Si telinde 13. perde); sonra C şekli 12. perdede yeniden başlar: beş şekil sapı kaplar."], [
+    ders("D Şekli", 70, [arp(C_D), tara(C_D)], "Do majör, D şekli 10. perdede.", ["Yalnız ince dört tel; kalın iki teli sustur."], [], 1, true),
+    ders("C-A-G-E-D Sırayla", 60, [iki(C_C, C_A), iki(C_G, C_E), iki(C_D, C_C12), iki(C_E, C_G)], "Do majörü beş şekilde sırayla yukarı çık, 12. perdede C şekline var, geri dön.", ["Her şeklin kökünü çalmadan önce gör.", "Kayma sırasında akor çınlamaya devam etmesin: sol eli kaldırarak geç."], [], 2, true),
+  ]),
+]);
+
+// ── Bölüm 3: Minör CAGED ve Şekil Bağlantıları ───────────────────────────────
+const s3 = section(3, "Minör CAGED ve Şekil Bağlantıları", [
+  chapter(P, 3, 0, "La Minör: A, G ve E Şekli", ["Minör şekiller majör şekillerin üçlüsü yarım ses inmiş hâlidir. La minör: A şekli açık, G şekli 2–5. perde, E şekli 5. perde."], [
+    ders("A ve G Şekli", 70, [arp(AM_A), tara(AM_A), arp(AM_G), tara(AM_G)], "La minör önce açık A şekliyle, sonra G şekliyle (2–5. perde).", ["G minör şeklinde La teli susturulur."], [], 1, true),
+    ders("G → E", 70, [arp(AM_G), arp(AM_E), iki(AM_G, AM_E), tara(AM_E)], "G şeklinden E şekline: iki şekil kalın Mi'deki 5. perde kökünü paylaşır.", ["Kökü (5.6) parmağın altında tut, şekli etrafında değiştir."], [], 2, true),
+  ]),
+  chapter(P, 3, 1, "La Minör: D ve C Şekli", ["D şekli 7. perdede (kök Re telinde), C şekli 9–12. perdede (kök La telinde 12. perde): sonra A şekli 12. perdede yeniden başlar."], [
+    ders("D ve C Şekli", 70, [arp(AM_D), tara(AM_D), arp(AM_C), tara(AM_C)], "La minör D şekli 7. perdede, C şekli 9–12. perdede.", ["C minör şeklinde ince Mi ve kalın Mi susturulur."], [], 1, true),
+    ders("Beş Minör Şekil", 60, [iki(AM_A, AM_G), iki(AM_E, AM_D), iki(AM_C, AM_D), iki(AM_E, AM_G)], "La minörü beş şekilde yukarı çık ve geri in.", ["Her şeklin kök notalarını sesli say: 'La'."], [], 2, true),
+  ]),
+  chapter(P, 3, 2, "Bir Pozisyonda Akor Dizisi", ["CAGED'in asıl kazancı: bir tonun akorlarını tek pozisyonda, el kaydırmadan çalmak. 5. pozisyonda La majör: A (E şekli) – D (A şekli) – E (C şekli)."], [
+    ders("I – IV – V", 80, [tara(A_MAJ), tara(D_A5), tara(E_C), tara(A_MAJ)], "La majörde I – IV – V, el 4–7. perdede kalır.", ["Üç akor üç farklı şekil; kökler kalın Mi, La ve La telinde."], ["A: La – Do# – Mi · D: Re – Fa# – La · E: Mi – Sol# – Si."]),
+    ders("i – iv – V – i", 80, [tara(A_MIN), tara(DM_A5), tara(E_C), tara(A_MIN)], "La minörde i – iv – V – i, aynı pozisyonda.", ["E majör (Sol#) La'ya yarım sesle çeker: armonik minörün dönüşü."], [], 2),
+  ]),
+]);
+
+// ── Bölüm 4: Triadlar ve Çevrimler ───────────────────────────────────────────
+const s4 = section(4, "Triadlar ve Çevrimler", [
+  chapter(P, 4, 0, "Üst Üç Tel", ["Çevrim (inversiyon): akorun en pesteki sesi kök değilse. Kök konumu 1 – 3 – 5, 1. çevrim 3 – 5 – 1, 2. çevrim 5 – 1 – 3. Üst üç telde Do majörün üç çevrimi sapı 5. perdeden 17. perdeye kadar kaplar."], [
+    ders("Do Majör Çevrimleri", 70, [triad(C_KOK), triad(C_1), triad(C_2), triad(C_KOK2)], "Sol–Si–ince Mi tellerinde Do majör: kök konumu, 1. çevrim, 2. çevrim, kök konumu (oktav).", ["Her çevrimde kökün (Do) hangi telde olduğunu bul."], ["Do – Mi – Sol · Mi – Sol – Do · Sol – Do – Mi."]),
+    ders("Çevrimleri Tara", 70, [tara(C_KOK), tara(C_1), tara(C_2), tara(C_KOK2)], "Aynı çevrimler, dörtlük tarama.", ["Yalnız üç tel: pena kısa bir hareketle üç teli birlikte çalsın."], [], 2),
+  ]),
+  chapter(P, 4, 1, "Orta Üç Tel", ["Re–Sol–Si tellerinde de üç çevrim vardır; ritim gitarında bu küçük dizilişler bas ve klavyeyle çakışmadan akoru verir."], [
+    ders("Re–Sol–Si Çevrimleri", 70, [triad(C4_2), triad(C4_KOK), triad(C4_1), triad(C4_KOK)], "Do majör: 2. çevrim 5. perdede, kök konumu 8–10. perdede, 1. çevrim 12–14. perdede.", ["Si telindeki notalar ince Mi'deki çevrimlerden farklı parmak ister; parmak numarasını önceden seç."], ["Sol – Do – Mi · Do – Mi – Sol · Mi – Sol – Do."]),
+  ]),
+  chapter(P, 4, 2, "Ses Yürütme", ["Ses yürütme (voice leading): akor değişirken en yakın çevrimi seçmek. Sesler en çok bir iki perde hareket eder; akorlar birbirine 'kayar'."], [
+    ders("I – IV – V – I", 70, [triad(C_1), triad(F_KOK), triad(G_2), triad(C_1)], "Do majörde C – F – G – C, üst üç telde 7–10. perdede.", ["F'ye geçerken yalnız Sol ve Si telleri hareket eder; ince Mi'deki Do sabit."], ["C: Mi – Sol – Do · F: Fa – La – Do · G: Re – Sol – Si."]),
+    ders("i – iv – V – i", 70, [triad(AM_1), triad(DM_KOK), triad(E_2), triad(AM_1)], "La minörde Am – Dm – E – Am, 4–7. perdede.", ["E'deki Sol# (ince Mi 4. perde) La'ya yarım ses çıkar."], ["Am: Do – Mi – La · Dm: Re – Fa – La · E: Si – Mi – Sol#."], 2),
+  ]),
+]);
 
 export const akorCourse: Course = {
   slug: "akorlar",
   title: "Akorlar",
-  description: "Açık akorlar, barre akorlar ve hızlı geçişler.",
+  cardTitle: "Akorlar · CAGED",
+  description: "Akorların yapısı, CAGED şekilleri, şekil bağlantıları ve triad çevrimleri: aynı akoru sapın her yerinde bul.",
   kind: "technique",
   guide: [
-    "## Akor nedir?",
-    "Aynı anda çalınan en az üç nota. Akorlar gamın notaları üzerine üçlü aralıklarla kurulur; majör, minör, 7'li ve sus akorlar bu yapının çeşitleridir.",
-    "## Nasıl çalışılır?",
-    "Önce her akoru tek tek temiz çal: her teli ayrı ayrı çalıp boğuk tel var mı kontrol et. Sonra geçişleri çalış; ritim hiçbir zaman akor için beklemez.",
+    "## Bu kurs kimin için?",
+    "Açık akorları ve barre'yi zaten bilen elektro gitarist için. Amaç akor ezberlemek değil, akorun nasıl kurulduğunu ve sapın her bölgesinde nerede olduğunu görmek.",
+    "## Akor nasıl oluşur?",
+    "Akor bir gamın notalarının üçlü aralıklarla üst üste konmasıdır: kök – üçlü – beşli (triad), üstüne yedili (7'li akorlar), dokuzlu, on birli, on üçlü (genişletilmiş akorlar). Üçlüyü dörtlü ya da ikiliyle değiştirmek sus akorunu verir.",
+    "## CAGED",
+    "Beş açık akor şekli (C, A, G, E, D) sapta bu sırayla birbirine bağlanır. Aynı akorun beş şekli sapı 12 perdede kaplar; sonra şekiller oktavda tekrar eder. Her şeklin kök notalarını bilmek, akoru, arpejini ve pentatonik kutusunu aynı anda bulmanı sağlar. CAGED şekilleri tablosu Bölüm 2 ve 3'ün ders sayfalarında.",
     "## Kurs planı",
-    "Bölüm 1 – İlk akorlar.",
-    "Bölüm 2 – Geçişler.",
-    "Bölüm 3 – Barre akorlar.",
-    "Bölüm 4 – 7'li akorlar ve 12 ölçü blues.",
-    "Bölüm 5 – Renkler: sus, add9, bas yürüyüşü.",
-    "Bölüm 6 – Tonlar ve diziler.",
+    "Bölüm 1 – Akor yapısı.",
   ],
-  sections: etiketle([s1, s2, s3, s4, s5, s6], ETIKET),
+  sections: [s1, s2, s3, s4],
 };

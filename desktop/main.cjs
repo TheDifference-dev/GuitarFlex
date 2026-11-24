@@ -222,7 +222,7 @@ function buildMenu() {
         { label: "Profil", accelerator: "CmdOrCtrl+2", click: () => go("/profil") },
         { label: "Şarkılarla Öğren", accelerator: "CmdOrCtrl+3", click: () => go("/sarkilar") },
         { label: "Şarkı Kütüphanesi (Songsterr)", accelerator: "CmdOrCtrl+K", click: () => sarkiAc && sarkiAc("") },
-        { label: "Akustik Egzersizler", accelerator: "CmdOrCtrl+8", click: () => go("/akustik") },
+        { label: "Günlük Isınma", accelerator: "CmdOrCtrl+8", click: () => go("/calis/gunluk-isinma") },
         { label: "Gitarda Nasıl Çalışmalıyım?", accelerator: "CmdOrCtrl+9", click: () => go("/nasil-calismaliyim") },
         { label: "Tabla Keşfet", accelerator: "CmdOrCtrl+6", click: () => go("/oynatici") },
         { label: "Doğaçlama Çal", accelerator: "CmdOrCtrl+7", click: () => go("/sarkilar/dogaclama") },

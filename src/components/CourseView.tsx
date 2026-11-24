@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { BookText, Check, ChevronDown, FileText, ListTree, ListVideo, PlayCircle, Sparkles } from "lucide-react";
 import type { Course, Lesson, Section } from "@/content/types";
 import { lessonKey } from "@/content/courses";
-import { chapterLevels, isAcoustic } from "@/content/seviyeler";
+import { chapterLevels } from "@/content/seviyeler";
 import SeviyeRozeti from "./SeviyeRozeti";
 import Cekmece from "./site/Cekmece";
 import Kirinti from "./site/Kirinti";
@@ -30,14 +30,26 @@ function sectionDone(p: Progress, course: Course, s: Section) {
   return lessons.length > 0 && lessons.every((l) => lessonDone(p, course, l));
 }
 
-/** Bölüm sonundaki sınav satırı: sınavın adı ve kademelerin BPM eşikleri (Altın I · Platin I · Elmas I · Usta) */
-function ExamRow({ section: s }: { section: Section }) {
+/** Bölüm sınavı alt bölümü: bütün dersleri sınav dersi (courses.ts › sinavEkle) */
+const sinavMi = (c: Section["chapters"][number]) => c.lessons.length > 0 && c.lessons.every((l) => l.exam);
+
+/** Bölüm sonundaki sınav satırı: sınavın adı, sınav dersine bağlantı ve kademelerin BPM eşikleri (Altın I · Platin I · Elmas I · Usta) */
+function ExamRow({ section: s, href, done }: { section: Section; href?: string; done?: boolean }) {
   const tiers = s.examTiers ?? [];
+  const ad = (
+    <span className="flex items-center gap-1.5 font-semibold text-accent">
+      {done ? <Check size={12} className="shrink-0 text-ok" /> : <Sparkles size={12} className="shrink-0" />} {s.examName ?? "Sınav"}
+    </span>
+  );
   return (
-    <div className="mt-1.5 rounded-xl bg-ink/[0.04] px-2.5 py-2 text-xs" title="Sınava girmek istediğin kademeyi ve BPM'i seç">
-      <span className="flex items-center gap-1.5 font-semibold text-accent">
-        <Sparkles size={12} className="shrink-0" /> {s.examName ?? "Sınav"}
-      </span>
+    <div className="mt-1.5 rounded-xl bg-ink/[0.04] px-2.5 py-2 text-xs" title="Sınav dersi: bölümün tekniklerini birleştiren döngü; kademeler artan tempolardır">
+      {href ? (
+        <Link href={href} className="hover:underline">
+          {ad}
+        </Link>
+      ) : (
+        ad
+      )}
       {!!tiers.length && (
         <span className="mt-1 flex flex-wrap gap-1">
           {tiers.map((bpm, i) => (
@@ -70,7 +82,7 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
   const hashCode = hash.startsWith("#bolum-") ? decodeURIComponent(hash.slice(7)) : null;
   const hashSection = hashCode ? course.sections.findIndex((s) => s.chapters.some((c) => c.code === hashCode)) : -1;
   const current = course.sections[selected ?? (hashSection >= 0 ? hashSection : Math.max(0, firstOpen))] ?? course.sections[0];
-  const badges = !isAcoustic(course);
+  const badges = true;
 
   // Kurs ilerlemesi ve sıradaki ders (GuitarBear: "İLERLEME x/N", "MEVCUT BÖLÜM: x.y")
   const hepsi = course.sections.flatMap((s) => s.chapters.flatMap((c) => c.lessons.map((l) => ({ l, s, c }))));
@@ -166,7 +178,7 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                   </span>
                 </button>
                 <div className="space-y-0.5 pb-2 pl-3 pr-2">
-                  {s.chapters.map((c) => {
+                  {s.chapters.filter((c) => !sinavMi(c)).map((c) => {
                     const done = c.lessons.every((l) => lessonDone(p, course, l));
                     return (
                       <a
@@ -185,7 +197,10 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                       </a>
                     );
                   })}
-                  {(s.exam || !!s.examTiers?.length) && <ExamRow section={s} />}
+                  {(s.exam || !!s.examTiers?.length) && (() => {
+                    const sinavDersi = s.chapters.filter(sinavMi).flatMap((c) => c.lessons)[0];
+                    return <ExamRow section={s} href={sinavDersi ? dersHref(sinavDersi) : undefined} done={sinavDersi ? lessonDone(p, course, sinavDersi) : false} />;
+                  })()}
                 </div>
               </div>
             );

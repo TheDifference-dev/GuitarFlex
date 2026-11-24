@@ -2,17 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import SongsterrBag from "@/components/SongsterrBag";
+import AlbumKapagi from "@/components/AlbumKapagi";
+import DefterDugmeleri from "@/components/defter/DefterDugmeleri";
 import { defterIsle, kayitAc, songsterrKaydi } from "@/lib/defter";
 import type { SimgeTanim } from "@/lib/simge";
 
 export type SeritSarki = { title: string; artist: string; kind: string; madalya: string; bpm?: number; url: string; simge: SimgeTanim; adim?: number };
 
 /**
- * Yatay kayan şarkı bandı (derlenmiş koleksiyon): başlık, ok düğmeleri, büyük renkli kartlar. Kartlar Songsterr'i
- * uygulama içi pencerede açar. Kaydırma: ok düğmeleri, klavye (bant odaktayken ←/→, Home/End), fare tekerleği
- * (bant uçlara gelene kadar yatay kayar, sonra sayfa kayar), dokunmatik/iz paneli.
+ * Yatay kayan şarkı bandı (derlenmiş koleksiyon): başlık, ok düğmeleri, albüm kapaklı renkli kartlar. Kapak ve ad
+ * Songsterr'i uygulama içi pencerede açar (açmak deftere kayıt açmaz); kartın altında dört defter düğmesi (simge).
+ * Kaydırma: ok düğmeleri, klavye (bant odaktayken ←/→, Home/End), fare tekerleği (bant uçlara gelene kadar yatay
+ * kayar, sonra sayfa kayar), dokunmatik/iz paneli.
  */
 export default function SarkiSeridi({ baslik, alt, sarkilar }: { baslik: string; alt?: string; sarkilar: SeritSarki[] }) {
   const kap = useRef<HTMLUListElement>(null);
@@ -87,24 +89,28 @@ export default function SarkiSeridi({ baslik, alt, sarkilar }: { baslik: string;
       >
         {sarkilar.map((s) => (
           <li key={`${s.artist}|${s.title}`} className="w-[248px] shrink-0 snap-start">
-            <SongsterrBag q={s.url} onAc={() => defterIsle((v) => kayitAc(v, songsterrKaydi(s.title, s.artist, s.url)))} data-renk={s.simge.renk} className="yukselen card group flex h-full flex-col overflow-hidden !p-0">
-              <span className="relative flex h-[132px] items-center justify-center" style={{ background: "linear-gradient(135deg, var(--r1), var(--r2))" }}>
-                <span className="absolute left-3 top-3 rounded-full bg-black/30 px-2.5 py-0.5 text-xs font-semibold text-white">{s.madalya}</span>
-                <span className="absolute right-3 top-3 rounded-full bg-black/30 px-2.5 py-0.5 text-xs font-semibold text-white">
-                  {s.kind[0].toLocaleUpperCase("tr") + s.kind.slice(1)}
+            <div data-renk={s.simge.renk} className="yukselen card group flex h-full flex-col overflow-hidden !p-0" data-sarki-karti>
+              <SongsterrBag q={s.url} onAc={() => defterIsle((v) => kayitAc(v, songsterrKaydi(s.title, s.artist, s.url)))} className="flex flex-1 flex-col focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]">
+                <span className="relative flex h-[148px] items-center justify-center" style={{ background: "linear-gradient(135deg, var(--r1), var(--r2))" }}>
+                  <span className="absolute left-3 top-3 z-[1] rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-semibold text-white">{s.madalya}</span>
+                  <span className="absolute right-3 top-3 z-[1] rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-semibold text-white">
+                    {s.kind[0].toLocaleUpperCase("tr") + s.kind.slice(1)}
+                  </span>
+                  <AlbumKapagi sanatci={s.artist} baslik={s.title} boyut={112} className="mt-3 shadow-[0_10px_24px_-10px_rgb(0_0_0/0.55)] ring-1 ring-white/25" />
+                  {s.adim ? (
+                    <span className="absolute bottom-2.5 left-3 z-[1] rounded-full bg-black/45 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-white" title="Şarkı Rehberi adımı">
+                      Adım {s.adim}
+                    </span>
+                  ) : null}
                 </span>
-                {s.adim ? (
-                  <span className="text-[56px] font-semibold leading-none tabular-nums text-white drop-shadow-sm">{s.adim}</span>
-                ) : (
-                  <UygulamaSimgesi simge={s.simge} boyut={60} className="ring-1 ring-white/30" />
-                )}
-              </span>
-              <span className="flex flex-1 flex-col p-4">
-                <span className="line-clamp-2 text-[17px] font-semibold leading-tight group-hover:underline">{s.title}</span>
-                <span className="mt-1 truncate text-sm text-muted">{s.artist}</span>
-                {s.bpm ? <span className="mt-auto pt-2 text-xs tabular-nums text-muted">{s.bpm} BPM</span> : null}
-              </span>
-            </SongsterrBag>
+                <span className="flex flex-1 flex-col px-4 pb-2 pt-3">
+                  <span className="line-clamp-2 text-[17px] font-semibold leading-tight group-hover:underline">{s.title}</span>
+                  <span className="mt-1 truncate text-sm text-muted">{s.artist}</span>
+                  {s.bpm ? <span className="mt-auto pt-1.5 text-xs tabular-nums text-muted">{s.bpm} BPM</span> : null}
+                </span>
+              </SongsterrBag>
+              <DefterDugmeleri bilgi={songsterrKaydi(s.title, s.artist, s.url)} ikon className="border-t border-line/60 px-3 py-2" />
+            </div>
           </li>
         ))}
       </ul>

@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState, type KeyboardEvent } from "react";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarCheck, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
   AY_ADLARI, GUN_ADLARI, GUN_KISA, KADEME_ESIKLERI_DK, TUR_ADI, defterIsle, gunEkle, gunHedefi, gunTarihi, gunToplami, gunlukToplamlar, gununOturumlari, haftaGunu,
-  haftaOzeti, kademe, kisimYaz, planAyarla, sureYaz, yerelGun, type DefterVeri,
+  haftaOzeti, kademe, kisimYaz, planAyarla, planlananlar, sureYaz, takvimdenCikar, yerelGun, type DefterVeri, type Kayit,
 } from "@/lib/defter";
 import { DurumIsareti, gitarAdi } from "./Parcalar";
 
@@ -20,8 +20,9 @@ const gunYazisi = (t: string) => {
 const dk = (sn: number) => Math.round(sn / 60);
 
 /**
- * Çalışma takvimi: ay görünümü (günün toplam süresine göre beş kademe), gün ayrıntısı (o günün oturumları) ve
- * haftalık plan (gün başına hedef dakika ve plan notu) ile hafta özeti. Tarihler bilgisayarın yerel saatine göredir.
+ * Çalışma takvimi: ay görünümü (günün toplam süresine göre beş kademe; "Takvime al" ile planlanan çalışmalar mavi
+ * noktayla), gün ayrıntısı (o güne planlananlar ve o günün oturumları) ve haftalık plan (gün başına hedef dakika, plan
+ * notu ve planlanan çalışmalar) ile hafta özeti. Tarihler bilgisayarın yerel saatine göredir.
  */
 export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { veri: DefterVeri; ilerleme: Map<string, number>; varsayilanDk: number; bugun: string }) {
   const [ay, setAy] = useState(() => {
@@ -30,6 +31,12 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
   });
   const [secili, setSecili] = useState(bugun);
   const defter = useMemo(() => gunlukToplamlar(veri), [veri]);
+  /** Gün → o güne planlanan kayıtlar ("Takvime al") */
+  const planlar = useMemo(() => {
+    const m = new Map<string, Kayit[]>();
+    for (const k of Object.values(veri.kayitlar)) for (const t of k.takvim) m.set(t, [...(m.get(t) ?? []), k]);
+    return m;
+  }, [veri]);
   const toplamOf = (t: string) => gunToplami(defter.get(t), ilerleme.get(t) ?? 0);
 
   // Ayın ızgarası: pazartesiden başlayan haftalar
@@ -99,7 +106,8 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
             const k = kademe(sn);
             const h = gunHedefi(veri, t, varsayilanDk);
             const tamam = h > 0 && sn >= h;
-            const etiket = `${gunYazisi(t)}: ${sn ? `${sureYaz(sn)} çalışma` : "çalışma yok"}${h ? `, hedef ${dk(h)} dk${tamam ? ", hedef tamam" : ""}` : ", dinlenme günü"}${t === bugun ? ", bugün" : ""}`;
+            const plan = planlar.get(t)?.length ?? 0;
+            const etiket = `${gunYazisi(t)}: ${sn ? `${sureYaz(sn)} çalışma` : "çalışma yok"}${h ? `, hedef ${dk(h)} dk${tamam ? ", hedef tamam" : ""}` : ", dinlenme günü"}${plan ? `, ${plan} planlı çalışma` : ""}${t === bugun ? ", bugün" : ""}`;
             return (
               <button
                 key={t}
@@ -118,6 +126,11 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
                 <span className={`leading-none ${t === bugun ? "flex size-6 items-center justify-center rounded-full bg-text font-semibold text-bg" : "font-medium"}`}>{d.getDate()}</span>
                 {sn > 0 && <span className="mt-0.5 text-[10px] font-semibold leading-none">{dk(sn) || "<1"} dk</span>}
                 {tamam && <Check size={11} strokeWidth={3} className="absolute right-1 top-1" aria-hidden />}
+                {plan > 0 && (
+                  <span className="absolute left-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#0071e3] px-1 text-[9px] font-semibold leading-none text-white" aria-hidden>
+                    {plan}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -131,6 +144,12 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
           ))}
           <span className="flex items-center gap-1">
             <Check size={12} strokeWidth={3} aria-hidden /> hedef tamam
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="flex size-3.5 items-center justify-center rounded-full bg-[#0071e3] text-[9px] font-semibold text-white" aria-hidden>
+              1
+            </span>
+            planlı çalışma (Takvime al)
           </span>
         </div>
       </section>
@@ -151,6 +170,7 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
             {planNotu}
           </p>
         )}
+        <GunPlani kayitlar={planlananlar(veri, secili)} tarih={secili} />
         {oturumlar.length ? (
           <ul className="mt-3 divide-y divide-line/60">
             {oturumlar.map((o, i) => (
@@ -182,7 +202,7 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-muted">Bu gün defterde oturum yok.</p>
+          <p className="mt-3 text-sm text-muted">Bu gün defterde çalışma oturumu yok.</p>
         )}
         {defterDisi > 0 && (
           <p className="mt-3 text-xs text-muted">
@@ -239,11 +259,66 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
                   dk
                 </label>
                 <PlanNotu deger={veri.plan.notlar[i]} gun={ad} onKaydet={(n) => defterIsle((v) => planAyarla(v, i, { not: n }))} />
+                {(planlar.get(g.tarih) ?? []).length > 0 && (
+                  <ul className="mt-2 space-y-1" aria-label={`${ad}: takvime alınanlar`}>
+                    {(planlar.get(g.tarih) ?? []).map((k) => (
+                      <li key={k.id} className="flex items-start gap-1 text-xs">
+                        <CalendarCheck size={12} className="mt-0.5 shrink-0 text-[#0071e3]" aria-hidden />
+                        <span className="min-w-0 break-words font-semibold">{k.baslik}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             );
           })}
         </ol>
       </section>
+    </div>
+  );
+}
+
+/** Seçili güne "Takvime al" ile planlananlar: bağlantı ve plandan kaldırma */
+function GunPlani({ kayitlar, tarih }: { kayitlar: Kayit[]; tarih: string }) {
+  if (!kayitlar.length) return null;
+  return (
+    <div className="mt-3 rounded-xl border border-[#0071e3]/25 bg-[#0071e3]/[0.06] px-3 py-2" data-gun-plani>
+      <p className="flex items-center gap-1.5 text-sm font-semibold">
+        <CalendarCheck size={15} className="text-[#0071e3]" aria-hidden /> Takvime alınanlar ({kayitlar.length})
+      </p>
+      <ul className="mt-1 divide-y divide-line/60">
+        {kayitlar.map((k) => (
+          <li key={k.id} className="flex items-center justify-between gap-2 py-1.5 text-sm">
+            <span className="min-w-0">
+              <span className="block truncate font-semibold">
+                {k.href && !k.href.startsWith("http") ? (
+                  <Link href={k.href} className="hover:text-[var(--link)]">
+                    {k.baslik}
+                  </Link>
+                ) : (
+                  k.baslik
+                )}
+              </span>
+              <span className="block text-xs text-muted">
+                {TUR_ADI[k.tur]}
+                {k.altBaslik ? ` · ${k.altBaslik}` : ""}
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5">
+              <DurumIsareti durum={k.durum} />
+              <button
+                type="button"
+                onClick={() => defterIsle((v) => takvimdenCikar(v, k.id, tarih))}
+                className="flex size-7 items-center justify-center rounded-full text-muted hover:bg-ink/[0.08] hover:text-bad"
+                aria-label={`${k.baslik}: bu günün planından kaldır`}
+                title="Bu günün planından kaldır"
+              >
+                <X size={13} />
+              </button>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

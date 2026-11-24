@@ -22,12 +22,9 @@ export default async function SongsPage() {
         <MetinBag href="/sarki-kutuphanesi" buyuk>
           Tüm Kütüphane
         </MetinBag>
-        <MetinBag href="/akustik/sarkilar" buyuk>
-          Akustik şarkılar
-        </MetinBag>
       </SayfaBasi>
       <Bant ton="gri" className="pt-12">
-        <SongList songs={songs.filter((s) => !s.tags.includes("Akustik"))} courseTitles={courseTitles} rehber />
+        <SongList songs={songs.filter((s) => !s.tags.includes("Akustik")) /* akustik şarkılar listelenmez */} courseTitles={courseTitles} rehber />
       </Bant>
     </div>
   );

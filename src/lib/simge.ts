@@ -2,8 +2,7 @@
 // Uygulamadaki bütün simgeler tek biçimdedir (bkz. components/site/UygulamaSimgesi.tsx): iPhone uygulama simgesi gibi
 // yuvarlatılmış kare (süper elips), hafif dikey geçişli tek renk zemin, ortada beyaz, tek kalınlıkta çizgi glif.
 // Renkler apple sistem renkleri ailesindendir (değerler globals.css › --simge-<renk>); her kursun kendi rengi vardır,
-// katalogda yan yana ve alt alta duran kurslar farklı renktedir. Bir tekniğin elektro ve akustik kursu aynı tekniği
-// öğrettiği için aynı glifi ve rengi taşır. Eşleme belirlenimcidir: aynı anahtar her yerde aynı simgeyi verir.
+// katalogda yan yana ve alt alta duran kurslar farklı renktedir. Eşleme belirlenimcidir: aynı anahtar her yerde aynı simgeyi verir.
 // Sunucuda da istemcide de çalışır.
 import type { Lesson } from "@/content/types";
 import type { OzgunGlif } from "@/components/site/glifler/Glifler";
@@ -52,12 +51,8 @@ const s = (glif: GlifAdi, renk: SimgeRengi): SimgeTanim => ({ glif, renk });
 // akorlar: akor diyagramı). Renkler katalog sırasında komşu kurslar ayırt edilsin diye dağıtıldı (3 sütunlu ızgarada
 // yan yana ve alt alta aynı renk yok).
 export const KURS_SIMGELERI: Record<string, SimgeTanim> = {
-  // Başlangıç rehberleri
-  "sifirdan-baslangic-rehberi": s("rehber-baslangic", "yesil"),
-  "baslangic-orta-rehberi": s("rehber", "indigo"),
-  "akustik-baslangic-rehberi": s("rehber-baslangic", "turuncu"),
-  // Akor yolu
-  "akor-yolu": s("akor", "mavi"),
+  // Günlük ısınma ve akorlar
+  "gunluk-isinma": s("alev", "turuncu"),
   akorlar: s("akor", "kirmizi"),
   // Elektro gitar teknikleri (katalog sırası)
   "alternatif-pena": s("alternate", "kirmizi"),
@@ -78,19 +73,12 @@ export const KURS_SIMGELERI: Record<string, SimgeTanim> = {
   "gf-stiller": s("stiller", "pembe"),
   // Müzik teorisi
   armoni: s("armoni", "mor"),
-  // Akustik teknikler: elektro karşılığının glifi ve rengi
-  "akustik-alternatif-pena": s("alternate", "kirmizi"),
-  "akustik-arpej": s("arpej", "mor"),
-  "akustik-bend-vibrato": s("bend", "turuncu"),
-  "akustik-hopo": s("hammer-on", "yesil"),
-  "akustik-slide": s("slide", "nane"),
 };
 const KURS = KURS_SIMGELERI;
 
 /** Simge ızgarasındaki kısa adlar (uzun kurs adları için); yoksa kursun kart adı kullanılır */
 const KISA_AD: Record<string, string> = {
-  "sifirdan-baslangic-rehberi": "Sıfırdan Başlangıç",
-  "baslangic-orta-rehberi": "Başlangıç-Orta",
+  "gunluk-isinma": "Günlük Isınma",
   "hammer-on-pull-off": "Hammer-On",
   "hybrid-picking": "Hybrid Picking",
   "ritim-tarama": "Strumming",
@@ -98,20 +86,13 @@ const KISA_AD: Record<string, string> = {
   "gf-ekler": "Müzisyenlik",
   "gf-stiller": "Stiller",
   armoni: "Armoni",
-  "akustik-baslangic-rehberi": "Akustik Rehber",
-  "akustik-alternatif-pena": "Akustik Pena",
-  "akustik-arpej": "Akustik Arpej",
-  "akustik-bend-vibrato": "Akustik Bend",
-  "akustik-hopo": "Akustik Hammer-On",
-  "akustik-slide": "Akustik Slide",
 };
 export const kisaAd = (slug: string, ad: string) => KISA_AD[slug] ?? ad;
 
-/** Kursun simgesi. Bilinmeyen akustik kurs elektro karşılığının simgesini, diğerleri nota glifini gri zeminde alır. */
+/** Kursun simgesi. Bilinmeyen kurs nota glifini gri zeminde alır. */
 export function kursSimgesi(slug: string): SimgeTanim {
   const k = KURS[slug];
   if (k) return k;
-  if (slug.startsWith("akustik-")) return KURS[slug.slice(8)] ?? s("gitar", "kahve");
   if (slug.endsWith("-rehberi")) return s("rehber", "indigo");
   return s("nota-cift", "gri");
 }

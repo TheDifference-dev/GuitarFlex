@@ -82,7 +82,7 @@ export const songsterrAramaKaydi = (q: string, href: string): KayitBilgisi => ({
   altBaslik: "Songsterr araması",
   href,
 });
-/** Şarkı Kütüphanesi araması açıldı (Songsterr; masaüstünde uygulama içi pencere) */
+/** Şarkı Kütüphanesi araması açıldı (Songsterr; masaüstünde uygulama içi pencere): yalnız defterde olan aramayı işaretler */
 export const songsterrAramasiAcildi = (q: string) => {
   if (q.trim()) defterIsle((v) => kayitAc(v, songsterrAramaKaydi(q, songsterrAdresi(q))));
 };

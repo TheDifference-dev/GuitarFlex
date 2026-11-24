@@ -14,6 +14,8 @@ import type { LibrarySummary } from "@/lib/kutuphane";
 import EnstrumanSimgesi from "@/components/oynatici/EnstrumanSimgesi";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { turSimgesi } from "@/lib/simge";
+import { dosyaKaydi, kutuphaneKaydi, type KayitBilgisi } from "@/lib/defter";
+import DefterDugmeleri from "@/components/defter/DefterDugmeleri";
 import { BirakmaAlani, DosyaSecici, EklemeRaporu, useDosyaEkle } from "./DosyaEkle";
 import { izEnstrumani, SeviyeEtiketi, sure } from "./ortak";
 
@@ -48,6 +50,8 @@ type Satir = {
   ara: string;
   dosya?: DosyaKaydi;
   sira: number;
+  /** Çalışma Defteri kaydı (şarkı sayfasındaki şeritle aynı kimlik) */
+  defter: KayitBilgisi;
 };
 
 function ozgunSatir(s: LibrarySummary, i: number): Satir {
@@ -67,6 +71,7 @@ function ozgunSatir(s: LibrarySummary, i: number): Satir {
     aileler: AILELER.map((a) => a.id).filter((a) => aileVar.has(a)),
     ara: [s.title, s.genre, s.key, s.description, s.origin ?? "", ...s.chords, ...s.techniques, ...s.tracks.map((t) => `${t.name} ${t.instrument}`), ...izler.map((e) => e.ad)].join(" "),
     sira: LEVELS.indexOf(s.level) * 1000 + i,
+    defter: kutuphaneKaydi(s.slug, s.title, `Şarkı Kütüphanesi · ${s.genre}`),
   };
 }
 function dosyaSatir(k: DosyaKaydi, i: number): Satir {
@@ -86,6 +91,7 @@ function dosyaSatir(k: DosyaKaydi, i: number): Satir {
     ara: [m.baslik, m.sanatci, m.album, k.dosyaAdi, ...m.izler.map((t) => `${t.ad} ${enstruman(t.program, t.perkusyon, t.ad).ad}`)].join(" "),
     dosya: k,
     sira: -1 - i,
+    defter: dosyaKaydi(k.id, m.baslik || k.dosyaAdi, m.sanatci || "Benim dosyam"),
   };
 }
 
@@ -376,6 +382,8 @@ function SatirOgesi({ s, favori, onSil }: { s: Satir; favori: boolean; onSil: ()
           </button>
         )}
       </span>
+      {/* Çalışma Defteri: Öğrendim, Öğreniyorum, Takvime al, Kütüphaneye ekle (simge; ad üzerine gelince) */}
+      <DefterDugmeleri bilgi={s.defter} ikon className="col-span-2 col-start-2 pb-0.5 pt-1.5 md:col-span-5 md:col-start-2" />
     </li>
   );
 }

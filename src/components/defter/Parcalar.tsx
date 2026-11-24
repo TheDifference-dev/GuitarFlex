@@ -10,8 +10,9 @@ import s from "./DurumDugmeleri.module.css";
 export const KISIM_ONERILERI = ["Giriş", "Riff", "Kıta", "Nakarat", "Köprü", "Solo", "Bitiş"];
 
 /**
- * İki durum düğmesi: sarı "Devam ediyorum" (döngü simgesi) ve yeşil "Öğrendim" (onay simgesi).
- * Basılı olan yeniden basılınca işaret kalkar. Kısım verilirse erişilebilir adda yazar ("Riff kısmı: çalışmaya devam").
+ * İki durum düğmesi (yalnız durum; "+ Not ekle" formu): yeşil "Öğrendim" (onay simgesi) ve turuncu "Öğreniyorum"
+ * (döngü simgesi). Basılı olan yeniden basılınca işaret kalkar. Kısım verilirse erişilebilir adda yazar
+ * ("Riff kısmı: öğreniyorum"). Takvim ve Öğreneceklerim de gereken yerlerde: ./DefterDugmeleri.tsx.
  */
 export function DurumDugmeleri({
   durum,
@@ -35,18 +36,6 @@ export function DurumDugmeleri({
     <div className="flex shrink-0 items-center gap-1.5" role="group" aria-label={`Çalışma durumu${son}`}>
       <button
         type="button"
-        data-defter-durum="devam"
-        aria-pressed={durum === "devam"}
-        aria-label={`${on}çalışmaya devam${son}`}
-        title={durum === "devam" ? "Çalışmaya devam ediyorsun (tıkla: işareti kaldır)" : `${on}çalışmaya devam ediyorum olarak işaretle`}
-        onClick={() => onDurum(durum === "devam" ? null : "devam")}
-        className={`${s.dugme} ${s.sari} ${boy}`}
-      >
-        <Repeat size={simge} className={s.simge} aria-hidden />
-        Devam ediyorum
-      </button>
-      <button
-        type="button"
         data-defter-durum="ogrendim"
         aria-pressed={durum === "ogrendim"}
         aria-label={`${on}öğrendim${son}`}
@@ -56,6 +45,18 @@ export function DurumDugmeleri({
       >
         <CircleCheck size={simge} className={s.simge} aria-hidden />
         Öğrendim
+      </button>
+      <button
+        type="button"
+        data-defter-durum="devam"
+        aria-pressed={durum === "devam"}
+        aria-label={`${on}öğreniyorum${son}`}
+        title={durum === "devam" ? "Öğreniyorsun (tıkla: işareti kaldır)" : `${on}öğreniyorum olarak işaretle`}
+        onClick={() => onDurum(durum === "devam" ? null : "devam")}
+        className={`${s.dugme} ${s.sari} ${boy}`}
+      >
+        <Repeat size={simge} className={s.simge} aria-hidden />
+        Öğreniyorum
       </button>
     </div>
   );
@@ -67,7 +68,7 @@ export function DurumIsareti({ durum }: { durum: Durum | null }) {
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${durum === "devam" ? s.isaretSari : s.isaretYesil}`}>
       {durum === "devam" ? <Repeat size={11} aria-hidden /> : <CircleCheck size={11} aria-hidden />}
-      {durum === "devam" ? "Devam ediyor" : "Öğrendi"}
+      {durum === "devam" ? "Öğreniyor" : "Öğrendi"}
     </span>
   );
 }

@@ -15,7 +15,6 @@ export type YolKarti = { slug: string; href: string; etiket: string; ad: string;
 const AILELER: [KursAilesi | "", string][] = [
   ["", "Tümü"],
   ["elektro", "Elektro Gitar"],
-  ["akustik", "Akustik Gitar"],
   ["teori", "Müzik Teorisi"],
 ];
 type Durum = "" | "devam" | "yeni" | "bitti";
@@ -25,7 +24,7 @@ const DURUMLAR: [Durum, string][] = [
   ["yeni", "Başlanmamış"],
   ["bitti", "Tamamlanan"],
 ];
-const SIRA: KursGrubu[] = ["rehber", "akor", "elektro", "ileri", "ek", "akustik", "teori"];
+const SIRA: KursGrubu[] = ["isinma", "rehber", "akor", "elektro", "ileri", "ek", "teori"];
 /** Grup başlığının yanındaki kısa açıklama */
 const GRUP_NOTU: Partial<Record<KursGrubu, string>> = { ileri: "orta-ileri seviye ek kurslar" };
 
