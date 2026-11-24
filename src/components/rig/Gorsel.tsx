@@ -4,7 +4,7 @@
 import EkipmanCizimi from "./Cizimler";
 import s from "./Rig.module.css";
 import { useFotoUrl } from "@/lib/rig";
-import { CIZIMLER, cizimEtiketi, dugmeDegeri, secenekDegeri, type Dugum, type Ekipman } from "@/lib/rig-cekirdek";
+import { CIZIMLER, cizimEtiketi, dugmeleri, sabitDugmeDegeri, secenekDegeri, type Dugum, type Ekipman } from "@/lib/rig-cekirdek";
 
 export type GorselOzellik = {
   e: Ekipman | null;
@@ -35,7 +35,11 @@ export default function EkipmanGorseli({ e, dugum, ayrinti = "ikon", pikselGenis
       cizim={cizim}
       renk={e?.renk ?? "#555555"}
       etiket={cizimEtiketi(e)}
-      degerler={dugum ? tanim.dugmeler.map((a) => dugmeDegeri(dugum, a)) : []}
+      degerler={dugmeleri(e).map((a) => sabitDugmeDegeri(e?.id ?? cizim, a))}
+      dugmeler={e ? dugmeleri(e) : undefined}
+      anahtarlar={e?.anahtarlar}
+      gorunum={e?.gorunum}
+      tohum={cizimEtiketi(e) ? e?.id : undefined}
       secimler={(tanim.secenekler ?? []).map((x) => (dugum ? secenekDegeri(dugum, x) : 0))}
       acik={!dugum?.kapali}
       ayrinti={ayrinti}

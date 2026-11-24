@@ -6,28 +6,40 @@
 // İki ayrıntı düzeyi: "tam" (büyük panel; dokular, filtreler, küçük yazılar) ve "ikon" (zincir, kitaplık, afiş; yalnız
 // degradeler, küçük boyutta keskin ve hafif).
 import { useId } from "react";
-import { CIZIMLER, type Cizim } from "@/lib/rig-cekirdek";
-import { AMFI_BOYUT, AmfiCizimi, Hoparlor as HoparlorIc, KABIN_BOYUT, KabinCizimi } from "./cizim/amfi";
+import { CIZIMLER, type Cizim, type Gorunum } from "@/lib/rig-cekirdek";
+import { AMFI_BOYUT, AmfiCizimi, Hoparlor as HoparlorIc, KABIN_BOYUT, KabinCizimi, kabinBoyutu } from "./cizim/amfi";
 import { GITAR_BOYUT, GitarCizimi } from "./cizim/gitar";
+import { KafaCizimi, kafaBoyutu, kafaTuru } from "./cizim/kafa";
 import { PedalCizimi, pedalBoyutu } from "./cizim/pedal";
 import { RACK_BOYUT, RackCizimi } from "./cizim/rack";
 import { STUDYO_BOYUT, StudyoCizimi } from "./cizim/studyo";
-import { Tanimlar, type Ctx } from "./cizim/temel";
+import { Tanimlar, tohumla, type Ctx } from "./cizim/temel";
 
 export { acik, karistir, koyu, parlaklik } from "./cizim/temel";
 
 /** Çizimin doğal boyutu (viewBox) */
-export function boyut(cizim: Cizim): [number, number] {
+export function boyut(cizim: Cizim, gorunum?: Gorunum): [number, number] {
   const kat = CIZIMLER[cizim]?.kategori;
-  if (kat === "pedal") return pedalBoyutu(cizim);
+  if (kat === "pedal") return pedalBoyutu(cizim, gorunum);
+  const kafa = kat === "amfi" ? kafaTuru(cizim, gorunum) : undefined;
+  if (kafa) return kafaBoyutu(kafa);
+  if (kat === "kabin") return kabinBoyutu(cizim, gorunum);
   return (AMFI_BOYUT[cizim] ?? KABIN_BOYUT[cizim] ?? RACK_BOYUT[cizim] ?? STUDYO_BOYUT[cizim] ?? GITAR_BOYUT[cizim] ?? [100, 150]) as [number, number];
 }
 
 export type CizimOzellik = {
   cizim: Cizim;
   renk: string;
-  /** Düğme değerleri, CIZIMLER[cizim].dugmeler sırasıyla (0–10) */
+  /** Düğme değerleri, `dugmeler` sırasıyla (0–10) */
   degerler?: number[];
+  /** Modelin kendi düğme adları (yoksa CIZIMLER[cizim].dugmeler) */
+  dugmeler?: string[];
+  /** Modelin kollu anahtarlarının adları */
+  anahtarlar?: string[];
+  /** Modelin görünüş sapmaları (ör. geniş gövde) */
+  gorunum?: Gorunum;
+  /** Yıpranma tohumu (kitaplık modelinin kimliği): verilirse çizim kullanılmış, vintage görünür */
+  tohum?: string;
   /** Seçmeli ayarların sırası, CIZIMLER[cizim].secenekler sırasıyla (ör. kabinde hoparlör türü) */
   secimler?: number[];
   /** Açık mı (LED / pilot lamba); devre dışı (bypass) düğümde false */
@@ -51,12 +63,13 @@ export type CizimOzellik = {
 };
 
 /** Bir ekipmanın özgün çizimi; her boyutta keskin (SVG) */
-export default function EkipmanCizimi({ cizim, renk, degerler = [], secimler = [], acik: on = true, golge = true, etiket, ayrinti = "ikon", pikselGenislik = 600, className, x, y, width, height, baslik, preserveAspectRatio = "xMidYMax meet" }: CizimOzellik) {
+export default function EkipmanCizimi({ cizim, renk, degerler = [], dugmeler, anahtarlar, gorunum, tohum, secimler = [], acik: on = true, golge = true, etiket, ayrinti = "ikon", pikselGenislik = 600, className, x, y, width, height, baslik, preserveAspectRatio = "xMidYMax meet" }: CizimOzellik) {
   const u = `c${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
-  const [w, h] = boyut(cizim);
-  const c: Ctx = { u, t: ayrinti === "tam", on, k: pikselGenislik / w };
+  const [w, h] = boyut(cizim, gorunum);
+  const c: Ctx = { u, t: ayrinti === "tam", on, k: pikselGenislik / w, ...(tohum ? { z: tohumla(tohum) } : {}) };
   const kat = CIZIMLER[cizim]?.kategori;
   const p = { c, r: renk, v: degerler, etiket };
+  const model = { adlar: dugmeler ?? CIZIMLER[cizim]?.dugmeler ?? [], anahtarlar: anahtarlar ?? [] };
   return (
     <svg viewBox={`0 0 ${w} ${h + 8}`} x={x} y={y} width={width} height={height} className={className} preserveAspectRatio={preserveAspectRatio} role={baslik ? "img" : undefined} aria-label={baslik} aria-hidden={baslik ? undefined : true} overflow="visible">
       {golge && (
@@ -72,11 +85,13 @@ export default function EkipmanCizimi({ cizim, renk, degerler = [], secimler = [
         </g>
       )}
       {kat === "pedal" ? (
-        <PedalCizimi cizim={cizim} {...p} />
+        <PedalCizimi cizim={cizim} {...p} {...model} gorunum={gorunum} />
+      ) : kat === "amfi" && kafaTuru(cizim, gorunum) ? (
+        <KafaCizimi tur={kafaTuru(cizim, gorunum)!} {...p} adlar={model.adlar} />
       ) : kat === "amfi" ? (
-        <AmfiCizimi cizim={cizim} {...p} />
+        <AmfiCizimi cizim={cizim} {...p} {...model} />
       ) : kat === "kabin" ? (
-        <KabinCizimi cizim={cizim} {...p} hoparlor={secimler[0] ?? 0} />
+        <KabinCizimi cizim={cizim} {...p} hoparlor={secimler[0] ?? 0} gorunum={gorunum} />
       ) : kat === "rack" ? (
         <RackCizimi cizim={cizim} {...p} />
       ) : kat === "gitar" ? (

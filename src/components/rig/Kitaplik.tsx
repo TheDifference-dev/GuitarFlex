@@ -7,11 +7,17 @@ import { Camera, Pencil, Plus, Search, Star, X } from "lucide-react";
 import EkipmanGorseli from "./Gorsel";
 import s from "./Rig.module.css";
 import { VERI_TURU, type Kaynak } from "./Zincir";
-import { CIZIMLER, KATALOG, KATEGORILER, cizimEtiketi, type Ekipman, type Kategori, type RigDepo } from "@/lib/rig-cekirdek";
+import { CIZIMLER, KATALOG, KATEGORILER, PEDAL_ALT_TURLERI, cizimEtiketi, esinSatiri, pedalAltTuru, turAdi, type Ekipman, type Kategori, type RigDepo } from "@/lib/rig-cekirdek";
 
 type Sekme = Kategori | "hepsi";
 
 const kucult = (x: string) => x.toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ı/g, "i");
+const bitisik = (x: string) => x.replace(/[\s\-·./]+/g, "");
+/** Arama: ad, tür ve esin (gerçek ürün) alanı; boşluk ve tire yok sayılır ("jcm800" = "JCM800 2203", "ts 808") */
+function eslesir(e: Ekipman, k: string) {
+  const metin = kucult(`${e.ad} ${turAdi(e)} ${e.esin ?? ""}`);
+  return metin.includes(k) || bitisik(metin).includes(bitisik(k));
+}
 
 export default function Kitaplik({
   depo,
@@ -33,6 +39,8 @@ export default function Kitaplik({
   const [sekme, setSekme] = useState<Sekme>("pedal");
   const [q, setQ] = useState("");
   const [benim, setBenim] = useState(false);
+  /** Pedal sekmesinde alt tür süzgeci ("" = hepsi) */
+  const [altTur, setAltTur] = useState("");
   const [uzerinde, setUzerinde] = useState(false);
 
   const hepsi = useMemo(() => [...depo.ekipman, ...KATALOG], [depo.ekipman]);
@@ -42,9 +50,12 @@ export default function Kitaplik({
       (e) =>
         (sekme === "hepsi" || CIZIMLER[e.cizim].kategori === sekme) &&
         (!benim || e.benim) &&
-        (!k || kucult(`${e.ad} ${CIZIMLER[e.cizim].ad}`).includes(k)),
+        (sekme !== "pedal" || !altTur || pedalAltTuru(e) === altTur) &&
+        (!k || eslesir(e, k)),
     );
-  }, [hepsi, sekme, benim, q]);
+  }, [hepsi, sekme, benim, q, altTur]);
+  // pedal alt türleri ve sayıları (yalnız kitaplıkta bulunanlar)
+  const altTurler = PEDAL_ALT_TURLERI.map((t) => ({ t, n: hepsi.filter((e) => CIZIMLER[e.cizim].kategori === "pedal" && (!benim || e.benim) && pedalAltTuru(e) === t).length })).filter((x) => x.n > 0);
   const sayi = (k: Sekme) => hepsi.filter((e) => (k === "hepsi" || CIZIMLER[e.cizim].kategori === k) && (!benim || e.benim)).length;
 
   const dugumSurukleniyor = kaynak?.tur === "dugum" && !kaynak.paralel;
@@ -95,6 +106,22 @@ export default function Kitaplik({
         ))}
       </div>
 
+      {sekme === "pedal" && (
+        <div role="group" aria-label="Pedal türü" className="mt-2 flex flex-wrap gap-1">
+          {[{ t: "", n: sayi("pedal") }, ...altTurler].map(({ t, n }) => (
+            <button
+              key={t || "hepsi"}
+              type="button"
+              aria-pressed={altTur === t}
+              onClick={() => setAltTur(t)}
+              className={`rounded-full px-2.5 py-0.5 text-[12px] transition ${altTur === t ? "bg-ink text-bg font-semibold" : "bg-ink/[0.05] text-text hover:bg-ink/10"}`}
+            >
+              {t || "Tüm pedallar"} <span className="opacity-60">{n}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="mt-3 flex items-center gap-2">
         <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.05] px-3 focus-within:border-accent">
           <Search size={15} className="text-muted" aria-hidden />
@@ -138,14 +165,14 @@ export default function Kitaplik({
               }}
               onDragEnd={() => setKaynak(null)}
               className="block w-full cursor-grab rounded-[10px] active:cursor-grabbing"
-              aria-label={`${e.ad} (${CIZIMLER[e.cizim].ad}): zincire ekle`}
-              title={`${e.ad} · ${CIZIMLER[e.cizim].ad}\nTıkla ya da zincire sürükle`}
+              aria-label={`${e.ad} (${turAdi(e)}): zincire ekle`}
+              title={`${e.ad} · ${turAdi(e)}${e.esin ? `\n${esinSatiri(e)}` : ""}\nTıkla ya da zincire sürükle`}
             >
               <span className={s.resim}>
                 <EkipmanGorseli e={e} />
               </span>
               <span className={`${s.etiket} block`}>{cizimEtiketi(e) ?? e.ad}</span>
-              <span className="block truncate text-[10.5px] text-muted">{CIZIMLER[e.cizim].ad}</span>
+              <span className="block truncate text-[10.5px] text-muted">{turAdi(e)}</span>
             </button>
             {(e.benim || e.fotoId) && (
               <span className="pointer-events-none absolute left-1.5 top-1.5 flex gap-0.5 text-accent" aria-hidden>

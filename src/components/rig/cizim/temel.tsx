@@ -45,13 +45,17 @@ export type Ctx = {
   on: boolean;
   /** Bir çizim biriminin yaklaşık piksel karşılığı (ışık filtrelerinin eğimi buna göre ayarlanır) */
   k: number;
+  /** Yıpranma tohumu (modelin kimliğinden): varsa çizim "kullanılmış" görünür; hasarın yeri bu tohumdan türer */
+  z?: number;
 };
 
 export const sinir = (v: number) => Math.max(0, Math.min(10, Number.isFinite(v) ? v : 5));
 /** Düğme açısı: 0 → -135°, 10 → +135° (saat yönü, tepe 0°) */
 export const aci = (v: number) => -135 + (sinir(v) / 10) * 270;
 const rad = (d: number) => ((d - 90) * Math.PI) / 180;
-export const kutup = (x: number, y: number, r: number, d: number): [number, number] => [x + Math.cos(rad(d)) * r, y + Math.sin(rad(d)) * r];
+/** Trigonometri sonucu binde bire yuvarlanır: sunucu (Node) ile tarayıcı son basamakta ayrışıp hidrasyon uyuşmazlığı vermesin */
+export const yuvarla = (v: number) => Math.round(v * 1000) / 1000;
+export const kutup = (x: number, y: number, r: number, d: number): [number, number] => [yuvarla(x + Math.cos(rad(d)) * r), yuvarla(y + Math.sin(rad(d)) * r)];
 
 // ── Ortak tanımlar ──
 
@@ -217,6 +221,7 @@ export function Tanimlar({ c, o = 1, seed = 3, children }: { c: Ctx; o?: number;
         <stop offset="0.45" stopColor="#ffffff" stopOpacity="0" />
         <stop offset="1" stopColor="#000000" stopOpacity="0.26" />
       </linearGradient>
+      {t && c.z !== undefined && <AsinmaMaskesi c={c} />}
       {t && (
         <>
           <GovdeFiltresi id={`${u}f-parlak`} b={1.7 * o} s={s} isik={1.05} us={26} />
@@ -262,13 +267,13 @@ export function Dugme({ c, x, y, r, v, tur = "siyah", renk = "#c0392b", isaret, 
           const [x0, y0] = kutup(x, y, r0, d);
           const [x1, y1] = kutup(x, y, r1, d);
           // Işık yukarıdan-soldan: o yöne bakan tırtıklar parlak
-          const yon = Math.cos(((d + 45) * Math.PI) / 180);
+          const yon = yuvarla(Math.cos(((d + 45) * Math.PI) / 180));
           return <line key={i} x1={x0} y1={y0} x2={x1} y2={y1} stroke={yon < 0 ? acikR : koyuR} strokeOpacity={0.25 + Math.abs(yon) * 0.5} strokeWidth={Math.max(0.25, (r * 0.9) / n)} />;
         })
       : null;
   const golge = t ? null : <ellipse cx={x + r * 0.12} cy={y + r * 0.22} rx={r * 1.06} ry={r * 1.04} fill="#000" opacity={0.32} />;
   const parlama = (rr: number, op = 0.5) => <ellipse cx={x - rr * 0.32} cy={y - rr * 0.4} rx={rr * 0.42} ry={rr * 0.24} fill="#fff" opacity={op} transform={`rotate(-30 ${x - rr * 0.32} ${y - rr * 0.4})`} />;
-  const cizgi = (r0: number, r1: number, renkC: string, w: number) => <line x1={x} y1={y - r0} x2={x} y2={y - r1} stroke={renkC} strokeWidth={w} strokeLinecap="round" transform={`rotate(${a} ${x} ${y})`} />;
+  const cizgi = (r0: number, r1: number, renkC: string, w: number) => <line x1={x} y1={y - r0} x2={x} y2={y - r1} stroke={renkC} strokeWidth={w} strokeLinecap="round" transform={`rotate(${a} ${x} ${y})`} mask={asinmaMaskesi(c)} />;
 
   let govde: ReactNode;
   switch (tur) {
@@ -393,7 +398,7 @@ export function Dugme({ c, x, y, r, v, tur = "siyah", renk = "#c0392b", isaret, 
       {golge}
       <g filter={golgeF(c)}>{govde}</g>
       {isaret && c.t && (
-        <text x={x} y={y - r - r * 0.32} textAnchor="middle" fontSize={isaretBoy ?? Math.max(2.4, r * 0.42)} fontWeight={700} letterSpacing={0.2} fill="currentColor" fontFamily={FONT.sans}>
+        <text x={x} y={y - r - r * 0.32} textAnchor="middle" fontSize={isaretBoy ?? Math.max(2.4, r * 0.42)} fontWeight={700} letterSpacing={0.2} fill="currentColor" fontFamily={FONT.sans} mask={asinmaMaskesi(c)}>
           {isaret}
         </text>
       )}
@@ -479,11 +484,16 @@ export function Lamba({ c, x, y, r = 4.5, renk = "#e0281c" }: { c: Ctx; x: numbe
 // ── Donanım ──
 
 /** Yıldız başlı vida (krom); `d` vida yuvasının açısı */
-export function Vida({ c, x, y, r = 1.6, d = 20 }: { c: Ctx; x: number; y: number; r?: number; d?: number }) {
+export function Vida({ c, x, y, r = 1.6, d = 20, pas = c.z === undefined ? 0 : ((c.z ^ Math.round(x * 31 + y * 17)) % 97) / 97 }: { c: Ctx; x: number; y: number; r?: number; d?: number; pas?: number }) {
+  // pas: 0–1 (yıpranmış çizimde vidanın konumundan türer); yuva ve kenarda kahverengi leke
+  const p = pas > 0.35 ? (pas - 0.35) / 0.65 : 0;
   return (
     <g>
       <circle cx={x + r * 0.15} cy={y + r * 0.3} r={r * 1.1} fill="#000" opacity={0.3} />
+      {p > 0 && <circle cx={x + r * 0.2} cy={y + r * 0.35} r={r * (1.25 + p * 0.35)} fill="#6b3512" opacity={0.18 + p * 0.3} />}
       <circle cx={x} cy={y} r={r} fill={`url(#${c.u}kromR)`} stroke="#53575e" strokeWidth={r * 0.12} />
+      {p > 0 && <circle cx={x} cy={y} r={r * 0.92} fill="none" stroke="#8a4a1c" strokeOpacity={0.35 + p * 0.4} strokeWidth={r * 0.28} strokeDasharray={`${r * 0.9} ${r * 0.5}`} transform={`rotate(${d * 3} ${x} ${y})`} />}
+      {p > 0.4 && <circle cx={x + r * 0.3} cy={y + r * 0.25} r={r * 0.35} fill="#7a3d14" opacity={0.5} />}
       <g transform={`rotate(${d} ${x} ${y})`} stroke="#3a3d42" strokeWidth={r * 0.26} strokeLinecap="round">
         <line x1={x - r * 0.55} y1={y} x2={x + r * 0.55} y2={y} />
         <line x1={x} y1={y - r * 0.55} x2={x} y2={y + r * 0.55} />
@@ -589,6 +599,7 @@ export function Kasa({ c, x, y, w, h, d, renk, rx = 5, doku = "tolex", children,
       <rect x={x} y={y} width={w} height={h} rx={rx} fill={`url(#${c.u}isik)`} />
       {/* kenar ışığı: üst ve sol kenar parlak */}
       <path d={`M${x + 1} ${y + h - rx} V${y + rx} Q${x + 1} ${y + 1} ${x + rx} ${y + 1} H${x + w - rx}`} fill="none" stroke="#fff" strokeOpacity={0.16} strokeWidth={0.9} />
+      <Yipranma c={c} x={x} y={y} w={w} h={h} rx={rx} tur={doku === "tolex" || doku === "mat" || doku === "kumas" ? "tolex" : "boya"} renk={renk} anahtar="kasa" />
       {children}
     </g>
   );
@@ -607,12 +618,43 @@ export function Kose({ c, x, y, sx, sy, r = 11 }: { c: Ctx; x: number; y: number
 }
 
 export function Koseler({ c, x, y, w, h, r = 11 }: { c: Ctx; x: number; y: number; w: number; h: number; r?: number }) {
+  const rs = c.z === undefined ? null : rastgele(c.z ^ 0x51ed);
+  const koseler: [number, number, 1 | -1, 1 | -1][] = [
+    [x, y, 1, 1],
+    [x + w, y, -1, 1],
+    [x, y + h, 1, -1],
+    [x + w, y + h, -1, -1],
+  ];
   return (
     <g>
-      <Kose c={c} x={x} y={y} sx={1} sy={1} r={r} />
-      <Kose c={c} x={x + w} y={y} sx={-1} sy={1} r={r} />
-      <Kose c={c} x={x} y={y + h} sx={1} sy={-1} r={r} />
-      <Kose c={c} x={x + w} y={y + h} sx={-1} sy={-1} r={r} />
+      {koseler.map(([kx, ky, sx, sy], i) => (
+        <g key={i}>
+          <Kose c={c} x={kx} y={ky} sx={sx} sy={sy} r={r} />
+          {rs && <KoseYipranma c={c} x={kx} y={ky} sx={sx} sy={sy} r={r} rs={rs} alt={sy < 0} />}
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** Köşe koruyucunun yıpranması: matlaşma (parlaklık kaybı), göçük (koyu hilal + ışık), çizik */
+function KoseYipranma({ c, x, y, sx, sy, r, rs, alt }: { c: Ctx; x: number; y: number; sx: 1 | -1; sy: 1 | -1; r: number; rs: () => number; alt: boolean }) {
+  const mat = 0.25 + rs() * 0.25;
+  // alt köşeler (yere değen) daha çok göçer
+  const gocuk = rs() < (alt ? 0.75 : 0.35);
+  const gx = yuvarla(x + sx * r * (0.12 + rs() * 0.3));
+  const gy = yuvarla(y + sy * r * (0.1 + rs() * 0.18));
+  const p = `M${x} ${y + sy * r} V${y + sy * r * 0.25} Q${x} ${y} ${x + sx * r * 0.25} ${y} H${x + sx * r} Q${x + sx * r * 0.62} ${y + sy * r * 0.3} ${x + sx * r * 0.42} ${y + sy * r * 0.42} Q${x + sx * r * 0.3} ${y + sy * r * 0.62} ${x} ${y + sy * r} Z`;
+  return (
+    <g>
+      <path d={p} fill="#6d6a64" opacity={mat} style={{ mixBlendMode: "multiply" }} />
+      {gocuk && (
+        <g>
+          <ellipse cx={gx} cy={gy} rx={r * 0.13} ry={r * 0.08} fill="#1d1f22" opacity={0.55} transform={`rotate(${yuvarla(rs() * 180)} ${gx} ${gy})`} />
+          <ellipse cx={gx - sx * r * 0.04} cy={gy - sy * r * 0.04} rx={r * 0.08} ry={r * 0.04} fill="#fff" opacity={0.45} />
+        </g>
+      )}
+      {c.t && <line x1={x + sx * r * 0.2} y1={y + sy * r * 0.55} x2={x + sx * r * (0.45 + rs() * 0.3)} y2={y + sy * r * 0.18} stroke="#fff" strokeOpacity={0.35} strokeWidth={0.18} />}
     </g>
   );
 }
@@ -624,6 +666,263 @@ export function Biyik({ x, y, w, h, rx = 3, renk = "#e9e2cf" }: { x: number; y: 
       <rect x={x + 0.25} y={y + 0.45} width={w} height={h} rx={rx} stroke="#000" strokeOpacity={0.45} strokeWidth={1.7} />
       <rect x={x} y={y} width={w} height={h} rx={rx} stroke={renk} strokeWidth={1.4} />
       <rect x={x - 0.25} y={y - 0.3} width={w} height={h} rx={rx} stroke="#fff" strokeOpacity={0.55} strokeWidth={0.4} />
+    </g>
+  );
+}
+
+// ── Yıpranma (vintage / relic) ──
+// "Yıllarca sahnede kullanılmış ama bakımlı": boya çentikleri ve kenarlardan çıkan çıplak metal, çizikler, soluk yazılar,
+// vidada pas, ayak anahtarı çevresinde parlama, tolex sıyrıkları, köşe koruyucuda göçük, panelde kararma, ızgarada leke.
+// Hasarın yeri modelin kimliğinden türeyen tohumla belirlenir (her modelde farklı, her açılışta aynı). Sunucu ile tarayıcı
+// aynı sonucu versin diye trigonometri yok; koordinatlar yuvarlanır. İkonda yalnız birkaç belirgin iz, büyük panelde tam ayrıntı.
+
+/** Metinden 32 bit tohum (FNV-1a) */
+export function tohumla(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Tohumlu sözde rastgele sayı üreteci (mulberry32): 0–1 */
+export function rastgele(tohum: number): () => number {
+  let a = tohum >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let x = a;
+    x = Math.imul(x ^ (x >>> 15), x | 1);
+    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Aşınmış yazı ve düğme işareti maskesi (yalnız tam ayrıntı ve yıpranmış çizimde) */
+export const asinmaMaskesi = (c: Ctx) => (c.t && c.z !== undefined ? `url(#${c.u}asinma)` : undefined);
+
+/** Yazı aşınması: ince kumlu gürültü yazının küçük parçalarını siler, bazı yerlerde soldurur */
+function AsinmaMaskesi({ c }: { c: Ctx }) {
+  const { u, z = 0 } = c;
+  return (
+    <>
+      <filter id={`${u}f-asinma`} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="1.1 1.5" numOctaves={2} seed={z % 997} result="n" />
+        <feColorMatrix in="n" type="matrix" values="5 0 0 0 -1.28  5 0 0 0 -1.28  5 0 0 0 -1.28  0 0 0 0 1" result="m" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves={1} seed={(z >>> 8) % 997} result="g" />
+        <feColorMatrix in="g" type="matrix" values="1 0 0 0 0.42  1 0 0 0 0.42  1 0 0 0 0.42  0 0 0 0 1" result="gg" />
+        <feComposite in="m" in2="gg" operator="arithmetic" k1={1} k2={0} k3={0} k4={0} />
+      </filter>
+      <mask id={`${u}asinma`} maskUnits="userSpaceOnUse" x={-20} y={-20} width={700} height={500}>
+        <rect x={-20} y={-20} width={700} height={500} fill="#fff" filter={`url(#${u}f-asinma)`} />
+      </mask>
+    </>
+  );
+}
+
+export type Malzeme = "boya" | "tolex" | "panel" | "kumas";
+
+type Nokta = [number, number];
+/** Kenar şeridinde (köşelere yakın daha sık) ya da içeride rastgele nokta */
+function kenarNoktasi(rs: () => number, x: number, y: number, w: number, h: number, serit: number, icOran: number): Nokta {
+  if (rs() < icOran) return [x + serit + rs() * (w - serit * 2), y + serit + rs() * (h - serit * 2)];
+  const kenar = rs();
+  // köşe eğilimi: konumun uçlara itilmesi
+  const t0 = rs();
+  const t = t0 < 0.5 ? 0.5 * (2 * t0) ** 1.8 : 1 - 0.5 * (2 - 2 * t0) ** 1.8;
+  const d = rs() * serit;
+  if (kenar < 0.28) return [x + t * w, y + d];
+  if (kenar < 0.56) return [x + t * w, y + h - d];
+  if (kenar < 0.78) return [x + d, y + t * h];
+  return [x + w - d, y + t * h];
+}
+
+/** Düzensiz çokgen (çentik / sıyrık): yuvarlanmış koordinatlar, trigonometrisiz (önceden hesaplı yön tablosu) */
+const YON: Nokta[] = [
+  [1, 0], [0.71, 0.71], [0, 1], [-0.71, 0.71], [-1, 0], [-0.71, -0.71], [0, -1], [0.71, -0.71],
+];
+function cokgen(rs: () => number, cx: number, cy: number, r: number, uzama = 1, aci = 0): string {
+  const ca = aci === 0 ? 1 : 0.71;
+  const sa = aci === 0 ? 0 : 0.71 * (aci > 0 ? 1 : -1);
+  return (
+    YON.map(([dx, dy], i) => {
+      const k = r * (0.45 + rs() * 0.75) * (i % 2 ? 0.85 : 1);
+      const px = dx * k * uzama;
+      const py = dy * k;
+      return `${i ? "L" : "M"}${yuvarla(cx + px * ca - py * sa)} ${yuvarla(cy + px * sa + py * ca)}`;
+    }).join(" ") + " Z"
+  );
+}
+
+/**
+ * Yüzey yıpranması ("sahnede kullanılmış ama bakımlı"). `x, y, w, h, rx`: yüzeyin dikdörtgeni (iz dışarı taşmaz). `renk`:
+ * yüzeyin rengi. `taban`: kazınınca görünen malzeme (boyada çıplak alüminyum, tolexte ahşap / bez astar, panelde kararma).
+ * `anahtar`: aynı çizimdeki farklı yüzeyler farklı iz alsın. `ayak`: ayak anahtarının merkezi ve yarıçapı (çevresinde
+ * basılmaktan boya kalkar). `bant`: eski bant izinin yeri [x, y, genişlik, açı] (yazıların ve düğmelerin dışında).
+ */
+export function Yipranma({ c, x, y, w, h, rx = 4, tur, renk, taban, anahtar = "", siddet = 1, ayak, bant }: { c: Ctx; x: number; y: number; w: number; h: number; rx?: number; tur: Malzeme; renk: string; taban?: string; anahtar?: string; siddet?: number; ayak?: [number, number, number]; bant?: [number, number, number, number] }) {
+  if (c.z === undefined) return null;
+  const { u, t } = c;
+  const rs = rastgele(c.z ^ tohumla(`${tur}:${anahtar}`));
+  const id = `${u}yp${tur}${anahtar.replace(/[^a-zA-Z0-9]/g, "")}`;
+  const olcek = Math.max(0.6, Math.min(w, h) / 60);
+  const y2 = (v: number) => yuvarla(v);
+  const bulanik = t ? `url(#${u}f-bulanik)` : undefined;
+  const ogeler: ReactNode[] = [];
+  /** Kenar boyunca kesik kesik aşınma (parlamış / incelmiş kenar) */
+  const kenar = (renkK: string, op: number, gen: number) => {
+    const dizi = Array.from({ length: 12 }, (_, i) => y2(i % 2 ? 5 + rs() * 18 : 3 + rs() * 12)).join(" ");
+    return <rect x={x + 0.9} y={y + 0.9} width={w - 1.8} height={h - 1.8} rx={rx} fill="none" stroke={renkK} strokeOpacity={op} strokeWidth={gen} strokeDasharray={dizi} strokeDashoffset={y2(rs() * 40)} filter={bulanik} />;
+  };
+  /** Düzensiz parça (çentik, sıyrık): gölgeli kenar + açığa çıkan malzeme */
+  const parca = (k: string, cx: number, cy: number, r: number, uzama: number, dolgu: string, op = 1, golge = true) => {
+    const d = cokgen(rs, cx, cy, r, uzama, rs() < 0.5 ? 0 : rs() < 0.5 ? 1 : -1);
+    return (
+      <g key={k}>
+        {golge && <path d={d} fill={koyu(renk, 0.55)} opacity={0.5 * op} transform="translate(0.15 0.2)" />}
+        <path d={d} fill={dolgu} opacity={op} />
+        {t && golge && <path d={d} fill="none" stroke="#fff" strokeOpacity={0.3} strokeWidth={0.12} />}
+      </g>
+    );
+  };
+
+  if (tur === "boya") {
+    const metal = taban ?? "#b4b8bd";
+    if (ayak) {
+      // ayak anahtarı çevresi: basılmaktan boya kalkmış, alttaki metal parlamış; çevresinde küçük çentikler
+      const [ax, ay, ar] = ayak;
+      if (t)
+        ogeler.push(
+          <g key="ayak" filter={bulanik}>
+            <ellipse cx={ax} cy={y2(ay + ar * 0.2)} rx={y2(ar * 2.2)} ry={y2(ar * 1.8)} fill={metal} opacity={0.26} />
+            <ellipse cx={y2(ax - ar * 0.4)} cy={y2(ay + ar * 0.9)} rx={y2(ar * 1.3)} ry={y2(ar * 0.65)} fill="#fff" opacity={0.16} />
+          </g>,
+        );
+      const n = t ? 7 : 2;
+      for (let i = 0; i < n; i++) {
+        const yon = YON[Math.floor(rs() * 8)];
+        const uz = ar * (1.25 + rs() * 0.9);
+        ogeler.push(parca(`a${i}`, y2(ax + yon[0] * uz), y2(ay + yon[1] * uz * 0.9), (0.35 + rs() * 0.7) * olcek * (t ? 1 : 1.6), 1 + rs() * 0.7, metal, 0.95));
+      }
+    }
+    // kenar: boya incelmiş, yer yer metal görünüyor
+    ogeler.push(<g key="kenar">{t ? kenar(metal, 0.36, 2.8) : kenar(metal, 0.4, 1.4)}</g>);
+    // çentikler (köşelere ve kenarlara yakın daha sık)
+    const n = Math.round((t ? 17 : 5) * siddet);
+    for (let i = 0; i < n; i++) {
+      const [cx, cy] = kenarNoktasi(rs, x, y, w, h, 2.6, 0.12);
+      ogeler.push(parca(`c${i}`, cx, cy, (0.3 + rs() * 0.95) * olcek * (t ? 1 : 1.6), 1 + rs() * 0.7, metal, 0.94));
+    }
+    // eski bant izi: soluk yapışkan kalıntısı ve çevresinde toz çizgisi
+    if (bant && rs() < 0.85) {
+      const [bx, by, bw, ba] = bant;
+      const bh = Math.max(3.5, bw * 0.16);
+      ogeler.push(
+        <g key="bant" transform={`rotate(${y2(ba + (rs() - 0.5) * 8)} ${bx} ${by})`}>
+          {/* yapışkan kalıntısı: uçları yırtık, ortası daha koyu (toz tutmuş) */}
+          <path d={`M${y2(bx - bw / 2)} ${y2(by - bh / 2)} H${y2(bx + bw / 2)} l-0.8 ${y2(bh * 0.3)} l1 ${y2(bh * 0.25)} l-0.9 ${y2(bh * 0.45)} H${y2(bx - bw / 2)} l0.7 ${y2(-bh * 0.35)} l-1 ${y2(-bh * 0.3)} Z`} fill="#e9dcb4" opacity={t ? 0.14 : 0.18} />
+          {t && <path d={`M${y2(bx - bw / 2)} ${y2(by - bh / 2)} H${y2(bx + bw / 2)} M${y2(bx - bw / 2)} ${y2(by + bh / 2)} H${y2(bx + bw / 2)}`} stroke="#3e3220" strokeOpacity={0.3} strokeWidth={0.45} strokeDasharray={`${y2(bw * 0.22)} 0.8 ${y2(bw * 0.09)} 1.4`} filter={bulanik} />}
+        </g>,
+      );
+    }
+  }
+
+  if (tur === "tolex") {
+    // astar: kazınan yerde açılan bez / ahşap
+    const astar = taban ?? karistir(renk, "#8a7a62", 0.6);
+    const n = Math.round((t ? 24 : 7) * siddet);
+    for (let i = 0; i < n; i++) {
+      const [cx, cy] = kenarNoktasi(rs, x, y, w, h, 3, 0.14);
+      ogeler.push(parca(`s${i}`, cx, cy, (0.45 + rs() * 1.2) * olcek * (t ? 1 : 1.5), 1.2 + rs() * 1.4, astar, t ? 0.3 + rs() * 0.28 : 0.5, false));
+    }
+    // yırtık köşeler: iki köşede tolex kalkmış, altında ahşap
+    const ahsap = "#8c6a43";
+    ([[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]] as [number, number, number, number][]).forEach(([kx, ky, sx, sy], i) => {
+      if (rs() > 0.55) return;
+      const L = olcek * (7 + rs() * 7);
+      const d = 2 + rs() * 2;
+      const p = `M${kx} ${y2(ky + sy * 2)} L${y2(kx + sx * L * 0.35)} ${y2(ky + sy * d * 0.6)} L${y2(kx + sx * L * 0.6)} ${y2(ky + sy * d)} L${y2(kx + sx * L)} ${ky} L${kx} ${ky} Z`;
+      const p2 = `M${y2(kx + sx * 2)} ${ky} L${y2(kx + sx * d * 0.7)} ${y2(ky + sy * L * 0.5)} L${y2(kx + sx * d)} ${y2(ky + sy * L * 0.8)} L${kx} ${y2(ky + sy * L)} L${kx} ${ky} Z`;
+      ogeler.push(
+        <g key={`y${i}`}>
+          <path d={p} fill={ahsap} opacity={0.9} />
+          <path d={p2} fill={ahsap} opacity={0.85} />
+          <path d={p} fill="none" stroke={acik(renk, 0.35)} strokeOpacity={0.5} strokeWidth={0.3} />
+        </g>,
+      );
+    });
+    // aşınıp parlamış kenar
+    ogeler.push(<g key="kenar">{kenar(acik(renk, 0.45), t ? 0.32 : 0.25, t ? 2.4 : 1.6)}</g>);
+    if (t)
+      [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].forEach(([kx, ky], i) =>
+        ogeler.push(<circle key={`k${i}`} cx={kx} cy={ky} r={y2(olcek * (5 + rs() * 6))} fill={acik(renk, 0.35)} opacity={0.14 + rs() * 0.12} filter={bulanik} />),
+      );
+  }
+
+  if (tur === "panel") {
+    // kararma (oksitlenme): yumuşak koyu lekeler, kenarlarda daha çok
+    const kir = taban ?? "#3a2a0e";
+    const n = t ? 13 : 3;
+    for (let i = 0; i < n; i++) {
+      const [cx, cy] = kenarNoktasi(rs, x, y, w, h, Math.min(h * 0.4, 8), 0.45);
+      ogeler.push(<ellipse key={`l${i}`} cx={y2(cx)} cy={y2(cy)} rx={y2((3 + rs() * 10) * olcek)} ry={y2((1.5 + rs() * 4) * olcek)} fill={kir} opacity={t ? 0.14 + rs() * 0.18 : 0.16} filter={bulanik} />);
+    }
+    // parmak izi matlığı: düğmelerin çevresinde soluk, yuvarlak izler (ince halkalarla)
+    if (t)
+      for (let i = 0; i < 4; i++) {
+        const fx = y2(x + w * (0.15 + rs() * 0.7));
+        const fy = y2(y + h * (0.3 + rs() * 0.5));
+        const fr = Math.min(h * 0.22, 3.2);
+        ogeler.push(
+          <g key={`p${i}`} transform={`rotate(${y2(rs() * 90 - 45)} ${fx} ${fy})`}>
+            <ellipse cx={fx} cy={fy} rx={fr} ry={fr * 1.3} fill="#9a958a" opacity={0.12} filter={bulanik} />
+            {[0.35, 0.55, 0.75, 0.95].map((q) => (
+              <ellipse key={q} cx={fx} cy={fy} rx={y2(fr * q)} ry={y2(fr * q * 1.3)} fill="none" stroke="#fff" strokeOpacity={0.07} strokeWidth={0.12} />
+            ))}
+          </g>,
+        );
+      }
+  }
+
+  if (tur === "kumas") {
+    // ızgarada güneşten / ışıktan solmuş bölge ve hafif lekeler
+    const [cx, cy] = [x + w * (0.15 + rs() * 0.7), y + h * (0.25 + rs() * 0.5)];
+    ogeler.push(
+      <g key="leke" filter={bulanik}>
+        <ellipse cx={y2(cx)} cy={y2(cy)} rx={y2(w * (0.14 + rs() * 0.1))} ry={y2(h * (0.22 + rs() * 0.12))} fill={taban ?? "#d9c9a0"} opacity={t ? 0.13 : 0.12} />
+        <ellipse cx={y2(x + w * (0.1 + rs() * 0.8))} cy={y2(y + h * (0.6 + rs() * 0.3))} rx={y2(w * 0.05)} ry={y2(h * 0.07)} fill="#140d05" opacity={t ? 0.22 : 0.14} />
+        <ellipse cx={y2(x + w * (0.1 + rs() * 0.8))} cy={y2(y + h * (0.2 + rs() * 0.5))} rx={y2(w * 0.025)} ry={y2(h * 0.04)} fill="#140d05" opacity={t ? 0.16 : 0.1} />
+      </g>,
+    );
+  }
+
+  // çizikler (yalnız tam ayrıntı): ince açık çizgi ve altında koyu gölge
+  if (t && tur !== "kumas") {
+    const n = Math.round((tur === "panel" ? 7 : 13) * siddet);
+    for (let i = 0; i < n; i++) {
+      const x0 = x + 3 + rs() * (w - 6);
+      const y0 = y + 3 + rs() * (h - 6);
+      const l = (tur === "panel" ? 1.5 + rs() * 5 : 3 + rs() * 10) * olcek;
+      const ex = x0 + (rs() - 0.5) * l * 2;
+      const ey = y0 + (rs() - 0.5) * l * 0.8;
+      const d = `M${y2(x0)} ${y2(y0)} Q${y2((x0 + ex) / 2 + (rs() - 0.5) * 3)} ${y2((y0 + ey) / 2 + (rs() - 0.5) * 3)} ${y2(ex)} ${y2(ey)}`;
+      ogeler.push(
+        <g key={`z${i}`} fill="none" strokeLinecap="round">
+          <path d={d} stroke="#000" strokeOpacity={0.18} strokeWidth={0.32} transform="translate(0.12 0.16)" />
+          <path d={d} stroke={tur === "tolex" ? acik(renk, 0.45) : "#ffffff"} strokeOpacity={0.16 + rs() * 0.2} strokeWidth={0.22 + rs() * 0.14} />
+        </g>,
+      );
+    }
+  }
+
+  return (
+    <g pointerEvents="none">
+      <defs>
+        <clipPath id={id}>
+          <rect x={x} y={y} width={w} height={h} rx={rx} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${id})`}>{ogeler}</g>
     </g>
   );
 }

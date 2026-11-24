@@ -2,7 +2,7 @@
 // Çalıştırma: npm run test:rig
 import assert from "node:assert/strict";
 import {
-  ANA, CIZIMLER, CIZIM_LISTESI, HOPARLORLER, KATALOG, ONAYAR_EKIPMAN, cizimEtiketi, secenekDegeri, secenekSec, ayarla, baslangicDeposu, bosRig, disaAktar, donguAc, donguKapat, duzListe, ekipmanBul, ekipmanKaydet, ekipmanSil, ekle,
+  ANA, CIZIMLER, CIZIM_LISTESI, HOPARLORLER, KATALOG, PEDAL_ALT_TURLERI, pedalAltTuru, sabitDugmeDegeri, dugmeleri, esinSatiri, eslesenKabin, turAdi, ONAYAR_EKIPMAN, cizimEtiketi, secenekDegeri, secenekSec, ayarla, baslangicDeposu, bosRig, disaAktar, donguAc, donguKapat, duzListe, ekipmanBul, ekipmanKaydet, ekipmanSil, ekle,
   gecis, goc, iceAktar, kapA, kapB, kapDongu, kaydir, konumBul, oneriIndeksi, ornekZincir, paralelBlok, paralelEkle, paralelKaldir, paralelMi, paralelSar,
   rigAdlandir, rigEkle, rigKopyala, rigSil, seciliRig, sil, tasi, type Dugum, type Rig,
 } from "../src/lib/rig-cekirdek.ts";
@@ -239,7 +239,7 @@ test("goc: bozuk veri güvenli depoya döner; ikinci paralel blok düzleşir; ge
 const ESKI_KIMLIKLER = ["k-gitar-tek-kesik", "k-gitar-cift-kesik", "k-gitar-akustik", "k-tuner", "k-wah", "k-kompresor", "k-gurultu-kapisi", "k-boost", "k-overdrive", "k-distortion", "k-fuzz", "k-eq", "k-chorus", "k-phaser", "k-flanger", "k-delay", "k-reverb", "k-looper", "k-amfi-kafa", "k-amfi-kombo", "k-amfi-kombo-kucuk", "k-kabin-4x12", "k-kabin-2x12", "k-kabin-1x12", "k-rack-kompresor", "k-rack-eq", "k-rack-delay", "k-rack-reverb", "k-di", "k-ses-karti", "k-yazilim"];
 
 /** Katalogda geçmemesi gereken gerçek marka / model adları ve onlara çağrışım yapan sayı-ad birleşimleri */
-const YASAK = /\b(marshall|fender|vox|mesa|boogie|orange|peavey|ampeg|ibanez|boss|mxr|dunlop|electro|ehx|strymon|tc ?electronic|line ?6|kemper|celestion|jensen|eminence|shure|sennheiser|royer|neumann|focusrite|universal audio|teletronix|urei|klon|tube ?screamer|ts-?\d+|808|9 ?volt|jcm|plexi|deluxe|twin|bassman|princeton|champ|ac ?30|ac ?15|rectifier|dual rectifier|big ?muff|rat|ds-?1|cry ?baby|uni-?vibe|whammy|g12|v30|vintage 30|greenback|sm ?57|sm ?58|r-?121|la-?2a|1176|cub|epiphone|gibson|les paul|stratocaster|telecaster|strat|tele|amplitube)\b/i;
+const YASAK = /\b(marshall|fender|vox|mesa|boogie|orange|peavey|ampeg|ibanez|boss|mxr|dunlop|electro|ehx|strymon|tc ?electronic|line ?6|kemper|celestion|jensen|eminence|shure|sennheiser|royer|neumann|focusrite|universal audio|teletronix|urei|klon|tube ?screamer|ts-?\d+|808|9 ?volt|jcm|plexi|deluxe|twin|bassman|princeton|champ|ac ?30|ac ?15|rectifier|dual rectifier|big ?muff|rat|ds-?1|cry ?baby|uni-?vibe|whammy|g12|v30|vintage 30|greenback|sm ?57|sm ?58|r-?121|la-?2a|1176|cub|epiphone|gibson|les paul|stratocaster|telecaster|strat|tele|amplitube|hiwatt|5150|6505|rockerverb|memory ?man|dyna ?comp|soldano|engl|diezel|bogner|friedman|laney)\b/i;
 
 test("katalog: istenen çeşitlilik (amfi, kabin, pedal türleri, rack, DI, ses kartı); mikrofon yok", () => {
   const say = (k: string) => KATALOG.filter((e) => CIZIMLER[e.cizim].kategori === k).length;
@@ -270,9 +270,23 @@ test("katalog: her model GuitarFlex adlı, benzersiz, her çizim türü kitaplı
   for (const e of ONAYAR_EKIPMAN) assert.equal(cizimEtiketi(e), undefined, "kullanıcı ekipmanına GuitarFlex etiketi basılmaz");
 });
 
-test("katalog: gerçek marka / model adı ya da çağrışımı yok (kitaplık, türler, hoparlörler)", () => {
-  const metinler = [...KATALOG.map((e) => e.ad), ...CIZIM_LISTESI.map((c) => CIZIMLER[c].ad), ...HOPARLORLER];
+test("katalog: gerçek marka / model adı ya da çağrışımı yok; yalnız esin alanında izinli", () => {
+  // Esin dışındaki her alan: ad, kimlik, açıklama, düğme ve anahtar adları (çizime basılanlar), tür adları, hoparlörler
+  const metinler = [
+    ...KATALOG.flatMap((e) => [e.ad, e.id, e.aciklama ?? "", turAdi(e), ...dugmeleri(e), ...(e.anahtarlar ?? []), ...Object.values(e.eskiDugmeler ?? {})]),
+    ...CIZIM_LISTESI.map((c) => CIZIMLER[c].ad),
+    ...HOPARLORLER,
+  ];
   for (const m of metinler) assert.ok(!YASAK.test(m), `yasak ad: ${m}`);
+  // Esin alanında gerçek ad bulunabilir (ve sınama onu yakalar: alan gerçekten ayrı tutuluyor)
+  const esinli = KATALOG.filter((e) => e.esin);
+  assert.ok(esinli.some((e) => YASAK.test(e.esin!)), "esin alanında gerçek ad izinli");
+  for (const e of esinli) {
+    // kafa ve pedallarda yıl zorunlu; kabinlerde doğrulanamayan yıl yazılmaz
+    if (CIZIMLER[e.cizim].kategori !== "kabin") assert.ok(e.yil, `yıl yok: ${e.ad}`);
+    if (e.yil) assert.ok(e.yil > 1900 && e.yil <= 2026, `yıl: ${e.ad}`);
+    assert.ok(!e.ad.toLocaleLowerCase("tr").includes(e.esin!.toLocaleLowerCase("tr")), `ad esini taşımamalı: ${e.ad}`);
+  }
   // Ekipmanım önayarları kullanıcının kendi ekipmanının etiketidir (marka adı olabilir) ve aynen kalır
   assert.deepEqual(ONAYAR_EKIPMAN.map((e) => e.ad), ["Epiphone Les Paul Custom", "Marshall DSL20CR", "Boss Dual Cube LX", "Focusrite Scarlett Solo", "AmpliTube 5"]);
   assert.ok(ONAYAR_EKIPMAN.every((e) => e.benim && e.ozel));
@@ -362,6 +376,120 @@ test("goc: eski kayıtlardaki mikrofonlar sessizce çıkar (kitaplık ve kullan�
   assert.equal(yaz(g.rigler[0]), "k-overdrive k-amfi-kombo{k-delay} [A: k-chorus | B: ] k-kabin-1x12 e-scarlett-solo");
   assert.ok(!g.ekipman.some((e) => e.id === "u-mic"), "kullanıcının mikrofon ekipmanı da çıkar");
   assert.equal(g.ekipman.length, ONAYAR_EKIPMAN.length);
+});
+
+test("örnek modeller: esin satırı, model düğmeleri, eşleşen kabin", () => {
+  const bul = (id: string) => KATALOG.find((e) => e.id === id)!;
+  const kafa = bul("k-amfi-kafa");
+  assert.equal(esinSatiri(kafa), "Esinlendiği: Marshall JCM800 2203 (1981)");
+  assert.equal(kafa.ad, "GuitarFlex Brit 800 Head");
+  assert.deepEqual(dugmeleri(kafa), ["Presence", "Bas", "Orta", "Tiz", "Master", "Kazanç"]);
+  assert.equal(eslesenKabin(kafa)?.id, "k-kabin-4x12");
+  assert.equal(eslesenKabin(kafa)?.hoparlorDuzeni, "4x12");
+  assert.equal(esinSatiri(bul("k-overdrive")), "Esinlendiği: Ibanez TS808 Tube Screamer (1979)");
+  assert.deepEqual(dugmeleri(bul("k-ruby-comp")), ["Çıkış", "Duyarlılık"]);
+  assert.deepEqual(dugmeleri(bul("k-tuner")), CIZIMLER.tuner.dugmeler, "esinsiz model çizim türünün düğmelerini kullanır");
+  for (const e of KATALOG) if (e.kabin) assert.equal(CIZIMLER[eslesenKabin(e)!.cizim].kategori, "kabin", `kabin: ${e.ad}`);
+  assert.equal(esinSatiri(ONAYAR_EKIPMAN[0]), "", "kullanıcı ekipmanında esin yok");
+});
+
+test("örnek kafalar: beş farklı düzen, kontrol sayısı gerçeğe uygun, tür satırı ve görünüş", () => {
+  const bul = (id: string) => KATALOG.find((e) => e.id === id)!;
+  const titan = bul("k-amfi-modern");
+  assert.equal(esinSatiri(titan), "Esinlendiği: Mesa/Boogie Dual Rectifier (1989)");
+  assert.equal(dugmeleri(titan).length, 12, "iki kanal × altı düğme");
+  assert.equal(eslesenKabin(titan)?.id, "k-kabin-4x12-modern");
+  const crush = bul("k-crush-120-head");
+  assert.equal(crush.cizim, "amfi-modern");
+  assert.equal(crush.gorunum?.amfi, "crush");
+  assert.equal(dugmeleri(crush).length, 9);
+  const valf = bul("k-valve-verb-100-head");
+  assert.equal(valf.gorunum?.amfi, "valf");
+  assert.match(turAdi(valf), /turuncu/);
+  const studyo = bul("k-studio-power-head");
+  assert.deepEqual(dugmeleri(studyo), ["Normal", "Parlak", "Bas", "Tiz", "Orta", "Presence", "Master"]);
+  assert.equal(turAdi(bul("k-amfi-kafa")), CIZIMLER["amfi-kafa"].ad, "tür adı yoksa çizim türününki");
+  // eski Titan kayıtlarının düğmeleri ikinci kanala geçer
+  const g = goc({ rigler: [{ id: "r", ad: "R", zincir: [{ ekipmanId: "k-amfi-modern", ayar: { Kazanç: 8, Parlaklık: 2 } }] }], ekipman: ONAYAR_EKIPMAN });
+  assert.deepEqual((g.rigler[0].zincir[0] as Dugum).ayar, { "K2 · Kazanç": 8, "K2 · Presence": 2 });
+  const dusk = bul("k-delay");
+  assert.equal(dusk.gorunum?.govde, "yatay");
+  assert.equal(dugmeleri(dusk).length, 5);
+});
+
+test("goc: düğme adı değişen modelde eski değerler yeni ada geçer (yeni ad varsa korunur)", () => {
+  const g = goc({
+    rigler: [
+      {
+        id: "r1",
+        ad: "Eski kafa",
+        zincir: [
+          { ekipmanId: "k-amfi-kafa", ayar: { Kazanç: 7, Parlaklık: 3, "Ana ses": 6 }, dongu: [{ ekipmanId: "k-delay", ayar: { Zaman: 4 } }] },
+          { tur: "paralel", a: [{ ekipmanId: "k-amfi-kafa", ayar: { Parlaklık: 2, Presence: 9 } }], b: [] },
+          { ekipmanId: "e-dsl20cr", ayar: { "Ana ses": 4 } },
+        ],
+      },
+    ],
+    ekipman: ONAYAR_EKIPMAN,
+  });
+  const [kafa, p, dsl] = g.rigler[0].zincir as [Dugum, { a: Dugum[] }, Dugum];
+  assert.deepEqual(kafa.ayar, { Kazanç: 7, Presence: 3, Master: 6 });
+  assert.deepEqual(kafa.dongu?.[0].ayar, { Zaman: 4 });
+  assert.deepEqual(p.a[0].ayar, { Presence: 9 }, "yeni adın değeri korunur");
+  assert.deepEqual(dsl.ayar, { "Ana ses": 4 }, "kullanıcı ekipmanına dokunulmaz");
+});
+
+test("tam katalog: kategori ve pedal alt türü sayıları", () => {
+  const pedallar = KATALOG.filter((e) => CIZIMLER[e.cizim].kategori === "pedal");
+  assert.equal(pedallar.length, 97, "97 pedal");
+  const say = (t: string) => pedallar.filter((e) => pedalAltTuru(e) === t).length;
+  const hedef: Record<string, number> = { Kompresör: 5, Overdrive: 10, Distortion: 10, Delay: 10, Reverb: 10, Chorus: 5, Flanger: 5 };
+  for (const t of PEDAL_ALT_TURLERI) assert.equal(say(t), hedef[t] ?? 3, `${t}: ${say(t)}`);
+  assert.ok(pedallar.every((e) => PEDAL_ALT_TURLERI.includes(pedalAltTuru(e) as (typeof PEDAL_ALT_TURLERI)[number])), "her pedalın alt türü var");
+  for (const e of pedallar) assert.ok(e.esin && e.yil, `pedal esini: ${e.ad}`);
+});
+
+test("tam katalog: 20 kafa, her kafanın kendi eşleşen kabini (20 farklı kabin)", () => {
+  const kafalar = KATALOG.filter((e) => CIZIMLER[e.cizim].kategori === "amfi" && /kafa/i.test(turAdi(e)) && e.cizim !== "amfi-bas");
+  assert.equal(kafalar.length, 20, kafalar.map((e) => e.ad).join(", "));
+  const kabinler = new Set<string>();
+  for (const k of kafalar) {
+    const kb = eslesenKabin(k);
+    assert.ok(kb, `kabin yok: ${k.ad}`);
+    assert.equal(CIZIMLER[kb!.cizim].kategori, "kabin", `kabin türü: ${k.ad}`);
+    assert.ok(kb!.esin && kb!.hoparlorDuzeni, `kabin bilgisi: ${kb!.ad}`);
+    kabinler.add(kb!.id);
+    assert.ok(k.esin && k.yil && dugmeleri(k).length >= 3, `kafa bilgisi: ${k.ad}`);
+  }
+  assert.equal(kabinler.size, 20, "her kafanın ayrı kabini");
+  // her kafanın düğme adları kendi içinde eşsiz (ayar kaydında anahtar)
+  for (const e of KATALOG) assert.equal(new Set(dugmeleri(e)).size, dugmeleri(e).length, `yinelenen düğme: ${e.ad}`);
+});
+
+test("tam katalog: kimlikler kararlı ve GuitarFlex adından türer; çizimdeki düğme konumu sabit", () => {
+  for (const e of KATALOG) {
+    if (/^k-[a-z0-9-]+$/.test(e.id) && !CIZIM_LISTESI.some((c) => e.id === `k-${c}`)) {
+      const beklenen = `k-${e.ad.slice("GuitarFlex ".length).toLocaleLowerCase("tr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+      assert.equal(e.id, beklenen, `kimlik: ${e.ad}`);
+    }
+  }
+  const v = sabitDugmeDegeri("k-amfi-kafa", "Bas");
+  assert.equal(v, sabitDugmeDegeri("k-amfi-kafa", "Bas"), "aynı model, aynı konum");
+  assert.ok(v >= 2.5 && v <= 8, "doğal aralık");
+  const farkli = new Set(KATALOG.slice(0, 30).map((e) => sabitDugmeDegeri(e.id, "Seviye")));
+  assert.ok(farkli.size > 3, "modelden modele farklı");
+});
+
+test("goc: eski kayıt, yeni katalogda bozulmadan açılır (ayar değerleri veride kalır)", () => {
+  const g = goc({
+    rigler: [{ id: "r", ad: "Eski", zincir: [{ ekipmanId: "k-amfi-butik", ayar: { Kazanç: 6, "Ana ses": 3 } }, { ekipmanId: "k-delay", ayar: { Zaman: 4 } }, { ekipmanId: "k-overdrive-seffaf", ayar: { Bas: 2 } }] }],
+    ekipman: ONAYAR_EKIPMAN,
+  });
+  const [butik, dly, amber] = g.rigler[0].zincir as Dugum[];
+  assert.deepEqual(butik.ayar, { "K1 · Kazanç": 6, Master: 3 });
+  assert.deepEqual(dly.ayar, { Zaman: 4 });
+  assert.deepEqual(amber.ayar, { Bas: 2 }, "artık çizilmeyen düğmenin değeri silinmez");
+  assert.ok(g.rigler[0].zincir.every((d) => KATALOG.some((e) => e.id === (d as Dugum).ekipmanId)));
 });
 
 let gecen = 0;

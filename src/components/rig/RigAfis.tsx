@@ -5,7 +5,7 @@
 // yok) ve afiş her temada aynı koyu sahne görünümündedir.
 import { forwardRef, useId, type ReactNode } from "react";
 import EkipmanCizimi from "./Cizimler";
-import { CIZIMLER, cizimEtiketi, duzListe, paralelMi, secenekDegeri, type Dugum, type Ekipman, type Rig } from "@/lib/rig-cekirdek";
+import { CIZIMLER, cizimEtiketi, dugmeleri, duzListe, sabitDugmeDegeri, paralelMi, secenekDegeri, type Dugum, type Ekipman, type Rig } from "@/lib/rig-cekirdek";
 
 const RENK = { zemin1: "#2a2a2e", zemin2: "#0c0c0e", yazi: "#f5f5f7", soluk: "#a1a1a6", kablo: "#6e6e73", vurgu: "#2997ff", kutu: "rgba(255,255,255,0.05)", kenar: "rgba(255,255,255,0.16)" };
 const FONT = '-apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", Helvetica, Arial, sans-serif';
@@ -27,11 +27,11 @@ function Hucre({ d, e, x, y, kucuk = false }: { d: Dugum; e: Ekipman | null; x: 
   const kutuW = kucuk ? 72 : 100;
   const kutuH = kucuk ? 70 : 96;
   const cizim = e?.cizim ?? "boost";
-  const degerler = CIZIMLER[cizim].dugmeler.map((a) => d.ayar[a] ?? 5);
+  const degerler = (e ? dugmeleri(e) : CIZIMLER[cizim].dugmeler).map((a) => sabitDugmeDegeri(e?.id ?? cizim, a));
   const secimler = (CIZIMLER[cizim].secenekler ?? []).map((s) => secenekDegeri(d, s));
   return (
     <g opacity={d.kapali ? 0.45 : 1}>
-      <EkipmanCizimi cizim={cizim} renk={e?.renk ?? "#555555"} etiket={cizimEtiketi(e)} degerler={degerler} secimler={secimler} acik={!d.kapali} x={x + (w - kutuW) / 2} y={y + 6} width={kutuW} height={kutuH} preserveAspectRatio="xMidYMax meet" />
+      <EkipmanCizimi cizim={cizim} renk={e?.renk ?? "#555555"} etiket={cizimEtiketi(e)} degerler={degerler} dugmeler={e ? dugmeleri(e) : undefined} anahtarlar={e?.anahtarlar} gorunum={e?.gorunum} tohum={cizimEtiketi(e) ? e?.id : undefined} secimler={secimler} acik={!d.kapali} x={x + (w - kutuW) / 2} y={y + 6} width={kutuW} height={kutuH} preserveAspectRatio="xMidYMax meet" />
       <text x={x + w / 2} y={y + kutuH + 24} textAnchor="middle" fontSize={kucuk ? 10.5 : 12} fontWeight={600} fill={RENK.yazi} fontFamily={FONT}>
         {kisalt(e?.ad ?? "Silinmiş ekipman", kucuk ? 15 : 19)}
       </text>

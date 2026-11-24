@@ -11,7 +11,7 @@ import RigAfis, { indir, pngIndir } from "./RigAfis";
 import Zincir, { type Kaynak } from "./Zincir";
 import s from "./Rig.module.css";
 import {
-  ANA, CIZIMLER, ayarla, disaAktar, donguAc, donguKapat, dugumBul, ekipmanBul, ekipmanKaydet, ekipmanSil, ekle, gecis, iceAktar, kapAdi, kaydir,
+  ANA, CIZIMLER, disaAktar, donguAc, donguKapat, dugumBul, ekipmanBul, ekipmanKaydet, ekipmanSil, ekle, gecis, iceAktar, kapAdi, kaydir,
   konumBul, liste, oneriIndeksi, secenekSec, ornekZincir, paralelBlok, paralelEkle, paralelKaldir, rigAdlandir, rigEkle, rigGuncelle, rigIsle, rigKopyala, rigSec, rigSil,
   seciliRig, sil, tasi, useRigDepo, fotoSil, type Ekipman, type Kap, type Rig,
 } from "@/lib/rig";
@@ -260,13 +260,13 @@ export default function RigSayfasi() {
           rig={rig}
           dugum={seciliDugum}
           bul={bul}
-          onAyar={(a, v) => secili && rigDegis((r) => ayarla(r, secili, a, v))}
           onSecenek={(sc, i) => {
             if (!secili) return;
             rigDegis((r) => secenekSec(r, secili, sc, i));
             setDuyuru(`${sc.ad}: ${sc.degerler[i]}`);
           }}
           onGorsel={(e, g) => rigIsle((d) => ekipmanKaydet(d, { ...e, gorsel: g }))}
+          onEkle={ekipmanEkle}
           onGecis={() => secili && rigDegis((r) => gecis(r, secili))}
           onKaydir={(yon) => secili && adimla(secili, yon)}
           onSil={() => secili && dugumSil(secili)}

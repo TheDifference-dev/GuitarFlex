@@ -3,14 +3,14 @@
 // seçilen hoparlörler, metal ızgaralı bas kabininde koniler açıkça görünür. Türlerin klasik görünüşünden yola çıkan
 // özgün çizimlerdir: logo yalnız "GuitarFlex" (kitaplık modellerinde), kullanıcı ekipmanında boş kalır.
 import type { ReactNode } from "react";
-import { CIZIMLER, type Cizim } from "@/lib/rig-cekirdek";
-import { Anahtar, Biyik, Dugme, Jak, Kasa, Koseler, Lamba, Led, Tanimlar, Vida, Yazi, acik, etiketYaz, karistir, koyu, kutup, yuzey, type Ctx, type DugmeTur, type Yuzey } from "./temel";
+import { CIZIMLER, type Cizim, type Gorunum } from "@/lib/rig-cekirdek";
+import { Anahtar, Biyik, Dugme, Jak, Kasa, Koseler, Lamba, Led, Tanimlar, Vida, Yazi, Yipranma, acik, asinmaMaskesi, etiketYaz, karistir, koyu, kutup, rastgele, yuvarla, yuzey, type Ctx, type DugmeTur, type Yuzey } from "./temel";
 
 type P = { c: Ctx; r: string; v: number[]; etiket?: string };
 
 // ── Kumaşlar ve ızgaralar ──
 
-export type Kumas = "tuzbiber" | "hasir" | "gumus" | "siyah" | "kahve" | "metal" | "orgu";
+export type Kumas = "tuzbiber" | "hasir" | "gumus" | "siyah" | "kahve" | "antrasit" | "metal" | "orgu";
 
 const KUMAS_RENK: Record<Exclude<Kumas, "metal" | "orgu">, [string, string, string]> = {
   // zemin, açık iplik, koyu iplik
@@ -19,6 +19,7 @@ const KUMAS_RENK: Record<Exclude<Kumas, "metal" | "orgu">, [string, string, stri
   gumus: ["#7f8186", "#c9cbce", "#34363a"],
   siyah: ["#151515", "#2e2e2e", "#060606"],
   kahve: ["#3e281a", "#6f4c32", "#22150d"],
+  antrasit: ["#202124", "#4b4d52", "#0f1012"],
 };
 export const kumasOrta = (k: Kumas) => (k === "metal" ? "#1d1e20" : k === "orgu" ? "#141415" : karistir(KUMAS_RENK[k][0], KUMAS_RENK[k][1], 0.35));
 
@@ -74,7 +75,7 @@ function KumasDesen({ id, kumas, s }: { id: string; kumas: Kumas; s: number }) {
 }
 
 /** Izgara alanı: kumaş (hoparlör gölgeleriyle) ya da metal; `hoparlorler` [cx, cy, r] */
-function Izgara({ c, id, x, y, w, h, kumas, rx = 3, hoparlorler = [], hoparlorTur = 0, s = 3.2 }: { c: Ctx; id: string; x: number; y: number; w: number; h: number; kumas: Kumas; rx?: number; hoparlorler?: [number, number, number][]; hoparlorTur?: number; s?: number }) {
+export function Izgara({ c, id, x, y, w, h, kumas, rx = 3, hoparlorler = [], hoparlorTur = 0, s = 3.2 }: { c: Ctx; id: string; x: number; y: number; w: number; h: number; kumas: Kumas; rx?: number; hoparlorler?: [number, number, number][]; hoparlorTur?: number; s?: number }) {
   const { u, t } = c;
   const desen = `${u}${id}`;
   if (kumas === "metal") {
@@ -185,7 +186,7 @@ export function Hoparlor({ c, x, y, r, tur = 0, cerceve = false }: { c: Ctx; x: 
 
 // ── Kasa ayrıntıları ──
 
-function Kayis({ c, x, y, w }: { c: Ctx; x: number; y: number; w: number }) {
+export function Kayis({ c, x, y, w }: { c: Ctx; x: number; y: number; w: number }) {
   // deri kayış kulp: üst yüzde, iki krom bağlantı
   return (
     <g>
@@ -200,6 +201,34 @@ function Kayis({ c, x, y, w }: { c: Ctx; x: number; y: number; w: number }) {
       <path d={`M${x + 2} ${y} C${x + w * 0.2} ${y - 11} ${x + w * 0.8} ${y - 11} ${x + w - 2} ${y}`} fill="none" stroke="#2b2622" strokeWidth={4.6} strokeLinecap="round" />
       <path d={`M${x + 5} ${y - 2.6} C${x + w * 0.25} ${y - 11.6} ${x + w * 0.75} ${y - 11.6} ${x + w - 5} ${y - 2.6}`} fill="none" stroke="#fff" strokeOpacity={0.18} strokeWidth={0.8} />
       {c.t && <path d={`M${x + 3} ${y - 0.8} C${x + w * 0.2} ${y - 10.2} ${x + w * 0.8} ${y - 10.2} ${x + w - 3} ${y - 0.8}`} fill="none" stroke="#9b8f80" strokeOpacity={0.45} strokeWidth={0.35} strokeDasharray="1.2 1" />}
+      {c.z !== undefined && <KulpCatlak c={c} x={x} y={y} w={w} />}
+    </g>
+  );
+}
+
+/** Deri kulpta çatlaklar: kayış eğrisinin üstünde enine kısa, koyu çizgiler ve hafif açılmış deri */
+function KulpCatlak({ c, x, y, w }: { c: Ctx; x: number; y: number; w: number }) {
+  const rs = rastgele((c.z ?? 0) ^ 0x4b1f);
+  // kübik Bézier: P0 (x+2, y), P1 (x+0.2w, y-11), P2 (x+0.8w, y-11), P3 (x+w-2, y)
+  const nokta = (t: number): [number, number] => {
+    const a = (1 - t) ** 3;
+    const b = 3 * (1 - t) ** 2 * t;
+    const d = 3 * (1 - t) * t * t;
+    const e = t ** 3;
+    return [yuvarla(a * (x + 2) + b * (x + w * 0.2) + d * (x + w * 0.8) + e * (x + w - 2)), yuvarla(a * y + (b + d) * (y - 11) + e * y)];
+  };
+  return (
+    <g>
+      {Array.from({ length: c.t ? 5 : 2 }, (_, i) => {
+        const [px, py] = nokta(0.18 + rs() * 0.64);
+        const l = 1.2 + rs() * 1.2;
+        return (
+          <g key={i}>
+            <path d={`M${px - 0.4} ${yuvarla(py - l)} L${px + 0.3} ${py} L${px - 0.2} ${yuvarla(py + l * 0.8)}`} fill="none" stroke="#000" strokeOpacity={0.75} strokeWidth={0.35} />
+            {c.t && <path d={`M${px + 0.25} ${yuvarla(py - l)} L${px + 0.75} ${py}`} fill="none" stroke="#8a7d6c" strokeOpacity={0.5} strokeWidth={0.2} />}
+          </g>
+        );
+      })}
     </g>
   );
 }
@@ -267,7 +296,7 @@ function KontrolPaneli({ c, x, y, w, h, v, adlar, panel, dugme, lamba, model, ek
           </Yazi>
           {model && (
             <Yazi x={x + solBos - 2} y={y + h - 3} boy={3} renk={p.baski} hiza="start" ara={0.8} kalin={600} opaklik={0.8}>
-              {model.toLocaleUpperCase("tr")}
+              {model.toUpperCase()}
             </Yazi>
           )}
         </>
@@ -297,10 +326,10 @@ function Logo({ c, x, y, boy, tur }: { c: Ctx; x: number; y: number; boy: number
   const dolgu = tur === "altin" ? `url(#${u}altin)` : tur === "krom" ? `url(#${u}krom)` : tur === "beyaz" ? "#f4f4f2" : "#efe6cf";
   return (
     <g>
-      <text x={x + boy * 0.06} y={y + boy * 0.1} textAnchor="middle" fontSize={boy * 1.5} fontWeight={700} fontStyle="italic" fill="#000" fillOpacity={0.55} fontFamily={tur === "beyaz" ? '"Inter Variable", Helvetica, Arial, sans-serif' : 'Georgia, "Times New Roman", serif'} letterSpacing={-boy * 0.04}>
+      <text x={x + boy * 0.06} y={y + boy * 0.1} textAnchor="middle" fontSize={boy * 1.4} fontWeight={800} fill="#000" fillOpacity={0.55} fontFamily='"Inter Variable", Helvetica, Arial, sans-serif' letterSpacing={-boy * 0.02}>
         GuitarFlex
       </text>
-      <text x={x} y={y} textAnchor="middle" fontSize={boy * 1.5} fontWeight={700} fontStyle="italic" fill={dolgu} stroke={tur === "altin" ? "#5a4313" : "none"} strokeWidth={boy * 0.03} fontFamily={tur === "beyaz" ? '"Inter Variable", Helvetica, Arial, sans-serif' : 'Georgia, "Times New Roman", serif'} letterSpacing={-boy * 0.04}>
+      <text x={x} y={y} textAnchor="middle" fontSize={boy * 1.4} fontWeight={800} fill={dolgu} stroke={tur === "altin" ? "#5a4313" : "none"} strokeWidth={boy * 0.03} fontFamily='"Inter Variable", Helvetica, Arial, sans-serif' letterSpacing={-boy * 0.02} mask={asinmaMaskesi(c)}>
         GuitarFlex
       </text>
     </g>
@@ -361,14 +390,13 @@ function TvidDesen({ id, renk }: { id: string; renk: string }) {
   );
 }
 
-export function AmfiCizimi({ cizim, c, r, v, etiket }: P & { cizim: Cizim }) {
+export function AmfiCizimi({ cizim, c, r, v, etiket, adlar = CIZIMLER[cizim]?.dugmeler ?? [] }: P & { cizim: Cizim; adlar?: string[]; anahtarlar?: string[] }) {
   const s = AMFI[cizim] ?? AMFI["amfi-kafa"]!;
   const { u } = c;
   const [dx, dy] = derinlik(s);
   const X = 6;
   const Y = ustPay(s);
   const { w, h } = s;
-  const adlar = CIZIMLER[cizim].dugmeler;
   const tvid = s.doku === "tvid";
   const kaplama = tvid ? (c.t ? `url(#${u}tvid)` : r) : r;
   const [ix, iy, iw, ih] = [X + s.izgara[0] * w, Y + s.izgara[1] * h, s.izgara[2] * w, s.izgara[3] * h];
@@ -549,21 +577,42 @@ type KabinStil = {
   izgaraPay?: number;
 };
 
-const KABIN: Partial<Record<Cizim, KabinStil>> = {
+const BRIT4: [number, number, number][] = [[0.29, 0.3, 0.19], [0.71, 0.3, 0.19], [0.29, 0.72, 0.19], [0.71, 0.72, 0.19]];
+const EGIK4: [number, number, number][] = [[0.29, 0.31, 0.19], [0.71, 0.31, 0.19], [0.29, 0.73, 0.19], [0.71, 0.73, 0.19]];
+const KABIN: Record<string, KabinStil> = {
   "kabin-4x12": { w: 212, h: 212, kumas: "tuzbiber", hoparlor: [[0.29, 0.3, 0.19], [0.71, 0.3, 0.19], [0.29, 0.72, 0.19], [0.71, 0.72, 0.19]], biyik: "#e6dcc2", kose: true, logo: "altin", logoYer: [0.24, 0.12], tutamak: true },
   "kabin-4x12-modern": { w: 214, h: 222, kumas: "orgu", hoparlor: [[0.29, 0.31, 0.19], [0.71, 0.31, 0.19], [0.29, 0.73, 0.19], [0.71, 0.73, 0.19]], kose: true, logo: "plaka", logoYer: [0.5, 0.1], egik: 0.44, tutamak: true },
   "kabin-2x12": { w: 252, h: 150, kumas: "siyah", hoparlor: [[0.28, 0.53, 0.19], [0.72, 0.53, 0.19]], kose: true, logo: "plaka", logoYer: [0.5, 0.13], tutamak: true },
   "kabin-2x12-acik": { w: 252, h: 150, kumas: "hasir", hoparlor: [[0.28, 0.53, 0.19], [0.72, 0.53, 0.19]], biyik: "#efe6cf", logo: "krem", logoYer: [0.24, 0.17], acikArka: true },
   "kabin-1x12": { w: 172, h: 164, kumas: "gumus", hoparlor: [[0.5, 0.55, 0.3]], kose: true, logo: "krom", logoYer: [0.27, 0.15] },
+  // eşleşen kabinlerin görünüşleri (model `gorunum.kabin`): oran, ızgara, eğim, biye
+  "brit-egik": { w: 212, h: 212, kumas: "siyah", hoparlor: EGIK4, biyik: "#e6dcc2", kose: true, logo: "beyaz", logoYer: [0.24, 0.1], egik: 0.42, tutamak: true },
+  "brit-vintage": { w: 212, h: 212, kumas: "tuzbiber", hoparlor: EGIK4, biyik: "#efe6cf", kose: true, logo: "krem", logoYer: [0.24, 0.1], egik: 0.42, tutamak: true },
+  "brit-uzun": { w: 212, h: 236, kumas: "siyah", hoparlor: [[0.29, 0.29, 0.19], [0.71, 0.29, 0.19], [0.29, 0.7, 0.19], [0.71, 0.7, 0.19]], biyik: "#e6dcc2", kose: true, logo: "beyaz", logoYer: [0.24, 0.09], tutamak: true },
+  "gumus-egik": { w: 212, h: 212, kumas: "gumus", hoparlor: EGIK4, biyik: "#d6d8dc", kose: true, logo: "beyaz", logoYer: [0.24, 0.1], egik: 0.42, tutamak: true },
+  "brit-v": { w: 212, h: 212, kumas: "antrasit", hoparlor: EGIK4, biyik: "#e6dcc2", kose: true, logo: "beyaz", logoYer: [0.24, 0.1], egik: 0.42, tutamak: true },
+  cali: { w: 212, h: 206, kumas: "siyah", hoparlor: BRIT4, kose: false, logo: "plaka", logoYer: [0.5, 0.94], tutamak: true },
+  "crush-egik": { w: 214, h: 220, kumas: "siyah", hoparlor: EGIK4, kose: true, logo: "beyaz", logoYer: [0.3, 0.09], egik: 0.44, tutamak: true },
+  tri: { w: 214, h: 214, kumas: "siyah", hoparlor: BRIT4, kose: true, logo: "beyaz", logoYer: [0.5, 0.95], tutamak: true },
+  solo: { w: 212, h: 212, kumas: "tuzbiber", hoparlor: BRIT4, kose: true, logo: "plaka", logoYer: [0.5, 0.94], tutamak: true },
+  valf: { w: 210, h: 210, kumas: "hasir", hoparlor: BRIT4, kose: false, logo: "krem", logoYer: [0.5, 0.1], tutamak: true },
+  power: { w: 214, h: 214, kumas: "antrasit", hoparlor: BRIT4, kose: false, logo: "plaka", logoYer: [0.5, 0.1], tutamak: true },
+  dortlu: { w: 214, h: 214, kumas: "siyah", hoparlor: BRIT4, kose: true, logo: "beyaz", logoYer: [0.5, 0.95], tutamak: true },
+  celik: { w: 216, h: 222, kumas: "metal", hoparlor: EGIK4, kose: false, logo: "beyaz", logoYer: [0.5, 0.95], egik: 0.44, tutamak: true, izgaraPay: 0.06 },
+  hazel: { w: 212, h: 212, kumas: "tuzbiber", hoparlor: BRIT4, biyik: "#ece5d0", kose: false, logo: "beyaz", logoYer: [0.24, 0.1], tutamak: true },
+  grup: { w: 212, h: 212, kumas: "antrasit", hoparlor: BRIT4, biyik: "#e8dfc6", kose: true, logo: "beyaz", logoYer: [0.24, 0.1], tutamak: true },
   "kabin-4x10-bas": { w: 200, h: 226, kumas: "metal", hoparlor: [[0.29, 0.31, 0.175], [0.71, 0.31, 0.175], [0.29, 0.71, 0.175], [0.71, 0.71, 0.175]], kose: true, logo: "beyaz", logoYer: [0.5, 0.94], tutamak: true, izgaraPay: 0.06 },
 };
 
 const kabinDerinlik = (s: KabinStil): [number, number] => [Math.round(s.w * 0.06), -Math.round(s.w * 0.04)];
 const kabinBoyut = (s: KabinStil): [number, number] => [s.w + kabinDerinlik(s)[0] + 12, 8 - kabinDerinlik(s)[1] + s.h + 4];
 export const KABIN_BOYUT: Partial<Record<Cizim, [number, number]>> = Object.fromEntries(Object.entries(KABIN).map(([k, s]) => [k, kabinBoyut(s!)]));
+/** Kabin stili: modelin görünüşü (varsa), yoksa çizim türününki */
+const kabinStili = (cizim: Cizim, g?: Gorunum): KabinStil => (g?.kabin && KABIN[g.kabin]) || KABIN[cizim] || KABIN["kabin-4x12"]!;
+export const kabinBoyutu = (cizim: Cizim, g?: Gorunum): [number, number] => kabinBoyut(kabinStili(cizim, g));
 
-export function KabinCizimi({ cizim, c, r, etiket, hoparlor }: P & { cizim: Cizim; hoparlor: number }) {
-  const s = KABIN[cizim] ?? KABIN["kabin-4x12"]!;
+export function KabinCizimi({ cizim, c, r, etiket, hoparlor, gorunum }: P & { cizim: Cizim; hoparlor: number; gorunum?: Gorunum }) {
+  const s = kabinStili(cizim, gorunum);
   const { u } = c;
   const [dx, dy] = kabinDerinlik(s);
   const X = 6;
@@ -597,6 +646,7 @@ export function KabinCizimi({ cizim, c, r, etiket, hoparlor }: P & { cizim: Cizi
         }
       >
         <Izgara c={c} id="kz" x={ix} y={iy} w={iw} h={ih} kumas={s.kumas} hoparlorler={hop} hoparlorTur={hoparlor} rx={4} s={w / 66} />
+        {s.kumas !== "metal" && <Yipranma c={c} x={ix} y={iy} w={iw} h={ih} rx={4} tur="kumas" renk="#000" taban={s.kumas === "hasir" ? "#5a4526" : "#cfc6b0"} anahtar="kabin-izgara" />}
         {s.egik && (
           <g>
             {/* eğik üst: yukarıya bakan yüz daha aydınlık; kırılma çizgisi */}
