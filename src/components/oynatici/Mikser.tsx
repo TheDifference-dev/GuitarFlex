@@ -3,6 +3,7 @@
 import { Eye, Headphones, Volume2, VolumeX } from "lucide-react";
 import { AILE_ADI, enstruman } from "@/lib/enstruman";
 import EnstrumanSimgesi from "./EnstrumanSimgesi";
+import { SES_UST } from "./ayarlar";
 
 export type MikserIzi = {
   index: number;
@@ -27,7 +28,7 @@ type Props = {
   /** Pan (−100 sol … 100 sağ); verilmezse pan sütunu gösterilmez */
   pan?: Record<number, number>;
   onPan?: (i: number, deger: number) => void;
-  /** Ana ses (%) */
+  /** Müzik kanalı (%; metronom ve sayım ayrı) */
   ana?: number;
   onAna?: (deger: number) => void;
   /** Play-along: yalnız bu track susar, ötekiler çalar */
@@ -50,8 +51,8 @@ export default function Mikser({ izler, gosterilen, sessiz, solo, ses, onGoster,
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pb-1">
           {onAna && ana !== undefined && (
             <label className="flex min-w-56 flex-1 items-center gap-2 text-sm">
-              <span className="font-semibold">Ana ses</span>
-              <input type="range" min={0} max={150} step={5} value={ana} onChange={(e) => onAna(Number(e.target.value))} className="w-full max-w-64 accent-[var(--accent)]" aria-label="Ana ses (mikser)" title="Ana ses: çalma çubuğundaki ses kaydırıcısıyla aynı" />
+              <span className="font-semibold">Müzik</span>
+              <input type="range" min={0} max={SES_UST} step={5} value={ana} onChange={(e) => onAna(Number(e.target.value))} className="w-full max-w-64 accent-[var(--accent)]" aria-label="Müzik sesi (mikser)" title="Müzik kanalı: çalma çubuğundaki müzik kaydırıcısıyla aynı; metronom ve sayım ayrı" />
               <span className="w-10 text-right text-xs tabular-nums text-muted">%{ana}</span>
             </label>
           )}

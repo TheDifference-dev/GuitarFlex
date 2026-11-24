@@ -5,12 +5,14 @@ import { useState } from "react";
 import { ChevronRight, StepForward } from "lucide-react";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { yerSimgesi } from "@/lib/simge";
-import { defterIsle, durumAyarla, kayitGuncelle, konumYaz, sureYaz, useDefter, type Kayit, type KayitBilgisi } from "@/lib/defter";
-import { DurumDugmeleri, GitarSecici, KisimSecici } from "./Parcalar";
+import { defterIsle, kayitGuncelle, konumYaz, sureYaz, useDefter, type Kayit, type KayitBilgisi } from "@/lib/defter";
+import { GitarSecici, KisimSecici } from "./Parcalar";
+import EylemDugmeleri from "./Eylemler";
 
 /**
- * Ders ve kütüphane sayfalarındaki Çalışma Defteri şeridi: kısım, iki durum düğmesi, gitar ve "kaldığın yer"
- * (son kısım, ölçü, hız) ile "Oradan devam et". Çalma süresi sayfanın kendi sayacından deftere yazılır.
+ * Ders ve kütüphane sayfalarındaki Çalışma Defteri şeridi: kısım, dört eylem (Öğrendim, Öğreniyorum, Takvime al,
+ * Listeye ekle), gitar ve "kaldığın yer" (son kısım, ölçü, hız) ile "Oradan devam et". Defterde yalnız işaretlenenler
+ * vardır: işaretlenmişse çalma süresi sayfanın kendi sayacından deftere de yazılır (ilerleme kaydına her zaman).
  */
 export default function DefterSeridi({
   bilgi,
@@ -47,18 +49,8 @@ export default function DefterSeridi({
         Defter
       </Link>
       <KisimSecici deger={kisim} onDegis={kisimDegis} secenekler={kisimlar} kompakt />
-      <DurumDugmeleri durum={kayit?.durum} kisim={kisim} kompakt onDurum={(d) => defterIsle((v) => durumAyarla(v, bilgi, d, kisim))} />
-      <GitarSecici
-        veri={veri}
-        deger={kayit?.gitar ?? null}
-        kompakt
-        onDegis={(g) =>
-          defterIsle((v) => {
-            const v2 = v.kayitlar[bilgi.id] ? v : durumAyarla(v, bilgi, null, kisim);
-            return kayitGuncelle(v2, bilgi.id, { gitar: g });
-          })
-        }
-      />
+      <EylemDugmeleri bilgi={bilgi} kisim={kisim} kompakt />
+      {kayit && <GitarSecici veri={veri} deger={kayit.gitar} kompakt onDegis={(g) => defterIsle((v) => kayitGuncelle(v, bilgi.id, { gitar: g }))} />}
       <div className="ml-auto flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         {kayit && kayit.toplamSure > 0 && <span className="tabular-nums text-muted">Toplam {sureYaz(kayit.toplamSure)}</span>}
         {yer ? (
@@ -79,7 +71,7 @@ export default function DefterSeridi({
             )}
           </>
         ) : (
-          <span className="text-muted">Çaldığında süre, ölçü ve hız deftere yazılır.</span>
+          <span className="text-muted">{kayit ? "Çaldığında süre, ölçü ve hız deftere yazılır." : "İşaretlersen deftere eklenir; süre ve kaldığın yer orada tutulur."}</span>
         )}
         <Link href="/defter" className="inline-flex items-center text-[var(--link)] hover:underline" aria-label="Çalışma Defteri'ne git">
           Deftere git <ChevronRight size={12} aria-hidden />

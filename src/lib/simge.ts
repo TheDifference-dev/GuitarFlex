@@ -177,8 +177,10 @@ const YER = {
   rehber: s("rehber", "indigo"),
   /** Şarkı Kütüphanesi: Songsterr'in bütün kataloğu (uygulama içi pencerede) */
   "sarki-kutuphanesi": s("ara", "kirmizi"),
-  /** Şarkılarla Öğren: GuitarBear Şarkı Rehberi sırası */
+  /** Rehber Şarkılar (eski Şarkılarla Öğren): GuitarBear Şarkı Rehberi sırası */
   sarkilar: s("yildiz", "pembe"),
+  /** Şarkı Kütüphanesi › Tüm Şarkılar (kapaklı kartlar) */
+  "tum-sarkilar": s("nota", "mor"),
   /** Tab Oynatıcı ve dosyalarım: çalınabilir çok track'li parçalar ve kullanıcının dosyaları */
   kutuphane: s("klasor", "grafit"),
   oynatici: s("oynat", "gri"),

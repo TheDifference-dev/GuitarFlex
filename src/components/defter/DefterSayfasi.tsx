@@ -1,20 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
-import { Download, ExternalLink, Plus, Search, Star, StepForward, Trash2, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { ArrowDown, ArrowUp, ChevronDown, Download, ExternalLink, GripVertical, Plus, Search, Star, Trash2, Upload, X } from "lucide-react";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { kursSimgesi, yerSimgesi, type SimgeTanim } from "@/lib/simge";
 import SongsterrBag from "@/components/SongsterrBag";
+import { sarkiKutuphanesiAc } from "@/lib/songsterr";
 import { today, useProgress } from "@/lib/progress";
 import { gunler as ilerlemeGunleri } from "@/lib/oyun";
 import { Onay } from "@/components/kutuphane/LibraryBrowser";
 import {
-  AY_ADLARI, GITAR_TURLERI, GITAR_TURU_ADI, GUN_ADLARI, TUR_ADI, birlestir, defterIsle, disKayit, disaAktar, durumAyarla, elleEkle, gitarBasina, gitarEkle, gitarGuncelle, gitarSil,
-  gunEkle, gunToplami, gunTarihi, gunlukToplamlar, haftaBasi, haftaGunu, iceAktarMetin, kayitAc, kayitGitari, kayitGuncelle, kayitSil, kisimYaz, konumYaz, listele, sureEkle, sureYaz,
-  useDefter, varsayilanAyarla, type DefterVeri, type Durum, type Filtre, type GitarTuru, type Kayit, type Tur,
+  AY_ADLARI, GITAR_TURLERI, GITAR_TURU_ADI, GUN_ADLARI, TUR_ADI, birlestir, defterIsle, disKayit, disaAktar, elleEkle, filtreyeUyar, gitarBasina, gitarEkle, gitarGuncelle,
+  gitarSil, gunEkle, gunToplami, gunTarihi, gunlukToplamlar, haftaBasi, haftaGunu, iceAktarMetin, kayitAc, kayitGitari, kayitGuncelle, kayitSil, kisimYaz, konumYaz, listeTasi,
+  listele, sonCalisma, sureEkle, sureYaz, useDefter, varsayilanAyarla, yakinPlan, type DefterVeri, type Durum, type Filtre, type FiltreDurum, type GitarTuru, type Kayit, type Tur,
 } from "@/lib/defter";
-import { DurumDugmeleri, GitarSecici, KisimSecici, SureEkle, gitarAdi } from "./Parcalar";
+import { DurumDugmeleri, DurumIsareti, GitarSecici, KisimSecici, SureEkle, gitarAdi } from "./Parcalar";
+import EylemDugmeleri from "./Eylemler";
 import DefterTakvim from "./DefterTakvim";
 
 type Gorunum = "liste" | "takvim";
@@ -22,14 +25,22 @@ const tarihYaz = (t: string) => {
   const d = gunTarihi(t);
   return `${d.getDate()} ${AY_ADLARI[d.getMonth()]}`;
 };
-const anYaz = (iso: string) => {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : `${d.getDate()} ${AY_ADLARI[d.getMonth()]} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-};
 const segment = (aktif: boolean) => `rounded-full px-3 py-1 text-sm transition ${aktif ? "bg-seg font-semibold text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`;
 const secim = "h-9 rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 text-sm";
 
-/** Çalışma Defteri sayfası: özet, kayıtlar (filtre, arama, sıralama), takvim ve plan, gitarlar, yedek */
+const FILTRELER: [FiltreDurum, string, string][] = [
+  ["devam", "Öğreniyorum", "bg-[#ff9f0a]"],
+  ["ogrendim", "Öğrendim", "bg-[#30d158]"],
+  ["liste", "Listem", "bg-[#d79bf7]"],
+  ["takvim", "Takvimde", "bg-[#64b4ff]"],
+  ["tumu", "Tümü", ""],
+];
+
+/**
+ * Çalışma Defteri sayfası: özet, işaretlediğin egzersiz ve şarkıların TABLOSU (Öğreniyorum / Öğrendim / Listem /
+ * Takvimde), takvim ve plan, gitarlar, yedek. Satıra tıklamak o egzersizi ya da şarkıyı açar. Defterde yalnız
+ * kullanıcının işaretledikleri vardır (bkz. lib/defter-cekirdek.ts › isaretli).
+ */
 export default function DefterSayfasi({ gunlukHedefDk }: { gunlukHedefDk: number }) {
   const veri = useDefter();
   const p = useProgress();
@@ -39,14 +50,17 @@ export default function DefterSayfasi({ gunlukHedefDk }: { gunlukHedefDk: number
   const [notAc, setNotAc] = useState(false);
   const gitarRef = useRef<HTMLDetailsElement>(null);
 
-  // Bağlantı ile açılış: #devam, #ogrendim, #tumu, #takvim, #plan, #gitarlar ya da bir kaydın kimliği
+  // Bağlantı ile açılış: #devam, #ogrendim, #liste, #takvimde, #tumu, #takvim, #plan, #gitarlar ya da bir kaydın kimliği
   useEffect(() => {
     const uygula = () => {
       const h = decodeURIComponent(window.location.hash.slice(1));
       if (!h) return;
-      if (h === "devam" || h === "ogrendim" || h === "tumu") {
+      if (h === "devam" || h === "ogrendim" || h === "tumu" || h === "liste") {
         setGorunum("liste");
         setFiltre((f) => ({ ...f, durum: h }));
+      } else if (h === "takvimde") {
+        setGorunum("liste");
+        setFiltre((f) => ({ ...f, durum: "takvim" }));
       } else if (h === "takvim" || h === "plan") {
         setGorunum("takvim");
         requestAnimationFrame(() => document.getElementById(h)?.scrollIntoView({ block: "start" }));
@@ -71,10 +85,10 @@ export default function DefterSayfasi({ gunlukHedefDk }: { gunlukHedefDk: number
     for (const [t, g] of ilerlemeGunleri(p)) m.set(t, g.egzersiz + g.serbest);
     return m;
   }, [p]);
-  const liste = useMemo(() => listele(veri, filtre), [veri, filtre]);
+  const liste = useMemo(() => listele(veri, filtre, bugun), [veri, filtre, bugun]);
   const sayilar = useMemo(() => {
     const t = Object.values(veri.kayitlar);
-    return { devam: t.filter((k) => k.durum !== "ogrendim").length, ogrendim: t.filter((k) => k.durum === "ogrendim").length, tumu: t.length };
+    return Object.fromEntries(FILTRELER.map(([d]) => [d, t.filter((k) => filtreyeUyar(veri, k, d)).length])) as Record<FiltreDurum, number>;
   }, [veri]);
 
   return (
@@ -84,7 +98,7 @@ export default function DefterSayfasi({ gunlukHedefDk }: { gunlukHedefDk: number
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-0.5 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-0.5" role="group" aria-label="Görünüm">
           <button type="button" aria-pressed={gorunum === "liste"} onClick={() => setGorunum("liste")} className={segment(gorunum === "liste")}>
-            Kayıtlar
+            Tablo
           </button>
           <button type="button" aria-pressed={gorunum === "takvim"} onClick={() => setGorunum("takvim")} className={segment(gorunum === "takvim")}>
             Takvim ve plan
@@ -103,17 +117,11 @@ export default function DefterSayfasi({ gunlukHedefDk }: { gunlukHedefDk: number
       {gorunum === "takvim" ? (
         <DefterTakvim veri={veri} ilerleme={ilerleme} varsayilanDk={gunlukHedefDk} bugun={bugun} />
       ) : (
-        <section aria-label="Kayıtlar" className="space-y-4">
+        <section aria-label="Defter tablosu" className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex gap-0.5 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-0.5" role="group" aria-label="Durum">
-              {(
-                [
-                  ["devam", "Devam edenler", "bg-[#ffd60a]"],
-                  ["ogrendim", "Öğrendiklerim", "bg-[#30d158]"],
-                  ["tumu", "Tümü", ""],
-                ] as const
-              ).map(([d, ad, renk]) => (
-                <button key={d} type="button" aria-pressed={filtre.durum === d} onClick={() => setFiltre({ ...filtre, durum: d })} className={`${segment(filtre.durum === d)} flex items-center gap-1.5`}>
+            <div className="flex flex-wrap gap-0.5 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-0.5" role="group" aria-label="Filtre">
+              {FILTRELER.map(([d, ad, renk]) => (
+                <button key={d} type="button" aria-pressed={filtre.durum === d} onClick={() => setFiltre({ ...filtre, durum: d })} className={`${segment(filtre.durum === d)} flex items-center gap-1.5`} data-defter-filtre={d}>
                   {renk && <span className={`size-2.5 rounded-full ${renk}`} aria-hidden />}
                   {ad} <span className="tabular-nums text-muted">{sayilar[d]}</span>
                 </button>
@@ -136,31 +144,35 @@ export default function DefterSayfasi({ gunlukHedefDk }: { gunlukHedefDk: number
             </select>
             <label className="flex h-9 min-w-56 flex-1 items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.05] px-3.5">
               <Search size={16} className="text-muted" aria-hidden />
-              <input value={filtre.q} onChange={(e) => setFiltre({ ...filtre, q: e.target.value })} placeholder="Defterde ara (başlık, sanatçı, kısım, not)" className="w-full bg-transparent text-sm outline-none" aria-label="Defterde ara" />
+              <input value={filtre.q} onChange={(e) => setFiltre({ ...filtre, q: e.target.value })} placeholder="Defterde ara (ad, sanatçı, kısım, not)" className="w-full bg-transparent text-sm outline-none" aria-label="Defterde ara" />
             </label>
-            <select value={filtre.sira} onChange={(e) => setFiltre({ ...filtre, sira: e.target.value as Filtre["sira"] })} className={secim} aria-label="Sıralama">
-              <option value="son">Son çalışılan</option>
-              <option value="cok">En çok çalışılan</option>
-            </select>
+            {filtre.durum !== "liste" && filtre.durum !== "takvim" && (
+              <select value={filtre.sira} onChange={(e) => setFiltre({ ...filtre, sira: e.target.value as Filtre["sira"] })} className={secim} aria-label="Sıralama">
+                <option value="son">Son çalışılan</option>
+                <option value="cok">En çok çalışılan</option>
+              </select>
+            )}
           </div>
 
+          {filtre.durum === "liste" && liste.length > 1 && <p className="text-sm text-muted">Çalışma listem: ileride çalışacakların. Sırayı satırları sürükleyerek ya da ↑ / ↓ ile değiştir.</p>}
+
           {liste.length ? (
-            <ul className="space-y-3">
-              {liste.map((k) => (
-                <li key={k.id}>
-                  <KayitSatiri veri={veri} kayit={k} vurgu={vurgu === k.id} />
-                </li>
-              ))}
-            </ul>
+            <DefterTablosu veri={veri} kayitlar={liste} siralanir={filtre.durum === "liste" && !filtre.q && !filtre.tur && !filtre.gitar} vurgu={vurgu} bugun={bugun} />
           ) : (
-            <div className="card p-8 text-center text-sm text-muted">
+            <div className="card p-8 text-center text-sm text-muted" data-defter-bos>
               {sayilar.tumu ? (
-                "Bu filtrelerle kayıt yok."
+                "Bu filtrede kayıt yok."
               ) : (
                 <>
-                  Defter boş. Bir derste ya da Şarkı Kütüphanesi&apos;nde tabı çaldığında süre, ölçü ve hız buraya kendiliğinden yazılır; Popüler Şarkılar&apos;da
-                  &quot;Devam ediyorum&quot; ya da &quot;Öğrendim&quot;e bastığında şarkı deftere eklenir. <Link href="/sarkilar" className="font-semibold text-[var(--link)]">Popüler Şarkılar</Link> ·{" "}
-                  <Link href="/elektro" className="font-semibold text-[var(--link)]">Teknik Egzersizler</Link>
+                  Defter boş. Bir egzersizin ya da şarkının yanındaki <b className="text-text">Öğrendim</b>, <b className="text-text">Öğreniyorum</b>, <b className="text-text">Takvime al</b> ya da{" "}
+                  <b className="text-text">Listeye ekle</b> düğmesine bastığında buraya gelir. Yalnız işaretlediklerin defterde tutulur.{" "}
+                  <Link href="/sarki-kutuphanesi/rehber" className="font-semibold text-[var(--link)]">
+                    Rehber Şarkılar
+                  </Link>{" "}
+                  ·{" "}
+                  <Link href="/elektro" className="font-semibold text-[var(--link)]">
+                    Teknik Egzersizler
+                  </Link>
                 </>
               )}
             </div>
@@ -240,7 +252,7 @@ function Kutu({ etiket, deger, children }: { etiket: string; deger: string; chil
   );
 }
 
-/* ───────────── Kayıt satırı ───────────── */
+/* ───────────── Tablo ───────────── */
 
 /** Kaydın simgesi ve rengi (yeni renk dili): ders kursunun rengi, Songsterr şarkıları Şarkı Kütüphanesi, kütüphane
  * parçaları Tab Oynatıcı, serbest notlar defterin rengi */
@@ -251,36 +263,194 @@ function kayitSimgesi(k: Kayit): SimgeTanim {
   return yerSimgesi("defter");
 }
 
-function KayitSatiri({ veri, kayit: k, vurgu }: { veri: DefterVeri; kayit: Kayit; vurgu: boolean }) {
-  const [sor, setSor] = useState(false);
+const TH = "px-3 py-2 text-left text-xs font-medium text-muted whitespace-nowrap";
+const TD = "px-3 py-2.5 align-middle";
+
+/**
+ * Defter tablosu: tür, ad, kurs/sanatçı, kısım, durum, son çalışma, toplam süre, gitar, planlı tarih. Satıra
+ * tıklamak (ya da Enter) kaydı açar: ders ve kütüphane sayfası uygulamada, Songsterr şarkısı Songsterr penceresinde.
+ * Ayrıntı (eylemler, not, oturum geçmişi) satır sonundaki okla açılır. Listem filtresinde satırlar sürüklenir.
+ */
+function DefterTablosu({ veri, kayitlar, siralanir, vurgu, bugun }: { veri: DefterVeri; kayitlar: Kayit[]; siralanir: boolean; vurgu: string | null; bugun: string }) {
+  const router = useRouter();
+  const [acik, setAcik] = useState<string | null>(vurgu);
+  const [surukle, setSurukle] = useState<string | null>(null);
+  const [sil, setSil] = useState<Kayit | null>(null);
+  const ac = (k: Kayit) => {
+    if (!k.href) return setAcik((x) => (x === k.id ? null : k.id));
+    if (disKayit(k.id) || k.href.startsWith("http")) {
+      defterIsle((v) => kayitAc(v, k));
+      if (!sarkiKutuphanesiAc(k.href)) window.open(k.href, "_blank", "noopener,noreferrer");
+    } else router.push(k.href);
+  };
+  return (
+    <div className="card overflow-x-auto !p-0">
+      <table className="w-full min-w-[960px] border-collapse text-sm" data-defter-tablosu>
+        <thead className="border-b border-line/70">
+          <tr>
+            {siralanir && <th className={TH}>Sıra</th>}
+            <th className={TH}>Tür</th>
+            <th className={TH}>Ad</th>
+            <th className={TH}>Kurs / sanatçı</th>
+            <th className={TH}>Kısım</th>
+            <th className={TH}>Durum</th>
+            <th className={TH}>Son çalışma</th>
+            <th className={`${TH} text-right`}>Toplam süre</th>
+            <th className={TH}>Gitar</th>
+            <th className={TH}>Planlı tarih</th>
+            <th className={TH}>
+              <span className="sr-only">Ayrıntı</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line/60">
+          {kayitlar.map((k, i) => {
+            const son = sonCalisma(k);
+            const plan = yakinPlan(k, bugun);
+            const listede = veri.liste.includes(k.id);
+            const dis = disKayit(k.id) || k.href.startsWith("http");
+            const acikMi = acik === k.id;
+            return (
+              <Fragment key={k.id}>
+                <tr
+                  data-kayit={k.id}
+                  tabIndex={0}
+                  draggable={siralanir}
+                  onDragStart={(e) => {
+                    setSurukle(k.id);
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragOver={(e) => siralanir && surukle && e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (surukle && surukle !== k.id) defterIsle((v) => listeTasi(v, surukle, v.liste.indexOf(k.id)));
+                    setSurukle(null);
+                  }}
+                  onDragEnd={() => setSurukle(null)}
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest("button, a, input, select, textarea")) return;
+                    ac(k);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === "Enter") ac(k);
+                  }}
+                  aria-label={`${k.baslik}: aç`}
+                  className={`cursor-pointer transition hover:bg-ink/[0.04] focus-visible:bg-ink/[0.05] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)] ${surukle === k.id ? "opacity-50" : ""} ${vurgu === k.id ? "bg-accent/[0.07]" : ""}`}
+                >
+                  {siralanir && (
+                    <td className={`${TD} whitespace-nowrap`}>
+                      <span className="flex items-center gap-0.5 text-muted">
+                        <GripVertical size={14} aria-hidden className="cursor-grab" />
+                        <span className="w-5 text-center text-xs font-semibold tabular-nums text-text">{i + 1}</span>
+                        <button type="button" disabled={i === 0} onClick={() => defterIsle((v) => listeTasi(v, k.id, i - 1))} className="flex size-6 items-center justify-center rounded-full hover:bg-ink/[0.08] disabled:opacity-30" aria-label={`${k.baslik}: yukarı taşı`}>
+                          <ArrowUp size={13} />
+                        </button>
+                        <button type="button" disabled={i === kayitlar.length - 1} onClick={() => defterIsle((v) => listeTasi(v, k.id, i + 1))} className="flex size-6 items-center justify-center rounded-full hover:bg-ink/[0.08] disabled:opacity-30" aria-label={`${k.baslik}: aşağı taşı`}>
+                          <ArrowDown size={13} />
+                        </button>
+                      </span>
+                    </td>
+                  )}
+                  <td className={`${TD} whitespace-nowrap`}>
+                    <span className="flex items-center gap-2" data-renk={kayitSimgesi(k).renk}>
+                      <UygulamaSimgesi simge={kayitSimgesi(k)} boyut={24} />
+                      <span className="text-xs text-muted">{TUR_ADI[k.tur]}</span>
+                    </span>
+                  </td>
+                  <td className={`${TD} max-w-[16rem]`}>
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <span className="truncate">{k.baslik}</span>
+                      {dis && <ExternalLink size={12} className="shrink-0 text-muted" aria-label="Songsterr'de açılır" />}
+                    </span>
+                  </td>
+                  <td className={`${TD} max-w-[12rem] truncate text-muted`}>{k.altBaslik || "—"}</td>
+                  <td className={`${TD} whitespace-nowrap`}>{k.kisim ? kisimYaz(k.kisim) : "—"}</td>
+                  <td className={TD}>
+                    <span className="flex flex-wrap items-center gap-1">
+                      {k.durum && <DurumIsareti durum={k.durum} />}
+                      {listede && <ListeIsareti sira={veri.liste.indexOf(k.id) + 1} />}
+                      {!k.durum && !listede && (k.planli.length ? <PlanIsareti /> : <span className="text-xs text-muted">—</span>)}
+                    </span>
+                  </td>
+                  <td className={`${TD} whitespace-nowrap tabular-nums`}>{son ? tarihYaz(son) : k.acildi ? "açıldı" : "—"}</td>
+                  <td className={`${TD} whitespace-nowrap text-right font-semibold tabular-nums`}>{k.toplamSure ? sureYaz(k.toplamSure) : "—"}</td>
+                  <td className={`${TD} max-w-[9rem] truncate`}>{gitarAdi(veri, kayitGitari(veri, k))}</td>
+                  <td className={`${TD} whitespace-nowrap tabular-nums`}>
+                    {plan ? (
+                      <span className={plan < bugun ? "text-muted" : "font-semibold"}>
+                        {tarihYaz(plan)}
+                        {k.planli.length > 1 ? <span className="font-normal text-muted"> +{k.planli.length - 1}</span> : null}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className={`${TD} w-0`}>
+                    <button
+                      type="button"
+                      onClick={() => setAcik(acikMi ? null : k.id)}
+                      aria-expanded={acikMi}
+                      aria-label={`${k.baslik}: ayrıntı`}
+                      title="Ayrıntı: eylemler, kısım, gitar, not, oturumlar"
+                      className="flex size-8 items-center justify-center rounded-full text-muted hover:bg-ink/[0.08] hover:text-text"
+                    >
+                      <ChevronDown size={16} className={`transition ${acikMi ? "rotate-180" : ""}`} />
+                    </button>
+                  </td>
+                </tr>
+                {acikMi && (
+                  <tr className="bg-ink/[0.025]">
+                    <td colSpan={siralanir ? 11 : 10} className="px-4 py-4">
+                      <KayitAyrintisi veri={veri} kayit={k} onSil={() => setSil(k)} />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+      {sil && (
+        <Onay
+          baslik={`"${sil.baslik}" defterden silinsin mi?`}
+          onIptal={() => setSil(null)}
+          onEvet={() => {
+            defterIsle((v) => kayitSil(v, sil.id));
+            setSil(null);
+          }}
+        >
+          Kaydın bütün işaretleri, notu ve {sil.oturumlar.length} oturumu silinir. Günlük görev ve ders süreleri (Profil) değişmez.
+        </Onay>
+      )}
+    </div>
+  );
+}
+
+function ListeIsareti({ sira }: { sira: number }) {
+  return <span className="inline-flex items-center rounded-full bg-[#d79bf7] px-2 py-0.5 text-[11px] font-semibold text-[#1e0a29]">Listem #{sira}</span>;
+}
+function PlanIsareti() {
+  return <span className="inline-flex items-center rounded-full bg-[#64b4ff] px-2 py-0.5 text-[11px] font-semibold text-[#04121f]">Planlı</span>;
+}
+
+/** Satırın ayrıntısı: dört eylem, kısım, gitar, (Songsterr ve serbest notta) elle süre, not, oturum geçmişi, sil */
+function KayitAyrintisi({ veri, kayit: k, onSil }: { veri: DefterVeri; kayit: Kayit; onSil: () => void }) {
   const dis = disKayit(k.id) || k.href.startsWith("http");
   const bilgi = { id: k.id, tur: k.tur, baslik: k.baslik, altBaslik: k.altBaslik, href: k.href };
   const yer = konumYaz(k);
-  const son = k.oturumlar[k.oturumlar.length - 1];
-  const simge = kayitSimgesi(k);
   return (
-    <article data-kayit={k.id} data-renk={simge.renk} className={`renkli-kart card p-4 pt-5 sm:p-5 sm:pt-6 ${vurgu ? "outline-2 outline-offset-2 outline-[var(--accent)]" : ""}`} aria-labelledby={`b-${k.id}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <UygulamaSimgesi simge={simge} boyut={44} />
-          <div className="min-w-0">
-            <h3 id={`b-${k.id}`} className="text-[17px] font-semibold leading-tight">
-              {k.href && !dis ? (
-                <Link href={k.href} className="hover:text-[var(--link)]">
-                  {k.baslik}
-                </Link>
-              ) : (
-                k.baslik
-              )}
-            </h3>
-            <p className="mt-0.5 text-sm text-muted">
-              {TUR_ADI[k.tur]}
-              {k.altBaslik ? ` · ${k.altBaslik}` : ""}
-              {dis ? " · Songsterr" : ""}
-            </p>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        {k.tur === "serbest" ? (
+          <DurumDugmeleri durum={k.durum} kisim={k.kisim} ad={k.baslik} onDurum={(d) => defterIsle((v) => kayitGuncelle(v, k.id, { durum: d }))} />
+        ) : (
+          <EylemDugmeleri bilgi={bilgi} kisim={k.kisim} />
+        )}
+        <KisimSecici deger={k.kisim} onDegis={(x) => defterIsle((v) => kayitGuncelle(v, k.id, { kisim: x }))} etiket={`${k.baslik}: kısım`} />
+        <GitarSecici veri={veri} deger={k.gitar} onDegis={(g) => defterIsle((v) => kayitGuncelle(v, k.id, { gitar: g }))} />
+        {(dis || k.tur === "serbest") && <SureEkle ad={k.baslik} onEkle={(sn) => defterIsle((v) => sureEkle(v, bilgi, sn, { elle: true, gitar: kayitGitari(v, v.kayitlar[k.id]) }))} />}
+        <span className="ml-auto flex items-center gap-2">
           {k.href &&
             (dis ? (
               <SongsterrBag q={k.href} onAc={() => defterIsle((v) => kayitAc(v, bilgi))} className="btn-secondary px-3.5 py-1.5 text-sm">
@@ -288,42 +458,23 @@ function KayitSatiri({ veri, kayit: k, vurgu }: { veri: DefterVeri; kayit: Kayit
               </SongsterrBag>
             ) : (
               <Link href={yer && k.tur === "egzersiz" ? `${k.href}#devam` : k.href} className="btn-primary px-3.5 py-1.5 text-sm">
-                {yer ? (
-                  <>
-                    <StepForward size={14} aria-hidden /> Devam et
-                  </>
-                ) : (
-                  "Aç"
-                )}
+                {yer ? "Kaldığın yerden devam et" : "Aç"}
               </Link>
             ))}
-          <button type="button" onClick={() => setSor(true)} className="flex size-8 items-center justify-center rounded-full text-muted hover:bg-ink/[0.08] hover:text-bad" aria-label={`${k.baslik} kaydını sil`} title="Kaydı sil">
+          <button type="button" onClick={onSil} className="flex size-8 items-center justify-center rounded-full text-muted hover:bg-ink/[0.08] hover:text-bad" aria-label={`${k.baslik} kaydını sil`} title="Kaydı sil">
             <Trash2 size={15} />
           </button>
-        </div>
+        </span>
       </div>
-
-      <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-        <Bilgi ad="Kısım">{k.kisim ? kisimYaz(k.kisim) : "—"}</Bilgi>
-        <Bilgi ad="Son konum">{k.konum || k.hiz || k.tempo ? yer.replace(k.kisim ? `${kisimYaz(k.kisim)}, ` : "", "") || "—" : "—"}</Bilgi>
-        <Bilgi ad="Toplam">{k.toplamSure ? sureYaz(k.toplamSure) : k.acildi ? "açıldı, süre girilmedi" : "—"}</Bilgi>
-        <Bilgi ad="Gitar">{gitarAdi(veri, kayitGitari(veri, k))}</Bilgi>
-        <Bilgi ad="Son">{son ? tarihYaz(son.tarih) : anYaz(k.guncellendi)}</Bilgi>
-      </dl>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <KisimSecici deger={k.kisim} onDegis={(x) => defterIsle((v) => kayitGuncelle(v, k.id, { kisim: x }))} etiket={`${k.baslik}: kısım`} />
-        <DurumDugmeleri durum={k.durum} kisim={k.kisim} ad={k.baslik} onDurum={(d) => defterIsle((v) => durumAyarla(v, bilgi, d))} />
-        <GitarSecici veri={veri} deger={k.gitar} onDegis={(g) => defterIsle((v) => kayitGuncelle(v, k.id, { gitar: g }))} />
-        {(dis || k.tur === "serbest") && (
-          <SureEkle ad={k.baslik} onEkle={(sn) => defterIsle((v) => sureEkle(v, bilgi, sn, { elle: true, gitar: kayitGitari(v, v.kayitlar[k.id]) }))} />
-        )}
-      </div>
-
+      {yer && (
+        <p className="text-sm">
+          <span className="text-muted">Kaldığın yer: </span>
+          <span className="font-semibold">{yer}</span>
+        </p>
+      )}
       <NotAlani kayit={k} />
-
       {k.oturumlar.length > 0 && (
-        <details className="mt-3 text-sm">
+        <details className="text-sm">
           <summary className="cursor-pointer text-muted hover:text-text">Oturum geçmişi ({k.oturumlar.length})</summary>
           <table className="mt-2 w-full text-left text-xs tabular-nums">
             <thead className="text-muted">
@@ -354,28 +505,6 @@ function KayitSatiri({ veri, kayit: k, vurgu }: { veri: DefterVeri; kayit: Kayit
           </table>
         </details>
       )}
-
-      {sor && (
-        <Onay
-          baslik={`"${k.baslik}" defterden silinsin mi?`}
-          onIptal={() => setSor(false)}
-          onEvet={() => {
-            setSor(false);
-            defterIsle((v) => kayitSil(v, k.id));
-          }}
-        >
-          Kaydın notu ve {k.oturumlar.length} oturumu silinir. Günlük görev ve ders süreleri (Profil) değişmez.
-        </Onay>
-      )}
-    </article>
-  );
-}
-
-function Bilgi({ ad, children }: { ad: string; children: ReactNode }) {
-  return (
-    <div className="flex gap-1.5">
-      <dt className="text-muted">{ad}:</dt>
-      <dd className="font-semibold">{children}</dd>
     </div>
   );
 }
@@ -393,7 +522,7 @@ function NotAlani({ kayit }: { kayit: Kayit }) {
       rows={kayit.not ? 2 : 1}
       placeholder="Not (ör. 16'lıklarda sağ el kayıyor, 90 BPM'de temiz)"
       aria-label={`${kayit.baslik}: not`}
-      className="mt-3 w-full resize-y rounded-xl border border-ink/10 bg-[var(--bg)] px-3 py-2 text-sm placeholder:text-muted"
+      className="w-full resize-y rounded-xl border border-ink/10 bg-[var(--bg)] px-3 py-2 text-sm placeholder:text-muted"
     />
   );
 }

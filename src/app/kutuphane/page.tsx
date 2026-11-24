@@ -17,8 +17,8 @@ export default async function LibraryPage() {
         <MetinBag href="/sarki-kutuphanesi" buyuk>
           Şarkı Kütüphanesi
         </MetinBag>
-        <MetinBag href="/sarkilar" buyuk>
-          Şarkılarla Öğren
+        <MetinBag href="/sarki-kutuphanesi/rehber" buyuk>
+          Rehber Şarkılar
         </MetinBag>
         <MetinBag href="/oynatici" buyuk>
           Tabla keşfet

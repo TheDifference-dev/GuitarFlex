@@ -9,10 +9,12 @@ import ModulDersi from "../teori/ModulDersi";
 import { SayfaBasi } from "../site/Vitrin";
 import UygulamaSimgesi from "../site/UygulamaSimgesi";
 import { yerSimgesi, yolSimgesi } from "@/lib/simge";
+import { bolumeKaydir, useBolumIzleyici } from "../site/BolumGezgini";
 
 // Teori yolu: GuitarBear'deki ana bölümler ve adımlar, ardından ayrı başlıkla bizim eklediğimiz "Ek bölümler"
 // (bölümde ek: true; kodlar E1.1 …). Kilit yok: bütün adımlar her zaman açık. Üstteki ilerleme yalnız ana yolu
-// sayar; Ek bölümler kendi sayacıyla ayrı gösterilir.
+// sayar; Ek bölümler kendi sayacıyla ayrı gösterilir. Kenar çubuğu (geniş ekranda) bölümlerin içindekiler listesidir:
+// filtre değil, tıklayınca bölüme yumuşak kayar, görünen bölüm vurgulanır (kurs sayfalarıyla aynı düzen).
 
 export default function YolSayfasi({ yol }: { yol: Yol }) {
   const progress = useProgress();
@@ -25,12 +27,14 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
   const ekAdimlar = adimlariOf(ekBolumler);
   const gecilen = anaAdimlar.filter((a) => sonuc(a.kod)?.passed).length;
   const ekGecilen = ekAdimlar.filter((a) => sonuc(a.kod)?.passed).length;
+  const bolumId = (b: YolBolum) => `yol-bolum-${b.no}`;
+  const gorunen = useBolumIzleyici(yol.bolumler.map(bolumId));
 
   const bolumGoster = (b: YolBolum) => {
     const adimlar = yol.adimlar.filter((a) => a.bolum === b.no);
     const biten = adimlar.filter((a) => sonuc(a.kod)?.passed).length;
     return (
-      <section key={b.no} className="space-y-3">
+      <section key={b.no} id={bolumId(b)} data-bolum className="scroll-mt-20 space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
             {b.etiket ? <p className="eyebrow">{b.etiket}</p> : null}
@@ -118,6 +122,41 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
         </section>
       ) : null}
 
+      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <nav aria-label="Bölümler" className="card hidden h-fit p-3 lg:sticky lg:top-16 lg:block lg:max-h-[calc(100vh-5rem)] lg:overflow-auto" data-bolum-gezgini>
+          <p className="mb-2 px-1 text-xs font-semibold text-muted">Bölümler</p>
+          <ul className="space-y-0.5">
+            {yol.bolumler.map((b, i) => {
+              const adimlar = yol.adimlar.filter((a) => a.bolum === b.no);
+              const biten = adimlar.filter((a) => sonuc(a.kod)?.passed).length;
+              const aktif = gorunen === bolumId(b);
+              return (
+                <li key={b.no}>
+                  {b.ek && !yol.bolumler[i - 1]?.ek && <p className="mb-1 mt-3 px-1 text-[11px] font-semibold text-muted">Ek bölümler</p>}
+                  <a
+                    href={`#${bolumId(b)}`}
+                    data-kaydirma="kendi"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      bolumeKaydir(bolumId(b));
+                    }}
+                    aria-current={aktif ? "location" : undefined}
+                    className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition hover:bg-ink/[0.06] ${aktif ? "bg-ink/[0.07] font-semibold text-accent" : ""}`}
+                  >
+                    <span className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${biten === adimlar.length && adimlar.length ? "bg-ok text-ok-ink" : "bg-ink/10"}`}>
+                      {biten === adimlar.length && adimlar.length ? <Check size={11} /> : (b.kod ?? b.no)}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{b.ad}</span>
+                    <span className="shrink-0 text-[11px] tabular-nums text-muted">
+                      {biten}/{adimlar.length}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <div className="min-w-0 space-y-8">
       {anaBolumler.map(bolumGoster)}
 
       {ekBolumler.length ? (
@@ -133,6 +172,8 @@ export default function YolSayfasi({ yol }: { yol: Yol }) {
           {ekBolumler.map(bolumGoster)}
         </section>
       ) : null}
+        </div>
+      </div>
     </div>
   );
 }

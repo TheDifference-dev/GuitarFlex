@@ -7,7 +7,8 @@
 // Production sunucusu (`next start -p 3307`) ve başsız Chrome (CDP 9347, ayrı profil) açılır; her sayfada ölçülen:
 //   (a) sayfa 200, konsolda hata/istisna yok        (b) alphaTab çizdi (svg > 0; "Tab açılamadı"/"yükleniyor" yok)
 //   (c) oynatıcı hazır (ses bankası + MIDI)          (d) Çal'a basınca konum ilerliyor
-//   (e) gerçek ses: AudioContext çıkışında RMS > eşik (g) örnek derslerde sayım, metronom, hız, döngü, ana ses
+//   (e) gerçek ses: AudioContext çıkışında RMS > eşik (g) örnek derslerde sayım, metronom, hız, döngü, ses kanalları
+//       (Müzik / Metronom / Sayım ayrı: müzik %0 iken metronom duyulur, metronom %0 iken müzik çalar, %450 sınırı)
 //   (f) track'lerin MIDI programı ses bankasında var (GeneralUser ve sonivox preset listeleri)
 // Sonuç: <çıktı>/sonuc.json ve <çıktı>/ozet.md (varsayılan /tmp/w7; --cikti=… ya da GF_TEST_CIKTI).
 // Sunucu ve Chrome yalnız kendi PID'leriyle kapatılır.
@@ -115,6 +116,16 @@ function sayfaListesi() {
   for (const b of BACKINGS) sayfalar.push({ url: `/sarkilar/dogaclama/${encodeURIComponent(b.slug)}`, grup: "dogaclama", kimlik: `eslik#${b.slug}`, baslik: b.title, tur: "ders" });
   sayfalar.push({ url: "/oynatici", grup: "oynatici", kimlik: "oynatici#varsayilan", baslik: "Tabla Keşfet (varsayılan şarkı)", tur: "ders" });
   for (const s of SONGS) sayfalar.push({ url: `/oynatici?sarki=${encodeURIComponent(s.slug)}`, grup: "oynatici", kimlik: `oynatici#${s.slug}`, baslik: s.title, tur: "ders" });
+  // Tabsız site sayfaları (yalnız (a): 200 ve konsolda hata yok): Şarkı Kütüphanesi sekmeleri, defter, profil, teori yolları
+  for (const [url, baslik] of [
+    ["/sarki-kutuphanesi", "Şarkı Kütüphanesi"],
+    ["/sarki-kutuphanesi/rehber", "Rehber Şarkılar"],
+    ["/sarki-kutuphanesi/tum", "Tüm Şarkılar (kapaklı)"],
+    ["/defter", "Çalışma Defteri"],
+    ["/profil", "Profil › Şarkılarım"],
+    ...["ritim", "klavye", "kulak", "okuma", "armoni"].map((y) => [`/teori/yol/${y}`, `Teori yolu: ${y}`]),
+  ])
+    sayfalar.push({ url, grup: "site", kimlik: `site#${url}`, baslik, tur: "tabsiz" });
   for (const yol of ["ritim", "klavye", "kulak", "okuma", "armoni"]) {
     const y = jsonOku(`icerik/yollar/${yol}.json`);
     for (const a of y?.adimlar ?? []) sayfalar.push({ url: `/teori/yol/${yol}/${encodeURIComponent(a.kod)}`, grup: `yol:${yol}`, kimlik: `yol:${yol}#${a.kod}`, baslik: a.ad, tur: "adim", yol });
@@ -274,6 +285,9 @@ const SONDA = `(() => {
         d.tick = a.tickPosition;
         d.hiz = a.playbackSpeed;
         d.anaSes = a.masterVolume;
+        d.metronomSesi = a.metronomeVolume;
+        const muzik = document.querySelector('input[aria-label="Müzik sesi"]');
+        d.muzik = muzik ? Number(muzik.value) : null;
         d.dongu = a.isLooping;
         d.aralik = a.playbackRange ? [a.playbackRange.startTick, a.playbackRange.endTick] : null;
       }
@@ -673,20 +687,21 @@ async function ekSenaryo(s, sayfa) {
   if (!(await s.js(`!!window.__gfSonda.dugme("%100")`))) await s.js(`window.__gfSonda.tikla('${HIZ_PANELI}')`, true);
   await s.js(`window.__gfSonda.metinTikla("%100")`, true);
 
-  // 5) Ana ses %0 → sessiz (konum ilerler); %100 → ses geri gelir; hoparlör düğmesi sessize alır
-  const SES = 'input[aria-label="Ana ses"]';
+  // 5) Müzik kanalı %0 → sessiz (metronom kapalı; konum ilerler); %100 → ses geri gelir; hoparlör düğmesi müziği susturur.
+  // alphaTab'ın ana sesi (masterVolume) sabit 1 kalır: kanallar ayrı ayrı ayarlanır.
+  const SES = 'input[aria-label="Müzik sesi"]';
   if (await s.js(`!!document.querySelector('${SES}')`)) {
     await s.js(`window.__gfSonda.kaydir('${SES}', 0)`, true);
     await bekle(700);
     t1 = (await s.durum()).tick;
     rms = await pencere(s, 1200);
     d = await s.durum();
-    adim("ana-ses-0", rms < SESSIZ && d.tick !== t1 && d.calma === 1, { rms, anaSes: d.anaSes });
+    adim("ana-ses-0", rms < SESSIZ && d.tick !== t1 && d.calma === 1 && d.muzik === 0 && Math.abs(d.anaSes - 1) < 0.01, { rms, muzik: d.muzik, masterVolume: d.anaSes });
     await s.js(`window.__gfSonda.kaydir('${SES}', 100)`, true);
     await bekle(300);
     rms = await pencere(s, 1500);
     d = await s.durum();
-    adim("ana-ses-100", rms > ESIK && Math.abs(d.anaSes - 1) < 0.01, { rms, anaSes: d.anaSes });
+    adim("ana-ses-100", rms > ESIK && d.muzik === 100, { rms, muzik: d.muzik });
     await s.js(`window.__gfSonda.tikla('button[data-ana-ses-dugmesi]')`, true);
     await bekle(700);
     rms = await pencere(s, 1000);
@@ -701,12 +716,52 @@ async function ekSenaryo(s, sayfa) {
     const kayit = await s.js(`JSON.parse(localStorage.getItem("gf-oynatici") || "{}").anaSes`);
     adim("ana-ses-kalici", kayit === 60, { kayit });
     await s.js(`window.__gfSonda.kaydir('${SES}', 100)`, true);
-  } else adim("ana-ses-0", false, { neden: "ana ses kaydırıcısı yok" });
+  } else adim("ana-ses-0", false, { neden: "müzik sesi kaydırıcısı yok" });
 
   // 6) Metronom açık (her vuruş): ses sürer
   await s.js(`window.__gfSonda.tikla('${METRONOM}')`, true);
   await bekle(300);
   adim("metronom-acik", (await pencere(s, 1500)) > ESIK, {});
+
+  // 6b) Ses kanalları: müzik %0 iken metronom çalmaya devam eder; hoparlör (müzik sessiz) metronomu kapatmaz
+  const MET_SES = 'input[aria-label="Metronom sesi"]';
+  await s.js(`window.__gfSonda.kaydir('${SES}', 0)`, true);
+  await bekle(500);
+  rms = await pencere(s, 2000);
+  d = await s.durum();
+  adim("muzik-0-metronom", rms > ESIK && d.muzik === 0 && d.metronomSesi > 0.5, { rms, muzik: d.muzik, metronomSesi: d.metronomSesi });
+  await s.js(`window.__gfSonda.kaydir('${SES}', 100)`, true);
+  await s.js(`window.__gfSonda.tikla('button[data-ana-ses-dugmesi]')`, true);
+  await bekle(500);
+  rms = await pencere(s, 2000);
+  d = await s.durum();
+  adim("hoparlor-metronom", rms > ESIK && d.muzik === 0, { rms, muzik: d.muzik });
+  await s.js(`window.__gfSonda.tikla('button[data-ana-ses-dugmesi]')`, true);
+  // Metronom %0 iken müzik çalar
+  await s.js(`window.__gfSonda.kaydir('${MET_SES}', 0)`, true);
+  await bekle(500);
+  rms = await pencere(s, 2000);
+  if (rms <= ESIK) rms = await pencere(s, 2500);
+  d = await s.durum();
+  adim("metronom-0-muzik", rms > ESIK && d.metronomSesi === 0 && d.muzik === 100, { rms, metronomSesi: d.metronomSesi, muzik: d.muzik });
+  // Üst sınır %450 (eskinin 3 katı): kaydırıcı kabul eder, alphaTab'a 4,5 kazanç gider; sınırlayıcı tepeyi tam ölçekte tutar
+  await s.js(`window.__gfSonda.kaydir('${MET_SES}', 450)`, true);
+  await s.js(`window.__gfSonda.kaydir('${SES}', 450)`, true);
+  await bekle(500);
+  await s.js("window.__gfSonda.sifirla()");
+  await bekle(2000);
+  const ust = await s.js("window.__gfSonda.ses()");
+  d = await s.durum();
+  const kayitli = await s.js(`(() => { const a = JSON.parse(localStorage.getItem("gf-oynatici") || "{}"); return [a.anaSes, a.metronomSesi]; })()`);
+  adim("ses-ust-sinir", Math.abs(d.metronomSesi - 4.5) < 0.01 && d.muzik === 450 && kayitli[0] === 450 && kayitli[1] === 450 && ust.rms > ESIK && ust.tepe <= 1.0001, {
+    metronomSesi: d.metronomSesi,
+    muzik: d.muzik,
+    kayitli,
+    rms: ust.rms,
+    tepe: ust.tepe,
+  });
+  await s.js(`window.__gfSonda.kaydir('${MET_SES}', 100)`, true);
+  await s.js(`window.__gfSonda.kaydir('${SES}', 100)`, true);
   await s.js(`window.__gfSonda.tikla('${METRONOM}')`, true);
 
   // 7) Döngü: "Bu ölçü" → aralık kurulur; aralığın sonuna yaklaşınca başa sarar ve ses sürer.

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import SarkiKutuphanesiArama from "@/components/SarkiKutuphanesiArama";
+import SongsNav from "@/components/SongsNav";
 import SarkiSeridi, { type SeritSarki } from "@/components/SarkiSeridi";
 import { MADALYALAR, songUrl, type Madalya, type PopularSong } from "@/content/sarkilar";
 import { Bant, HapBag, MetinBag } from "@/components/site/Vitrin";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import Kirinti from "@/components/site/Kirinti";
+import { kapakTuru } from "@/components/SarkiKapagi";
 import { kursSimgesi, yerSimgesi, type SimgeRengi } from "@/lib/simge";
 import { getPopularSongs } from "@/lib/songs";
 
@@ -13,6 +15,7 @@ export const metadata: Metadata = { title: "Şarkı Kütüphanesi" };
 /**
  * Şarkı Kütüphanesi: Songsterr'in bütün tab kütüphanesi. Songsterr kataloğu indirilmez ya da taranmaz; arama ve
  * şarkılar Songsterr'in kendi sitesinde açılır (masaüstünde GuitarFlex içindeki Songsterr penceresinde).
+ * Sekmeler: Kütüphane (bu sayfa), Rehber Şarkılar (/sarki-kutuphanesi/rehber), Tüm Şarkılar (/sarki-kutuphanesi/tum).
  */
 const madalyaOf = (s: PopularSong): Madalya => s.madalya ?? (["Bronz", "Altın", "Elmas"] as const)[s.level - 1];
 const zorluk = (s: PopularSong) => MADALYALAR.indexOf(madalyaOf(s)) * 1000 + (s.bpm ?? 0) / 10;
@@ -36,6 +39,7 @@ function kart(s: PopularSong, adim?: number): SeritSarki {
     bpm: s.bpm,
     url: songUrl(s),
     simge: kurs ? kursSimgesi(kurs) : { glif: "nota", renk: adRengi(s) },
+    kapak: kapakTuru(s),
     ...(adim ? { adim } : {}),
   };
 }
@@ -70,7 +74,8 @@ export default async function SarkiKutuphanesiPage() {
   const seritler = bantlar(sarkilar);
   return (
     <div>
-      <Bant ton="beyaz" bas className="pb-20 pt-10 text-center">
+      <SongsNav />
+      <Bant ton="beyaz" className="pb-20 pt-10 text-center">
         <Kirinti halkalar={[{ label: "Şarkı Kütüphanesi" }]} className="mb-10 justify-center" />
         <UygulamaSimgesi simge={yerSimgesi("sarki-kutuphanesi")} boyut={96} className="mb-6" />
         <h1 className="baslik-dev">Şarkı Kütüphanesi</h1>
@@ -90,10 +95,10 @@ export default async function SarkiKutuphanesiPage() {
       )}
       <Bant ton="beyaz" className="text-center">
         <h2 className="baslik-orta">Nereden başlayacağını bilmiyor musun?</h2>
-        <p className="alt-baslik-kucuk mx-auto mt-2 max-w-[640px] text-pretty text-muted">Rehber Şarkılar, teknik kurslarına göre sıralanmış bir şarkı yolu.</p>
+        <p className="alt-baslik-kucuk mx-auto mt-2 max-w-[640px] text-pretty text-muted">Rehber Şarkılar, teknik kurslarına göre sıralanmış bir şarkı yolu; Tüm Şarkılar&apos;da hepsi kapaklarıyla.</p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-          <HapBag href="/sarkilar">Rehber Şarkılar</HapBag>
-          <MetinBag href="/kutuphane">Tab Oynatıcı ve dosyalarım</MetinBag>
+          <HapBag href="/sarki-kutuphanesi/rehber">Rehber Şarkılar</HapBag>
+          <MetinBag href="/sarki-kutuphanesi/tum">Tüm Şarkılar</MetinBag>
         </div>
       </Bant>
     </div>

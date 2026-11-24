@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Gauge, Metronome as MetronomeIcon, Pause, Play, Repeat, Settings2, SkipBack, SlidersHorizontal, Timer, TrendingUp, Volume1, Volume2, VolumeX, X } from "lucide-react";
+import { AudioLines, ChevronDown, ChevronLeft, ChevronRight, Gauge, Metronome as MetronomeIcon, Pause, Play, Repeat, Settings2, SkipBack, SlidersHorizontal, Timer, TrendingUp, Volume1, Volume2, VolumeX, X } from "lucide-react";
 import { noteName } from "@/lib/music";
 import type { LessonPart, Stave } from "@/content/types";
-import { useOynaticiAyarlari, type OynaticiAyarlari } from "./oynatici/ayarlar";
+import { SES_UST, sesKazanci, useOynaticiAyarlari, type OynaticiAyarlari } from "./oynatici/ayarlar";
 import Acilir from "./oynatici/Acilir";
+import SesKanallari from "./oynatici/SesKanallari";
 import AyarPaneli from "./oynatici/AyarPaneli";
 import Mikser, { type MikserIzi } from "./oynatici/Mikser";
 import SapPaneli, { type SapNotasi } from "./oynatici/SapPaneli";
@@ -131,6 +132,37 @@ function isActivePlayer(id: string) {
   return mountedPlayers[0] === id;
 }
 
+/** alphaTab'ın ana sesi sabittir: kanallar (Müzik, Metronom, Sayım) ayrı ayrı ayarlanır (bkz. muzikSesi) */
+const CIKIS = 1;
+
+/** Parçada perküsyon kanalını (9) kullanan iz var mı */
+const davulKanaliVar = (api: any) => !!api?.score?.tracks?.some((t: any) => t.playbackInfo?.primaryChannel === 9 || t.playbackInfo?.secondaryChannel === 9);
+
+/**
+ * Çıkışa sınırlayıcı (limiter): kanallar %450'ye kadar çıkabildiği için toplam ses 0 dBFS'yi aşınca kırpılıp bozulmasın.
+ * alphaTab 1.8.4 sesini kendi AudioContext'inde `worklet.connect(ctx.destination)` ile bağlar (AlphaSynthAudioWorkletOutput
+ * › play); bu bağlam örneğinin `destination`'ı sınırlayıcıya yönlendirilir, sınırlayıcı gerçek çıkışa bağlanır.
+ * Ses yolunun geri kalanı değişmez. Sınırlayıcı eşiğin (-3 dBFS) altındaki sese dokunmaz.
+ */
+function sinirlayiciKur(api: any) {
+  try {
+    const ctx: (AudioContext & { __gfSinirlayici?: DynamicsCompressorNode }) | null | undefined = api?.player?.output?.context;
+    if (!ctx || ctx.__gfSinirlayici || typeof ctx.createDynamicsCompressor !== "function") return;
+    const gercek = ctx.destination;
+    const s = ctx.createDynamicsCompressor();
+    s.threshold.value = -3;
+    s.knee.value = 0;
+    s.ratio.value = 20;
+    s.attack.value = 0.002;
+    s.release.value = 0.15;
+    s.connect(gercek);
+    Object.defineProperty(ctx, "destination", { configurable: true, get: () => s });
+    ctx.__gfSinirlayici = s;
+  } catch {
+    // Sınırlayıcı kurulamazsa ses yolu olduğu gibi kalır
+  }
+}
+
 export default function TabPlayer(props: Props) {
   const [ayarlar] = useOynaticiAyarlari();
   let id = sourceIds.get(props.source);
@@ -192,7 +224,7 @@ function Player({
   const [currentBar, setCurrentBar] = useState(0);
   const [range, setRange] = useState<Range | null>(null);
   /** Kontrol çubuğundan açılan panel (aynı anda biri) */
-  const [panel, setPanel] = useState<"ayar" | "mikser" | "hiz" | "dongu" | null>(null);
+  const [panel, setPanel] = useState<"ayar" | "mikser" | "hiz" | "dongu" | "ses" | null>(null);
   const panelRef = useRef(panel);
   const kapat = useCallback(() => setPanel(null), []);
   const ac = (p: NonNullable<typeof panel>) => setPanel((x) => (x === p ? null : p));
@@ -200,6 +232,7 @@ function Player({
   const donguTetik = useRef<HTMLButtonElement>(null);
   const ayarTetik = useRef<HTMLButtonElement>(null);
   const mikserTetik = useRef<HTMLButtonElement>(null);
+  const sesTetik = useRef<HTMLButtonElement>(null);
   /** Yapışkan kontrol çubuğu: yüksekliği imleç takibinin kaydırma payını belirler */
   const cubukRef = useRef<HTMLDivElement>(null);
   const isaretRef = useRef<HTMLDivElement>(null);
@@ -240,15 +273,21 @@ function Player({
   const rangeRef = useRef(barRange);
   const audioOnlyRef = useRef(audioOnly);
   const programRef = useRef(guitarProgram);
-  /** Ses seviyeleri (0–1,5): ana ses (sessizde 0), metronom, sayım */
-  const seviye = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.min(150, Math.max(0, v)) / 100 : 1);
-  const anaSes = ayarlar.sessiz ? 0 : seviye(ayarlar.anaSes);
-  const metronomSesi = seviye(ayarlar.metronomSesi);
-  const sayimSesi = seviye(ayarlar.sayimSesi);
-  /** Ana ses (%) ve ayarlayıcısı: çalma çubuğundaki kaydırıcı ile mikserdeki aynı değeri değiştirir */
-  const anaYuzde = Math.round(anaSes * 100);
+  /**
+   * Üç AYRI ses kanalı (0–4,5 kazanç; %0–450): Müzik (parçalar), Metronom, Sayım. alphaTab'ın masterVolume'u bütün
+   * sesleri (metronom dahil) çarptığı için SABİT tutulur (CIKIS); Müzik kanalı her track'in karışım sesine çarpan olarak
+   * uygulanır (changeTrackVolume → kanal mixVolume), metronom ve sayım alphaTab'ın kendi kanalında (metronomeVolume /
+   * countInVolume, üst sınırı yok). Böylece müzik %0 ya da sessizken metronom ve sayım çalmaya devam eder.
+   * Kazanç 1'in üstüne çıkınca bozulmasın diye çıkışa sınırlayıcı (DynamicsCompressor) konur (sinirlayiciKur).
+   */
+  const muzikSesi = ayarlar.sessiz ? 0 : sesKazanci(ayarlar.anaSes);
+  const metronomSesi = ayarlar.metronomSessiz ? 0 : sesKazanci(ayarlar.metronomSesi);
+  const sayimSesi = ayarlar.sayimSessiz ? 0 : sesKazanci(ayarlar.sayimSesi);
+  /** Müzik (%) ve ayarlayıcısı: çalma çubuğundaki kaydırıcı ile mikserdeki aynı değeri değiştirir */
+  const anaYuzde = Math.round(muzikSesi * 100);
+  const metronomYuzde = Math.round(metronomSesi * 100);
   const anaSesiAyarla = useCallback((v: number) => guncelle({ anaSes: v, sessiz: false }), [guncelle]);
-  const playback = useRef({ countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi });
+  const playback = useRef({ countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi, muzikSesi });
   /** "Hemen başla" ile sayımsız başlatılan çalmada sayım gösterilmez */
   const skipNext = useRef(false);
   /** Shift+tık aralık seçimi: tıklama anında Shift basılı mıydı, son tıklanan ölçü */
@@ -258,7 +297,7 @@ function Player({
     callbacks.current = { onBpmChange, onPlayingChange, onScore, onBar, onFinished, onDurum };
     panelRef.current = panel;
     display.current = { view, zoom, horizontal };
-    playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi };
+    playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi, muzikSesi };
   });
 
   const staveProfile = useCallback((v: View, percussion: boolean) => {
@@ -379,6 +418,7 @@ function Player({
         api.error.on(() => !disposed && !api.score && setStatus("error"));
         api.playerReady.on(() => {
           if (disposed) return;
+          sinirlayiciKur(api);
           setPlayerReady(true);
           setSfPercent(null);
         });
@@ -407,16 +447,20 @@ function Player({
         sesYukleRef.current = sesYukle;
         sesYukle();
 
-        // "Yalnız ölçü başı" metronomu: her ölçünün ilk vuruşuna perküsyon kanalında tık
+        // "Yalnız ölçü başı" metronomu: her ölçünün ilk vuruşuna perküsyon kanalında (9) tık. Parçada davul izi yoksa
+        // kanal 9 yalnız bu tıklarındır: sesi Metronom kanalından gelir (kanal karışım sesi, Müzik'ten bağımsız). Davul izi
+        // varsa kanal paylaşılır; tıkın gücü vuruş hızıyla (velocity) ayarlanır.
         api.midiLoad.on((midi: any) => {
           if (disposed || !playback.current.barClicks) return;
           const M = at.midi;
           const shift = midi.tickShift ?? 0;
           const lookups: any[] = api.tickCache?.masterBars ?? [];
+          const davul = davulKanaliVar(api);
+          const hiz = davul ? Math.min(127, Math.round(112 * Math.min(1, playback.current.metronomSesi))) : 112;
           midi.addEvent(new M.ProgramChangeEvent(0, shift, 9, 0));
           for (const mb of lookups) {
             const t = mb.start + shift;
-            midi.addEvent(new M.NoteOnEvent(0, t, 9, 33, Math.min(127, Math.round(112 * playback.current.metronomSesi))));
+            midi.addEvent(new M.NoteOnEvent(0, t, 9, 33, hiz));
             midi.addEvent(new M.NoteOffEvent(0, t + 240, 9, 33, 0));
           }
         });
@@ -642,11 +686,20 @@ function Player({
     const api = apiRef.current;
     if (!api) return;
     api.playbackSpeed = speed / 100;
-    api.masterVolume = anaSes;
+    api.masterVolume = CIKIS;
     api.metronomeVolume = metronome && !barClicks ? metronomSesi : 0;
     api.isLooping = loop;
     api.countInVolume = countIn ? sayimSesi : 0;
-  }, [speed, metronome, barClicks, loop, countIn, anaSes, metronomSesi, sayimSesi, playerReady]);
+    // Ölçü başı tıkları (kanal 9, davul izi yoksa): Metronom kanalının sesi
+    if (barClicks && api.score && !davulKanaliVar(api)) api.player?.setChannelVolume?.(9, metronomSesi);
+  }, [speed, metronome, barClicks, loop, countIn, metronomSesi, sayimSesi, playerReady]);
+
+  // Müzik kanalı: her track'in karışım sesi = mikserdeki track sesi × Müzik. Metronom ve sayım bundan etkilenmez.
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api?.score || !playerReady) return;
+    for (const t of api.score.tracks) api.changeTrackVolume([t], ((volumes[t.index] ?? 100) / 100) * muzikSesi);
+  }, [volumes, muzikSesi, playerReady, tracks]);
 
   // Ölçü başı tıkları MIDI'nin parçası: açılıp kapanınca MIDI yeniden üretilir (çalıyorsa kaldığı yerden sürer)
   const clicksLoaded = useRef<boolean | null>(null);
@@ -676,7 +729,6 @@ function Player({
     const api = apiRef.current;
     if (!api?.score || !playerReady || !mikserRef.current) return;
     for (const t of api.score.tracks) {
-      if (volumes[t.index] !== undefined) api.changeTrackVolume([t], volumes[t.index] / 100);
       if (mutedTracks === undefined) {
         api.changeTrackMute([t], muted.has(t.index));
         api.changeTrackSolo([t], solo.has(t.index));
@@ -793,11 +845,8 @@ function Player({
     api?.changeTrackSolo([api.score.tracks[i]], next.has(i));
   };
 
-  const changeVolume = (i: number, value: number) => {
-    const api = apiRef.current;
-    setVolumes((v) => ({ ...v, [i]: value }));
-    api?.changeTrackVolume([api.score.tracks[i]], value / 100);
-  };
+  /** Track sesi (mikser): uygulanan kazanç track sesi × Müzik kanalıdır (yukarıdaki etki) */
+  const changeVolume = (i: number, value: number) => setVolumes((v) => ({ ...v, [i]: value }));
 
   // Pan: track'in MIDI pan değeri (0–16) değişir, MIDI yeniden üretilir (çalıyorsa kaldığı yerden sürer)
   const panTimer = useRef(0);
@@ -1141,6 +1190,19 @@ function Player({
           >
             <MetronomeIcon size={15} />
           </button>
+          {/* Metronomun kendi ses kaydırıcısı (Metronom kanalı; müziğin sesinden bağımsız) */}
+          <input
+            type="range"
+            min={0}
+            max={SES_UST}
+            step={5}
+            value={metronomYuzde}
+            onChange={(e) => guncelle({ metronomSesi: Number(e.target.value), metronomSessiz: false })}
+            className={`w-14 shrink-0 accent-[var(--accent)] ${metronome ? "" : "opacity-50"}`}
+            aria-label="Metronom sesi"
+            title={`Metronom sesi %${metronomYuzde} (%0–${SES_UST}; müzikten ayrı)`}
+            data-metronom-sesi
+          />
           <button
             type="button"
             onClick={() => setCountIn(!countIn)}
@@ -1188,32 +1250,46 @@ function Player({
           )}
 
           <div className="ml-auto flex shrink-0 items-center gap-1">
-            {/* Ana ses: her oynatıcıda görünür; tercih kalıcı (gf-oynatici › anaSes), mikserdeki "Ana ses" ile aynı değer */}
-            <div className="flex items-center gap-1 text-sm" role="group" aria-label="Ses">
+            {/* Müzik kanalı: her oynatıcıda görünür; tercih kalıcı (gf-oynatici › anaSes), mikserdeki "Müzik" ile aynı değer.
+                Hoparlör düğmesi yalnız müziği susturur: metronom ve sayım çalmaya devam eder. */}
+            <div className="flex items-center gap-1 text-sm" role="group" aria-label="Müzik sesi">
               <button
                 type="button"
                 data-ana-ses-dugmesi
-                onClick={() => guncelle(anaSes === 0 ? { sessiz: false, ...(seviye(ayarlar.anaSes) === 0 ? { anaSes: 100 } : {}) } : { sessiz: true })}
+                onClick={() => guncelle(muzikSesi === 0 ? { sessiz: false, ...(sesKazanci(ayarlar.anaSes) === 0 ? { anaSes: 100 } : {}) } : { sessiz: true })}
                 className={ikon}
-                aria-pressed={anaSes === 0}
-                title={anaSes === 0 ? "Sesi aç" : "Sessize al"}
-                aria-label={anaSes === 0 ? "Sesi aç" : "Sessize al"}
+                aria-pressed={muzikSesi === 0}
+                title={muzikSesi === 0 ? "Müziği aç" : "Müziği sessize al (metronom ve sayım çalmaya devam eder)"}
+                aria-label={muzikSesi === 0 ? "Müziği aç" : "Müziği sessize al"}
               >
-                {anaSes === 0 ? <VolumeX size={16} className="text-bad" /> : anaSes < 0.5 ? <Volume1 size={16} /> : <Volume2 size={16} />}
+                {muzikSesi === 0 ? <VolumeX size={16} className="text-bad" /> : muzikSesi < 0.5 ? <Volume1 size={16} /> : <Volume2 size={16} />}
               </button>
               <input
                 type="range"
                 min={0}
-                max={150}
+                max={SES_UST}
                 step={5}
                 value={anaYuzde}
                 onChange={(e) => anaSesiAyarla(Number(e.target.value))}
                 className="w-20 accent-[var(--accent)]"
-                aria-label="Ana ses"
-                title="Ana ses (%0–150)"
+                aria-label="Müzik sesi"
+                title={`Müzik sesi (%0–${SES_UST}); metronom ve sayımın sesi ayrı`}
               />
               <span className="w-9 whitespace-nowrap text-xs tabular-nums text-muted @max-6xl:sr-only">%{anaYuzde}</span>
             </div>
+            <button
+              ref={sesTetik}
+              type="button"
+              data-ses-kanallari-dugmesi
+              onClick={() => ac("ses")}
+              className={`${ikon} ${panel === "ses" ? on : ""}`}
+              aria-haspopup="dialog"
+              aria-expanded={panel === "ses"}
+              aria-label="Ses kanalları"
+              title="Ses kanalları: müzik, metronom ve sayım ayrı ayrı (%0–450)"
+            >
+              <AudioLines size={16} />
+            </button>
             {multiTrack && (
               <button
                 ref={mikserTetik}
@@ -1283,6 +1359,12 @@ function Player({
             tetik={ayarTetik}
             akort={!audioOnly ? shownTrack?.tuning : undefined}
           />
+        )}
+        {panel === "ses" && (
+          <Acilir tetik={sesTetik} onKapat={kapat} etiket="Ses kanalları" className="right-0 w-[min(24rem,calc(100vw-2rem))]">
+            <p className="mb-3 text-sm font-semibold">Ses kanalları</p>
+            <SesKanallari ayarlar={ayarlar} guncelle={guncelle} />
+          </Acilir>
         )}
         {multiTrack && panel === "mikser" && (
           <Acilir tetik={mikserTetik} onKapat={kapat} etiket="Mikser" className="right-0 w-[min(56rem,calc(100vw-2rem))]">

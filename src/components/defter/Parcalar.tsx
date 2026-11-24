@@ -3,48 +3,40 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { CircleCheck, Plus, Repeat } from "lucide-react";
-import { GITAR_TURU_ADI, kisimYaz, type DefterVeri, type Durum } from "@/lib/defter";
+import { DURUM_ADI, GITAR_TURU_ADI, kisimYaz, type DefterVeri, type Durum } from "@/lib/defter";
 import s from "./DurumDugmeleri.module.css";
 
 /** Şarkılarda kısım önerileri (serbest metin de yazılabilir) */
-export const KISIM_ONERILERI = ["Giriş", "Riff", "Kıta", "Nakarat", "Köprü", "Solo", "Bitiş"];
+export const KISIM_ONERILERI = ["Intro", "Riff", "Kıta", "Nakarat", "Köprü", "1. Solo", "2. Solo", "Outro"];
 
 /**
- * İki durum düğmesi: sarı "Devam ediyorum" (döngü simgesi) ve yeşil "Öğrendim" (onay simgesi).
- * Basılı olan yeniden basılınca işaret kalkar. Kısım verilirse erişilebilir adda yazar ("Riff kısmı: çalışmaya devam").
+ * İki durum düğmesi: yeşil "Öğrendim" (onay simgesi) ve turuncu "Öğreniyorum" (döngü simgesi).
+ * Basılı olan yeniden basılınca işaret kalkar. Kısım verilirse erişilebilir adda yazar ("Riff kısmı: öğreniyorum").
+ * Takvime al ve Listeye ekle ile birlikte: ./Eylemler.tsx (EylemDugmeleri).
  */
 export function DurumDugmeleri({
   durum,
   onDurum,
   kisim,
   kompakt = false,
+  yalnizSimge = false,
   ad,
 }: {
   durum: Durum | null | undefined;
   onDurum: (d: Durum | null) => void;
   kisim?: string | null;
   kompakt?: boolean;
+  /** Dar kartlar: yalnız simge (ad ekran okuyucuda ve ipucunda) */
+  yalnizSimge?: boolean;
   /** Erişilebilir adlara eklenen öğe adı (listelerde: "Enter Sandman") */
   ad?: string;
 }) {
   const on = kisim ? `${kisimYaz(kisim)}: ` : "";
   const son = ad ? ` (${ad})` : "";
-  const boy = kompakt ? s.kompakt : s.normal;
+  const boy = yalnizSimge ? s.simgeli : kompakt ? s.kompakt : s.normal;
   const simge = kompakt ? 13 : 15;
   return (
     <div className="flex shrink-0 items-center gap-1.5" role="group" aria-label={`Çalışma durumu${son}`}>
-      <button
-        type="button"
-        data-defter-durum="devam"
-        aria-pressed={durum === "devam"}
-        aria-label={`${on}çalışmaya devam${son}`}
-        title={durum === "devam" ? "Çalışmaya devam ediyorsun (tıkla: işareti kaldır)" : `${on}çalışmaya devam ediyorum olarak işaretle`}
-        onClick={() => onDurum(durum === "devam" ? null : "devam")}
-        className={`${s.dugme} ${s.sari} ${boy}`}
-      >
-        <Repeat size={simge} className={s.simge} aria-hidden />
-        Devam ediyorum
-      </button>
       <button
         type="button"
         data-defter-durum="ogrendim"
@@ -55,7 +47,19 @@ export function DurumDugmeleri({
         className={`${s.dugme} ${s.yesil} ${boy}`}
       >
         <CircleCheck size={simge} className={s.simge} aria-hidden />
-        Öğrendim
+        {!yalnizSimge && "Öğrendim"}
+      </button>
+      <button
+        type="button"
+        data-defter-durum="devam"
+        aria-pressed={durum === "devam"}
+        aria-label={`${on}öğreniyorum${son}`}
+        title={durum === "devam" ? "Öğreniyorsun (tıkla: işareti kaldır)" : `${on}öğreniyorum olarak işaretle`}
+        onClick={() => onDurum(durum === "devam" ? null : "devam")}
+        className={`${s.dugme} ${s.sari} ${boy}`}
+      >
+        <Repeat size={simge} className={s.simge} aria-hidden />
+        {!yalnizSimge && "Öğreniyorum"}
       </button>
     </div>
   );
@@ -67,7 +71,7 @@ export function DurumIsareti({ durum }: { durum: Durum | null }) {
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${durum === "devam" ? s.isaretSari : s.isaretYesil}`}>
       {durum === "devam" ? <Repeat size={11} aria-hidden /> : <CircleCheck size={11} aria-hidden />}
-      {durum === "devam" ? "Devam ediyor" : "Öğrendi"}
+      {DURUM_ADI[durum]}
     </span>
   );
 }

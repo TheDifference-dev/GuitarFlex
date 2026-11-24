@@ -6,8 +6,9 @@ process.env.TZ = "Europe/Istanbul";
 import assert from "node:assert/strict";
 import { register } from "node:module";
 import {
-  birlestir, bos, disaAktar, durumAyarla, elleEkle, gitarBasina, gitarEkle, gitarSil, goc, gunToplami, gunlukToplamlar, gununOturumlari,
-  haftaBasi, haftaOzeti, iceAktarMetin, kademe, kayitAc, konumYaz, listele, planAyarla, sureEkle, yerelGun, type KayitBilgisi,
+  bilinenKisim, birlestir, bos, disaAktar, durumAyarla, elleEkle, gitarBasina, gitarEkle, gitarSil, goc, gunToplami, gunlukToplamlar, gununOturumlari,
+  gununPlanlari, haftaBasi, haftaOzeti, iceAktarMetin, isaretli, kademe, kayitAc, konumYaz, listedenCikar, listele, listeTasi, listeyeEkle, planAyarla,
+  planaEkle, plandanKaldir, sureEkle, yakinPlan, yerelGun, type DefterVeri, type KayitBilgisi,
 } from "../src/lib/defter-cekirdek.ts";
 
 // progress.ts ve oyun.ts uygulama içinde uzantısız göreli içe aktarım kullanır ("./progress"); Node bu yolları .ts ile
@@ -28,6 +29,8 @@ const test = (ad: string, f: () => void) => testler.push([ad, f]);
 const DERS: KayitBilgisi = { id: "egzersiz:alternatif-pena/1.1", tur: "egzersiz", baslik: "Tek tel", altBaslik: "Alternatif Pena", href: "/calis/alternatif-pena/1.1" };
 const SARKI: KayitBilgisi = { id: "sarki:songsterr/Metallica|Enter Sandman", tur: "sarki", baslik: "Enter Sandman", altBaslik: "Metallica", href: "https://www.songsterr.com/" };
 const an = (s: string) => new Date(s); // yerel saat (TZ=Europe/Istanbul)
+/** Kullanıcı işaretledi ("Öğreniyorum"): defterde yalnız işaretli kayıtlar süre toplar */
+const isaretle = (v: DefterVeri, b: KayitBilgisi, zaman = "2026-11-01T09:00:00") => durumAyarla(v, b, "devam", undefined, an(zaman));
 
 /** `new Date()` çağrılarını sabit bir ana bağlar (progress.ts › today() gibi işlevler için) */
 function saatiDondur<T>(zaman: string, f: () => T): T {
@@ -89,7 +92,7 @@ test("oyun.ts › gunler() ve seri(): 23:30'da kaydedilen oturum o günün göre
 });
 
 test("sureEkle: 23:30 ve 00:30 oturumları ayrı günlere düşer, birleşmez", () => {
-  let v = sureEkle(bos(), DERS, 600, {}, an("2026-11-20T23:30:00"));
+  let v = sureEkle(isaretle(bos(), DERS), DERS, 600, {}, an("2026-11-20T23:30:00"));
   v = sureEkle(v, DERS, 300, {}, an("2026-11-21T00:30:00"));
   const k = v.kayitlar[DERS.id];
   assert.deepEqual(k.oturumlar.map((o) => [o.tarih, o.sure, o.saat]), [["2026-11-20", 600, 23], ["2026-11-21", 300, 0]]);
@@ -104,7 +107,7 @@ test("haftaBasi: pazar 23:30 ve pazartesi 00:30", () => {
 /* ── Süre hesabı ── */
 
 test("sureEkle: ardışık 5 sn'lik eklemeler tek oturumda birleşir, toplam = oturumlar toplamı", () => {
-  let v = bos();
+  let v = isaretle(bos(), DERS);
   const t0 = an("2026-11-21T10:00:00").getTime();
   for (let i = 0; i < 12; i++) v = sureEkle(v, DERS, 5, { konum: i + 1, hiz: 80, tempo: 96, kisim: "B" }, new Date(t0 + i * 5000));
   const k = v.kayitlar[DERS.id];
@@ -117,7 +120,7 @@ test("sureEkle: ardışık 5 sn'lik eklemeler tek oturumda birleşir, toplam = o
 test("sureEkle: 15 dk aradan sonra, başka kısım ya da gitarla yeni oturum", () => {
   const ilk = gitarEkle(bos(), "Les Paul", "elektro");
   const g1 = ilk.id;
-  let v = ilk.veri;
+  let v = isaretle(ilk.veri, DERS);
   const r = gitarEkle(v, "Akustik", "akustik");
   v = r.veri;
   const t = an("2026-11-21T10:00:00").getTime();
@@ -135,7 +138,7 @@ test("sureEkle: 15 dk aradan sonra, başka kısım ya da gitarla yeni oturum", (
 test("sureEkle 0 sn: kayıt yoksa oluşturmaz, varsa yalnız konumu günceller", () => {
   const v0 = bos();
   assert.equal(sureEkle(v0, DERS, 0, { konum: 5 }), v0);
-  let v = sureEkle(v0, DERS, 10, { konum: 3 }, an("2026-11-21T10:00:00"));
+  let v = sureEkle(isaretle(v0, DERS), DERS, 10, { konum: 3 }, an("2026-11-21T10:00:00"));
   v = sureEkle(v, DERS, 0, { konum: 9, aralik: [8, 11] }, an("2026-11-21T10:01:00"));
   assert.equal(v.kayitlar[DERS.id].konum, 9);
   assert.deepEqual(v.kayitlar[DERS.id].aralik, [8, 11]);
@@ -146,8 +149,9 @@ test("sureEkle 0 sn: kayıt yoksa oluşturmaz, varsa yalnız konumu günceller",
 
 test("gunToplami: ilerleme kaydı ve defterin ölçülen süresi iki kez sayılmaz, elle süre eklenir", () => {
   // Uygulamada 20 dk çalındı: aynı saniyeler ilerleme kaydına (1200) ve deftere (1200) yazıldı
-  let v = sureEkle(bos(), DERS, 1200, {}, an("2026-11-21T10:00:00"));
-  // Songsterr'de 10 dk elle girildi
+  let v = sureEkle(isaretle(bos(), DERS), DERS, 1200, {}, an("2026-11-21T10:00:00"));
+  // Songsterr'de 10 dk elle girildi (şarkı listeye eklenmiş)
+  v = listeyeEkle(v, SARKI, an("2026-11-21T10:59:00"));
   v = kayitAc(v, SARKI, an("2026-11-21T11:00:00"));
   v = sureEkle(v, SARKI, 600, { elle: true }, an("2026-11-21T11:30:00"));
   const d = gunlukToplamlar(v).get("2026-11-21");
@@ -160,7 +164,7 @@ test("gunToplami: ilerleme kaydı ve defterin ölçülen süresi iki kez sayılm
 });
 
 test("elle süre ilerleme kaydına yazılmaz: gunlukToplamlar ayrı tutar", () => {
-  let v = kayitAc(bos(), SARKI, an("2026-11-21T09:00:00"));
+  let v = kayitAc(isaretle(bos(), SARKI), SARKI, an("2026-11-21T09:00:00"));
   for (const dk of [5, 10, 15]) v = sureEkle(v, SARKI, dk * 60, { elle: true, kisim: "Riff" }, an("2026-11-21T09:05:00"));
   const k = v.kayitlar[SARKI.id];
   assert.equal(k.toplamSure, 30 * 60);
@@ -178,12 +182,14 @@ test("goc: boş, bozuk ve bilinmeyen veri boş deftere döner", () => {
 test("goc v0 (dizi, sürümsüz): kayıtlar korunur, eski alan adları çevrilir, toplam süre oturumlardan", () => {
   const v0 = [
     { id: "egzersiz:x/1", baslik: "Eski ders", oturumlar: [{ date: "2026-11-01", seconds: 120, bpm: 90 }, { tarih: "2026-11-02T22:30:00.000Z", sure: 60 }], toplamSure: 9999, durum: "ogrendim" },
-    { id: "sarki:eski", baslik: "Yalnız toplam", toplamSure: 300, guncellendi: "2026-10-10T08:00:00.000Z" },
-    { baslik: "kimliksiz" },
+    { id: "sarki:eski", baslik: "Yalnız toplam", toplamSure: 300, guncellendi: "2026-10-10T08:00:00.000Z", durum: "devam" },
+    { baslik: "kimliksiz", durum: "devam" },
+    { id: "sarki:isaretsiz", baslik: "İşaretsiz (v1 otomatik)", toplamSure: 60 },
     "çöp",
   ];
   const v = goc(v0);
-  assert.equal(v.surum, 1);
+  assert.equal(v.surum, 2);
+  assert.equal(v.kayitlar["sarki:isaretsiz"], undefined, "işaretsiz kayıt temizlenir");
   const a = v.kayitlar["egzersiz:x/1"];
   assert.equal(a.tur, "egzersiz");
   assert.equal(a.durum, "ogrendim");
@@ -205,11 +211,14 @@ test("goc v0 (nesne): gitar adları dizisi, varsayılan gitar doğrulanır, plan
   assert.equal(v.plan.notlar[0], "sweep 4.1");
 });
 
-test("goc v1 → v1: dışa aktar / içe aktar gidiş-dönüş kayıpsız", () => {
-  let v = gitarEkle(bos(), "Les Paul", "elektro").veri;
+test("goc v2 → v2: dışa aktar / içe aktar gidiş-dönüş kayıpsız", () => {
+  let v = isaretle(gitarEkle(bos(), "Les Paul", "elektro").veri, DERS);
   v = sureEkle(v, DERS, 125, { kisim: "B", konum: 18, hiz: 80, tempo: 96, aralik: [16, 23] }, an("2026-11-21T10:00:00"));
   v = durumAyarla(v, DERS, "devam", "B", an("2026-11-21T10:05:00"));
   v = planAyarla(v, 1, { hedefDk: 30, not: "sweep 4.1 + Metallica riff" });
+  v = planaEkle(v, SARKI, "2026-11-25", an("2026-11-21T10:06:00"));
+  v = listeyeEkle(v, SARKI, an("2026-11-21T10:07:00"));
+  v = bilinenKisim(listeyeEkle(v, DERS), DERS.id, "Riff", true, an("2026-11-21T10:08:00"));
   const geri = iceAktarMetin(disaAktar(v));
   assert.deepEqual(geri, v);
   assert.throws(() => iceAktarMetin("{bozuk"), /JSON/);
@@ -218,20 +227,112 @@ test("goc v1 → v1: dışa aktar / içe aktar gidiş-dönüş kayıpsız", () =
 
 /* ── Diğer ── */
 
-test("durumAyarla, listele: devam edenler öğrenilmemişleri, öğrendiklerim yeşilleri gösterir", () => {
+test("durumAyarla, listele: Öğreniyorum turuncuları, Öğrendim yeşilleri gösterir", () => {
   let v = durumAyarla(bos(), DERS, "ogrendim", null, an("2026-11-21T10:00:00"));
-  v = kayitAc(v, SARKI, an("2026-11-21T11:00:00"));
+  v = durumAyarla(v, SARKI, "devam", "Riff", an("2026-11-21T11:00:00"));
   const f = { tur: "" as const, gitar: "", q: "", sira: "son" as const };
   assert.deepEqual(listele(v, { ...f, durum: "devam" }).map((k) => k.id), [SARKI.id]);
   assert.deepEqual(listele(v, { ...f, durum: "ogrendim" }).map((k) => k.id), [DERS.id]);
   assert.deepEqual(listele(v, { ...f, durum: "tumu", q: "metallica" }).map((k) => k.id), [SARKI.id]);
+  assert.equal(v.kayitlar[SARKI.id].kisim, "Riff");
+});
+
+/* ── Yeni kural: işaretsiz kayıt oluşmaz ── */
+
+test("işaretsiz kayıt oluşmaz: çalmak (sureEkle), Songsterr'de açmak (kayitAc) ve 0 sn deftere kayıt açmaz", () => {
+  const v0 = bos();
+  assert.equal(sureEkle(v0, DERS, 600, { konum: 4 }, an("2026-11-21T10:00:00")), v0, "çalınan süre kayıt açmaz");
+  assert.equal(kayitAc(v0, SARKI, an("2026-11-21T10:00:00")), v0, "Songsterr'de açmak kayıt açmaz");
+  assert.equal(durumAyarla(v0, DERS, null), v0, "işaret kaldırmak kayıt açmaz");
+  assert.deepEqual(Object.keys(v0.kayitlar), []);
+  // İşaretlendikten sonra süre ve kaldığın yer güncellenir
+  let v = durumAyarla(v0, DERS, "devam", "B", an("2026-11-21T10:00:00"));
+  v = sureEkle(v, DERS, 120, { konum: 9, hiz: 80 }, an("2026-11-21T10:05:00"));
+  assert.equal(v.kayitlar[DERS.id].toplamSure, 120);
+  assert.equal(v.kayitlar[DERS.id].konum, 9);
+});
+
+test("son işaret kalkınca kayıt defterden çıkar; başka işaret varsa kalır", () => {
+  let v = durumAyarla(bos(), DERS, "devam", null, an("2026-11-21T10:00:00"));
+  v = durumAyarla(v, DERS, null, undefined, an("2026-11-21T10:01:00"));
+  assert.equal(v.kayitlar[DERS.id], undefined, "yalnız durum vardı: çıkar");
+  v = listeyeEkle(bos(), DERS, an("2026-11-21T10:00:00"));
+  v = durumAyarla(v, DERS, "ogrendim", null, an("2026-11-21T10:01:00"));
+  v = durumAyarla(v, DERS, null, undefined, an("2026-11-21T10:02:00"));
+  assert.ok(v.kayitlar[DERS.id], "listede: kalır");
+  assert.equal(v.kayitlar[DERS.id].durum, null);
+  v = listedenCikar(v, DERS.id);
+  assert.equal(v.kayitlar[DERS.id], undefined);
+  assert.deepEqual(v.liste, []);
+});
+
+test("Takvime al: seçilen güne plan düşer, gün ve en yakın plan bulunur, plan kaldırılınca kayıt çıkar", () => {
+  let v = planaEkle(bos(), SARKI, "2026-11-28", an("2026-11-21T10:00:00"));
+  v = planaEkle(v, SARKI, "2026-11-23", an("2026-11-21T10:00:00"));
+  v = planaEkle(v, SARKI, "2026-11-23", an("2026-11-21T10:00:00"));
+  v = planaEkle(v, SARKI, "bozuk", an("2026-11-21T10:00:00"));
+  assert.deepEqual(v.kayitlar[SARKI.id].planli, ["2026-11-23", "2026-11-28"]);
+  assert.equal(isaretli(v, v.kayitlar[SARKI.id]), true);
+  assert.deepEqual(gununPlanlari(v, "2026-11-23").map((k) => k.id), [SARKI.id]);
+  assert.equal(yakinPlan(v.kayitlar[SARKI.id], "2026-11-24"), "2026-11-28");
+  assert.equal(yakinPlan(v.kayitlar[SARKI.id], "2026-12-01"), "2026-11-28", "hepsi geçmişse son plan");
+  const f = { tur: "" as const, gitar: "", q: "", sira: "son" as const };
+  assert.deepEqual(listele(v, { ...f, durum: "takvim" }).map((k) => k.id), [SARKI.id]);
+  v = plandanKaldir(v, SARKI.id, "2026-11-23");
+  v = plandanKaldir(v, SARKI.id, "2026-11-28");
+  assert.equal(v.kayitlar[SARKI.id], undefined);
+});
+
+test("Çalışma listem: sona eklenir, tekrar eklenmez, sıra taşınır, Listem filtresi liste sırasını izler", () => {
+  const C: KayitBilgisi = { ...SARKI, id: "sarki:songsterr/AC/DC|Back in Black", baslik: "Back in Black", altBaslik: "AC/DC" };
+  let v = listeyeEkle(bos(), DERS, an("2026-11-21T10:00:00"));
+  v = listeyeEkle(v, SARKI, an("2026-11-21T10:01:00"));
+  v = listeyeEkle(v, C, an("2026-11-21T10:02:00"));
+  v = listeyeEkle(v, SARKI, an("2026-11-21T10:03:00"));
+  assert.deepEqual(v.liste, [DERS.id, SARKI.id, C.id]);
+  v = listeTasi(v, C.id, 0);
+  assert.deepEqual(v.liste, [C.id, DERS.id, SARKI.id]);
+  v = listeTasi(v, C.id, 99);
+  assert.deepEqual(v.liste, [DERS.id, SARKI.id, C.id]);
+  const f = { tur: "" as const, gitar: "", q: "", sira: "son" as const };
+  assert.deepEqual(listele(v, { ...f, durum: "liste" }).map((k) => k.id), v.liste);
+});
+
+test("bilinenKisim: Profil › Bildiğim şarkılar kısımları; kayıt yoksa açılmaz", () => {
+  assert.deepEqual(bilinenKisim(bos(), SARKI.id, "Riff", true), bos());
+  let v = durumAyarla(bos(), SARKI, "ogrendim", null, an("2026-11-21T10:00:00"));
+  v = bilinenKisim(v, SARKI.id, "Riff", true);
+  v = bilinenKisim(v, SARKI.id, "1. Solo", true);
+  v = bilinenKisim(v, SARKI.id, "Riff", true);
+  v = bilinenKisim(v, SARKI.id, "Köprü (serbest)", true);
+  v = bilinenKisim(v, SARKI.id, "1. Solo", false);
+  assert.deepEqual(v.kayitlar[SARKI.id].kisimlar, ["Riff", "Köprü (serbest)"]);
+});
+
+test("göç v1 → v2: işaretsiz otomatik kayıtlar temizlenir, işaretliler, serbest notlar ve notlu kayıtlar kalır", () => {
+  const v1 = {
+    surum: 1,
+    kayitlar: {
+      "egzersiz:legato/1.1": { id: "egzersiz:legato/1.1", tur: "egzersiz", baslik: "Otomatik", durum: null, oturumlar: [{ tarih: "2026-11-20", sure: 300 }] },
+      "sarki:songsterr/Nirvana|Come As You Are": { id: "sarki:songsterr/Nirvana|Come As You Are", tur: "sarki", baslik: "Come As You Are", durum: null, acildi: "2026-11-20T10:00:00.000Z" },
+      "egzersiz:sweep/2.1": { id: "egzersiz:sweep/2.1", tur: "egzersiz", baslik: "İşaretli", durum: "devam" },
+      "sarki:kutuphane/x": { id: "sarki:kutuphane/x", tur: "sarki", baslik: "Notlu", durum: null, not: "90 BPM'de temiz" },
+      "serbest:abc": { id: "serbest:abc", tur: "serbest", baslik: "Serbest", durum: null },
+    },
+    gitarlar: [],
+  };
+  const v = goc(v1);
+  assert.equal(v.surum, 2);
+  assert.deepEqual(Object.keys(v.kayitlar).sort(), ["egzersiz:sweep/2.1", "sarki:kutuphane/x", "serbest:abc"]);
+  assert.deepEqual(v.liste, []);
+  assert.deepEqual(v.kayitlar["egzersiz:sweep/2.1"].planli, []);
 });
 
 test("gitarSil: kayıt seçimi kalkar, varsayılan sıradakine geçer, geçmiş korunur", () => {
   let r = gitarEkle(bos(), "A");
   const g1 = r.id;
   r = gitarEkle(r.veri, "B");
-  let v = sureEkle(r.veri, DERS, 60, { gitar: g1 }, an("2026-11-21T10:00:00"));
+  let v = sureEkle(isaretle(r.veri, DERS), DERS, 60, { gitar: g1 }, an("2026-11-21T10:00:00"));
   v = gitarSil(v, g1);
   assert.equal(v.varsayilanGitar, r.id);
   assert.equal(v.kayitlar[DERS.id].gitar, null);
@@ -241,7 +342,7 @@ test("gitarSil: kayıt seçimi kalkar, varsayılan sıradakine geçer, geçmiş 
 
 test("haftaOzeti: plan hedefi, yüzde ve hedef serisi (dinlenme günü seriyi bozmaz)", () => {
   // Hafta: 16–22 Kasım 2026; bugün cumartesi 21 Kasım 00:30
-  let v = planAyarla(bos(), 3, { hedefDk: 0 }); // perşembe dinlenme
+  let v = isaretle(planAyarla(bos(), 3, { hedefDk: 0 }), DERS); // perşembe dinlenme
   v = sureEkle(v, DERS, 25 * 60, {}, an("2026-11-18T20:00:00")); // çarşamba 25 dk
   v = sureEkle(v, DERS, 20 * 60, {}, an("2026-11-20T23:30:00")); // cuma 20 dk (23:30)
   const ilerleme = new Map([["2026-11-17", 5 * 60]]); // salı yalnız ilerleme kaydında 5 dk
@@ -257,8 +358,8 @@ test("kademe: 0 boş, 5 kademe", () => {
 });
 
 test("birlestir: aynı kayıtta son güncellenen kalır, yeni kayıtlar eklenir", () => {
-  const a = sureEkle(bos(), DERS, 60, {}, an("2026-11-20T10:00:00"));
-  let b = sureEkle(bos(), DERS, 300, {}, an("2026-11-21T10:00:00"));
+  const a = sureEkle(isaretle(bos(), DERS), DERS, 60, {}, an("2026-11-20T10:00:00"));
+  let b = sureEkle(isaretle(bos(), DERS, "2026-11-21T09:00:00"), DERS, 300, {}, an("2026-11-21T10:00:00"));
   b = elleEkle(b, { baslik: "Serbest", sure: 120 }, an("2026-11-21T11:00:00")).veri;
   const m = birlestir(a, b);
   assert.equal(m.kayitlar[DERS.id].toplamSure, 300);

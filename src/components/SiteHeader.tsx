@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
-import { ChevronDown, ChevronLeft, ExternalLink, Menu as MenuIcon, User, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Menu as MenuIcon, User, X } from "lucide-react";
 import { SITE } from "@/config/site";
 import UygulamaSimgesi from "./site/UygulamaSimgesi";
 import SongsterrBag from "./SongsterrBag";
@@ -12,7 +12,8 @@ import { RIG_SIMGESI } from "./rig/simge";
 
 /** songsterr: bağlantı Şarkı Kütüphanesini (Songsterr) uygulama içi pencerede açar; href yalnız web'de yedek */
 type Bag = { href: string; label: string; songsterr?: boolean };
-type Sutun = { baslik: string; items: Bag[] };
+/** Sütun: başlık `href` alırsa başlığın kendisi bağlantıdır (aynı sayfaya giden kardeş seçeneklerin yerine geçen üst başlık) */
+type Sutun = { baslik: string; href?: string; items: Bag[] };
 type Menu = {
   id: string;
   label: string;
@@ -24,35 +25,35 @@ type Menu = {
   sutunlar: Sutun[];
 };
 
-/** Üst gezinme ve mega menüler (apple.com'daki gibi: büyük bağlantılı ilk sütun, yanında başlıklı listeler) */
-const MENULER: Menu[] = [
+/**
+ * Üst gezinme ve mega menüler (apple.com'daki gibi: büyük bağlantılı ilk sütun, yanında başlıklı listeler).
+ * Kural: bir menüde AYNI SAYFAYA (ya da aynı sayfanın çapalarına) giden iki seçenek olmaz; bunlar tek bir bağlantıya
+ * ya da bağlantılı sütun başlığına (Sutun.href) indirilir. Denetim: menuDenetle().
+ */
+export const MENULER: Menu[] = [
   {
     id: "calis",
     label: "Gitar Çalış",
     href: "/kurslar",
-    active: (p) => ["/calis", "/akustik", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
+    active: (p) => ["/calis", "/akustik", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye", "/sarkilar/dogaclama"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
     buyuk: [
-      { href: "/elektro", label: "Elektro Gitar", simge: yerSimgesi("elektro") },
-      { href: "/akustik", label: "Akustik Gitar", simge: yerSimgesi("akustik") },
-      { href: "/seviye", label: "Seviye Yolu", simge: yerSimgesi("seviye") },
       { href: "/kurslar", label: "Tüm Kurslar", simge: yerSimgesi("kurslar") },
+      { href: "/seviye", label: "Seviye Yolu", simge: yerSimgesi("seviye") },
     ],
     sutunlar: [
       {
+        // Başlık "Elektro Gitar" = /elektro (eski "Elektro Gitar" büyük bağlantısı ve "Teknik Egzersizler" bunun yerine)
         baslik: "Elektro Gitar",
+        href: "/elektro",
         items: [
-          { href: "/elektro", label: "Teknik Egzersizler" },
-          { href: "/seviye", label: "Seviye Yolu" },
           { href: "/calis/sifirdan-baslangic-rehberi", label: "Sıfırdan Başlangıç" },
           { href: "/calis/akor-yolu", label: "Akor Yolu" },
         ],
       },
       {
         baslik: "Akustik Gitar",
-        items: [
-          { href: "/akustik", label: "Teknik Egzersizler" },
-          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
-        ],
+        href: "/akustik",
+        items: [{ href: "/akustik/sarkilar", label: "Akustik Şarkılar" }],
       },
       {
         baslik: "Müzisyenlik",
@@ -95,55 +96,20 @@ const MENULER: Menu[] = [
     ],
   },
   {
+    // "Şarkılarla Öğren" ayrı menü değil: Şarkı Kütüphanesi'nin Rehber Şarkılar / Tüm Şarkılar sekmeleri
     id: "kutuphane",
     label: "Şarkı Kütüphanesi",
     href: "/sarki-kutuphanesi",
-    active: (p) => p.startsWith("/sarki-kutuphanesi"),
+    active: (p) => p.startsWith("/sarki-kutuphanesi") || p === "/sarkilar",
     buyuk: [
       { href: "/sarki-kutuphanesi", label: "Şarkı Kütüphanesi", simge: yerSimgesi("sarki-kutuphanesi") },
-      { href: "https://www.songsterr.com/", label: "Songsterr'i aç", simge: yerSimgesi("sarki-kutuphanesi"), songsterr: true },
+      { href: "/sarki-kutuphanesi/rehber", label: "Rehber Şarkılar", simge: yerSimgesi("sarkilar") },
+      { href: "/sarki-kutuphanesi/tum", label: "Tüm Şarkılar", simge: yerSimgesi("tum-sarkilar") },
     ],
     sutunlar: [
       {
-        baslik: "Songsterr'in bütün tabları",
-        items: [
-          { href: "/sarki-kutuphanesi", label: "Şarkı veya sanatçı ara" },
-          { href: "https://www.songsterr.com/", label: "Songsterr ana sayfası", songsterr: true },
-        ],
-      },
-      {
-        baslik: "Öğren",
-        items: [
-          { href: "/sarkilar", label: "Rehber Şarkılar" },
-          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "sarkilar",
-    label: "Şarkılarla Öğren",
-    href: "/sarkilar",
-    active: (p) => p.startsWith("/sarkilar"),
-    buyuk: [
-      { href: "/sarkilar", label: "Rehber Şarkılar", simge: yerSimgesi("sarkilar") },
-      { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal", simge: yerSimgesi("dogaclama") },
-    ],
-    sutunlar: [
-      {
-        baslik: "Şarkılar",
-        items: [
-          { href: "/sarkilar", label: "Şarkı Rehberi" },
-          { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
-          { href: "/sarki-kutuphanesi", label: "Tüm Kütüphane" },
-        ],
-      },
-      {
-        baslik: "Çal",
-        items: [
-          { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
-          { href: "/oynatici", label: "Tabla Keşfet" },
-        ],
+        baslik: "Songsterr",
+        items: [{ href: "https://www.songsterr.com/", label: "Songsterr'i aç", songsterr: true }],
       },
     ],
   },
@@ -153,23 +119,7 @@ const MENULER: Menu[] = [
     href: "/defter",
     active: (p) => p.startsWith("/defter"),
     buyuk: [{ href: "/defter", label: "Çalışma Defteri", simge: yerSimgesi("defter") }],
-    sutunlar: [
-      {
-        baslik: "Defter",
-        items: [
-          { href: "/defter#devam", label: "Devam edenler" },
-          { href: "/defter#ogrendim", label: "Öğrendiklerim" },
-          { href: "/defter#gitarlar", label: "Gitarlarım" },
-        ],
-      },
-      {
-        baslik: "Plan",
-        items: [
-          { href: "/defter#takvim", label: "Çalışma takvimi" },
-          { href: "/defter#plan", label: "Haftalık plan ve hedef" },
-        ],
-      },
-    ],
+    sutunlar: [],
   },
   {
     id: "araclar",
@@ -177,25 +127,15 @@ const MENULER: Menu[] = [
     href: "/araclar",
     active: (p) => p.startsWith("/araclar") || p.startsWith("/kutuphane") || p.startsWith("/oynatici"),
     buyuk: [
-      { href: "/araclar#metronom", label: "Metronom", simge: yerSimgesi("metronom") },
-      { href: "/araclar#nota-testi", label: "Nota Testi", simge: yerSimgesi("nota-testi") },
+      // Metronom ve Nota Testi aynı sayfanın (/araclar) iki çapasıydı: tek "Pratik Araçları" bağlantısı
+      { href: "/araclar", label: "Pratik Araçları", simge: yerSimgesi("metronom") },
       { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım", simge: yerSimgesi("kutuphane") },
+      { href: "/oynatici", label: "Tabla Keşfet", simge: yerSimgesi("oynatici") },
     ],
     sutunlar: [
       {
-        baslik: "Pratik araçları",
-        items: [
-          { href: "/araclar#metronom", label: "Metronom" },
-          { href: "/araclar#nota-testi", label: "Nota Bulma Testi" },
-          { href: "/teori#sap", label: "Sap Gezgini" },
-        ],
-      },
-      {
-        baslik: "Tablar",
-        items: [
-          { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım" },
-          { href: "/oynatici", label: "Tabla Keşfet" },
-        ],
+        baslik: "Ayrıca",
+        items: [{ href: "/teori#sap", label: "Sap Gezgini" }],
       },
     ],
   },
@@ -204,41 +144,41 @@ const MENULER: Menu[] = [
     label: "Rig'im",
     href: "/rig",
     active: (p) => p.startsWith("/rig"),
+    // "Sinyal zinciri" (/rig) ve "Ekipman kitaplığı" (/rig#kitaplik) aynı sayfaydı: tek "Rig'im" bağlantısı
     buyuk: [{ href: "/rig", label: "Rig'im", simge: RIG_SIMGESI }],
-    sutunlar: [
-      {
-        baslik: "Rig oluşturucu",
-        items: [
-          { href: "/rig", label: "Sinyal zinciri" },
-          { href: "/rig#kitaplik", label: "Ekipman kitaplığı" },
-        ],
-      },
-    ],
+    sutunlar: [],
   },
   {
     id: "profil",
     label: "Profil",
     href: "/profil",
     active: (p) => p.startsWith("/profil") || p.startsWith("/marka"),
+    // Profil sayfasının bölümleri (görevler, madalyalar, Şarkılarım, Görünüm) aynı sayfada: tek "Profil" bağlantısı.
     buyuk: [{ href: "/profil", label: "Profil", simge: yerSimgesi("profil") }],
     sutunlar: [
       {
-        baslik: "İlerleme",
-        items: [
-          { href: "/profil", label: "Günlük görevler ve seri" },
-          { href: "/profil", label: "Madalyalar ve başarımlar" },
-        ],
-      },
-      {
         baslik: "GuitarFlex",
-        items: [
-          { href: "/profil#gorunum", label: "Görünüm (tema)" },
-          { href: "/marka", label: "Marka" },
-        ],
+        items: [{ href: "/marka", label: "Marka" }],
       },
     ],
   },
 ];
+
+/** Aynı menüde aynı sayfaya (çapası atılmış adres) giden seçenek çiftleri; boş dizi = kural sağlanıyor */
+export function menuDenetle(menuler: Menu[] = MENULER): string[] {
+  const out: string[] = [];
+  const sayfa = (h: string) => h.split("#")[0].replace(/\/$/, "") || "/";
+  for (const m of menuler) {
+    const goruldu = new Map<string, string>();
+    const bags = [...m.buyuk, ...m.sutunlar.flatMap((s) => [...(s.href ? [{ href: s.href, label: s.baslik }] : []), ...s.items])];
+    for (const b of bags) {
+      const k = sayfa(b.href);
+      if (goruldu.has(k)) out.push(`${m.label}: "${goruldu.get(k)}" ve "${b.label}" → ${k}`);
+      else goruldu.set(k, b.label);
+    }
+  }
+  return out;
+}
 
 const BUYUK_BAG =
   "inline-flex items-center gap-3 rounded-md font-[family-name:var(--font-display)] text-[24px] font-semibold leading-[1.1667] tracking-[0.009em] text-[#e8e8ed] transition hover:text-white hover:underline hover:underline-offset-4";
@@ -408,7 +348,13 @@ export default function SiteHeader() {
                         </div>
                         {m.sutunlar.map((s) => (
                           <div key={s.baslik}>
-                            <p className="mb-3.5 text-[12px] leading-4 text-[#aeaeb2]">{s.baslik}</p>
+                            {s.href ? (
+                              <Link href={s.href} className={`${KUCUK_BAG} mb-3.5 inline-flex items-center gap-1 !text-[14px]`} data-sutun-basligi>
+                                {s.baslik} <ChevronRight size={12} aria-hidden className="opacity-70" />
+                              </Link>
+                            ) : (
+                              <p className="mb-3.5 text-[12px] leading-4 text-[#aeaeb2]">{s.baslik}</p>
+                            )}
                             <ul className="space-y-2.5">
                               {s.items.map((b) => (
                                 <li key={b.href + b.label}>
@@ -480,7 +426,7 @@ export default function SiteHeader() {
                       </Link>
                     ),
                   )}
-                  {m.sutunlar.flatMap((s) => s.items).map((b) =>
+                  {m.sutunlar.flatMap((s) => [...(s.href ? [{ href: s.href, label: s.baslik }] : []), ...s.items] as Bag[]).map((b) =>
                     b.songsterr ? (
                       <SongsterrBag key={b.href + b.label} className="block py-1 text-sm font-semibold text-text/85">
                         {b.label}

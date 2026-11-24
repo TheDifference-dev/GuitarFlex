@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BookText, Check, ChevronDown, FileText, ListTree, ListVideo, PlayCircle, Sparkles } from "lucide-react";
 import type { Course, Lesson, Section } from "@/content/types";
 import { lessonKey } from "@/content/courses";
@@ -15,6 +15,9 @@ import UygulamaSimgesi from "./site/UygulamaSimgesi";
 import { DERS_TURU_ADI, dersSimgesi, dersTuru, kursSimgesi } from "@/lib/simge";
 import { AILE_ADI, AILE_ADRESI, type KursAilesi } from "@/lib/katalog";
 import { useProgress, type Progress, type StepProgress } from "@/lib/progress";
+import { dersKaydi } from "@/lib/defter";
+import EylemDugmeleri from "./defter/Eylemler";
+import { bolumeKaydir, useBolumIzleyici } from "./site/BolumGezgini";
 
 export function formatClock(seconds: number) {
   const s = Math.max(0, Math.floor(seconds));
@@ -52,25 +55,19 @@ function ExamRow({ section: s }: { section: Section }) {
   );
 }
 
-/** Adresteki "#bolum-<kod>" (ör. Seviye Yolu'ndan gelen bağlantı); sunucuda boş */
-const subscribeHash = (cb: () => void) => {
-  window.addEventListener("hashchange", cb);
-  return () => window.removeEventListener("hashchange", cb);
-};
-const readHash = () => window.location.hash;
-
 export default function CourseView({ course, kurslar = [], aile }: { course: Course; kurslar?: SeciciKurs[]; aile: KursAilesi }) {
   const p = useProgress();
   const [tab, setTab] = useState<"egzersiz" | "rehber">("egzersiz");
   const [cekmece, setCekmece] = useState(false);
   const kapatCekmece = useCallback(() => setCekmece(false), []);
-  const firstOpen = course.sections.findIndex((s) => !sectionDone(p, course, s));
-  const [selected, setSelected] = useState<number | null>(null);
-  const hash = useSyncExternalStore(subscribeHash, readHash, () => "");
-  const hashCode = hash.startsWith("#bolum-") ? decodeURIComponent(hash.slice(7)) : null;
-  const hashSection = hashCode ? course.sections.findIndex((s) => s.chapters.some((c) => c.code === hashCode)) : -1;
-  const current = course.sections[selected ?? (hashSection >= 0 ? hashSection : Math.max(0, firstOpen))] ?? course.sections[0];
   const badges = !isAcoustic(course);
+  // Kurs sayfası her zaman BÜTÜN bölümleri gösterir; kenar çubuğu filtre değil, içindekiler: tıklayınca o bölüme
+  // yumuşak kayar, görünen bölüm vurgulanır (scrollspy). Bağlantıyla gelinen "#bolum-<kod>" açılışta oraya kayar.
+  const bolumIdleri = course.sections.map((s) => `bolum-s${s.number}`);
+  const altIdleri = course.sections.flatMap((s) => s.chapters.map((c) => `bolum-${c.code}`));
+  const gorunen = useBolumIzleyici(tab === "egzersiz" ? bolumIdleri : []);
+  const gorunenAlt = useBolumIzleyici(tab === "egzersiz" ? altIdleri : []);
+  const current = course.sections[Math.max(0, bolumIdleri.indexOf(gorunen ?? ""))] ?? course.sections[0];
 
   // Kurs ilerlemesi ve sıradaki ders (GuitarBear: "İLERLEME x/N", "MEVCUT BÖLÜM: x.y")
   const hepsi = course.sections.flatMap((s) => s.chapters.flatMap((c) => c.lessons.map((l) => ({ l, s, c }))));
@@ -79,10 +76,27 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
   const yuzde = hepsi.length ? Math.round((tamam / hepsi.length) * 100) : 0;
   const dersHref = (l: Lesson) => (l.practice ? `/teori/yol/${l.practice.yol}/${encodeURIComponent(l.practice.kod)}` : `/calis/${course.slug}/${encodeURIComponent(l.id)}`);
 
-  // Bağlantıyla gelinen alt bölüm başka bölümdeyse, bölüm açıldıktan sonra ona kaydır
+  // Bağlantıyla gelinen bölüm (#bolum-1.2, Seviye Yolu'ndan): sayfa açılınca oraya (anında) kayar
   useEffect(() => {
-    if (hashSection >= 0) document.getElementById(`bolum-${hashCode}`)?.scrollIntoView();
-  }, [hashCode, hashSection]);
+    const git = () => {
+      const h = decodeURIComponent(window.location.hash.slice(1));
+      if (h.startsWith("bolum-") && document.getElementById(h)) {
+        setTab("egzersiz");
+        requestAnimationFrame(() => bolumeKaydir(h, { aninda: true, adres: false }));
+      }
+    };
+    git();
+    window.addEventListener("hashchange", git);
+    return () => window.removeEventListener("hashchange", git);
+  }, []);
+  /** Kenar çubuğundan bölüme git: rehberdeysek egzersize döner, sonra yumuşak kayar */
+  const git = (id: string, mobil: boolean) => {
+    if (mobil) setCekmece(false);
+    if (tab !== "egzersiz") {
+      setTab("egzersiz");
+      requestAnimationFrame(() => requestAnimationFrame(() => bolumeKaydir(id)));
+    } else requestAnimationFrame(() => bolumeKaydir(id));
+  };
 
   /** Sol panel (masaüstü) ve mobil çekmecedeki içerik: Egzersiz/Rehber, eğitim videoları, bölümler ve alt bölümler */
   const panel = (mobil: boolean) => (
@@ -134,7 +148,7 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
         </p>
         <div className="space-y-2">
           {course.sections.map((s, si) => {
-            const active = s === current;
+            const active = tab === "egzersiz" && s === current;
             const bitti = sectionDone(p, course, s);
             const dersler = s.chapters.flatMap((c) => c.lessons);
             const dk = Math.round(dersler.reduce((n, l) => n + (l.practice ? 0 : l.minutes), 0));
@@ -142,12 +156,9 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
               <div key={s.number} className={active ? "rounded-2xl bg-ink/[0.05]" : ""}>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelected(si);
-                    setTab("egzersiz");
-                    if (mobil) setCekmece(false);
-                  }}
-                  aria-current={active ? "true" : undefined}
+                  onClick={() => git(bolumIdleri[si], mobil)}
+                  aria-current={active ? "location" : undefined}
+                  data-bolum-dugmesi={s.number}
                   className={`flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-sm font-semibold ${active ? "text-accent" : ""}`}
                 >
                   <span
@@ -168,16 +179,18 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                 <div className="space-y-0.5 pb-2 pl-3 pr-2">
                   {s.chapters.map((c) => {
                     const done = c.lessons.every((l) => lessonDone(p, course, l));
+                    const altAktif = tab === "egzersiz" && gorunenAlt === `bolum-${c.code}`;
                     return (
                       <a
                         key={c.code}
                         href={`#bolum-${c.code}`}
-                        onClick={() => {
-                          setSelected(si);
-                          setTab("egzersiz");
-                          if (mobil) setCekmece(false);
+                        onClick={(e) => {
+                          e.preventDefault();
+                          git(`bolum-${c.code}`, mobil);
                         }}
-                        className={`flex items-center gap-2 rounded-lg px-2 py-1 text-xs transition ${done ? "text-ok" : "text-text/90"} hover:bg-ink/[0.06]`}
+                        aria-current={altAktif ? "location" : undefined}
+                        data-kaydirma="kendi"
+                        className={`flex items-center gap-2 rounded-lg px-2 py-1 text-xs transition ${done ? "text-ok" : "text-text/90"} ${altAktif ? "bg-ink/[0.08] font-semibold" : ""} hover:bg-ink/[0.06]`}
                       >
                         <span className="w-7 shrink-0 font-semibold">{c.code}</span>
                         <span className="flex-1 truncate">{c.title}</span>
@@ -275,18 +288,6 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
 
       {/* Ana alan */}
       <div className="min-w-0 space-y-8">
-        {tab === "egzersiz" && (
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-[28px] font-semibold leading-tight tracking-tight">
-              Bölüm {current.number} – {current.title}
-            </h2>
-            <span className="text-sm font-medium text-muted">
-              {current.level ? `${current.level} · ` : ""}
-              {bolumMeta(current)}
-            </span>
-          </div>
-        )}
-
         {tab === "rehber" ? (
           <article className="card max-w-3xl space-y-3 p-6 leading-relaxed sm:p-8">
             {(course.guide?.length ? course.guide : [course.description]).map((para, i) =>
@@ -302,10 +303,21 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
             )}
           </article>
         ) : (
-          current.chapters.map((c) => {
+          course.sections.map((sec) => (
+          <section key={sec.number} id={`bolum-s${sec.number}`} data-bolum className="scroll-mt-28 space-y-8 lg:scroll-mt-20">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-[28px] font-semibold leading-tight tracking-tight">
+                Bölüm {sec.number} – {sec.title}
+              </h2>
+              <span className="text-sm font-medium text-muted">
+                {sec.level ? `${sec.level} · ` : ""}
+                {bolumMeta(sec)}
+              </span>
+            </div>
+          {sec.chapters.map((c) => {
             const total = Math.round(c.lessons.reduce((sum, l) => sum + l.minutes, 0) * 10) / 10;
             return (
-              <section key={c.code} id={`bolum-${c.code}`} className="scroll-mt-24 space-y-4">
+              <section key={c.code} id={`bolum-${c.code}`} className="scroll-mt-28 space-y-4 lg:scroll-mt-20">
                 <div className="flex items-center gap-3 border-b border-line/70 pb-3">
                   <span className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-semibold text-accent">{c.code}</span>
                   <h2 className="flex-1 text-lg font-semibold">{c.title}</h2>
@@ -318,10 +330,10 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                     const target = l.minutes * 60;
                     const done = Math.min(ep?.totalSeconds ?? 0, target);
                     if (l.practice) return <PratikKarti key={l.id} lesson={l} sonuc={p.steps[`${l.practice.yol}/${l.practice.kod}`]} />;
+                    const href = `/calis/${course.slug}/${encodeURIComponent(l.id)}`;
                     return (
-                      <Link
+                      <div
                         key={l.id}
-                        href={`/calis/${course.slug}/${encodeURIComponent(l.id)}`}
                         className={`card group relative block overflow-hidden p-4 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15 ${ep?.completed ? "border-ok/40" : siradaki?.l === l ? "border-accent/60 pt-7" : ""}`}
                       >
                         {siradaki?.l === l && (
@@ -330,7 +342,12 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                         <div className="relative">
                           <div className="flex items-start gap-3">
                             <UygulamaSimgesi simge={dersSimgesi(dersTuru(l), course.slug)} boyut={32} etiket={DERS_TURU_ADI[dersTuru(l) ?? "drill"]} />
-                            <h3 className="min-w-0 flex-1 font-semibold leading-tight">{l.title}</h3>
+                            <h3 className="min-w-0 flex-1 font-semibold leading-tight">
+                              {/* Kartın tamamı derse gider (gerilen bağlantı); eylem düğmeleri bağlantının üstünde */}
+                              <Link href={href} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none" data-ders-karti>
+                                {l.title}
+                              </Link>
+                            </h3>
                             <span className="flex shrink-0 items-center gap-1.5">
                               {/* Alt bölümünden farklı seviyedeki ders: seviyesi kartta yazar (rozet alt bölüm başlığında) */}
                               {badges && l.level && l.level !== c.level && (
@@ -357,13 +374,18 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                             <div className={`h-full ${ep?.completed ? "bg-ok" : "bar-fill"}`} style={{ width: `${(done / target) * 100}%` }} />
                           </div>
                         </div>
-                      </Link>
+                        <div className="relative z-[1] mt-3 flex justify-end">
+                          <EylemDugmeleri bilgi={dersKaydi(lessonKey(course.slug, l.id), l.title, course.cardTitle ?? course.title, href)} yalnizSimge />
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
               </section>
             );
-          })
+          })}
+          </section>
+          ))
         )}
       </div>
       </div>

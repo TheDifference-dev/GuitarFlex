@@ -11,8 +11,10 @@ import { useProgress } from "@/lib/progress";
 import { kursSimgesi } from "@/lib/simge";
 import { defterIsle, kayitAc, populerKaydi } from "@/lib/defter";
 import SarkiDefterKutusu from "@/components/defter/SarkiDefterKutusu";
+import SarkiKapagi, { kapakTuru } from "@/components/SarkiKapagi";
 
-type Props = { songs: PopularSong[]; courseTitles: Record<string, string>; rehber?: boolean };
+/** gorunum: "rehber" (Şarkı Kütüphanesi › Rehber Şarkılar, adım adım yol) ya da "tum" (kapaklı kartlar ve filtreler) */
+type Props = { songs: PopularSong[]; courseTitles: Record<string, string>; gorunum?: "rehber" | "tum" };
 type Siralama = "sik" | "kolay" | "zor" | "yeni" | "isim";
 const SIRALAMA: Record<Siralama, string> = {
   sik: "Sık çalışılan şarkılar",
@@ -50,7 +52,7 @@ function acilislar(): Record<string, number> {
   return acilisOnbellek.data;
 }
 const BOS: Record<string, number> = {};
-/** Songsterr'de açıldı: "Sık çalışılan" sayımı ve Çalışma Defteri'ne "açıldı" kaydı */
+/** Songsterr'de açıldı: "Sık çalışılan" sayımı; şarkı defterde işaretliyse "açıldı" zamanı (kayıt açmaz) */
 function songsterrAcildi(s: PopularSong) {
   acildi(anahtar(s));
   defterIsle((v) => kayitAc(v, populerKaydi(s)));
@@ -73,9 +75,9 @@ function abone(cb: () => void) {
   };
 }
 
-export default function SongList({ songs, courseTitles, rehber = false }: Props) {
-  const [gorunum, setGorunum] = useState<"rehber" | "tum">(rehber ? "rehber" : "tum");
+export default function SongList({ songs, courseTitles, gorunum = "tum" }: Props) {
   const [q, setQ] = useState("");
+  const [tarz, setTarz] = useState<"" | "elektro" | "akustik">("");
   const [madalya, setMadalya] = useState<Madalya | "">("");
   const [koken, setKoken] = useState<"" | "Global" | "Türkçe">("");
   const [kind, setKind] = useState<PopularSong["kind"] | "">("");
@@ -88,12 +90,14 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
 
   const turler = [...new Set(songs.map((s) => s.kind))];
   const kokenVar = songs.some((s) => s.koken === "Türkçe") && songs.some((s) => s.koken === "Global");
+  const tarzVar = songs.some((s) => s.tags.includes("Akustik")) && songs.some((s) => !s.tags.includes("Akustik"));
   const shown = useMemo(() => {
     const needle = q.trim().toLocaleLowerCase("tr");
     const out = songs.filter(
       (s) =>
         (!madalya || madalyaOf(s) === madalya) &&
         (!koken || s.koken === koken) &&
+        (!tarz || (tarz === "akustik") === s.tags.includes("Akustik")) &&
         (!kind || s.kind === kind) &&
         (!course || s.courses?.includes(course)) &&
         (!needle || `${s.title} ${s.artist}`.toLocaleLowerCase("tr").includes(needle)),
@@ -106,25 +110,27 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
       isim: (a, b) => a.title.localeCompare(b.title, "tr"),
     };
     return out.sort(by[sira]);
-  }, [songs, q, madalya, koken, kind, course, sira, acilis]);
+  }, [songs, q, madalya, koken, tarz, kind, course, sira, acilis]);
 
   const chip = (active: boolean) =>
     `rounded-full border px-3.5 py-1.5 text-sm font-semibold ${active ? "border-accent bg-accent text-accent-ink" : "border-line bg-panel hover:border-ink/20"}`;
   const adim = songs.filter((s) => s.rehber).sort((a, b) => a.rehber!.adim - b.rehber!.adim);
 
   const kart = (s: PopularSong) => (
-    <article key={`${s.artist}-${s.title}-${s.kind}`} data-renk={kursSimgesi(s.courses?.[0] ?? "").renk} className="renkli-kart yukselen flex flex-col card p-4 pt-5">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h3 className="font-semibold leading-tight">
-            {s.title}
-            {s.yeni ? <span className="ml-2 rounded-full bg-primary px-2 py-0.5 align-middle text-[10px] font-semibold text-primary-ink">Yeni</span> : null}
-          </h3>
-          <p className="text-sm text-muted">{s.artist}</p>
-        </div>
-        <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${MADALYA_STYLE[madalyaOf(s)]}`}>
+    <article key={`${s.artist}-${s.title}-${s.kind}`} data-renk={kursSimgesi(s.courses?.[0] ?? "").renk} className="yukselen card flex flex-col overflow-hidden !p-0" data-sarki-karti>
+      <SongsterrBag q={songUrl(s)} onAc={() => songsterrAcildi(s)} className="group relative block" aria-label={`${s.title} (${s.artist}): Songsterr'de aç`}>
+        <SarkiKapagi sanatci={s.artist} baslik={s.title} tur={kapakTuru(s)} oran="genis" className="aspect-[16/9] w-full transition duration-300 group-hover:scale-[1.02]" />
+        <span className={`absolute bottom-3 right-3 rounded-full border bg-black/35 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-sm ${madalyaOf(s) === "Elmas" || madalyaOf(s) === "Usta" ? "border-white/60" : "border-white/25"}`}>
           {madalyaOf(s)}
         </span>
+        {s.yeni ? <span className="absolute bottom-3 left-3 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-ink">Yeni</span> : null}
+      </SongsterrBag>
+      <div className="flex flex-1 flex-col p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="font-semibold leading-tight">{s.title}</h3>
+          <p className="text-sm text-muted">{s.artist}</p>
+        </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent">{s.kind}</span>
@@ -167,22 +173,12 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
       <SongsterrBag q={songUrl(s)} onAc={() => songsterrAcildi(s)} className="btn-primary mt-4 self-stretch px-4 py-2 text-sm">
         Songsterr&apos;de Aç <ExternalLink size={15} />
       </SongsterrBag>
+      </div>
     </article>
   );
 
   return (
     <div className="space-y-4">
-      {rehber ? (
-        <div className="flex gap-2">
-          <button type="button" className={chip(gorunum === "rehber")} onClick={() => setGorunum("rehber")}>
-            Rehber Şarkılar
-          </button>
-          <button type="button" className={chip(gorunum === "tum")} onClick={() => setGorunum("tum")}>
-            Tüm Şarkılar
-          </button>
-        </div>
-      ) : null}
-
       {gorunum === "rehber" ? (
         <div className="space-y-10" data-rehber-gorunumu>
           <p className="max-w-3xl text-[17px] text-muted">
@@ -199,7 +195,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
               </h3>
               <ol className="relative space-y-3 before:absolute before:bottom-6 before:left-[27px] before:top-6 before:w-0.5 before:rounded-full before:bg-ink/10">
                 {bolum.sarkilar.map((s) => (
-                  <RehberAdimi key={anahtar(s)} s={s} puan={puan} courseTitles={courseTitles} onAc={() => songsterrAcildi(s)} />
+                  <RehberAdimi key={`${anahtar(s)}|${s.rehber!.adim}`} s={s} puan={puan} courseTitles={courseTitles} onAc={() => songsterrAcildi(s)} />
                 ))}
               </ol>
             </section>
@@ -222,6 +218,13 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
               <Search size={16} className="text-muted" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Şarkı veya sanatçı ara..." className="w-full bg-transparent text-sm outline-none" />
             </label>
+            {tarzVar ? (
+              <select value={tarz} onChange={(e) => setTarz(e.target.value as typeof tarz)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm" aria-label="Tarz">
+                <option value="">Elektro ve akustik</option>
+                <option value="elektro">Elektro</option>
+                <option value="akustik">Akustik</option>
+              </select>
+            ) : null}
             {kokenVar ? (
               <select value={koken} onChange={(e) => setKoken(e.target.value as typeof koken)} className="rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-sm" aria-label="Köken">
                 <option value="">Köken: Tümü</option>
@@ -262,7 +265,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
 
           <SongsterrAra q={q} bulunan={shown.length} />
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{shown.map(kart)}</div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-tum-sarkilar>{shown.map(kart)}</div>
         </>
       )}
     </div>

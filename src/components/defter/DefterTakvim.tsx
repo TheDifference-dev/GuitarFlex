@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState, type KeyboardEvent } from "react";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarCheck, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
-  AY_ADLARI, GUN_ADLARI, GUN_KISA, KADEME_ESIKLERI_DK, TUR_ADI, defterIsle, gunEkle, gunHedefi, gunTarihi, gunToplami, gunlukToplamlar, gununOturumlari, haftaGunu,
-  haftaOzeti, kademe, kisimYaz, planAyarla, sureYaz, yerelGun, type DefterVeri,
+  AY_ADLARI, GUN_ADLARI, GUN_KISA, KADEME_ESIKLERI_DK, TUR_ADI, defterIsle, gunEkle, gunHedefi, gunTarihi, gunToplami, gunlukToplamlar, gununOturumlari, gununPlanlari, haftaGunu,
+  haftaOzeti, kademe, kisimYaz, planAyarla, plandanKaldir, sureYaz, yerelGun, type DefterVeri,
 } from "@/lib/defter";
 import { DurumIsareti, gitarAdi } from "./Parcalar";
 
@@ -20,7 +20,8 @@ const gunYazisi = (t: string) => {
 const dk = (sn: number) => Math.round(sn / 60);
 
 /**
- * Çalışma takvimi: ay görünümü (günün toplam süresine göre beş kademe), gün ayrıntısı (o günün oturumları) ve
+ * Çalışma takvimi: ay görünümü (günün toplam süresine göre beş kademe; "Takvime al" ile planlanan günlerde mavi
+ * nokta), gün ayrıntısı (o güne planlananlar ve o günün oturumları) ve
  * haftalık plan (gün başına hedef dakika ve plan notu) ile hafta özeti. Tarihler bilgisayarın yerel saatine göredir.
  */
 export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { veri: DefterVeri; ilerleme: Map<string, number>; varsayilanDk: number; bugun: string }) {
@@ -30,6 +31,11 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
   });
   const [secili, setSecili] = useState(bugun);
   const defter = useMemo(() => gunlukToplamlar(veri), [veri]);
+  const planGunleri = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const k of Object.values(veri.kayitlar)) for (const t of k.planli) m.set(t, (m.get(t) ?? 0) + 1);
+    return m;
+  }, [veri]);
   const toplamOf = (t: string) => gunToplami(defter.get(t), ilerleme.get(t) ?? 0);
 
   // Ayın ızgarası: pazartesiden başlayan haftalar
@@ -60,6 +66,7 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
 
   const ozet = haftaOzeti(veri, ilerleme, gunTarihi(bugun), varsayilanDk);
   const oturumlar = gununOturumlari(veri, secili);
+  const planlar = gununPlanlari(veri, secili);
   const seciliToplam = toplamOf(secili);
   const seciliDefter = defter.get(secili);
   const defterDisi = Math.max(0, (ilerleme.get(secili) ?? 0) - (seciliDefter?.olculen ?? 0));
@@ -99,7 +106,8 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
             const k = kademe(sn);
             const h = gunHedefi(veri, t, varsayilanDk);
             const tamam = h > 0 && sn >= h;
-            const etiket = `${gunYazisi(t)}: ${sn ? `${sureYaz(sn)} çalışma` : "çalışma yok"}${h ? `, hedef ${dk(h)} dk${tamam ? ", hedef tamam" : ""}` : ", dinlenme günü"}${t === bugun ? ", bugün" : ""}`;
+            const plan = planGunleri.get(t) ?? 0;
+            const etiket = `${gunYazisi(t)}: ${sn ? `${sureYaz(sn)} çalışma` : "çalışma yok"}${h ? `, hedef ${dk(h)} dk${tamam ? ", hedef tamam" : ""}` : ", dinlenme günü"}${plan ? `, ${plan} planlı` : ""}${t === bugun ? ", bugün" : ""}`;
             return (
               <button
                 key={t}
@@ -118,6 +126,7 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
                 <span className={`leading-none ${t === bugun ? "flex size-6 items-center justify-center rounded-full bg-text font-semibold text-bg" : "font-medium"}`}>{d.getDate()}</span>
                 {sn > 0 && <span className="mt-0.5 text-[10px] font-semibold leading-none">{dk(sn) || "<1"} dk</span>}
                 {tamam && <Check size={11} strokeWidth={3} className="absolute right-1 top-1" aria-hidden />}
+                {plan > 0 && <span className="absolute left-1.5 top-1.5 size-1.5 rounded-full bg-[#0a84ff] ring-1 ring-white/70" aria-hidden data-planli-gun />}
               </button>
             );
           })}
@@ -131,6 +140,9 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
           ))}
           <span className="flex items-center gap-1">
             <Check size={12} strokeWidth={3} aria-hidden /> hedef tamam
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-[#0a84ff]" aria-hidden /> planlı (Takvime al)
           </span>
         </div>
       </section>
@@ -150,6 +162,41 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
             <span className="font-semibold">Plan: </span>
             {planNotu}
           </p>
+        )}
+        {planlar.length > 0 && (
+          <div className="mt-3" data-gun-planlari>
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-muted">
+              <CalendarCheck size={13} aria-hidden /> Bu güne planlı ({planlar.length})
+            </p>
+            <ul className="mt-1 divide-y divide-line/60">
+              {planlar.map((k) => (
+                <li key={k.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold">
+                      {k.href && !k.href.startsWith("http") ? (
+                        <Link href={k.href} className="hover:text-[var(--link)]">
+                          {k.baslik}
+                        </Link>
+                      ) : (
+                        k.baslik
+                      )}
+                    </span>
+                    <span className="block text-xs text-muted">
+                      {TUR_ADI[k.tur]}
+                      {k.altBaslik ? ` · ${k.altBaslik}` : ""}
+                      {k.kisim ? ` · ${kisimYaz(k.kisim)}` : ""}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    {k.durum && <DurumIsareti durum={k.durum} />}
+                    <button type="button" onClick={() => defterIsle((v) => plandanKaldir(v, k.id, secili))} className="flex size-7 items-center justify-center rounded-full text-muted hover:bg-ink/[0.08] hover:text-text" aria-label={`${k.baslik}: bu günden kaldır`} title="Bu günün planından kaldır">
+                      <X size={14} />
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         {oturumlar.length ? (
           <ul className="mt-3 divide-y divide-line/60">
@@ -182,11 +229,11 @@ export default function DefterTakvim({ veri, ilerleme, varsayilanDk, bugun }: { 
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-muted">Bu gün defterde oturum yok.</p>
+          <p className="mt-3 text-sm text-muted">{planlar.length ? "Bu gün henüz oturum yok." : "Bu gün defterde oturum ya da plan yok."}</p>
         )}
         {defterDisi > 0 && (
           <p className="mt-3 text-xs text-muted">
-            + {sureYaz(defterDisi)} defter dışında ölçülen çalışma (sayaçla, doğaçlama eşliğiyle ya da defter açılmadan önce).
+            + {sureYaz(defterDisi)} defter dışında ölçülen çalışma (deftere işaretlenmemiş egzersiz ve şarkılar, sayaç, doğaçlama eşliği).
           </p>
         )}
       </section>

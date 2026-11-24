@@ -22,13 +22,25 @@ export type OynaticiAyarlari = {
   rampa: { baslangic: number; adim: number; hedef: number };
   /** Ses bankası: GeneralUser GS (varsayılan) ya da hafif Sonivox */
   sesBankasi: "generaluser" | "sonivox";
-  /** Ana ses (%0–150) ve sessiz düğmesi; bütün oynatıcılar paylaşır */
+  /**
+   * Üç ayrı ses kanalı (bütün oynatıcılar paylaşır), her biri %0–450 (eski üst sınır %150'nin 3 katı) ve kendi sessiz
+   * düğmesi. Müzik (parçalar / MIDI) kısılsa da metronom ve sayım çalmaya devam eder.
+   *  • Müzik: `anaSes` + `sessiz` (eski "Ana ses" kaydı olduğu gibi Müzik kanalına geçer)
+   *  • Metronom: `metronomSesi` + `metronomSessiz`
+   *  • Sayım: `sayimSesi` + `sayimSessiz`
+   */
   anaSes: number;
   sessiz: boolean;
-  /** Metronom ve sayım tıklarının sesi (%0–150) */
   metronomSesi: number;
+  metronomSessiz: boolean;
   sayimSesi: number;
+  sayimSessiz: boolean;
 };
+
+/** Ses kanallarının üst sınırı (%): eski %150'nin 3 katı. Çıkışta sınırlayıcı (limiter) bozulmayı önler. */
+export const SES_UST = 450;
+/** Kayıtlı yüzdeyi kazanca çevirir (0–4,5); geçersizse 1 */
+export const sesKazanci = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.min(SES_UST, Math.max(0, v)) / 100 : 1);
 
 export const VARSAYILAN: OynaticiAyarlari = {
   gorunum: "tab",
@@ -43,7 +55,9 @@ export const VARSAYILAN: OynaticiAyarlari = {
   anaSes: 100,
   sessiz: false,
   metronomSesi: 100,
+  metronomSessiz: false,
   sayimSesi: 100,
+  sayimSessiz: false,
 };
 
 const KEY = "gf-oynatici";

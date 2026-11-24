@@ -3,6 +3,7 @@
 import type { ReactNode, RefObject } from "react";
 import { X } from "lucide-react";
 import Acilir from "./Acilir";
+import SesKanallari from "./SesKanallari";
 import type { OynaticiAyarlari } from "./ayarlar";
 
 type Props = {
@@ -102,18 +103,7 @@ function Sayi({ deger, onDegis, min, max, adim, ad }: { deger: number; onDegis: 
   );
 }
 
-function Seviye({ ad, deger, onDegis }: { ad: string; deger: number; onDegis: (v: number) => void }) {
-  const v = Number.isFinite(deger) ? deger : 100;
-  return (
-    <label className="flex items-center gap-2 text-sm">
-      <span className="w-20 shrink-0">{ad}</span>
-      <input type="range" min={0} max={150} step={5} value={v} onChange={(e) => onDegis(Number(e.target.value))} className="flex-1 accent-[var(--accent)]" aria-label={`${ad} sesi`} />
-      <span className="w-11 text-right tabular-nums text-muted">%{v}</span>
-    </label>
-  );
-}
-
-/** Oynatıcının ayar paneli: görünüm, yerleşim, yakınlaştırma, imleç takibi, sap, metronom, ses seviyeleri, kademeli hız, ses bankası, akort, kısayollar. */
+/** Oynatıcının ayar paneli: görünüm, yerleşim, yakınlaştırma, imleç takibi, sap, metronom, ses kanalları, kademeli hız, ses bankası, akort, kısayollar. */
 export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, gorunumKilit, sapKilit, sayim, onSayim, onKapat, tetik, akort }: Props) {
   const r = ayarlar.rampa;
   return (
@@ -193,11 +183,8 @@ export default function AyarPaneli({ ayarlar, guncelle, gorunum, onGorunum, goru
         />
       </Satir>
 
-      <Satir baslik="Ses seviyeleri" not="ana ses kontrol çubuğunda">
-        <div className="space-y-1.5">
-          <Seviye ad="Metronom" deger={ayarlar.metronomSesi} onDegis={(v) => guncelle({ metronomSesi: v })} />
-          <Seviye ad="Sayım" deger={ayarlar.sayimSesi} onDegis={(v) => guncelle({ sayimSesi: v })} />
-        </div>
+      <Satir baslik="Ses kanalları" not="müzik, metronom, sayım ayrı">
+        <SesKanallari ayarlar={ayarlar} guncelle={guncelle} />
       </Satir>
 
       <Satir baslik="Kademeli hızlanma" not="hız menüsünden aç · her döngü turunda">

@@ -2,16 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import SongsterrBag from "@/components/SongsterrBag";
 import { defterIsle, kayitAc, songsterrKaydi } from "@/lib/defter";
 import type { SimgeTanim } from "@/lib/simge";
+import SarkiKapagi, { type KapakTuru } from "@/components/SarkiKapagi";
+import EylemDugmeleri from "@/components/defter/Eylemler";
 
-export type SeritSarki = { title: string; artist: string; kind: string; madalya: string; bpm?: number; url: string; simge: SimgeTanim; adim?: number };
+export type SeritSarki = { title: string; artist: string; kind: string; madalya: string; bpm?: number; url: string; simge: SimgeTanim; adim?: number; kapak?: KapakTuru };
 
 /**
- * Yatay kayan şarkı bandı (derlenmiş koleksiyon): başlık, ok düğmeleri, büyük renkli kartlar. Kartlar Songsterr'i
- * uygulama içi pencerede açar. Kaydırma: ok düğmeleri, klavye (bant odaktayken ←/→, Home/End), fare tekerleği
+ * Yatay kayan şarkı bandı (derlenmiş koleksiyon): başlık, ok düğmeleri, özgün kapaklı kartlar (bkz. SarkiKapagi).
+ * Kartlar Songsterr'i uygulama içi pencerede açar; altındaki dört küçük düğme şarkıyı Çalışma Defteri'ne işaretler. Kaydırma: ok düğmeleri, klavye (bant odaktayken ←/→, Home/End), fare tekerleği
  * (bant uçlara gelene kadar yatay kayar, sonra sayfa kayar), dokunmatik/iz paneli.
  */
 export default function SarkiSeridi({ baslik, alt, sarkilar }: { baslik: string; alt?: string; sarkilar: SeritSarki[] }) {
@@ -85,26 +86,25 @@ export default function SarkiSeridi({ baslik, alt, sarkilar }: { baslik: string;
         }}
         className="-mx-2 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-2 px-2 pb-4 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {sarkilar.map((s) => (
-          <li key={`${s.artist}|${s.title}`} className="w-[248px] shrink-0 snap-start">
-            <SongsterrBag q={s.url} onAc={() => defterIsle((v) => kayitAc(v, songsterrKaydi(s.title, s.artist, s.url)))} data-renk={s.simge.renk} className="yukselen card group flex h-full flex-col overflow-hidden !p-0">
-              <span className="relative flex h-[132px] items-center justify-center" style={{ background: "linear-gradient(135deg, var(--r1), var(--r2))" }}>
-                <span className="absolute left-3 top-3 rounded-full bg-black/30 px-2.5 py-0.5 text-xs font-semibold text-white">{s.madalya}</span>
-                <span className="absolute right-3 top-3 rounded-full bg-black/30 px-2.5 py-0.5 text-xs font-semibold text-white">
-                  {s.kind[0].toLocaleUpperCase("tr") + s.kind.slice(1)}
+        {sarkilar.map((s, i) => (
+          <li key={`${s.artist}|${s.title}|${s.kind}|${i}`} className="w-[248px] shrink-0 snap-start">
+            <div data-renk={s.simge.renk} className="yukselen card group flex h-full flex-col overflow-hidden !p-0">
+              <SongsterrBag q={s.url} onAc={() => defterIsle((v) => kayitAc(v, songsterrKaydi(s.title, s.artist, s.url)))} className="flex flex-1 flex-col">
+                <span className="relative block h-[132px] overflow-hidden">
+                  <SarkiKapagi sanatci={s.artist} baslik={s.title} tur={s.kapak} oran="genis" className="!h-full !w-full" />
+                  <span className="absolute bottom-2.5 right-3 rounded-full bg-black/35 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">{s.madalya}</span>
                 </span>
-                {s.adim ? (
-                  <span className="text-[56px] font-semibold leading-none tabular-nums text-white drop-shadow-sm">{s.adim}</span>
-                ) : (
-                  <UygulamaSimgesi simge={s.simge} boyut={60} className="ring-1 ring-white/30" />
-                )}
-              </span>
-              <span className="flex flex-1 flex-col p-4">
-                <span className="line-clamp-2 text-[17px] font-semibold leading-tight group-hover:underline">{s.title}</span>
-                <span className="mt-1 truncate text-sm text-muted">{s.artist}</span>
-                {s.bpm ? <span className="mt-auto pt-2 text-xs tabular-nums text-muted">{s.bpm} BPM</span> : null}
-              </span>
-            </SongsterrBag>
+                <span className="flex flex-1 flex-col px-4 pb-2 pt-3">
+                  {s.adim ? <span className="mb-0.5 text-xs font-semibold tabular-nums text-[var(--r2)]">Adım {s.adim}</span> : null}
+                  <span className="line-clamp-2 text-[17px] font-semibold leading-tight group-hover:underline">{s.title}</span>
+                  <span className="mt-1 truncate text-sm text-muted">{s.artist}</span>
+                  {s.bpm ? <span className="mt-auto pt-2 text-xs tabular-nums text-muted">{s.bpm} BPM</span> : null}
+                </span>
+              </SongsterrBag>
+              <div className="px-3 pb-3">
+                <EylemDugmeleri bilgi={songsterrKaydi(s.title, s.artist, s.url)} yalnizSimge />
+              </div>
+            </div>
           </li>
         ))}
       </ul>

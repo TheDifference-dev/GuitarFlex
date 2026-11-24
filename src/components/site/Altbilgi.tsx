@@ -10,6 +10,7 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
       { href: "/akustik", label: "Akustik Gitar" },
       { href: "/seviye", label: "Seviye Yolu" },
       { href: "/kurslar", label: "Tüm Kurslar" },
+      { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
       { href: "/nasil-calismaliyim", label: "Nasıl Çalışmalıyım?" },
     ],
   },
@@ -27,16 +28,14 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
     baslik: "Şarkılar",
     items: [
       { href: "/sarki-kutuphanesi", label: "Şarkı Kütüphanesi" },
-      { href: "/sarkilar", label: "Şarkılarla Öğren" },
-      { href: "/akustik/sarkilar", label: "Akustik Şarkılar" },
-      { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },
+      { href: "/sarki-kutuphanesi/rehber", label: "Rehber Şarkılar" },
+      { href: "/sarki-kutuphanesi/tum", label: "Tüm Şarkılar" },
     ],
   },
   {
     baslik: "Araçlar",
     items: [
-      { href: "/araclar#metronom", label: "Metronom" },
-      { href: "/araclar#nota-testi", label: "Nota Bulma Testi" },
+      { href: "/araclar", label: "Pratik Araçları" },
       { href: "/teori#sap", label: "Sap Gezgini" },
       { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım" },
       { href: "/oynatici", label: "Tabla Keşfet" },
@@ -45,8 +44,9 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
   {
     baslik: "Profil",
     items: [
-      { href: "/profil", label: "İlerleme ve görevler" },
-      { href: "/profil#gorunum", label: "Görünüm" },
+      { href: "/profil", label: "Profil" },
+      { href: "/defter", label: "Çalışma Defteri" },
+      { href: "/rig", label: "Rig'im" },
       { href: "/marka", label: "Marka" },
     ],
   },

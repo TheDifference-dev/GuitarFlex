@@ -231,7 +231,7 @@ export default function AnaSayfa({
         }
         eylemler={
           <>
-            <Link href="/sarkilar" className="btn-primary px-6 py-3 text-[17px]" data-rehber-sarkilar>
+            <Link href="/sarki-kutuphanesi/rehber" className="btn-primary px-6 py-3 text-[17px]" data-rehber-sarkilar>
               Rehber Şarkılar
             </Link>
             <Link href="/sarki-kutuphanesi" className="btn-secondary px-6 py-3 text-[17px]" data-tum-kutuphane>
