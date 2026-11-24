@@ -91,7 +91,7 @@ export const POPULAR_SONGS: PopularSong[] = [
   S("Another One Bites the Dust", "Queen", 1, "riff", ["Bas riff", "Susmalar"], ["palm-mute"]),
   S("Where Is My Mind?", "Pixies", 1, "şarkı", ["Power chord", "Tek nota melodi"], ["akorlar"]),
   S("Heart-Shaped Box", "Nirvana", 1, "şarkı", ["Power chord", "Dinamik"], ["akorlar", "palm-mute"]),
-  S("Feel Good Inc.", "Gorillaz", 1, "riff", ["Ritim gitarı", "Susturma"], ["ritim-tarama"]),
+  S("Feel Good Inc.", "Gorillaz", 1, "riff", ["Akustik ritim", "Susturma"], ["ritim-tarama"]),
   S("Money", "Pink Floyd", 2, "riff", ["7/4 riff", "Blues solo"], ["bend-vibrato"]),
   S("Californication", "Red Hot Chili Peppers", 2, "şarkı", ["Arpej", "Çift notalar"], ["arpej"]),
   S("Can't Stop", "Red Hot Chili Peppers", 2, "riff", ["Funk susturma", "On altılık"], ["ritim-tarama"]),

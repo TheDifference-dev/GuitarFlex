@@ -137,7 +137,7 @@ const s4 = section(4, "Altı Tel ve Tapping", [
   chapter(P, 4, 2, "Şekil Değiştirme", [
     "Gerçek sololarda arpej şekilleri sürekli değişir. Üç, dört ve beş telli şekilleri aynı akor dizisinde karıştırmak, sapın her yerinde aynı akoru görmeyi öğretir.",
   ], [
-    ders("3 ve 5 Tel", 50, rt(50, [...seq([shape3("Am", 69)], 3), ...seq([shape5("Am", 57)], 1), ...seq([shape3("E", 68)], 3), ...seq([shape5("E", 52)], 1)]), "Am ve E'yi önce üç sonra beş telde çal; baştan sona triole.", "Şekil değişse de ritim aynı: vuruş başına üç nota."),
+    ders("3 ve 5 Tel", 50, tex(50, [...measures(":16", seq([shape3("Am", 69)], 4), 16), ...measures(":8", seq([shape5("Am", 57)], 1), 12, 3), ...measures(":16", seq([shape3("E", 68)], 4), 16), ...measures(":8", seq([shape5("E", 52)], 1), 12, 3)]), "Am ve E'yi önce üç sonra beş telde çal.", "Ritim değişiyor: on altılık → triole."),
     ders("4 ve 5 Tel", 50, rt(50, [...seq([shape4("Am", 64)], 2), ...seq([shape5("Am", 57)], 1), ...seq([shape4("F", 60)], 2), ...seq([shape5("F", 53)], 1)]), "Am ve F'yi dört ve beş telde.", "Aynı akorun iki şekli: biri tiz, biri geniş."),
     ders("Hepsi Bir Arada", 50, rt(50, [...seq([shape4("Am", 64)], 2), ...seq([shape5("G", 55)], 1), ...seq([shape5("F", 53)], 1), ...seq([shape6("Em", 52)], 1)]), "Am – G – F – Em: her akor başka bir şekilde.", "Şekil değişirken el pozisyonunu önceden gör.", [], 2),
   ]),

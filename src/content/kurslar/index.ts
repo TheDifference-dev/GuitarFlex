@@ -12,6 +12,5 @@ import { arpejCourse } from "./arpejler.ts";
 import { akorCourse } from "./akorlar.ts";
 import { ritimCourse } from "./ritim.ts";
 import { kromatikCourse } from "./kromatik.ts";
-import { gunlukIsinmaCourse } from "./gunluk-isinma.ts";
 
-export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse, bendVibratoCourse, slideCourse, palmMuteCourse, arpejCourse, akorCourse, ritimCourse, kromatikCourse, gunlukIsinmaCourse];
+export const FULL_COURSES: Course[] = [alternatePickingCourse, legatoCourse, sweepCourse, tappingCourse, economyCourse, bendVibratoCourse, slideCourse, palmMuteCourse, arpejCourse, akorCourse, ritimCourse, kromatikCourse];

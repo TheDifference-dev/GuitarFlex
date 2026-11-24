@@ -11,7 +11,6 @@ import { useProgress } from "@/lib/progress";
 import { kursSimgesi } from "@/lib/simge";
 import { defterIsle, kayitAc, populerKaydi } from "@/lib/defter";
 import SarkiDefterKutusu from "@/components/defter/SarkiDefterKutusu";
-import AlbumKapagi from "@/components/AlbumKapagi";
 
 type Props = { songs: PopularSong[]; courseTitles: Record<string, string>; rehber?: boolean };
 type Siralama = "sik" | "kolay" | "zor" | "yeni" | "isim";
@@ -51,7 +50,7 @@ function acilislar(): Record<string, number> {
   return acilisOnbellek.data;
 }
 const BOS: Record<string, number> = {};
-/** Songsterr'de açıldı: "Sık çalışılan" sayımı; şarkı defterdeyse "açıldı" işareti (açmak deftere kayıt açmaz) */
+/** Songsterr'de açıldı: "Sık çalışılan" sayımı ve Çalışma Defteri'ne "açıldı" kaydı */
 function songsterrAcildi(s: PopularSong) {
   acildi(anahtar(s));
   defterIsle((v) => kayitAc(v, populerKaydi(s)));
@@ -116,8 +115,7 @@ export default function SongList({ songs, courseTitles, rehber = false }: Props)
   const kart = (s: PopularSong) => (
     <article key={`${s.artist}-${s.title}-${s.kind}`} data-renk={kursSimgesi(s.courses?.[0] ?? "").renk} className="renkli-kart yukselen flex flex-col card p-4 pt-5">
       <div className="flex items-start justify-between gap-2">
-        <AlbumKapagi sanatci={s.artist} baslik={s.title} boyut={56} className="ring-1 ring-ink/10" />
-        <div className="min-w-0 flex-1">
+        <div>
           <h3 className="font-semibold leading-tight">
             {s.title}
             {s.yeni ? <span className="ml-2 rounded-full bg-primary px-2 py-0.5 align-middle text-[10px] font-semibold text-primary-ink">Yeni</span> : null}
@@ -297,8 +295,7 @@ function RehberAdimi({ s, puan, courseTitles, onAc }: { s: PopularSong; puan: nu
         {r.adim}
       </span>
       <article className="renkli-kart yukselen card flex min-w-0 flex-1 flex-wrap items-center gap-x-6 gap-y-3 p-5 pt-6">
-        <AlbumKapagi sanatci={s.artist} baslik={s.title} boyut={84} className="ring-1 ring-ink/10" />
-        <div className="min-w-[14rem] flex-1">
+        <div className="min-w-[16rem] flex-1">
           <h4 className="text-[24px] font-semibold leading-tight">
             <SongsterrBag q={songUrl(s)} onAc={onAc} className="hover:underline">
               {s.title}

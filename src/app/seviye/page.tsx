@@ -29,7 +29,7 @@ export default async function SeviyeYoluPage() {
         baslik="Seviye Yolu"
         alt="Beş seviye, tek yol. Bir seviyenin teknik, klavye, ritim ve teori derslerini birlikte çalış."
       >
-        <HapBag href="/seviye/L3">L3&apos;ten Başlayın</HapBag>
+        <HapBag href="/seviye/L1">L1&apos;den Başlayın</HapBag>
         <MetinBag href="/nasil-calismaliyim" buyuk>
           Seviyeni bul
         </MetinBag>

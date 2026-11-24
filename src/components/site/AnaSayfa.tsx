@@ -19,7 +19,7 @@ import { Eylemler, HapBag, MetinBag } from "./Vitrin";
 export type SeviyeBasamagi = { level: Level; ad: string; etut: string };
 export type TeoriYolu = { slug: string; href: string; ad: string; etiket: string; not: string };
 export type RehberSarki = { adim: number; title: string; artist: string; kind: string; madalya?: string; url: string; renk: SimgeRengi };
-type Sayilar = { elektroKurs: number; elektroDers: number; eslik: number };
+type Sayilar = { elektroKurs: number; elektroDers: number; akustikKurs: number; akustikDers: number; eslik: number };
 
 /** Ana sayfa bandının zemini: açık bantlar her temada açık kalır, koyu bantlar her temada koyu (sıra korunur) */
 type BantTonu = "beyaz" | "gri" | "uzay" | "siyah";
@@ -66,7 +66,7 @@ function AnaBant({
 /**
  * Ana sayfa (apple.com düzeni, sade): ince günlük görev şeridi, sonra tam genişlik bantlar sırayla —
  * kapak (siyah) · [kaldığın yerden devam et] · kurslar (beyaz, her kurs kendi renginde) · Seviye Yolu (uzay grisi) ·
- * Şarkılar (açık gri: Rehber Şarkılar ve Tüm Kütüphane) · Teori (siyah) · Elektro / Günlük Isınma / Doğaçlama / Araçlar döşemeleri (beyaz).
+ * Şarkılar (açık gri: Rehber Şarkılar ve Tüm Kütüphane) · Teori (siyah) · Elektro / Akustik / Doğaçlama / Araçlar döşemeleri (beyaz).
  */
 export default function AnaSayfa({
   kartlar,
@@ -76,7 +76,7 @@ export default function AnaSayfa({
   rehber,
   rehberSayisi,
   sayilar,
-  isinma,
+  sifirdan,
   oyun,
   izgara,
 }: {
@@ -89,8 +89,8 @@ export default function AnaSayfa({
   rehber: RehberSarki[];
   rehberSayisi: number;
   sayilar: Sayilar;
-  /** Günlük Isınma kursu var mı ("Başlayın" ona gider) */
-  isinma: boolean;
+  /** Sıfırdan başlangıç rehberi pakette var mı */
+  sifirdan: boolean;
   oyun?: OyunVeri;
 }) {
   const p = useProgress();
@@ -119,10 +119,10 @@ export default function AnaSayfa({
         h1
         className="bant-kapak !pb-0"
         baslik="GuitarFlex"
-        alt="Orta ve ileri elektro gitar: ısın, tekniğini derinleştir, sınavı geç."
+        alt="Gitarı adım adım öğren."
         eylemler={
           <>
-            <HapBag href={isinma ? "/calis/gunluk-isinma" : "/kurslar"}>Isınarak Başlayın</HapBag>
+            <HapBag href={sifirdan ? "/calis/sifirdan-baslangic-rehberi" : "/kurslar"}>Başlayın</HapBag>
             <HapBag href="/nasil-calismaliyim" ikincil>
               Seviyenizi Bulun
             </HapBag>
@@ -160,7 +160,7 @@ export default function AnaSayfa({
       <AnaBant
         ton="beyaz"
         baslik="İstediğin teknikten başla."
-        alt="Günlük ısınma, CAGED akorları, elektro teknikler ve teori yolları."
+        alt="Rehberler, akorlar, elektro ve akustik teknikler, teori yolları."
         eylemler={
           <>
             <MetinBag href="/kurslar" buyuk>
@@ -302,7 +302,7 @@ export default function AnaSayfa({
           <Doseme
             simge={yerSimgesi("elektro")}
             baslik="Elektro Gitar"
-            alt="Teknik kursları, CAGED akorları ve bölüm sınavları."
+            alt="Başlangıç rehberleri, akor yolu ve teknik kursları."
             not={`${sayilar.elektroKurs} kurs · ${sayilar.elektroDers} ders`}
             baglar={[
               { href: "/elektro", label: "Başlayın" },
@@ -310,13 +310,13 @@ export default function AnaSayfa({
             ]}
           />
           <Doseme
-            simge={kursSimgesi("gunluk-isinma")}
-            baslik="Günlük Isınma"
-            alt="On dakikalık üç rutin: pena, sol el ve ifade."
-            not="3 rutin · 15 adım"
+            simge={yerSimgesi("akustik")}
+            baslik="Akustik Gitar"
+            alt="Duruş, ilk akorlar, geçişler ve akustik teknikler."
+            not={`${sayilar.akustikKurs} kurs · ${sayilar.akustikDers} ders`}
             baglar={[
-              { href: "/calis/gunluk-isinma", label: "Isının" },
-              { href: "/calis/kromatik-isinma", label: "Kromatik" },
+              { href: "/akustik", label: "Başlayın" },
+              { href: "/akustik/sarkilar", label: "Şarkılar" },
             ]}
           />
           <Doseme

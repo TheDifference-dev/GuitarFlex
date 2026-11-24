@@ -2,31 +2,17 @@
 import type { Chapter, Lesson, Section, Tags } from "../types.ts";
 import { fx, strokes, tex } from "../tex.ts";
 import { measures } from "../dizi.ts";
-import { donguSec } from "../dongu.ts";
 
-export type LessonInput = Omit<Lesson, "id" | "minutes"> & { minutes?: number; id?: string };
+export type LessonInput = Omit<Lesson, "id" | "minutes"> & { minutes?: number };
 
-/**
- * Dersin tabı kısa döngüye iner (en çok 4 ölçü, bkz. dongu.ts): iniş ölçüsü atılır; uzun tab (etüt, uzun
- * sekans) parçalara bölünür ve alt bölümdeki i'nci ders i'nci parçayı alır. Böylece ders sayısı ve kimlikleri
- * (ilerleme anahtarları) değişmez.
- */
-function dongule(l: Lesson, i: number): Lesson {
-  if (!l.tex) return l;
-  const d = donguSec(l.tex, i);
-  if (d.toplam <= 4) return l;
-  const not = d.parca > 1 ? ` Döngü: çalışmanın ${d.bas}–${d.son}. ölçüleri.` : "";
-  return { ...l, tex: d.tex, description: `${l.description ?? ""}${not}`.trim() };
-}
-
-/** Alt bölüm: kodu (1.0, 1.1 …) ve ders kimliklerini sıradan üretir; tablar kısa döngüye iner. */
+/** Alt bölüm: kodu (1.0, 1.1 …) ve ders kimliklerini sıradan üretir. */
 export function chapter(prefix: string, section: number, index: number, title: string, theory: string[], lessons: LessonInput[]): Chapter {
   const code = `${section}.${index}`;
   return {
     code,
     title,
     theory,
-    lessons: lessons.map((l, i) => dongule({ minutes: 1, ...l, id: l.id ?? `${prefix}-${section}-${index}-${i + 1}` }, i)),
+    lessons: lessons.map((l, i) => ({ minutes: 1, ...l, id: `${prefix}-${section}-${index}-${i + 1}` })),
   };
 }
 

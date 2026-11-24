@@ -87,11 +87,6 @@ export type Lesson = Tags & {
   /** Çalışmanın kısımları (Egzersiz Yazım Standardı v2.3 §5): ardışık, boşluksuz, son kısım son ölçüde biter.
    *  Oynatıcı kısım kısım döngüye alabilir. Verilmezse çalışma tek parça gösterilir. */
   parts?: LessonPart[];
-  /** Bölüm sınavı: bölümdeki alt bölümlerin tekniklerini tek döngüde birleştiren ders (bkz. courses.ts). Bölümün
-   *  `examTiers` kademeleri bu dersin temposundan kurulur. */
-  exam?: boolean;
-  /** Ders sayfasında CAGED şekilleri tablosu gösterilsin (Akorlar kursu, bkz. components/yol/CagedTablosu.tsx) */
-  caged?: boolean;
 };
 
 /** Tab oynatıcı görünümü: yalnız nota, yalnız tab ya da ikisi birlikte */
@@ -123,9 +118,8 @@ export type Section = {
   examTierNames?: string[];
 };
 
-/** technique: elektro teknik kursu · guide: rehber · theory: müzik teorisi dersleri.
- *  (Akustik kurslar kaldırıldı: içerik paketinde kind "acoustic" olan kurslar yüklenmez, bkz. src/lib/courses.ts.) */
-export type CourseKind = "technique" | "guide" | "theory";
+/** technique: elektro teknik kursu · guide: rehber · acoustic: akustik gitar kursu · theory: müzik teorisi dersleri */
+export type CourseKind = "technique" | "guide" | "acoustic" | "theory";
 
 export type Course = {
   slug: string;
@@ -147,7 +141,6 @@ export type Course = {
 
 export type SiteTexts = {
   navSubtitle: string;
-  /** Elektro sayfasının üst kartı: önerilen başlangıç kursları (ör. Günlük Isınma, Akorlar) */
   hero: {
     eyebrow: string;
     title: string;

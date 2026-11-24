@@ -6,13 +6,11 @@ import { ChevronRight, StepForward } from "lucide-react";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { yerSimgesi } from "@/lib/simge";
 import { defterIsle, durumAyarla, kayitGuncelle, konumYaz, sureYaz, useDefter, type Kayit, type KayitBilgisi } from "@/lib/defter";
-import { GitarSecici, KisimSecici } from "./Parcalar";
-import DefterDugmeleri from "./DefterDugmeleri";
+import { DurumDugmeleri, GitarSecici, KisimSecici } from "./Parcalar";
 
 /**
- * Ders ve kütüphane sayfalarındaki Çalışma Defteri şeridi: kısım, dört defter düğmesi (Öğrendim, Öğreniyorum,
- * Takvime al, Kütüphaneye ekle), gitar ve "kaldığın yer" (son kısım, ölçü, hız) ile "Oradan devam et". Sayfayı açmak
- * ya da çalmak deftere kayıt açmaz; kayıt kullanıcı bir düğmeye basınca oluşur, sonra çalma süresi ona yazılır.
+ * Ders ve kütüphane sayfalarındaki Çalışma Defteri şeridi: kısım, iki durum düğmesi, gitar ve "kaldığın yer"
+ * (son kısım, ölçü, hız) ile "Oradan devam et". Çalma süresi sayfanın kendi sayacından deftere yazılır.
  */
 export default function DefterSeridi({
   bilgi,
@@ -49,7 +47,7 @@ export default function DefterSeridi({
         Defter
       </Link>
       <KisimSecici deger={kisim} onDegis={kisimDegis} secenekler={kisimlar} kompakt />
-      <DefterDugmeleri bilgi={bilgi} kisim={kisim} kompakt />
+      <DurumDugmeleri durum={kayit?.durum} kisim={kisim} kompakt onDurum={(d) => defterIsle((v) => durumAyarla(v, bilgi, d, kisim))} />
       <GitarSecici
         veri={veri}
         deger={kayit?.gitar ?? null}
@@ -81,7 +79,7 @@ export default function DefterSeridi({
             )}
           </>
         ) : (
-          <span className="text-muted">{kayit ? "Çaldığında süre, ölçü ve hız buraya yazılır." : "Deftere eklersen çaldığın süre, ölçü ve hız buraya yazılır."}</span>
+          <span className="text-muted">Çaldığında süre, ölçü ve hız deftere yazılır.</span>
         )}
         <Link href="/defter" className="inline-flex items-center text-[var(--link)] hover:underline" aria-label="Çalışma Defteri'ne git">
           Deftere git <ChevronRight size={12} aria-hidden />

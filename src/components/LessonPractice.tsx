@@ -6,7 +6,7 @@ import TabPlayer, { type DevamKomutu, type OynaticiDurumu, type TabSource } from
 import Metronome from "./Metronome";
 import { formatClock } from "./CourseView";
 import { addPracticeTime, useProgress } from "@/lib/progress";
-import { defterIsle, defterOku, dersKaydi, kayitGitari, olcumEkle, type Ek, type Kayit } from "@/lib/defter";
+import { defterIsle, defterOku, dersKaydi, kayitGitari, sureEkle, type Ek, type Kayit } from "@/lib/defter";
 import DefterSeridi from "./defter/DefterSeridi";
 import type { LessonKind, LessonPart, Stave } from "@/content/types";
 import QuickStudy from "./turler/QuickStudy";
@@ -59,8 +59,7 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
 
   // Çalışma Defteri: yalnız oynatıcı gerçekten çalarken geçen saniyeler (aynı sayaçtan; elle başlatılan sayaç
   // ilerleme kaydına yazılır ama deftere yazılmaz). Ders süresi ilerleme kaydına zaten yazıldığı için defter onu
-  // ikinci kez görev sayacına eklemez. Defter kaydı yalnız kullanıcı dersi deftere aldıysa güncellenir (olcumEkle):
-  // dersi açmak ya da çalmak deftere/takvime kendiliğinden kayıt açmaz; ilerleme kaydı (Profil) her durumda sayar.
+  // ikinci kez görev sayacına eklemez.
   const bilgi = useMemo(() => (defter ? dersKaydi(progressKey, title ?? progressKey, defter.kurs, defter.href) : null), [defter, progressKey, title]);
   const bilgiRef = useRef(bilgi);
   const calarRef = useRef(false);
@@ -85,7 +84,7 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
     if (!sn && !caldiRef.current) return;
     caldiRef.current = calarRef.current;
     const ek = defterEki();
-    defterIsle((v) => olcumEkle(v, b, sn, { ...ek, gitar: kayitGitari(v, v.kayitlar[b.id]) }));
+    defterIsle((v) => sureEkle(v, b, sn, { ...ek, gitar: kayitGitari(v, v.kayitlar[b.id]) }));
   }, [defterEki]);
   const onDurum = useCallback(
     (d: OynaticiDurumu) => {

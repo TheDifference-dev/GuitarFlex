@@ -8,11 +8,6 @@
 //  • Elle girilen süre (Songsterr'de çalınan şarkılar, "+ Not ekle") yalnız defterdedir; günlük görevlere yazılmaz.
 //  • Takvimdeki günün toplamı: max(ilerleme kaydındaki ölçülen süre, defterin ölçülen süresi) + defterin elle süresi.
 //
-// Deftere yalnız kullanıcı ekler: "Öğreniyorum", "Öğrendim", "Takvime al", "Kütüphaneye ekle" (Öğreneceklerim), elle süre
-// ve "+ Not ekle". Bir derse, egzersize ya da şarkıya tıklamak, onu açmak ya da çalmak deftere ya da takvime kayıt
-// AÇMAZ: oynatıcının ölçtüğü süre ve kaldığın yer (olcumEkle) yalnız kullanıcının zaten deftere aldığı kayda yazılır;
-// açılış (kayitAc) da yalnız var olan kayıtta işaretlenir. İlerleme kaydı (progress.ts, Profil) her durumda sayar.
-//
 // Tarihler: gün anahtarları bilgisayarın YEREL saatine göre (YYYY-AA-GG) üretilir; toISOString (UTC) gün anahtarı
 // için kullanılmaz, yoksa İstanbul'da gece 00:00–03:00 arası çalışma bir önceki güne yazılırdı.
 
@@ -73,8 +68,6 @@ export type Kayit = {
   olusturuldu: string;
   /** Uygulama dışında (Songsterr) son açılış */
   acildi?: string;
-  /** "Takvime al" ile planlanan günler (yerel YYYY-AA-GG, sıralı, tekrarsız) */
-  takvim: string[];
 };
 
 export type HaftalikPlan = {
@@ -90,8 +83,6 @@ export type DefterVeri = {
   gitarlar: Gitar[];
   varsayilanGitar: string | null;
   plan: HaftalikPlan;
-  /** "Kütüphaneye ekle": ileride çalışılacak kayıtların sırası (Öğreneceklerim; ilk sıradaki önce) */
-  ogrenecekler: string[];
 };
 
 /** Bir kaydı oluşturmak için gereken sabit bilgiler */
@@ -138,7 +129,7 @@ export const haftaBasi = (d: Date) => gunEkle(yerelGun(d), -haftaGunu(d));
 /* ───────────── Boş veri ve göç ───────────── */
 
 export const bosPlan = (): HaftalikPlan => ({ hedefDk: [null, null, null, null, null, null, null], notlar: ["", "", "", "", "", "", ""] });
-export const bos = (): DefterVeri => ({ surum: DEFTER_SURUM, kayitlar: {}, gitarlar: [], varsayilanGitar: null, plan: bosPlan(), ogrenecekler: [] });
+export const bos = (): DefterVeri => ({ surum: DEFTER_SURUM, kayitlar: {}, gitarlar: [], varsayilanGitar: null, plan: bosPlan() });
 
 type Ham = Record<string, unknown>;
 const nesne = (x: unknown): x is Ham => !!x && typeof x === "object" && !Array.isArray(x);
@@ -148,8 +139,6 @@ const sayi = (x: unknown): number | null => (typeof x === "number" && Number.isF
 const pozitif = (x: unknown) => Math.max(0, Math.round(sayi(x) ?? 0));
 const gunMu = (x: unknown): x is string => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x);
 const TURLER: Tur[] = ["egzersiz", "sarki", "serbest"];
-/** Gün listesi: geçerli günler, tekrarsız, sıralı */
-const gunListesi = (x: unknown): string[] => (Array.isArray(x) ? [...new Set(x.filter(gunMu))].sort() : []);
 
 function oturumNormalize(x: unknown): Oturum | null {
   if (!nesne(x)) return null;
@@ -195,7 +184,6 @@ function kayitNormalize(x: unknown, idYedek: string): Kayit | null {
     oturumlar,
     guncellendi: metin(x.guncellendi, simdi),
     olusturuldu: metin(x.olusturuldu, metin(x.guncellendi, simdi)),
-    takvim: gunListesi(x.takvim),
   };
   // v0'da oturumsuz yalnız toplam süre tutulmuş olabilir: süre kaybolmasın, tek oturuma dönüşür
   const eskiToplam = pozitif(x.toplamSure);
@@ -246,8 +234,6 @@ export function goc(ham: unknown): DefterVeri {
       notlar: Array.from({ length: 7 }, (_, i) => metin(n[i]).slice(0, 200)),
     };
   }
-  // Öğreneceklerim: yalnız defterde olan kayıtlar, tekrarsız (sıra korunur)
-  if (Array.isArray(kaynak.ogrenecekler)) v.ogrenecekler = [...new Set(kaynak.ogrenecekler.filter((id): id is string => typeof id === "string" && !!v.kayitlar[id]))];
   return v;
 }
 
@@ -255,7 +241,7 @@ export function goc(ham: unknown): DefterVeri {
 
 function yeniKayit(b: KayitBilgisi, simdi: Date): Kayit {
   const t = simdi.toISOString();
-  return { ...b, kisim: null, konum: null, tempo: null, hiz: null, aralik: null, gitar: null, durum: null, not: "", toplamSure: 0, oturumlar: [], guncellendi: t, olusturuldu: t, takvim: [] };
+  return { ...b, kisim: null, konum: null, tempo: null, hiz: null, aralik: null, gitar: null, durum: null, not: "", toplamSure: 0, oturumlar: [], guncellendi: t, olusturuldu: t };
 }
 
 function kayitAl(v: DefterVeri, b: KayitBilgisi, simdi: Date): Kayit {
@@ -307,18 +293,8 @@ export function sureEkle(v: DefterVeri, b: KayitBilgisi, saniye: number, ek: Ek 
   return { ...v, kayitlar: { ...v.kayitlar, [k.id]: k } };
 }
 
-/**
- * Oynatıcının ölçtüğü süre ve son konum (ders ve kütüphane sayfaları): YALNIZ kayıt defterde zaten varsa yazılır
- * (kullanıcı deftere almıştır). Kayıt yoksa defter değişmez; açmak ya da çalmak deftere kayıt açmaz.
- */
-export function olcumEkle(v: DefterVeri, b: KayitBilgisi, saniye: number, ek: Ek = {}, simdi = new Date()): DefterVeri {
-  if (!v.kayitlar[b.id]) return v;
-  return sureEkle(v, b, saniye, { ...ek, elle: false }, simdi);
-}
-
-/** Uygulama dışında açılan şarkı (Songsterr): defterdeki kayıtta "açıldı" işaretlenir; kayıt yoksa oluşturulmaz */
+/** Uygulama dışında açılan şarkı (Songsterr): kayıt "açıldı" olarak düşer, süresi elle girilir */
 export function kayitAc(v: DefterVeri, b: KayitBilgisi, simdi = new Date()): DefterVeri {
-  if (!v.kayitlar[b.id]) return v;
   const k = kayitAl(v, b, simdi);
   k.acildi = simdi.toISOString();
   k.guncellendi = k.acildi;
@@ -347,68 +323,8 @@ export function kayitSil(v: DefterVeri, id: string): DefterVeri {
   if (!v.kayitlar[id]) return v;
   const kayitlar = { ...v.kayitlar };
   delete kayitlar[id];
-  return { ...v, kayitlar, ogrenecekler: v.ogrenecekler.filter((x) => x !== id) };
+  return { ...v, kayitlar };
 }
-
-/* ───────────── Takvime al ───────────── */
-
-/** Kaydı seçilen güne planlar (takvim ve haftalık plan); kayıt yoksa oluşturulur. Aynı gün ikinci kez eklenmez. */
-export function takvimeEkle(v: DefterVeri, b: KayitBilgisi, tarih: string, simdi = new Date()): DefterVeri {
-  if (!gunMu(tarih)) return v;
-  const k = kayitAl(v, b, simdi);
-  if (k.takvim.includes(tarih) && v.kayitlar[b.id]) return v;
-  k.takvim = [...new Set([...k.takvim, tarih])].sort();
-  k.guncellendi = simdi.toISOString();
-  return { ...v, kayitlar: { ...v.kayitlar, [k.id]: k } };
-}
-
-/** Planı kaldırır (tarih verilmezse bütün planlı günler) */
-export function takvimdenCikar(v: DefterVeri, id: string, tarih?: string, simdi = new Date()): DefterVeri {
-  const k = v.kayitlar[id];
-  if (!k || !k.takvim.length) return v;
-  const takvim = tarih ? k.takvim.filter((t) => t !== tarih) : [];
-  if (takvim.length === k.takvim.length) return v;
-  return { ...v, kayitlar: { ...v.kayitlar, [id]: { ...k, takvim, guncellendi: simdi.toISOString() } } };
-}
-
-/** Bir güne planlanan kayıtlar (başlığa göre) */
-export const planlananlar = (v: DefterVeri, tarih: string): Kayit[] =>
-  Object.values(v.kayitlar)
-    .filter((k) => k.takvim.includes(tarih))
-    .sort((a, b) => a.baslik.localeCompare(b.baslik, "tr"));
-
-/** Kaydın bugünden sonraki (bugün dahil) ilk planlı günü; yoksa son geçmiş günü */
-export function siradakiPlan(k: Pick<Kayit, "takvim">, bugun: string): string | null {
-  return k.takvim.find((t) => t >= bugun) ?? k.takvim[k.takvim.length - 1] ?? null;
-}
-
-/* ───────────── Kütüphaneye ekle (Öğreneceklerim) ───────────── */
-
-/** Öğreneceklerim listesinin sonuna ekler; kayıt yoksa oluşturulur */
-export function ogreneceklereEkle(v: DefterVeri, b: KayitBilgisi, simdi = new Date()): DefterVeri {
-  if (v.kayitlar[b.id] && v.ogrenecekler.includes(b.id)) return v;
-  const k = kayitAl(v, b, simdi);
-  k.guncellendi = simdi.toISOString();
-  return { ...v, kayitlar: { ...v.kayitlar, [k.id]: k }, ogrenecekler: [...v.ogrenecekler.filter((x) => x !== b.id), b.id] };
-}
-
-/** Öğreneceklerim listesinden çıkarır (kayıt ve geçmişi defterde kalır) */
-export function ogreneceklerdenCikar(v: DefterVeri, id: string): DefterVeri {
-  return v.ogrenecekler.includes(id) ? { ...v, ogrenecekler: v.ogrenecekler.filter((x) => x !== id) } : v;
-}
-
-/** Öğreneceklerim sırasında bir yukarı (-1) ya da aşağı (+1) taşır */
-export function ogrenecekTasi(v: DefterVeri, id: string, yon: -1 | 1): DefterVeri {
-  const i = v.ogrenecekler.indexOf(id);
-  const j = i + yon;
-  if (i < 0 || j < 0 || j >= v.ogrenecekler.length) return v;
-  const liste = [...v.ogrenecekler];
-  [liste[i], liste[j]] = [liste[j], liste[i]];
-  return { ...v, ogrenecekler: liste };
-}
-
-/** Öğreneceklerim: listedeki sırayla kayıtlar */
-export const ogrenecekKayitlari = (v: DefterVeri): Kayit[] => v.ogrenecekler.map((id) => v.kayitlar[id]).filter((k): k is Kayit => !!k);
 
 /** Elle kayıt ("+ Not ekle"): serbest başlık, kısım, gitar, süre (sn), durum, not */
 export function elleEkle(
@@ -542,30 +458,17 @@ export function haftaOzeti(v: DefterVeri, ilerleme: Map<string, number>, bugun: 
 
 /* ───────────── Liste ───────────── */
 
-/**
- * Defter listeleri: "devam" Öğreniyorum (turuncu), "ogrendim" Öğrendiklerim (yeşil), "ogrenecek" Öğreneceklerim
- * (kütüphane sırasıyla), "takvim" planlananlar (planlı güne göre), "tumu" her kayıt (işaretsiz eski kayıtlar dahil).
- */
-export type ListeTuru = "devam" | "ogrendim" | "ogrenecek" | "takvim" | "tumu";
-export type Filtre = { durum: ListeTuru; tur: Tur | ""; gitar: string; q: string; sira: "son" | "cok" };
-export function listeyeUyar(v: DefterVeri, k: Kayit, l: ListeTuru): boolean {
-  if (l === "devam" || l === "ogrendim") return k.durum === l;
-  if (l === "ogrenecek") return v.ogrenecekler.includes(k.id);
-  if (l === "takvim") return k.takvim.length > 0;
-  return true;
-}
+export type Filtre = { durum: "devam" | "ogrendim" | "tumu"; tur: Tur | ""; gitar: string; q: string; sira: "son" | "cok" };
+/** "Devam edenler": öğrenildi işaretlenmemiş her şey (sarı ve işaretsiz) */
 export function listele(v: DefterVeri, f: Filtre): Kayit[] {
   const igne = f.q.trim().toLocaleLowerCase("tr");
   const out = Object.values(v.kayitlar).filter(
     (k) =>
-      listeyeUyar(v, k, f.durum) &&
+      (f.durum === "tumu" || (f.durum === "ogrendim" ? k.durum === "ogrendim" : k.durum !== "ogrendim")) &&
       (!f.tur || k.tur === f.tur) &&
       (!f.gitar || (f.gitar === "-" ? !k.gitar && !k.oturumlar.some((o) => o.gitar) : k.gitar === f.gitar || k.oturumlar.some((o) => o.gitar === f.gitar))) &&
       (!igne || `${k.baslik} ${k.altBaslik} ${k.kisim ?? ""} ${k.not}`.toLocaleLowerCase("tr").includes(igne)),
   );
-  // Öğreneceklerim kendi sırasıyla (kullanıcı taşır); planlananlar en yakın plan önce
-  if (f.durum === "ogrenecek") return out.sort((a, b) => v.ogrenecekler.indexOf(a.id) - v.ogrenecekler.indexOf(b.id));
-  if (f.durum === "takvim") return out.sort((a, b) => (a.takvim[0] ?? "").localeCompare(b.takvim[0] ?? "") || a.baslik.localeCompare(b.baslik, "tr"));
   return out.sort((a, b) => (f.sira === "cok" ? b.toplamSure - a.toplamSure || b.guncellendi.localeCompare(a.guncellendi) : b.guncellendi.localeCompare(a.guncellendi)));
 }
 
@@ -593,9 +496,7 @@ export function birlestir(yerel: DefterVeri, gelen: DefterVeri): DefterVeri {
   for (const [id, k] of Object.entries(gelen.kayitlar)) if (!kayitlar[id] || k.guncellendi > kayitlar[id].guncellendi) kayitlar[id] = k;
   const gitarlar = [...yerel.gitarlar, ...gelen.gitarlar.filter((g) => !yerel.gitarlar.some((x) => x.id === g.id))];
   const plan = yerel.plan.hedefDk.some((x) => x !== null) || yerel.plan.notlar.some(Boolean) ? yerel.plan : gelen.plan;
-  // Öğreneceklerim: yerel sıra korunur, yedekte olup yerelde olmayanlar sona eklenir
-  const ogrenecekler = [...yerel.ogrenecekler, ...gelen.ogrenecekler.filter((id) => !yerel.ogrenecekler.includes(id))].filter((id) => !!kayitlar[id]);
-  return { ...yerel, kayitlar, gitarlar, varsayilanGitar: yerel.varsayilanGitar ?? gelen.varsayilanGitar, plan, ogrenecekler };
+  return { ...yerel, kayitlar, gitarlar, varsayilanGitar: yerel.varsayilanGitar ?? gelen.varsayilanGitar, plan };
 }
 
 /* ───────────── Yazım ───────────── */

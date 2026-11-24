@@ -9,7 +9,6 @@ import { DERS_TURU_ADI, dersSimgesi, dersTuru, yerSimgesi } from "@/lib/simge";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { assetUrl, getCourse } from "@/lib/courses";
 import { gitarProgrami } from "@/lib/gitarTonu";
-import CagedTablosu from "@/components/yol/CagedTablosu";
 
 async function find(kurs: string, ders: string) {
   const course = await getCourse(kurs);
@@ -55,7 +54,7 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         chords={lesson.chords}
         title={lesson.title}
         parts={lesson.parts}
-        guitarProgram={gitarProgrami(lesson.tips)}
+        guitarProgram={gitarProgrami(lesson.tips, course.slug)}
         defter={{ kurs: course.cardTitle ?? course.title, href: `/calis/${course.slug}/${encodeURIComponent(lesson.id)}` }}
         baslik={
           // Kompakt başlık: küçük simge, kurs adı, ders adı ve kısa açıklama; tab ekranın üstüne yakın başlar
@@ -94,15 +93,6 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
       </LessonPractice>
 
       <Bant ton="gri" className="mt-12 space-y-8 pt-12">
-      {lesson.caged && (
-        <section className="card p-6">
-          <h2 className="flex items-center gap-2.5 text-[21px] font-semibold">
-            <UygulamaSimgesi simge={yerSimgesi("muzik-bilgisi")} boyut={32} /> CAGED Şekilleri
-          </h2>
-          <p className="mt-1 text-sm text-muted">Her açık akor şekli sapta kaydırılınca yeni bir akor olur; beş şekil aynı akoru sapın beş bölgesinde verir.</p>
-          <CagedTablosu />
-        </section>
-      )}
       {(theory.length > 0 || !!lesson.tips?.length) && (
         <div className="grid gap-4 md:grid-cols-2">
           {theory.length > 0 && (

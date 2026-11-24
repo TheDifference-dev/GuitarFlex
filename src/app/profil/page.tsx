@@ -23,7 +23,7 @@ export default async function ProfilePage() {
   // Başarımlar için kurs yapısı: bölümlerin ders anahtarları ve derslerin hedef süreleri (pratik kartları hariç)
   const kurslar: KursYapisi[] = courses.map((c) => ({
     slug: c.slug,
-    teknik: c.kind === "technique" && !c.slug.endsWith("-rehberi"),
+    teknik: (c.kind === "technique" || c.kind === "acoustic") && !c.slug.endsWith("-rehberi"),
     bolumler: c.sections.map((s) => s.chapters.flatMap((ch) => ch.lessons.filter((l) => !l.practice).map((l) => lessonKey(c.slug, l.id)))),
     hedef: Object.fromEntries(flatLessons(c).filter((l) => !l.practice && l.minutes > 0).map((l) => [lessonKey(c.slug, l.id), l.minutes * 60])),
   }));

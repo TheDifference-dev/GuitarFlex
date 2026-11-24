@@ -77,7 +77,7 @@ const s2 = section(2, "On Altılık", [
     ders("Funk Kalıbı", 80, play(80, ["E9", "E9", "E9", "E9"], "D-xUXxD-XxDUXxDU", ":16"), "Klasik funk kalıbı.", "Akor vuruşları kısa: hemen sustur."),
     ders("İki Akor", 80, play(80, ["E9", "E9", "A7", "A7"], "D-xUXxD-XxDUXxDU", ":16"), "E9 ve A7 arasında funk.", "Akor değişimi el salınımını bozmasın.", "", 2),
   ]),
-  chapter(P, 2, 2, "Pop On Altılık", ["Pop ritim gitarında sekizlik kalıplara on altılık 'süsler' eklenir; bu, taramaya hareket katar."], [
+  chapter(P, 2, 2, "Pop On Altılık", ["Akustik pop'ta sekizlik kalıplara on altılık 'süsler' eklenir; bu, taramaya hareket katar."], [
     ders("Süslü Kalıp", 70, play(70, POP, "D---D-DUD---D-DU", ":16"), "On altılık süslü pop kalıbı.", "Süsler (DU) hafif çalınsın."),
     ders("Akıcı", 80, play(80, POP, "D-DU-UDUD-DU-UDU", ":16"), "Hızlı, akıcı kalıp.", "Vurgu her vuruşun başında."),
     ders("Minör", 80, play(80, MINOR, "D-DU-UDUD-DU-UDU", ":16"), "Aynı kalıp minör dizide.", "Kalıp değişmeden akorlar değişir.", "", 2),
@@ -89,7 +89,7 @@ const s3 = section(3, "Susturma ve Arka Vuruş", [
   chapter(P, 3, 0, "Chuck (Vurmalı Susturma)", ["Chuck: sol eli gevşetip aynı anda tarayarak 'trampet' gibi kısa, perdesiz bir ses çıkarmak. 2. ve 4. vuruşa konunca gitar tek başına davul gibi çalar."], [
     ders("2 ve 4'te Chuck", 70, play(70, POP, "D-X-D-X-", ":8"), "Vuruşlarda akor, 2 ve 4'te susturulmuş vuruş.", "Chuck için sol el parmakları teli bırakmadan sadece gevşer."),
     ders("Sekizlikli Chuck", 80, play(80, POP, "DUXUDUXU"), "Sekizlik tarama içinde chuck.", "Akor ve chuck arasındaki ses farkı net olsun."),
-    ders("Pop Chuck", 90, play(90, MINOR, "D-XUDUXU"), "Pop ritminin klasik chuck kalıbı.", "Bu kalıp tek gitarla bütün bir ritim bölümü gibi duyulur.", "", 2),
+    ders("Pop Chuck", 90, play(90, MINOR, "D-XUDUXU"), "Akustik pop'un klasik chuck kalıbı.", "Bu kalıp tek gitarla bütün bir ritim bölümü gibi duyulur.", "", 2),
   ]),
   chapter(P, 3, 1, "Reggae ve Ska", ["Reggae ve ska'da akor sadece vuruşların arasında ('ve'lerde) çalınır. Vuruşlar boş kalır; bu 'ters' his türün imzasıdır."], [
     ders("Ara Vuruş", 70, play(70, ["Am", "G", "Am", "G"], "-U-U-U-U"), "Sadece yukarı vuruşlar, 've'lerde.", "Aşağı hareket havada; akor kısa çalınıp susturulur."),

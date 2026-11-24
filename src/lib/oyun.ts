@@ -98,7 +98,7 @@ export function seri(p: Progress, kural: OyunVeri["gorevler"]): Seri {
 /** Profil sayfasının sunucudan verdiği kurs yapısı */
 export type KursYapisi = {
   slug: string;
-  /** Elektro teknik kursu mu (rehber ve teori dersleri hariç) */
+  /** Akustik ya da elektro teknik kursu mu (rehber ve teori dersleri hariç) */
   teknik: boolean;
   /** Bölüm → ders anahtarları */
   bolumler: string[][];

@@ -29,10 +29,6 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 | ![Şarkı Kütüphanesi](docs/ekran/kutuphane.png) | ![Şarkı sayfası](docs/ekran/kutuphane-sarki.png) |
 | **Kurs kataloğu** | **Ders listesi çekmecesi** |
 | ![Kurs kataloğu](docs/ekran/katalog.png) | ![Ders listesi](docs/ekran/ders-listesi.png) |
-| **Günlük Isınma** | **Akorlar: CAGED şekilleri** |
-| ![Günlük Isınma](docs/ekran/gunluk-isinma.png) | ![CAGED](docs/ekran/caged.png) |
-| **Bölüm sınavı** | |
-| ![Bölüm sınavı](docs/ekran/sinav.png) | |
 
 ## Highlights
 
@@ -56,16 +52,15 @@ behind every exercise, and adds a songs & solos library, backing tracks for impr
 
 ## Türkçe
 
-Orta ve ileri seviye elektro gitarist için kısa döngülü teknik egzersizleri, bölüm sınavları, her derste müzik teorisi, şarkı kütüphanesi, doğaçlama eşlikleri ve çalışma takibi sunan bir gitar akademisi.
+Kolaydan zora gitar teknikleri, her derste müzik teorisi, şarkı kütüphanesi, doğaçlama eşlikleri ve çalışma takibi sunan bir gitar akademisi.
 Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Özellikler
 
-- **13 elektro gitar kursu, 510 ders (49 bölüm sınavı dahil)**: Bölüm → alt bölüm (1.0, 1.1 …) → ders yapısı. Her ders 2–4 ölçülük tek alt bölümlü bir döngü (yalnız sekizlik, triole ya da on altılık); BPM'i ve hedef süresi var, süre dolunca ders tamamlanır. Her bölüm, bölümün tekniklerini tek döngüde birleştiren bir sınavla biter (Altın I · Platin I · Elmas I · Usta tempo kademeleri).
+- **12 teknik kursu, 557 özgün ders**: Bölüm → alt bölüm (1.0, 1.1 …) → ders yapısı. Her dersin tabı, BPM'i ve hedef süresi var; süre dolunca ders tamamlanır.
 - **Müzik Bilgisi**: Her derste gam, aralık, akor ve ritim açıklaması; tab ile aynı veriden üretildiği için nota adları her zaman tabla uyuşur.
-- **Günlük Isınma**: üç ayrı ~10 dakikalık rutin — A teknik/pena (örümcek, tel atlamalı permütasyon, dış/iç pena, hız patlaması, 3 nota/tel), B legato/sol el (trill, kromatik legato, Petrucci kombinasyonları, açılım, legato koşusu), C solo/ifade (ritmik vibrato, referanslı bend, unison/ön bend, cümle, soru–cevap); her adımda süre, tempo, tab ve "neden".
-- **Akorlar · CAGED**: akorların yapısı (kök–üçlü–beşli, majör/minör/eksik/artık, 7'li, sus, 9'lu), aynı akorun C-A-G-E-D şekilleriyle beş pozisyonda basılması, şekil bağlantıları ve triad çevrimleri; ders sayfalarında CAGED şekilleri tablosu.
-- **Tamamen elektro gitar odaklı**: orta–ileri seviye için; seviye seçici orta, orta–ileri ve ileri çalışma yollarına yönlendirir.
+- **Başlangıç rehberleri**: Sıfırdan başlayanlar ve başlangıç–orta seviye için kurslardan seçilmiş çalışma yolları; tablı derslerin arasında okuma adımları.
+- **Elektro ve akustik**: Teknik kursları ve şarkılar elektro ve akustik gitar için ayrı sayfalarda; seviyeye göre çalışma yolu seçici.
 - **Şarkı ve Sololar**: Şarkı Rehberi (teknik bölümlerine bağlı 38 adım), Tüm Şarkılar (madalya seviyesi, köken, tür, arama ve sıralama), Tabla Keşfet (çok kanallı tab oynatıcı) ve Doğaçlama Çal (6 türde 56 eşlik kaydı ve önerilen gamlar).
 - **Tab oynatıcı**: Guitar Pro, MusicXML ve alphaTex; her zaman görünen ana ses kaydırıcısı ve sessiz düğmesi, metronom ve sayım için ayrı ses seviyesi, enstrüman bazında ses/mute/solo, hız, metronom, sayım, döngü, nota görünümü. Ses bankası yüklenirken yüzde gösterilir, yüklenemezse yedeğe geçer ya da "Yeniden dene" çıkar.
 - **Müzik teorisi**: Ritim (70 adım), Klavye Görselleştirme (94 adım: triad çevrimleri ve drop 2 dahil), Kulak Eğitimi (74 adım: kulaktan melodi ve akor kökü geri çalma dahil) ve Armoni Pratikleri (23 adım: ikincil dominant, ii–V–I, akor-gam dahil) yolları; her denemede yeni sorular. Armoni (Müzik Teorisi Dersleri): 5 bölüm, Eğitim / Pratik / Ek İnceleme kartları. Ayrıca 10 ders ve interaktif sap gezgini.
@@ -78,8 +73,6 @@ Masaüstü uygulaması ve web sitesi aynı koddan çalışır.
 
 ### Son güncellemeler
 
-- **Orta–ileri elektro gitar odağı, kısa döngüler ve bölüm sınavları**: akustik sayfalar ve kurslar, başlangıç rehberleri, Akor Yolu ve kurslardaki gitara yeni başlayan bölümleri (açık tel pena, ilk akorlar, ilk hammer-on, ilk palm mute …) kaldırıldı; kalan derslerin ilerlemesi korunuyor. Yeni **Günlük Isınma** kursu: üç ayrı on dakikalık rutin (teknik/pena, legato/sol el, solo/ifade). **Akorlar** kursu CAGED'e göre baştan yazıldı (4 bölüm, 29 ders): akor yapısı, beş şekil, minör CAGED ve şekil bağlantıları, triad çevrimleri. Her ders artık 2–4 ölçülük döngü (GuitarBear gibi kısa); hiçbir derste sekizlik ile triole ya da on altılık karışmıyor (karışık dersler bölündü, içerik denetimi bunu yakalıyor). Her bölümün sonunda bölümün tekniklerini birleştiren sınav dersi ve tempo kademeleri; dersler varsayılan olarak temiz elektro gitar sesiyle çalıyor
-- **Çalışma Defteri'ne yalnız sen eklersin**: bir derse, egzersize ya da şarkıya tıklamak, onu açmak ya da çalmak artık deftere ve takvime kendiliğinden kayıt açmıyor (Profil'deki süre sayacı sürüyor). Her egzersiz ve ders sayfasında, şarkı kartlarında, Şarkı Kütüphanesi bantlarında ve Tab Oynatıcı listesinde dört düğme: yeşil "Öğrendim", turuncu "Öğreniyorum", mavi "Takvime al" (gün seçici; seçilen gün takvimde ve haftalık planda görünür) ve mor "Kütüphaneye ekle" (sıralı Öğreneceklerim listesi, defterde oklarla yukarı/aşağı taşınır). Hepsi yeniden basınca geri alınır. Defterde Öğreniyorum / Öğrendiklerim / Öğreneceklerim / Takvimde / Tümü sekmeleri; eski kayıtlar korunur. Şarkı kartlarında albüm kapakları (çalışma anında iTunes'tan, bu bilgisayarda önbellekli; yoksa baş harfli renkli kapak). Üst menü sadeleşti: aynı sayfaya giden tekrar eden bağlantılar kalktı, Çalışma Defteri tek bağlantı; Gitar Çalış'ta Günlük Isınma
 - **Rig'im**: gitarını, pedallarını, amfini, kabinini ve rack efektlerini sürükle-bırak ile sinyal zincirine diz (seri, A/B paralel yol, amfi FX loop). Bütün ekipman çizimleri özgün; kendi ekipmanını adıyla ve fotoğrafıyla ekle, birden çok rig kaydet, JSON ya da PNG olarak dışa aktar. Yalnız görsel; ses işlenmez
 - **Songsterr penceresi açılır pencereleri engelliyor**: Songsterr sayfasındaki reklam ve izleme betiklerinin açtığı pencereler önceden varsayılan tarayıcıya gönderiliyor, Chrome'da onlarca sekme açılıyordu. Artık engelleniyor (tarayıcıların açılır pencere engelleyicisi gibi); "Google ile giriş" uygulama içinde küçük bir pencerede açılıyor
 - **Çalışma Defteri ve takvim**: yeni sekme. Çaldığın egzersiz ve parçalar kendiliğinden kaydediliyor (kısım, son ölçü, hız, gerçekten çalınan süre, gitar); ders sayfasında "Kaldığın yer: B kısmı, 13. ölçü, %80" ve oradan devam. Sarı "Devam ediyorum" ve yeşil "Öğrendim" düğmeleri ders sayfalarında, şarkı kartlarında ve defterde. Songsterr'de açılan şarkılar deftere düşüyor, süre +5/+10/+15 dk ile eklenir. Gitar listesi, gitar başına süre, filtreler, notlar, JSON dışa/içe aktarma. Ay takviminde çalıştığın günler süreye göre renkli; güne tıklayınca o günün oturumları; haftalık hedef dakika ve plan notları

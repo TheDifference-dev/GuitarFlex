@@ -1,7 +1,7 @@
 // Sadece sunucu tarafında kullanılır (node:fs).
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { BUILTIN_COURSES, DEFAULT_SITE_TEXTS, kaldirildiMi } from "@/content/courses";
+import { BUILTIN_COURSES, DEFAULT_SITE_TEXTS } from "@/content/courses";
 import type { Course, Lesson, SiteTexts } from "@/content/types";
 import { PRIVATE_ROOTS } from "./private-roots";
 
@@ -50,10 +50,8 @@ async function readPack(): Promise<{ courses: Course[]; site: Partial<SiteTexts>
         if (f === "site.json") site = { ...(data as Partial<SiteTexts>), ...(site ?? {}) };
         else {
           const c = normalize(data);
-          // Akustik kurslar, başlangıç rehberleri ve Akor Yolu yüklenmez (uygulama orta–ileri elektro gitar odaklı)
-          if (!c || kaldirildiMi(c)) continue;
           // Aynı slug iki kökte varsa ilk kökteki (ozel-kaynak) geçerlidir.
-          if (!courses.some((x) => x.slug === c.slug)) courses.push(c);
+          if (c && !courses.some((x) => x.slug === c.slug)) courses.push(c);
         }
       } catch {
         // Bozuk bir dosya diğerlerini engellemesin.

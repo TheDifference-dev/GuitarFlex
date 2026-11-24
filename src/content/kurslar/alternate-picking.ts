@@ -408,21 +408,27 @@ const s3 = section(3, "Majör ve Minör Gamlar", [
 ]);
 
 // ── Bölüm 4: Ritim ve Kontrol ────────────────────────────────────────────────
-/** Bölünme basamağı: La minör akor tonları (La – Do – Mi – Do) iki ölçü boyunca tek bir bölünmede */
-const AM_TON = ["5.1", "8.1", "12.1", "8.1"];
-const basamak = (dur: ":8" | ":16", perBar: number, tuplet?: number) => measures(dur, alt(repeat(AM_TON, perBar / 2)), perBar, tuplet);
+const ladder = (note: string | string[], extra?: "sextuplet") => {
+  const pick = (n: number) => (Array.isArray(note) ? repeat(note, Math.ceil(n / note.length)).slice(0, n) : times(note, n));
+  const bars = [
+    `:4 ${alt(pick(4)).join(" ")}`,
+    `:8 ${alt(pick(8)).join(" ")}`,
+    measures(":8", alt(pick(12)), 12, 3)[0],
+    `:16 ${alt(pick(16)).join(" ")}`,
+  ];
+  if (extra) bars.push(measures(":16", alt(pick(24)), 24, 3)[0]);
+  return [...bars, ...bars.slice(0, -1).reverse()];
+};
 
 const amFGE = [["12.1", "8.1", "5.1", "8.1"], ["13.1", "8.1", "5.1", "8.1"], ["15.1", "10.1", "7.1", "10.1"], ["12.1", "7.1", "4.1", "7.1"]];
 
 const s4 = section(4, "Ritim ve Kontrol", [
-  chapter(P, 4, 0, "Bölünme Basamakları", [
-    "Vuruşun bölünmesi: sekizlik (2), triole (3), on altılık (4), altılık (6). Her ders tek bölünmede kalır; aynı tempoda bölünme ders ders artar.",
-    "La – Do – Mi – Do: La minör akorunun notaları (kök, minör üçlü, beşli).",
+  chapter(P, 4, 0, "Ritim Merdiveni", [
+    "Vuruşun bölünmesi: dörtlük (1), sekizlik (2), triole (3), on altılık (4). Tempo aynı kalır, sadece bölünme artar.",
   ], [
-    { title: "Sekizlik", bpm: 60, description: "Akor tonları sekizlikle: vuruş başına iki nota.", tips: ["Metronomun her vuruşu aşağı pena."], tex: tex(60, basamak(":8", 8)) },
-    { title: "Triole", bpm: 60, description: "Aynı notalar triole sekizlikle: vuruş başına üç nota.", tips: ["Dört notalık döngü üçlü bölünmede vuruşa göre kayar: vuruş başı her seferinde başka notaya düşer."], tex: tex(60, basamak(":8", 12, 3)) },
-    { title: "On Altılık", bpm: 60, minutes: 2, description: "Aynı notalar on altılıkla: vuruş başına dört nota.", tips: ["El sekizlikteki salınımın iki katı sık; hareket küçülür, büyümez."], tex: tex(60, basamak(":16", 16)) },
-    { title: "Altılık", bpm: 50, minutes: 2, description: "Aynı notalar altılıkla (on altılık triole): vuruş başına altı nota.", tips: ["Altılıkta vuruş başına altı nota: '1-ta-ki-ve-ta-ki'."], theory: ["Altılık, her vuruşu altıya böler: on altılığın triole hali."], tex: tex(50, basamak(":16", 24, 3)) },
+    { title: "Tek Notada Merdiven", bpm: 60, description: "Dörtlük → sekizlik → triole → on altılık ve geri, tek nota üzerinde.", tips: ["Geçişlerde metronomun vuruşu hiç kaçmasın."], tex: tex(60, ladder("5.2")) },
+    { title: "Akor Tonlarında Merdiven", bpm: 60, description: "Aynı merdiven, La minör akorunun notaları arasında dönerek.", tips: ["Notalar dört notalık döngüde; bölünme değişince döngü vuruşa göre kayar."], theory: ["La – Do – Mi – Do: La minör akorunun notaları (kök, minör üçlü, beşli)."], tex: tex(60, ladder(["5.1", "8.1", "12.1", "8.1"])) },
+    { title: "Altılıya Kadar", bpm: 50, minutes: 2, description: "Merdivene altılık (on altılık triole) basamağı eklenir.", tips: ["Altılıkta vuruş başına altı nota: '1-ta-ki-ve-ta-ki'."], theory: ["Altılık, her vuruşu altıya böler: on altılığın triole hali."], tex: tex(50, ladder("5.2", "sextuplet")) },
   ]),
   chapter(P, 4, 1, "On Altılıklar", [
     "Am – F – G – E: La minörde i – VI – VII – V. Son akor E majördür, çünkü Sol# notası La'ya yarım sesle güçlü bir çekim yapar.",
@@ -443,7 +449,7 @@ const s4 = section(4, "Ritim ve Kontrol", [
   ], [
     { title: "Bir Vuruşluk Patlama", bpm: 70, description: "Bir dörtlük, bir vuruş on altılık; ölçü boyunca.", tips: ["Patlamadan sonraki dörtlük nota bir 'dinlenme' anı."], tex: tex(70, [[5, 7, 8, 7], [8, 10, 12, 10], [12, 10, 8, 7], [5, 7, 8, 5]].map((c) => `:4 ${c[0]}.1 :16 ${alt(onString(1, c)).join(" ")} :4 ${c[0]}.1 :16 ${alt(onString(1, c)).join(" ")}`)) },
     { title: "İki Vuruşluk Patlama", bpm: 70, description: "İki vuruş yarım nota, iki vuruş on altılık pentatonik.", tips: ["Patlama bittiğinde yarım notaya tam vuruşta in."], tex: tex(70, [0, 4, 8].map((i) => `:2 ${box1[i]} :16 ${alt(box1.slice(i, i + 4).concat(box1.slice(i, i + 4))).join(" ")}`).concat(":2 5.1 :16 " + alt(["8.1", "5.1", "8.2", "5.2", "7.3", "5.3", "7.4", "5.4"]).join(" "))) },
-    { title: "Altılık Patlama", bpm: 60, minutes: 2, description: "Bir vuruş altılık patlama, ardından üç dörtlük nota.", tips: ["Altılık iki üçlü grup gibi düşünülebilir."], theory: ["Altı nota iki triole grubudur; üçlü sekanslar altılık patlamaya çok uygundur."], tex: tex(60, [0, 3, 6, 9].map((i) => `${measures(":16", alt(groups(box1, 3).slice(i * 3, i * 3 + 6)), 6, 3)[0]} :4 ${times(box1[Math.min(i + 3, 11)], 3).map((n) => `${n}{sd}`).join(" ")}`)) },
+    { title: "Altılık Patlama", bpm: 60, minutes: 2, description: "Bir vuruş altılık patlama, ardından sekizlikler.", tips: ["Altılık iki üçlü grup gibi düşünülebilir."], theory: ["Altı nota iki triole grubudur; üçlü sekanslar altılık patlamaya çok uygundur."], tex: tex(60, [0, 3, 6, 9].map((i) => `${measures(":16", alt(groups(box1, 3).slice(i * 3, i * 3 + 6)), 6, 3)[0]} :8 ${alt(times(box1[Math.min(i + 3, 11)], 6)).join(" ")}`)) },
   ]),
   chapter(P, 4, 4, "Galop Ritmi", [
     "Galop: bir sekizlik + iki on altılık. Atın dörtnalını andırır; heavy metalin klasik ritmidir.",
