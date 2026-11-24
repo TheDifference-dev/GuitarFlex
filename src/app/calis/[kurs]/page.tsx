@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import CourseView from "@/components/CourseView";
 import { getCourses } from "@/lib/courses";
 import { GRUP_ADI, kursAilesi, kursGrubu } from "@/lib/katalog";
@@ -11,6 +11,8 @@ export async function generateMetadata(props: PageProps<"/calis/[kurs]">): Promi
 
 export default async function CoursePage(props: PageProps<"/calis/[kurs]">) {
   const { kurs } = await props.params;
+  // Armoni kursu (Müzik Teorisi Dersleri) Teori › Armoni sayfasında tek girişte birleşti
+  if (kurs === "armoni") redirect("/teori/armoni");
   const courses = await getCourses();
   const course = courses.find((c) => c.slug === kurs);
   if (!course) notFound();

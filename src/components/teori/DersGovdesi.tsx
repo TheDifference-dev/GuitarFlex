@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Blok, Ders, Tablo } from "@/content/teori/tipler";
+import type { Blok, Ders, DersBag, Tablo } from "@/content/teori/tipler";
 import CagedTablosu from "@/components/yol/CagedTablosu";
 import GorselCiz from "./sema/GorselCiz";
 import Dinle from "./Dinle";
@@ -14,7 +14,7 @@ import { akorAdi } from "./sema/ortak";
 // Ekranda tek sütun; yazdırınca (YazdirmaStili) tek A4 sayfasında iki sütun.
 
 // Veride ASCII yazım (Bb, F#, b3); ekranda müzik işaretleri (B♭, F♯, ♭3)
-const AKOR = /(?<![\p{L}\d])([A-G](?:#|b)?(?:maj7|m7b5|m6|m7|m|7|6|°|dim|aug|sus2|sus4|5)?(?:\/[A-G](?:#|b)?)?)(?![\p{L}\d#])/gu;
+const AKOR = /(?<![\p{L}\d])([A-G](?:#|b)?(?:maj9|maj7|mMaj7|m7b5|m11|m9|m6|m7|7b9|7#9|7#11|13|9|dim7|m|7|6|°|dim|aug|sus2|sus4|5)?(?:\/[A-G](?:#|b)?)?)(?![\p{L}\d#])/gu;
 const ARALIK = /(?<![\p{L}\d])([b#])(\d{1,2})(?![\p{L}\d])/gu;
 export const bicim = (s: string) => s.replace(AKOR, (x) => akorAdi(x)).replace(ARALIK, (_, a: string, n: string) => (a === "b" ? "♭" : "♯") + n);
 
@@ -57,7 +57,7 @@ function TabloCiz({ t, no, genis }: { t: Tablo; no: number; genis?: boolean }) {
   );
 }
 
-/** Şekil ve tablo numaraları: bölümler boyunca sırayla (render dışında, saf hesap) */
+/** Şekil ve tablo numaraları: bütün yapraklar boyunca sırayla (render dışında, saf hesap) */
 function numarala(bolumler: Blok[][]): Map<Blok, number> {
   const no = new Map<Blok, number>();
   let sekil = 0;
@@ -79,6 +79,16 @@ function Bloklar({ bloklar, no }: { bloklar: Blok[]; no: Map<Blok, number> }) {
               <p key={i}>
                 <Metin m={b.m} />
               </p>
+            );
+          case "liste":
+            return (
+              <ul key={i}>
+                {b.m.map((x) => (
+                  <li key={x}>
+                    <Metin m={x} />
+                  </li>
+                ))}
+              </ul>
             );
           case "gorsel":
             return <GorselCiz key={i} g={b.g} no={no.get(b) ?? 0} ekran={b.ekran} />;
@@ -104,70 +114,125 @@ function Bolum({ baslik, children }: { baslik: string; children: ReactNode }) {
   );
 }
 
-export default function DersGovdesi({ ders, ust }: { ders: Ders; ust: string }) {
-  const no = numarala([ders.kural, ders.gitarda, ders.kulakla]);
+/** Dersin bütün blokları (numaralama ve ekler için) */
+export const dersBloklari = (d: Ders): Blok[][] => [d.kural, d.gitarda, d.kulakla, ...(d.ekYapraklar ?? []).flatMap((y) => y.kisimlar.map((k) => k.bloklar))];
+
+/**
+ * Ders kitabı yaprakları: 1. yaprak tanım → kural → gitarda → kulakla; varsa ek yapraklar (başlıklı kısımlar);
+ * "Hemen dene", sık hata, önce/sonra ve kaynaklar son yaprakta. Her yaprak tek A4 (ekranda "Sayfa 1/2").
+ */
+export default function DersGovdesi({ ders, ust, bag }: { ders: Ders; ust: string; bag?: DersBag }) {
+  const no = numarala(dersBloklari(ders));
+  const ekler = ders.ekYapraklar ?? [];
+  const toplam = 1 + ekler.length;
+  const sayfa = (i: number) => (toplam > 1 ? ` · Sayfa ${i}/${toplam}` : "");
+  const son = (
+    <>
+      <Bolum baslik="Hemen dene">
+        <ol>
+          {ders.dene.map((d) => (
+            <li key={d}>
+              <Metin m={d} />
+            </li>
+          ))}
+        </ol>
+      </Bolum>
+      <Bolum baslik="Sık hata ve ipucu">
+        <ul>
+          {ders.ipucu.map((d) => (
+            <li key={d}>
+              <Metin m={d} />
+            </li>
+          ))}
+        </ul>
+      </Bolum>
+      <Bolum baslik={bag ? "Önce ve sonra" : "Sıradaki ders"}>
+        {bag ? (
+          <p>
+            <span className="ders-bag-etiket">Önce:</span> {bag.once ? <Link href={bag.once.href}>{bag.once.baslik}</Link> : "başlangıç dersi"}
+            {" · "}
+            <span className="ders-bag-etiket">Sonra:</span> {bag.sonra ? <Link href={bag.sonra.href}>{bag.sonra.baslik} ›</Link> : "sıralı derslerin sonu; Sap Gezgini'nde serbest çalış"}
+          </p>
+        ) : (
+          <p>
+            {ders.sonraki.href ? (
+              <Link href={ders.sonraki.href}>
+                <Metin m={ders.sonraki.metin} /> <span aria-hidden>›</span>
+              </Link>
+            ) : (
+              <Metin m={ders.sonraki.metin} />
+            )}
+          </p>
+        )}
+        <p className="ders-kaynak">
+          <span className="font-semibold">Kaynaklar:</span> {ders.kaynaklar.join(" · ")}
+        </p>
+      </Bolum>
+    </>
+  );
+  const bas = (i: number) => (
+    <header className="ders-baski-basi">
+      <p className="ust">
+        GuitarFlex · {ust}
+        {sayfa(i)}
+      </p>
+      <h2 className="a4-baslik">
+        {ders.baslik}
+        {i > 1 ? <span className="a4-devam"> (devam)</span> : null}
+      </h2>
+      {i === 1 ? <p className="ozet">{ders.ozet}</p> : null}
+    </header>
+  );
   return (
     <>
-      <A4Yaprak etiket={ust}>
-        <div className="ders-yazdir a4-yaprak" data-ders={ders.slug}>
-          <A4Stili />
-          <header className="ders-baski-basi">
-            <p className="ust">GuitarFlex · {ust}</p>
-            <h2 className="a4-baslik">{ders.baslik}</h2>
-            <p className="ozet">{ders.ozet}</p>
-          </header>
-          <div className="ders-govde">
-            <Bolum baslik="Tanım">
-              {ders.tanim.map((p) => (
-                <p key={p}>
-                  <Metin m={p} />
-                </p>
-              ))}
-            </Bolum>
-            <Bolum baslik="Kural ve formül">
-              <Bloklar bloklar={ders.kural} no={no} />
-            </Bolum>
-            <Bolum baslik="Gitarda">
-              <Bloklar bloklar={ders.gitarda} no={no} />
-            </Bolum>
-            <Bolum baslik="Kulakla">
-              <Bloklar bloklar={ders.kulakla} no={no} />
-            </Bolum>
-            <Bolum baslik="Hemen dene">
-              <ol>
-                {ders.dene.map((d) => (
-                  <li key={d}>
-                    <Metin m={d} />
-                  </li>
+      <div className="space-y-10">
+        <A4Yaprak etiket={`${ust}${sayfa(1)}`}>
+          <div className="ders-yazdir a4-yaprak" data-ders={ders.slug} data-yaprak={1}>
+            <A4Stili />
+            {bas(1)}
+            <div className="ders-govde">
+              <Bolum baslik="Tanım">
+                {ders.tanim.map((p) => (
+                  <p key={p}>
+                    <Metin m={p} />
+                  </p>
                 ))}
-              </ol>
-            </Bolum>
-            <Bolum baslik="Sık hata ve ipucu">
-              <ul>
-                {ders.ipucu.map((d) => (
-                  <li key={d}>
-                    <Metin m={d} />
-                  </li>
-                ))}
-              </ul>
-            </Bolum>
-            <Bolum baslik="Sıradaki ders">
-              <p>
-                {ders.sonraki.href ? (
-                  <Link href={ders.sonraki.href}>
-                    <Metin m={ders.sonraki.metin} /> <span aria-hidden>›</span>
-                  </Link>
-                ) : (
-                  <Metin m={ders.sonraki.metin} />
-                )}
-              </p>
-              <p className="ders-kaynak">
-                <span className="font-semibold">Kaynaklar:</span> {ders.kaynaklar.join(" · ")}
-              </p>
-            </Bolum>
+              </Bolum>
+              {ders.kural.length ? (
+                <Bolum baslik="Kural ve formül">
+                  <Bloklar bloklar={ders.kural} no={no} />
+                </Bolum>
+              ) : null}
+              {ders.gitarda.length ? (
+                <Bolum baslik="Gitarda">
+                  <Bloklar bloklar={ders.gitarda} no={no} />
+                </Bolum>
+              ) : null}
+              {ders.kulakla.length ? (
+                <Bolum baslik="Kulakla">
+                  <Bloklar bloklar={ders.kulakla} no={no} />
+                </Bolum>
+              ) : null}
+              {toplam === 1 ? son : null}
+            </div>
           </div>
-        </div>
-      </A4Yaprak>
+        </A4Yaprak>
+        {ekler.map((y, yi) => (
+          <A4Yaprak key={yi} etiket={`${ust}${sayfa(yi + 2)}`}>
+            <div className="ders-yazdir a4-yaprak" data-ders={ders.slug} data-yaprak={yi + 2}>
+              {bas(yi + 2)}
+              <div className="ders-govde">
+                {y.kisimlar.map((k) => (
+                  <Bolum key={k.baslik} baslik={k.baslik}>
+                    <Bloklar bloklar={k.bloklar} no={no} />
+                  </Bolum>
+                ))}
+                {yi === ekler.length - 1 ? son : null}
+              </div>
+            </div>
+          </A4Yaprak>
+        ))}
+      </div>
       <DersEkleri ders={ders} />
     </>
   );
@@ -175,7 +240,9 @@ export default function DersGovdesi({ ders, ust }: { ders: Ders; ust: string }) 
 
 /** Yaprağın altında gösterilen ekler (yazdırılmaz) */
 export function DersEkleri({ ders }: { ders: Ders }) {
-  const ekler = [...ders.kural, ...ders.gitarda, ...ders.kulakla].filter((b) => b.t === "ek");
+  const ekler = dersBloklari(ders)
+    .flat()
+    .filter((b) => b.t === "ek");
   if (!ekler.length) return null;
   return (
     <section className="ders-ekran space-y-3 pt-8 print:hidden">

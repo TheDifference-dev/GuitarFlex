@@ -23,7 +23,7 @@ export default async function Home() {
     await Promise.all(
       YOLLAR.map(async (y): Promise<TeoriYolu | null> => {
         const yol = await getYol(y.slug);
-        return yol ? { slug: y.slug, href: `/teori/yol/${y.slug}`, ad: y.ad, etiket: y.etiket, not: yolSayim(yol) } : null;
+        return yol ? { slug: y.slug, href: y.href, ad: y.ad, etiket: y.etiket, not: yolSayim(yol) } : null;
       }),
     )
   ).filter((y): y is TeoriYolu => !!y);

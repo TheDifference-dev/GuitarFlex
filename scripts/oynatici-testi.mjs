@@ -20,6 +20,7 @@ import { BACKINGS } from "../src/content/dogaclama.ts";
 import { SONGS } from "../src/content/songs.ts";
 import { gitarProgrami } from "../src/lib/gitarTonu.ts";
 import { PRIVATE_ROOTS } from "../src/lib/private-roots.ts";
+import { TUM_DERSLER } from "../src/content/teori/hepsi.ts";
 
 const ROOT = process.cwd();
 const arg = (ad, varsayilan) => {
@@ -126,6 +127,9 @@ function sayfaListesi() {
     ...["ritim", "klavye", "kulak", "okuma", "armoni"].map((y) => [`/teori/yol/${y}`, `Teori yolu: ${y}`]),
   ])
     sayfalar.push({ url, grup: "site", kimlik: `site#${url}`, baslik, tur: "tabsiz" });
+  // Teori: ana sayfa, Armoni ve Nota Okuma kitapları, bütün A4 dersleri ve Sap Gezgini (tabsız: 200 + konsol temiz)
+  for (const url of ["/teori", "/teori/armoni", "/teori/nota-okuma", ...TUM_DERSLER.map((d) => `/teori/${d.slug}`), "/sap-gezgini"])
+    sayfalar.push({ url, grup: "teori", kimlik: `teori#${url}`, baslik: url, tur: "tabsiz" });
   for (const yol of ["ritim", "klavye", "kulak", "okuma", "armoni"]) {
     const y = jsonOku(`icerik/yollar/${yol}.json`);
     for (const a of y?.adimlar ?? []) sayfalar.push({ url: `/teori/yol/${yol}/${encodeURIComponent(a.kod)}`, grup: `yol:${yol}`, kimlik: `yol:${yol}#${a.kod}`, baslik: a.ad, tur: "adim", yol });

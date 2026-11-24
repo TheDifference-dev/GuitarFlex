@@ -7,7 +7,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Menu as MenuIcon,
 import { SITE } from "@/config/site";
 import UygulamaSimgesi from "./site/UygulamaSimgesi";
 import SongsterrBag from "./SongsterrBag";
-import { kursSimgesi, yerSimgesi, type SimgeTanim } from "@/lib/simge";
+import { yerSimgesi, type SimgeTanim } from "@/lib/simge";
 import { RIG_SIMGESI } from "./rig/simge";
 
 /** songsterr: bağlantı Şarkı Kütüphanesini (Songsterr) uygulama içi pencerede açar; href yalnız web'de yedek */
@@ -70,27 +70,25 @@ export const MENULER: Menu[] = [
     id: "teori",
     label: "Teori",
     href: "/teori",
-    active: (p) => p.startsWith("/teori") || p.startsWith("/calis/armoni"),
+    active: (p) => p.startsWith("/teori") || p.startsWith("/calis/armoni") || p.startsWith("/sap-gezgini"),
     buyuk: [
       { href: "/teori", label: "Müzik Teorisi", simge: yerSimgesi("teori") },
-      { href: "/calis/armoni", label: "Armoni", simge: kursSimgesi("armoni") },
+      { href: "/sap-gezgini", label: "Sap Gezgini", simge: yerSimgesi("sap-gezgini") },
     ],
     sutunlar: [
       {
-        baslik: "Pratik Yolları",
+        baslik: "Öğren",
+        items: [
+          { href: "/teori/armoni", label: "Armoni" },
+          { href: "/teori/nota-okuma", label: "Nota Okuma" },
+        ],
+      },
+      {
+        baslik: "Pratik",
         items: [
           { href: "/teori/yol/ritim", label: "Ritim" },
           { href: "/teori/yol/klavye", label: "Klavye Görselleştirme" },
           { href: "/teori/yol/kulak", label: "Kulak Eğitimi" },
-          { href: "/teori/yol/okuma", label: "Okuma" },
-          { href: "/teori/yol/armoni", label: "Armoni Pratikleri" },
-        ],
-      },
-      {
-        baslik: "Keşfet",
-        items: [
-          { href: "/teori#sap", label: "Sap Gezgini" },
-          { href: "/teori#dersler", label: "Teori Dersleri" },
         ],
       },
     ],
@@ -135,7 +133,7 @@ export const MENULER: Menu[] = [
     sutunlar: [
       {
         baslik: "Ayrıca",
-        items: [{ href: "/teori#sap", label: "Sap Gezgini" }],
+        items: [{ href: "/sap-gezgini", label: "Sap Gezgini" }],
       },
     ],
   },

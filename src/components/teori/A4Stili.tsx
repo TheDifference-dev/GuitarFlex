@@ -1,5 +1,5 @@
 // Dersin A4 yaprağının tek stili: ekranda da yazdırmada da aynı ölçüler (210 × 297 mm, 15/16/12 mm kenar,
-// 10.5 pt gövde, iki sütun). Stil yalnız bu bileşenin bulunduğu sayfada geçerlidir (öğe kalkınca stil de kalkar).
+// 10.5 pt gövde, iki sütun). Çok yapraklı derste her yaprak ayrı A4 sayfası (yazdırmada sayfa sonu). Stil yalnız bu bileşenin bulunduğu sayfada geçerlidir (öğe kalkınca stil de kalkar).
 // Yaprak her temada beyaz kâğıttır: renk değişkenleri yaprağın içinde açık mod değerlerine çekilir.
 // Yazdırmada @page kenarı 0'dır; kenar boşluğunu yaprağın kendisi verir, böylece ekran = PDF.
 
@@ -55,6 +55,9 @@ const CSS = `
 .a4-yaprak .ders-dinle button:hover { background: rgb(0 88 176 / 0.08); }
 .a4-yaprak .ders-dinle button svg { width: 3mm; height: 3mm; }
 .a4-yaprak .ders-kaynak { font-size: 8.5pt; color: #55555a; margin-top: 1.5mm; }
+.a4-yaprak .ders-bag-etiket { font-weight: 600; }
+.a4-yaprak .a4-devam { font-weight: 400; font-size: 12pt; color: #55555a; }
+.a4-yaprak .ders-govde ul + p, .a4-yaprak .ders-govde p + ul { margin-top: 0.6mm; }
 .a4-yaprak a { color: #0058b0; }
 @media print {
   @page { size: A4; margin: 0; }
@@ -67,6 +70,7 @@ const CSS = `
   }
   .ders-ekran, .a4-arac { display: none !important; }
   .a4-yaprak { box-shadow: none; break-inside: avoid; }
+  .a4-yaprak[data-yaprak]:not([data-yaprak="1"]) { break-before: page; }
   .a4-yaprak .ders-dinle button { border-color: transparent; }
   .a4-yaprak a { color: inherit; text-decoration: none; }
 }

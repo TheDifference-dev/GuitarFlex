@@ -273,7 +273,7 @@ export default function AnaSayfa({
         eylemler={
           <>
             <HapBag href="/teori">Daha Fazla Bilgi</HapBag>
-            <HapBag href="/calis/armoni" ikincil>
+            <HapBag href="/teori/armoni" ikincil>
               Armoni Dersleri
             </HapBag>
           </>

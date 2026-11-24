@@ -59,7 +59,7 @@ function read(): Progress {
 /** Açılışta bir kez: eski teori yolu adım kodlarını yenilerine taşır (K18 Ek bölümler) ve kaydeder */
 function goc(p: Progress): Progress {
   if ((p.yolGoc ?? 0) >= YOL_GOC_SURUM) return p;
-  const next = { ...p, steps: yolKoduGoc(p.steps ?? {}), yolGoc: YOL_GOC_SURUM };
+  const next = { ...p, steps: yolKoduGoc(p.steps ?? {}, p.yolGoc ?? 0), yolGoc: YOL_GOC_SURUM };
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
   } catch {

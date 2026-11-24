@@ -16,13 +16,15 @@ export async function getYol(slug: string): Promise<Yol | undefined> {
   return undefined;
 }
 
+/** href: kartın açtığı sayfa. Okuma ve Armoni yollarının adımları kitap sayfalarında (Nota Okuma, Armoni) listelenir;
+ *  /teori/yol/okuma ve /teori/yol/armoni oraya yönlendirir. */
 export const YOLLAR = [
-  { slug: "ritim", ad: "Ritim", etiket: "Ritim Programı" },
-  { slug: "klavye", ad: "Klavye Görselleştirme", etiket: "Klavye Görselleştirme" },
-  { slug: "kulak", ad: "Kulak Eğitimi", etiket: "Kulak Eğitimi Programı" },
-  { slug: "okuma", ad: "Okuma", etiket: "Okuma Programı" },
-  // Armoni pratik kartları (Müzik Teorisi Dersleri) ve ek armoni adımları: ikincil dominant, ii–V–I, akor-gam
-  { slug: "armoni", ad: "Armoni Pratikleri", etiket: "Armoni Programı" },
+  { slug: "ritim", ad: "Ritim", etiket: "Ritim Programı", href: "/teori/yol/ritim" },
+  { slug: "klavye", ad: "Klavye Görselleştirme", etiket: "Klavye Görselleştirme", href: "/teori/yol/klavye" },
+  { slug: "kulak", ad: "Kulak Eğitimi", etiket: "Kulak Eğitimi Programı", href: "/teori/yol/kulak" },
+  { slug: "okuma", ad: "Nota Okuma", etiket: "Nota Okuma Kütüphanesi", href: "/teori/nota-okuma" },
+  // Armoni: GuitarBear'in 11 pratik kartı ve ek bölümler (ikincil dominant, ii–V–I, akor-gam, işlev/kadans, ödünç, gerilim, minör)
+  { slug: "armoni", ad: "Armoni", etiket: "Armoni · ünite sınavları", href: "/teori/armoni" },
 ] as const;
 
 /** Sayfaya giden yol: adım listesi için soru bankaları ve alıştırma ayarları gerekmez (istemciye gitmez) */

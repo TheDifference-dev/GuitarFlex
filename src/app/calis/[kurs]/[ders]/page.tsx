@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import LessonPractice from "@/components/LessonPractice";
 import { Bant } from "@/components/site/Vitrin";
 import { DersAltGezinme, DersUstGezinme } from "@/components/site/DersGezinme";
@@ -9,6 +9,12 @@ import { DERS_TURU_ADI, dersSimgesi, dersTuru, yerSimgesi } from "@/lib/simge";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { assetUrl, getCourse } from "@/lib/courses";
 import { gitarProgrami } from "@/lib/gitarTonu";
+
+/** Armoni kursunun eğitim kartları → Teori › Armoni'deki A4 dersi (alt bölüm kodu → ders) */
+const ARMONI_EGITIM: Record<string, string> = {
+  "1.1": "notalar", "1.2": "major-gam", "2.1": "akor-yapisi", "2.2": "akor-yapisi", "3.1": "modlar", "3.2": "modlar", "3.3": "modlar",
+  "4.1": "diatonik-akorlar", "4.2": "ilerlemeler", "5.1": "yedili-akorlar",
+};
 
 async function find(kurs: string, ders: string) {
   const course = await getCourse(kurs);
@@ -29,6 +35,9 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
   const found = await find(kurs, ders);
   if (!found) notFound();
   const { course, lesson } = found;
+  // Armoni: eğitim kartının yerini A4 dersi, pratik kartının yerini ünite sınavı aldı; Ek İnceleme tabları burada kalır
+  if (course.slug === "armoni" && lesson.card === "egitim") redirect(ARMONI_EGITIM[lesson.chapter.code ?? ""] ? `/teori/${ARMONI_EGITIM[lesson.chapter.code ?? ""]}` : "/teori/armoni");
+  if (course.slug === "armoni" && lesson.card === "pratik" && lesson.practice) redirect(`/teori/yol/${lesson.practice.yol}/${encodeURIComponent(lesson.practice.kod)}`);
   const theory = [...(lesson.chapter.theory ?? []), ...(lesson.theory ?? [])];
   const anahat = kursAnahatti(course);
 

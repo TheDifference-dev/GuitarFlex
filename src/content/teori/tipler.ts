@@ -116,7 +116,15 @@ export type Tablo = {
     | { tur: "paralel"; major: number; minor: number }
     | { tur: "bpm"; bpm: number; saniye: number }
     | { tur: "tel"; tel: number; nota: number; yazili?: number }
-    | { tur: "sure"; ad: number; vurus: number };
+    | { tur: "sure"; ad: number; vurus: number }
+    /** Roma rakamı (ikincil, ödünç, yedili dahil) ↔ akor simgesi; ton sabit ya da sütun. sutunlar: başlıktaki rakamlar */
+    | { tur: "romen"; ton: number | string; romen?: number; akor?: number; notalar?: number; sutunlar?: Record<number, string> }
+    /** Mod = ana gamın (majör, armonik, melodik minör) dereceden döndürülmüşü; kok ana gamın, modKok modun kökü */
+    | { tur: "mod"; ana: "major" | "harmonic" | "melodic" | number; derece: number; formul: number; kok?: string; modKok?: string; notalar?: number }
+    /** Parlaklık sırası: her satır bir öncekinden tek notası yarım ses inmiş mod */
+    | { tur: "parlaklik"; kok: string; formul: number; notalar: number }
+    /** Gam adı sütunundaki gamın notaları (bağımsız gam tablosundan) */
+    | { tur: "gamAdi"; kok: string; gam: number; notalar: number };
 };
 
 /** Dinlenebilir örnek: notalar bilimsel adla (C4 = orta Do, MIDI 60), duyulan perdede */
@@ -136,6 +144,8 @@ export type DinleOrnek = {
 
 export type Blok =
   | { t: "p"; m: string }
+  /** Kısa maddeler (bir kavram, bir satır) */
+  | { t: "liste"; m: string[] }
   | { t: "gorsel"; g: Gorsel; ekran?: boolean }
   | { t: "tablo"; tablo: Tablo; genis?: boolean }
   | { t: "dinle"; ornekler: DinleOrnek[] }
@@ -156,4 +166,19 @@ export type Ders = {
   kaynaklar: string[];
   /** Ekranda dersin altında sap gezgini (yazdırılmaz) */
   kesif?: { set: string; root: number };
+  /** Tek A4'e sığmayan konular: 2. ve sonraki yapraklar (her biri tek A4). "Hemen dene", ipucu, sıradaki ders ve
+   *  kaynaklar son yaprakta durur. */
+  ekYapraklar?: Yaprak[];
+};
+
+/** Yaprağın başlıklı kısmı */
+export type Kisim = { baslik: string; bloklar: Blok[] };
+export type Yaprak = { kisimlar: Kisim[] };
+
+/** Dersin müfredattaki komşuları ve alıştırmaları (sayfa sunucuda hesaplar, yaprağa basılır) */
+export type DersBag = {
+  once?: { href: string; baslik: string };
+  sonra?: { href: string; baslik: string };
+  /** Ünite / kitap adı: "Seviye 2 · Aralıklar ve Gamlar" */
+  yer?: string;
 };

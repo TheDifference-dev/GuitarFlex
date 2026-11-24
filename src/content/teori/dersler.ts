@@ -1,4 +1,5 @@
-// Müzik Teorisi dersleri (/teori/<slug>): her biri tek A4 sayfasına sığan ders kitabı sayfası.
+// Müzik Teorisi dersleri (/teori/<slug>): her biri tek A4 sayfasına sığan ders kitabı sayfası. Modlar dersi çok
+// yapraklı olarak modlar.ts'e taşındı; bütün derslerin listesi ve sırası: hepsi.ts ve mufredat.ts.
 // Metinler özgündür; içerik standart kaynaklarla (her dersin sonunda "Kaynaklar") uyumludur.
 // Notalar, aralıklar ve perde konumları scripts/teori-dogrula.mjs ile hesaplanarak denetlenir.
 import type { Ders } from "./tipler.ts";
@@ -668,70 +669,6 @@ export const DERSLER: Ders[] = [
     sonraki: { metin: "Modlara Giriş: aynı notalar, farklı merkezler.", href: "/teori/modlar" },
     kaynaklar: [KOSTKA, "Edward Aldwell, Carl Schachter — Harmony and Voice Leading"],
     kesif: { set: "major", root: 0 },
-  },
-  {
-    slug: "modlar",
-    baslik: "Modlara Giriş",
-    seviye: 4,
-    ozet: "Majör gamın yedi modu, karakter notaları ve modu duyurmanın yolu.",
-    tanim: [
-      "Majör gamın notalarını farklı bir dereceden başlatınca **mod** elde edilir. Do majörün notalarını Re'den Re'ye çalarsan Re Dorian, Mi'den Mi'ye çalarsan Mi Frigyen duyulur. Notalar aynıdır; değişen **merkez** ve merkeze göre aralıklardır.",
-    ],
-    kural: [
-      {
-        t: "tablo",
-        genis: true,
-        tablo: {
-          baslik: "Do majörün notalarıyla yedi mod",
-          bas: ["Mod", "Kök", "Formül", "Karakter notası", "Notalar"],
-          satirlar: [
-            ["İyonyen (majör)", "C", "1 2 3 4 5 6 7", "4 ve 7", "C D E F G A B"],
-            ["Dorian", "D", "1 2 b3 4 5 6 b7", "6", "D E F G A B C"],
-            ["Frigyen", "E", "1 b2 b3 4 5 b6 b7", "b2", "E F G A B C D"],
-            ["Lidyen", "F", "1 2 3 #4 5 6 7", "#4", "F G A B C D E"],
-            ["Miksolidyen", "G", "1 2 3 4 5 6 b7", "b7", "G A B C D E F"],
-            ["Eolyen (doğal minör)", "A", "1 2 b3 4 5 b6 b7", "b6", "A B C D E F G"],
-            ["Lokriyen", "B", "1 b2 b3 4 b5 b6 b7", "b5", "B C D E F G A"],
-          ],
-          dogrula: { tur: "gam", kok: 1, formul: 2, notalar: 4 },
-        },
-      },
-      { t: "p", m: "Modları iki yoldan düşün: **türetme** (Do majörün 2. derecesinden başla = Re Dorian) ya da **karşılaştırma** (Re Dorian = Re doğal minör + büyük 6). Çalarken ikincisi daha kullanışlıdır: modun rengi, onu en yakın majör ya da minör gamdan ayıran **karakter notasından** gelir." },
-    ],
-    gitarda: [
-      {
-        t: "gorsel",
-        g: { tur: "sap", baslik: "La Dorian (4–8. perdeler): La minör kutusu + büyük 6 (F♯, turuncu).", etiket: "aralik", kok: "A", perde: [4, 8], kalip: [0, 2, 3, 5, 7, 9, 10], tam: true, noktalar: gamNoktalari({ kok: "A", formul: "1 2 b3 4 5 6 b7", perde: [4, 8], etiket: "aralik", vurgu: ["6"] }) },
-      },
-      {
-        t: "gorsel",
-        g: { tur: "sap", baslik: "La Miksolidyen (4–8. perdeler): La majör + küçük 7 (G, turuncu).", etiket: "aralik", kok: "A", perde: [4, 8], kalip: [0, 2, 4, 5, 7, 9, 10], tam: true, noktalar: gamNoktalari({ kok: "A", formul: "1 2 3 4 5 6 b7", perde: [4, 8], etiket: "aralik", vurgu: ["b7"] }) },
-      },
-    ],
-    kulakla: [
-      { t: "p", m: "Modu duymak için kökü sürekli duyur (tek akor ya da açık tel), gamı onun üstünde çal ve karakter notasında bir an dur." },
-      {
-        t: "dinle",
-        ornekler: [
-          { ad: "La Eolyen", tip: "dizi", notalar: ["A2", "B2", "C3", "D3", "E3", "F3", "G3", "A3"], beklenen: { kalip: [0, 2, 3, 5, 7, 8, 10, 12] } },
-          { ad: "La Dorian", tip: "dizi", notalar: ["A2", "B2", "C3", "D3", "E3", "F#3", "G3", "A3"], beklenen: { kalip: [0, 2, 3, 5, 7, 9, 10, 12] } },
-          { ad: "La Miksolidyen", tip: "dizi", notalar: ["A2", "B2", "C#3", "D3", "E3", "F#3", "G3", "A3"], beklenen: { kalip: [0, 2, 4, 5, 7, 9, 10, 12] } },
-        ],
-      },
-    ],
-    dene: [
-      "Am7 – D yürüyüşü üzerinde La Dorian çal; D akoruna F♯ ile bağlan.",
-      "A – G – D yürüyüşü üzerinde La Miksolidyen çal; G notası (♭7) A7 rengi verir.",
-      "Açık 6. teli çınlatırken aynı telde Mi Frigyen çal (E F G A B C D); F'deki karanlığı dinle.",
-      "Tablodaki her modu aynı kökten (La) çal ve karakter notasını işaretle.",
-    ],
-    ipucu: [
-      "Do majör yürüyüşü üzerinde Re'den başlamak Dorian yapmaz: merkezi armoni belirler. Modu duyurmak için armoni de modun kökünü vurgulamalı.",
-      "Lidyen ve Miksolidyen majör, Dorian, Frigyen ve Eolyen minör ailesindendir; kök akoru eksik olan Lokriyen seyrek kullanılır.",
-    ],
-    sonraki: { metin: "Klavye Görselleştirme yolunda bu gamları sapın her yerinde bul.", href: "/teori/yol/klavye" },
-    kaynaklar: ["Mark Levine — The Jazz Theory Book", BERKLEE],
-    kesif: { set: "dorian", root: 9 },
   },
 ];
 

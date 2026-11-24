@@ -18,7 +18,8 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
     baslik: "Teori",
     items: [
       { href: "/teori", label: "Müzik Teorisi" },
-      { href: "/calis/armoni", label: "Armoni" },
+      { href: "/teori/armoni", label: "Armoni" },
+      { href: "/teori/nota-okuma", label: "Nota Okuma" },
       { href: "/teori/yol/ritim", label: "Ritim" },
       { href: "/teori/yol/klavye", label: "Klavye Görselleştirme" },
       { href: "/teori/yol/kulak", label: "Kulak Eğitimi" },
@@ -36,7 +37,7 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
     baslik: "Araçlar",
     items: [
       { href: "/araclar", label: "Pratik Araçları" },
-      { href: "/teori#sap", label: "Sap Gezgini" },
+      { href: "/sap-gezgini", label: "Sap Gezgini" },
       { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım" },
       { href: "/oynatici", label: "Tabla Keşfet" },
     ],

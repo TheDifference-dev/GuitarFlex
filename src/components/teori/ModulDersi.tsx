@@ -2,6 +2,7 @@
 
 import { MODUL_METIN, modulDersi } from "@/content/yol-modulleri";
 import DersGovdesi from "./DersGovdesi";
+import { dersBagi } from "@/content/teori/mufredat";
 
 /** Teori yolunun modül sekmesi: tek A4 sayfalık ders (yoksa düz metin). */
 export default function ModulDersi({ yol, yolAdi, sekme }: { yol: string; yolAdi: string; sekme: string }) {
@@ -16,7 +17,7 @@ export default function ModulDersi({ yol, yolAdi, sekme }: { yol: string; yolAdi
     );
   return (
     <div className="pt-4">
-      <DersGovdesi key={ders.slug} ders={ders} ust={`${yolAdi} · Modül`} />
+      <DersGovdesi key={ders.slug} ders={ders} ust={`${yolAdi} · Modül`} bag={dersBagi(ders.slug)} />
     </div>
   );
 }

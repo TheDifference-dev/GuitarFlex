@@ -18,7 +18,7 @@ export default function ToolsPage() {
         <MetinBag href="#nota-testi" buyuk>
           Nota bulma testi
         </MetinBag>
-        <MetinBag href="/teori#sap" buyuk>
+        <MetinBag href="/sap-gezgini" buyuk>
           Sap gezgini
         </MetinBag>
         <MetinBag href="/kutuphane" buyuk>
@@ -44,8 +44,9 @@ export default function ToolsPage() {
         </section>
       </Bant>
       <Bant ton="beyaz">
-        <ul className="mx-auto grid max-w-[1100px] gap-3 sm:grid-cols-2">
+        <ul className="mx-auto grid max-w-[1100px] gap-3 sm:grid-cols-3">
           {[
+            { href: "/sap-gezgini", ad: "Sap Gezgini", not: "Bütün modlar, pentatonik kutuları, armonik ve melodik minör: notalarıyla sapta.", simge: yerSimgesi("sap-gezgini") },
             { href: "/kutuphane", ad: "Tab Oynatıcı ve Dosyalarım", not: "GuitarFlex'in çalınabilir çok track'li parçaları ve kendi Guitar Pro dosyaların.", simge: yerSimgesi("kutuphane") },
             { href: "/oynatici", ad: "Tabla Keşfet", not: "Herhangi bir tab dosyasını aç, mikserle çal.", simge: yerSimgesi("oynatici") },
           ].map((x) => (
