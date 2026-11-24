@@ -8,6 +8,7 @@ import { SITE } from "@/config/site";
 import UygulamaSimgesi from "./site/UygulamaSimgesi";
 import SongsterrBag from "./SongsterrBag";
 import { kursSimgesi, yerSimgesi, type SimgeTanim } from "@/lib/simge";
+import { RIG_SIMGESI } from "./rig/simge";
 
 /** songsterr: bağlantı Şarkı Kütüphanesini (Songsterr) uygulama içi pencerede açar; href yalnız web'de yedek */
 type Bag = { href: string; label: string; songsterr?: boolean };
@@ -194,6 +195,22 @@ const MENULER: Menu[] = [
         items: [
           { href: "/kutuphane", label: "Tab Oynatıcı ve Dosyalarım" },
           { href: "/oynatici", label: "Tabla Keşfet" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "rig",
+    label: "Rig'im",
+    href: "/rig",
+    active: (p) => p.startsWith("/rig"),
+    buyuk: [{ href: "/rig", label: "Rig'im", simge: RIG_SIMGESI }],
+    sutunlar: [
+      {
+        baslik: "Rig oluşturucu",
+        items: [
+          { href: "/rig", label: "Sinyal zinciri" },
+          { href: "/rig#kitaplik", label: "Ekipman kitaplığı" },
         ],
       },
     ],

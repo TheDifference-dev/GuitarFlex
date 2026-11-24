@@ -1,0 +1,444 @@
+/* Rig'im: sahne, sinyal zinciri ve kitaplık. Renkler globals.css değişkenlerinden; sahne zemini temaya göre. */
+
+.sahne {
+  --sahne-ust: #ffffff;
+  --sahne-alt: #e6e6eb;
+  --kablo: #8e8e93;
+  --kablo-aktif: var(--accent);
+  background:
+    radial-gradient(90% 70% at 30% 35%, var(--sahne-ust) 0%, transparent 75%),
+    linear-gradient(180deg, color-mix(in srgb, var(--sahne-ust) 60%, var(--sahne-alt)) 0%, var(--sahne-alt) 100%);
+  border-radius: var(--radius-card);
+  border: 1px solid color-mix(in srgb, var(--ink) 6%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+:global(:root[data-mod="koyu"]) .sahne,
+:global(:root[data-mod="koyu"]) .zincirKutu {
+  --sahne-ust: #3a3a3e;
+  --sahne-alt: #111113;
+  --kablo: #636366;
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root[data-mod="sistem"]) .sahne,
+  :global(:root[data-mod="sistem"]) .zincirKutu {
+    --sahne-ust: #3a3a3e;
+    --sahne-alt: #111113;
+      --kablo: #636366;
+  }
+}
+
+.zincirKutu {
+  --kablo: #8e8e93;
+  --kablo-aktif: var(--accent);
+  border-radius: var(--radius-card);
+  background: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+/* Zincir satırı: düğümler kablo ile bağlı. Bütün öğeler üstten hizalı; kablo --kablo-y yüksekliğinden geçer
+   (çizimlerin ortası), böylece altında FX loop olan amfi ya da iki satırlı paralel blok hizayı bozmaz. */
+.satir {
+  --kablo-y: 36px;
+  --satir-h: 106px;
+  display: flex;
+  align-items: flex-start;
+  min-height: var(--satir-h);
+}
+.kablo {
+  position: relative;
+  flex: 0 0 auto;
+  height: var(--satir-h);
+  width: 14px;
+  transition: width 0.18s ease;
+}
+.kablo::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--kablo-y) - 1px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--kablo);
+}
+.kablo.uzun {
+  flex: 1 0 28px;
+}
+/* sürüklerken bırakma yuvaları açılır */
+.surukleniyor .kablo[data-yuva] {
+  width: 36px;
+}
+.surukleniyor .kablo.uzun[data-yuva] {
+  width: auto;
+}
+.kablo[data-yuva]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: var(--kablo-y);
+  width: 24px;
+  height: 56px;
+  transform: translate(-50%, -50%) scale(0.4);
+  border-radius: 10px;
+  border: 1.5px dashed transparent;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    background-color 0.15s ease;
+}
+.kablo.uzun[data-yuva]::after {
+  left: 6px;
+  right: 6px;
+  width: auto;
+  transform: translate(0, -50%) scale(1, 0.4);
+}
+.surukleniyor .kablo[data-yuva]::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.surukleniyor .kablo.uzun[data-yuva]::after {
+  transform: translate(0, -50%) scale(1);
+}
+.kablo[data-uzerinde="1"]::after {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-style: solid !important;
+  border-color: var(--accent) !important;
+}
+.kablo[data-uzerinde="1"]::before {
+  background: var(--kablo-aktif);
+}
+.ipucu {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: calc(var(--kablo-y) + 10px);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.dugum {
+  position: relative;
+  flex: 0 0 auto;
+  width: 84px;
+  border-radius: 14px;
+  padding: 6px 4px;
+  text-align: center;
+  cursor: grab;
+  background: transparent;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+.dugum:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.dugum:active {
+  cursor: grabbing;
+}
+.dugum[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.dugum[data-kapali="1"] .resim {
+  opacity: 0.42;
+  filter: grayscale(0.6);
+}
+.dugum[data-tasiniyor="1"] {
+  opacity: 0.35;
+}
+.resim {
+  height: 58px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: opacity 0.15s ease;
+}
+.resim svg {
+  max-height: 100%;
+  max-width: 100%;
+}
+.etiket {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.4em;
+}
+/* FX loop içindeki küçük düğümler */
+.dongu .satir {
+  --kablo-y: 28px;
+  --satir-h: 88px;
+}
+.dongu .dugum {
+  width: 70px;
+}
+.dongu .resim {
+  height: 42px;
+}
+
+.uc {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: calc(var(--kablo-y) - 17px);
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.ucSimge {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+/* Paralel blok: A yolu ana kablonun hizasında sürer, B yolu altta. Bölünme ve birleşme çizgileri satırların
+   kendi kenarlarından çizilir (A: yatay kol + aşağı inen çizgi; B: yukarıdan gelip yola dönen köşe), böylece
+   satır yükseklikleri ne olursa olsun kesintisizdir. */
+.paralel {
+  flex: 0 0 auto;
+  position: relative;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 9%, transparent);
+}
+.paralelBaslik {
+  position: absolute;
+  top: calc(var(--kablo-y) + 34px);
+  left: 26px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.yol {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding: 0 20px;
+}
+.yol + .yol {
+  margin-top: 10px;
+}
+.yol::before,
+.yol::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  border-color: var(--kablo);
+  border-style: solid;
+  border-width: 0;
+}
+.yolA::before {
+  left: 0;
+  top: calc(var(--kablo-y) - 1px);
+  bottom: -10px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+  width: 22px;
+  left: -2px;
+}
+.yolA::after {
+  right: -2px;
+  width: 22px;
+  top: calc(var(--kablo-y) - 1px);
+  bottom: -10px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+.yolB::before {
+  left: -2px;
+  width: 22px;
+  top: 0;
+  height: calc(var(--kablo-y) + 1px);
+  border-left-width: 2px;
+  border-bottom-width: 2px;
+  border-bottom-left-radius: 10px;
+}
+.yolB::after {
+  right: -2px;
+  width: 22px;
+  top: 0;
+  height: calc(var(--kablo-y) + 1px);
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-bottom-right-radius: 10px;
+}
+.yolEtiket {
+  position: absolute;
+  left: 4px;
+  top: calc(var(--kablo-y) - 24px);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* Amfinin efekt döngüsü */
+.amfiSutun {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dongu {
+  position: relative;
+  margin: 12px 0 4px;
+  border-radius: 14px;
+  padding: 18px 6px 2px;
+  border: 1.5px dashed color-mix(in srgb, var(--ink) 24%, transparent);
+  background: color-mix(in srgb, var(--ink) 2.5%, transparent);
+}
+.dongu::before,
+.dongu::after {
+  content: "";
+  position: absolute;
+  top: -14px;
+  height: 12px;
+  border-left: 2px dashed var(--kablo);
+}
+.dongu::before {
+  left: calc(50% - 14px);
+}
+.dongu::after {
+  left: calc(50% + 12px);
+}
+.donguBaslik {
+  position: absolute;
+  top: 3px;
+  left: 10px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.donguBaslik span {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Kitaplık */
+.kart {
+  position: relative;
+  border-radius: 14px;
+  padding: 8px 6px 8px;
+  text-align: center;
+  background: var(--panel-on-band, var(--panel));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent);
+  cursor: grab;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.kart:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.kart .resim {
+  height: 64px;
+}
+
+/* Büyük görsel */
+.buyuk {
+  height: 300px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.buyuk > svg,
+.buyuk > img {
+  max-height: 100%;
+  max-width: 100%;
+}
+.buyuk > img {
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.5);
+}
+
+.cop {
+  border: 1.5px dashed color-mix(in srgb, var(--bad) 60%, transparent);
+  color: var(--bad);
+  background: color-mix(in srgb, var(--bad) 8%, transparent);
+}
+.cop[data-uzerinde="1"] {
+  background: color-mix(in srgb, var(--bad) 20%, transparent);
+  border-style: solid;
+}
+
+/* Hafif animasyonlar (hareket azaltma tercihine uyar) */
+@media (prefers-reduced-motion: no-preference) {
+  .dugum,
+  .kart {
+    animation: belir 0.22s ease-out both;
+  }
+  .kart:hover {
+    transform: translateY(-2px);
+  }
+  .buyukGiris {
+    animation: buyukBelir 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kablo,
+  .kablo[data-yuva]::after,
+  .dugum,
+  .kart {
+    transition: none;
+  }
+}
+@keyframes belir {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes buyukBelir {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Paralel yolun ve FX loop'un içindeki satır, bloğun genişliğini doldurur; boş yol okunur genişlikte kalır */
+.yol > .satir {
+  flex: 1 1 auto;
+}
+.yol .kablo.uzun,
+.dongu .kablo.uzun {
+  min-width: 132px;
+}
+.yol .ipucu,
+.dongu .ipucu {
+  white-space: nowrap;
+}

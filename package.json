@@ -19,7 +19,8 @@
     "kisayol": "node desktop/kisayol-olustur.cjs",
     "test:oynatici": "node --no-warnings --experimental-strip-types scripts/oynatici-testi.mjs",
     "test:yol-goc": "node --no-warnings --experimental-strip-types scripts/yol-goc-testi.ts",
-    "test:defter": "node --no-warnings --experimental-strip-types scripts/defter-testi.ts"
+    "test:defter": "node --no-warnings --experimental-strip-types scripts/defter-testi.ts",
+    "test:rig": "node --no-warnings --experimental-strip-types scripts/rig-testi.ts"
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",
