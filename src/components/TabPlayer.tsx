@@ -102,6 +102,11 @@ type Props = {
   onDurum?: (d: OynaticiDurumu) => void;
   /** Kaldığın yerden devam: döngüyü/konumu ve hızı verilen ölçüye taşır */
   devam?: DevamKomutu;
+  /** Tempo seçimi (BPM, ör. [40, 150]): verilirse hız bu aralıkta kalır (−/+, kaydırıcı, kademeli hızlanma), hız panelinde
+   *  BPM kaydırıcısı çıkar ve −/+ 5 BPM adımlar. Verilmezse hız %25–%150. */
+  bpmAraligi?: [number, number];
+  /** Seçilebilir tempolar (sınav kademeleri, ör. [{ ad: "Altın I", bpm: 90 }, …]): hız panelinde düğme olarak */
+  bpmSecenekleri?: { ad: string; bpm: number }[];
 };
 
 const SPEEDS = [50, 75, 100];
@@ -195,6 +200,8 @@ function Player({
   mikserKaydi,
   onDurum,
   devam,
+  bpmAraligi,
+  bpmSecenekleri,
   bank,
 }: Props & { bank: OynaticiAyarlari["sesBankasi"] }) {
   const playerId = useId();
@@ -241,7 +248,28 @@ function Player({
   const [fretNotes, setFretNotes] = useState<{ notes: SapNotasi[]; bar: number } | null>(null);
 
   const [speed, setSpeedState] = useState(100);
-  const setSpeed = useCallback((s: number) => setSpeedState(Math.min(MAX_SPEED, Math.max(MIN_SPEED, Math.round(s)))), []);
+  /** Hız sınırları (%): BPM aralığı verilmişse tab temposundan hesaplanır (aşağıda), yoksa %25–%150 */
+  const sinirRef = useRef<{ alt: number; ust: number; bpm: boolean }>({ alt: MIN_SPEED, ust: MAX_SPEED, bpm: false });
+  /** BPM kipinde hız kesirli olabilir (seçilen BPM tam çıksın diye); yüzde kipinde tam sayı */
+  const hizSinirla = useCallback((s: number) => {
+    const { alt, ust, bpm } = sinirRef.current;
+    return Math.min(ust, Math.max(alt, bpm ? Math.round(s * 1000) / 1000 : Math.round(s)));
+  }, []);
+  const setSpeed = useCallback((s: number) => setSpeedState(hizSinirla(s)), [hizSinirla]);
+  // Tempo seçimi (BPM aralığı): hız sınırları tab temposundan; parça yüklenmeden (meta.bars 0) yüzde sınırları geçerli
+  const tabTempo = meta.bars > 0 ? meta.tempo : 0;
+  const bpmKipi = !!bpmAraligi && tabTempo > 0;
+  const hizAlt = bpmKipi ? (100 * bpmAraligi![0]) / tabTempo : MIN_SPEED;
+  const hizUst = bpmKipi ? (100 * bpmAraligi![1]) / tabTempo : MAX_SPEED;
+  /** −/+ ve ↑/↓ adımı (%): BPM kipinde 5 BPM, yoksa %5 */
+  const adim = bpmKipi ? 500 / tabTempo : 5;
+  const adimRef = useRef(adim);
+  // Sınırlar ref'te: setSpeed, kademeli hızlanma ve ↑/↓ okur. Tab temposu aralığın içindedir (içerik denetimi: K18b), bu yüzden
+  // açılıştaki %100 de aralıktadır; sonraki her hız değişimi setSpeed ile aralığa çekilir.
+  useEffect(() => {
+    sinirRef.current = { alt: hizAlt, ust: hizUst, bpm: bpmKipi };
+    adimRef.current = adim;
+  }, [hizAlt, hizUst, bpmKipi, adim]);
   const [metronome, setMetronome] = useState(compact);
   const countIn = ayarlar.sayim ?? compact;
   const setCountIn = useCallback((on: boolean) => guncelle({ sayim: on }), [guncelle]);
@@ -524,7 +552,7 @@ function Player({
           // Kademeli hızlanma: döngünün her turunda hız bir adım artar (hedefe kadar)
           const p = playback.current;
           if (p.loop && p.ramp) {
-            const next = Math.min(p.rampa.hedef, p.speed + p.rampa.adim);
+            const next = Math.min(p.rampa.hedef, sinirRef.current.ust, p.speed + p.rampa.adim);
             if (next !== p.speed) {
               playback.current.speed = next;
               api.playbackSpeed = next / 100;
@@ -807,7 +835,7 @@ function Player({
         else gotoBar(i + 1);
       } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         e.preventDefault();
-        setSpeed(playback.current.speed + (e.key === "ArrowUp" ? 5 : -5));
+        setSpeed(playback.current.speed + (e.key === "ArrowUp" ? 1 : -1) * adimRef.current);
       } else if (e.key === "l" || e.key === "L") setLoop((x) => !x);
       else if (e.key === "m" || e.key === "M") setMetronome((x) => !x);
       else if (e.key === "Escape") {
@@ -941,7 +969,8 @@ function Player({
   }, [devam, playerReady, selectBars, gotoBar, setSpeed]);
 
   const multiTrack = tracks.length > 1 && mutedTracks === undefined && !audioOnly;
-  const showParts = !!parts?.length && !barRange && meta.bars > 0;
+  // Tek kısımlı (ya da kısımsız) derste kısım düğmeleri ve sınırları gösterilmez
+  const showParts = (parts?.length ?? 0) > 1 && !barRange && meta.bars > 0;
   const shownTrack = tracks.find((t) => t.index === shown);
   /** Kontrol çubuğu düğmeleri: zeminsiz, üstüne gelince hafif dolgu (apple.com), açıkken vurgu rengi */
   const ctl =
@@ -1061,25 +1090,27 @@ function Player({
           {ayrac}
           {/* Hız: −/+ ve açılır panel (kaydırıcı, %50/%75/%100, kademeli hızlanma) */}
           <div className="relative flex shrink-0 items-center" role="group" aria-label="Hız">
-            <button type="button" className={kucukIkon} onClick={() => setSpeed(speed - 5)} disabled={speed <= MIN_SPEED} aria-label="Yavaşlat (↓)" title="Yavaşlat %5 (↓)">
+            <button type="button" className={kucukIkon} onClick={() => setSpeed(speed - adim)} disabled={speed <= hizAlt + 1e-6} aria-label="Yavaşlat (↓)" title={bpmKipi ? "Yavaşlat 5 BPM (↓)" : "Yavaşlat %5 (↓)"}>
               −
             </button>
             <button
               ref={hizTetik}
               type="button"
               data-hiz-dugmesi
+              data-hiz-alt={hizAlt}
+              data-hiz-ust={hizUst}
               onClick={() => ac("hiz")}
               className={`${ctl} px-2 tabular-nums ${panel === "hiz" ? "bg-ink/[0.08]" : ""}`}
               aria-haspopup="dialog"
               aria-expanded={panel === "hiz"}
-              aria-label={`Hız %${speed}, ${bpm} BPM${ramp ? ", kademeli hızlanma açık" : ""}: hız panelini aç`}
-              title={`Hız %${speed} · ${bpm} BPM${ramp ? ` · kademeli → %${ayarlar.rampa.hedef}` : ""}`}
+              aria-label={`Hız %${Math.round(speed)}, ${bpm} BPM${ramp ? ", kademeli hızlanma açık" : ""}: hız panelini aç`}
+              title={`Hız %${Math.round(speed)} · ${bpm} BPM${bpmKipi ? ` (tempo ${bpmAraligi![0]}–${bpmAraligi![1]} BPM)` : ""}${ramp ? ` · kademeli → %${ayarlar.rampa.hedef}` : ""}`}
             >
               {ramp ? <TrendingUp size={14} className="text-accent" aria-hidden /> : <Gauge size={14} className="text-muted" aria-hidden />}
-              <span className="min-w-[2.6rem] text-left">%{speed}</span>
+              <span className="min-w-[2.6rem] text-left">{bpmKipi ? `${bpm} BPM` : `%${speed}`}</span>
               <ChevronDown size={12} className="-ml-1 text-muted" aria-hidden />
             </button>
-            <button type="button" className={kucukIkon} onClick={() => setSpeed(speed + 5)} disabled={speed >= MAX_SPEED} aria-label="Hızlandır (↑)" title="Hızlandır %5 (↑)">
+            <button type="button" className={kucukIkon} onClick={() => setSpeed(speed + adim)} disabled={speed >= hizUst - 1e-6} aria-label="Hızlandır (↑)" title={bpmKipi ? "Hızlandır 5 BPM (↑)" : "Hızlandır %5 (↑)"}>
               +
             </button>
             {panel === "hiz" && (
@@ -1087,13 +1118,50 @@ function Player({
                 <div className="flex items-baseline justify-between">
                   <h3 className="font-semibold">Hız</h3>
                   <span className="text-sm tabular-nums">
-                    %{speed} <span className="text-muted">· {bpm} BPM</span>
+                    %{Math.round(speed)} <span className="text-muted">· {bpm} BPM</span>
                   </span>
                 </div>
-                <input type="range" min={MIN_SPEED} max={MAX_SPEED} step={5} value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="w-full accent-[var(--accent)]" aria-label="Hız" />
+                {bpmKipi ? (
+                  <div>
+                    <input
+                      type="range"
+                      min={bpmAraligi![0]}
+                      max={bpmAraligi![1]}
+                      step={1}
+                      value={bpm}
+                      onChange={(e) => setSpeed((Number(e.target.value) * 100) / tabTempo)}
+                      className="w-full accent-[var(--accent)]"
+                      aria-label="Tempo (BPM)"
+                    />
+                    <span className="flex justify-between text-xs tabular-nums text-muted" aria-hidden>
+                      <span>{bpmAraligi![0]} BPM</span>
+                      <span>{bpmAraligi![1]} BPM</span>
+                    </span>
+                  </div>
+                ) : (
+                  <input type="range" min={MIN_SPEED} max={MAX_SPEED} step={5} value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="w-full accent-[var(--accent)]" aria-label="Hız" />
+                )}
+                {!!bpmSecenekleri?.length && bpmKipi && (
+                  <div role="group" aria-label="Sınav kademesi" className="space-y-1.5">
+                    <p className="text-xs font-semibold text-muted">Sınav kademesi</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {bpmSecenekleri.map((k) => (
+                        <button
+                          key={k.ad}
+                          type="button"
+                          onClick={() => setSpeed((k.bpm * 100) / tabTempo)}
+                          aria-pressed={bpm === k.bpm}
+                          className={`rounded-full border border-ink/10 bg-ink/[0.04] px-2.5 py-1 text-sm tabular-nums transition hover:bg-ink/10 ${bpm === k.bpm ? on : ""}`}
+                        >
+                          {k.ad} · {k.bpm}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-1.5">
                   {SPEEDS.map((v) => (
-                    <button key={v} type="button" onClick={() => setSpeed(v)} aria-pressed={speed === v} className={`flex-1 rounded-full border border-ink/10 bg-ink/[0.04] py-1 text-sm tabular-nums transition hover:bg-ink/10 ${speed === v ? on : ""}`}>
+                    <button key={v} type="button" onClick={() => setSpeed(v)} aria-pressed={Math.abs(speed - v) < 1e-6} className={`flex-1 rounded-full border border-ink/10 bg-ink/[0.04] py-1 text-sm tabular-nums transition hover:bg-ink/10 ${Math.abs(speed - v) < 1e-6 ? on : ""}`}>
                       %{v}
                     </button>
                   ))}
@@ -1112,14 +1180,14 @@ function Player({
                     </span>
                     <span className="block text-xs text-muted tabular-nums">
                       %{ayarlar.rampa.baslangic}&apos;tan başla, her döngüde +%{ayarlar.rampa.adim}, hedef %{ayarlar.rampa.hedef}
-                      {ramp ? (speed >= ayarlar.rampa.hedef ? " · hedefte" : ` · şimdi %${speed}`) : ""}
+                      {ramp ? (speed >= Math.min(ayarlar.rampa.hedef, hizUst) - 1e-6 ? " · hedefte" : ` · şimdi %${Math.round(speed)}`) : ""}
                     </span>
                   </span>
                   <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${ramp ? "bar-fill" : "bg-ink/15"}`}>
                     <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${ramp ? "left-[1.125rem]" : "left-0.5"}`} />
                   </span>
                 </button>
-                <p className="text-xs text-muted">↑ ↓ tuşları ±%5 · adımlar Ayarlar&apos;da</p>
+                <p className="text-xs text-muted">{bpmKipi ? `↑ ↓ tuşları ±5 BPM · tempo ${bpmAraligi![0]}–${bpmAraligi![1]} BPM` : "↑ ↓ tuşları ±%5"} · adımlar Ayarlar&apos;da</p>
               </Acilir>
             )}
           </div>

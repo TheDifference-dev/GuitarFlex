@@ -120,7 +120,7 @@ export function kursSimgesi(slug: string): SimgeTanim {
 
 // ── Ders türleri ─────────────────────────────────────────────────────────────
 /** Dersin simge türü: drill dışındaki ders türleri, teori kartları ve tabsız okuma adımı */
-export type DersTuru = "etut" | "okuma" | "quickstudy" | "transkripsiyon" | "kompozisyon" | "resital" | "egitim" | "pratik" | "ek";
+export type DersTuru = "etut" | "okuma" | "quickstudy" | "transkripsiyon" | "kompozisyon" | "resital" | "sinav" | "egitim" | "pratik" | "ek";
 const DERS: Record<DersTuru | "drill", SimgeTanim> = {
   drill: s("gitar", "grafit"),
   etut: s("mezuniyet", "sari"),
@@ -129,6 +129,7 @@ const DERS: Record<DersTuru | "drill", SimgeTanim> = {
   transkripsiyon: s("kulaklik", "pembe"),
   kompozisyon: s("kalem", "mor"),
   resital: s("mikrofon", "kirmizi"),
+  sinav: s("kupa", "sari"),
   egitim: s("kitap-yazi", "indigo"),
   pratik: s("liste", "yesil"),
   ek: s("gitar", "kahve"),
@@ -141,6 +142,7 @@ export const DERS_TURU_ADI: Record<DersTuru | "drill", string> = {
   transkripsiyon: "Transkripsiyon",
   kompozisyon: "Kompozisyon",
   resital: "Resital",
+  sinav: "Sınav",
   egitim: "Eğitim kartı",
   pratik: "Pratik kartı",
   ek: "Ek inceleme",

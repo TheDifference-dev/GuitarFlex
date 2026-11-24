@@ -64,6 +64,8 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
         chords={lesson.chords}
         title={lesson.title}
         parts={lesson.parts}
+        bpmAraligi={lesson.bpmRange}
+        kademeler={lesson.kind === "sinav" ? lesson.examTiers?.map((bpm, i) => ({ ad: lesson.examTierNames?.[i] ?? `${i + 1}. kademe`, bpm })) : undefined}
         guitarProgram={gitarProgrami(lesson.tips, course.slug)}
         defter={{ kurs: course.cardTitle ?? course.title, href: `/calis/${course.slug}/${encodeURIComponent(lesson.id)}` }}
         baslik={

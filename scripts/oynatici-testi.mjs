@@ -689,7 +689,10 @@ async function ekSenaryo(s, sayfa) {
   // İlk pencere sessizse (uzun nota sönmüş olabilir) bir pencere daha dinlenir
   const ilkPencere = rms;
   if (rms <= ESIK) rms = await pencere(s, 2500);
-  adim("hiz-50", d.hiz === 0.5 && d.tick !== t1 && rms > ESIK, { hiz: d.hiz, rms, ilkPencere, tick: [t1, d.tick] });
+  // Tempo aralığı (bpmRange, K18: ör. 40–150 BPM) olan derste hız bu aralığa çekilir: %50 aralığın altındaysa beklenen alt sınır
+  const sinir = await s.js(`(() => { const b = document.querySelector('${HIZ_PANELI}'); return b ? [Number(b.dataset.hizAlt), Number(b.dataset.hizUst)] : null; })()`);
+  const bek50 = sinir && Number.isFinite(sinir[0]) ? Math.min(sinir[1], Math.max(sinir[0], 50)) / 100 : 0.5;
+  adim("hiz-50", Math.abs(d.hiz - bek50) < 1e-4 && d.tick !== t1 && rms > ESIK, { hiz: d.hiz, beklenen: bek50, sinir, rms, ilkPencere, tick: [t1, d.tick] });
   if (!(await s.js(`!!window.__gfSonda.dugme("%100")`))) await s.js(`window.__gfSonda.tikla('${HIZ_PANELI}')`, true);
   await s.js(`window.__gfSonda.metinTikla("%100")`, true);
 

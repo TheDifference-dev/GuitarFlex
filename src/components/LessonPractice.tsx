@@ -40,12 +40,16 @@ type Props = {
   children?: ReactNode;
   /** Çalışma Defteri kaydı: kurs adı ve ders adresi (verilmezse defter şeridi gösterilmez) */
   defter?: { kurs: string; href: string };
+  /** Tempo seçimi (ders alanı `bpmRange`, ör. [40, 150]): oynatıcıda tempo bu aralıkta kalır */
+  bpmAraligi?: [number, number];
+  /** Sınav kademeleri (ders alanı `examTiers` + `examTierNames`): oynatıcının üstünde kademe düğmeleri */
+  kademeler?: { ad: string; bpm: number }[];
 };
 
 const SAVE_EVERY = 5;
 
 /** Ders ekranı: tab oynatıcı + hedef süre sayacı. Çalma süresi otomatik kaydedilir. */
-export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading, stave, kind, readBars, improvBars, chords, title, parts, guitarProgram, baslik, children, defter }: Props) {
+export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl, reading, stave, kind, readBars, improvBars, chords, title, parts, guitarProgram, baslik, children, defter, bpmAraligi, kademeler }: Props) {
   const progress = useProgress();
   const saved = progress.exercises[progressKey];
   const target = minutes * 60;
@@ -104,6 +108,8 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
     setDevam((x) => ({ n: (x?.n ?? 0) + 1, olcu: k.konum ? k.konum - 1 : undefined, aralik: k.aralik, hiz: k.hiz }));
     document.querySelector("[data-kontrol-cubugu]")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, []);
+  /** Sınav kademesi: oynatıcının hızı kademenin BPM'ine (tab temposu `bpm`) taşınır */
+  const kademeSec = useCallback((k: { bpm: number }) => setDevam((x) => ({ n: (x?.n ?? 0) + 1, hiz: (k.bpm * 100) / bpm })), [bpm]);
   const kisimSec = useCallback(
     (ad: string | null) => {
       const p = parts?.find((x) => x.name === ad);
@@ -226,14 +232,32 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
       {bilgi && (
         <DefterSeridi
           bilgi={bilgi}
-          kisimlar={parts?.map((p) => p.name)}
+          kisimlar={(parts?.length ?? 0) > 1 ? parts!.map((p) => p.name) : undefined}
           canliKisim={canliKisim}
-          onKisimSec={duzOynatici && parts?.length ? kisimSec : undefined}
+          onKisimSec={duzOynatici && (parts?.length ?? 0) > 1 ? kisimSec : undefined}
           onDevam={duzOynatici ? devamEt : undefined}
         />
       )}
 
       {children}
+
+      {duzOynatici && !!kademeler?.length && (
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Sınav kademesi">
+          <span className="text-sm font-semibold text-muted">Kademeni seç:</span>
+          {kademeler.map((k) => (
+            <button
+              key={k.ad}
+              type="button"
+              onClick={() => kademeSec(k)}
+              aria-pressed={currentBpm === k.bpm}
+              data-sinav-kademesi={k.bpm}
+              className={`rounded-full border px-3 py-1 text-sm font-semibold tabular-nums transition ${currentBpm === k.bpm ? "border-accent bg-accent text-accent-ink" : "border-ink/10 bg-ink/[0.04] hover:bg-ink/10"}`}
+            >
+              {k.ad} <span className="font-medium opacity-80">{k.bpm} BPM</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {kind === "quickstudy" && tex && chords?.length && readBars && improvBars ? (
         <QuickStudy tex={tex} chords={chords} readBars={readBars} improvBars={improvBars} onPlayingChange={calmaDegisti} />
@@ -242,7 +266,19 @@ export default function LessonPractice({ progressKey, bpm, minutes, tex, tabUrl,
       ) : kind === "kompozisyon" && tex && chords?.length ? (
         <Kompozisyon tex={tex} chords={chords} bpm={bpm} title={title ?? "Kompozisyon"} progressKey={progressKey} onPlayingChange={calmaDegisti} />
       ) : source ? (
-        <TabPlayer source={source} compact stave={stave} parts={parts} guitarProgram={guitarProgram} onBpmChange={setCurrentBpm} onPlayingChange={calmaDegisti} onDurum={onDurum} devam={devam} />
+        <TabPlayer
+          source={source}
+          compact
+          stave={stave}
+          parts={parts}
+          guitarProgram={guitarProgram}
+          onBpmChange={setCurrentBpm}
+          onPlayingChange={calmaDegisti}
+          onDurum={onDurum}
+          devam={devam}
+          bpmAraligi={bpmAraligi}
+          bpmSecenekleri={kademeler}
+        />
       ) : reading ? null : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="rounded-3xl border border-dashed border-line p-6 text-sm text-muted">

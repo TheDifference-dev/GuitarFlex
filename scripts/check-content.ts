@@ -103,12 +103,12 @@ for (const item of items) {
 // readBars, improvBars, hideTab, stave, chords; parts (Egzersiz Yazım Standardı v2.3 §5). Etiketsiz içerikte hiçbir şey yazdırmaz.
 const LEVELS = new Set(["L1", "L2", "L3", "L4", "L5"]);
 const AXES = new Set(["technique", "fretboard", "rhythm", "theory_ear"]);
-const KINDS = new Set(["drill", "etut", "okuma", "quickstudy", "transkripsiyon", "kompozisyon", "resital"]);
+const KINDS = new Set(["drill", "etut", "okuma", "quickstudy", "transkripsiyon", "kompozisyon", "resital", "sinav"]);
 const VARIANTS = new Set(["reverse", "inversion", "permutation"]);
 const FORM_PARTS = new Set(["intro", "A", "B", "bridge", "A2"]);
 const STAVES = new Set(["score", "tab", "both"]);
 const PART_NAMES = new Set(["A", "A′", "B", "C"]);
-const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave", "chords", "parts"] as const;
+const LESSON_FIELDS = ["kind", "variantOf", "variant", "ref", "form", "tempoRounds", "readBars", "improvBars", "hideTab", "stave", "chords", "parts", "examTiers", "examTierNames"] as const;
 
 // Beceri sözlüğü: kişisel içerik köklerinde belgeler/mufredat/beceri-sozlugu.json (ilk bulunan)
 let skillKeys: Set<string> | null = null;
@@ -224,6 +224,15 @@ function lessonProblems(r: Row): { problems: string[]; warnings: string[] } {
       if (!l.tex && !l.tabFile && !l.ref) w.push("stave verilmiş ama dersin tabı yok");
       if (l.hideTab) w.push(`hideTab ile stave "${l.stave}" birlikte verilmemeli (transkripsiyon dersi yalnız ses olarak çalınır)`);
     }
+  }
+  // examTiers / examTierNames (K18): yalnız sınavda; artan BPM'ler, adlar aynı sayıda
+  if (l.examTiers !== undefined || l.examTierNames !== undefined || l.kind === "sinav") {
+    const t = l.examTiers as unknown;
+    const a = l.examTierNames as unknown;
+    if (l.kind !== "sinav") p.push(`examTiers yalnız sınav (kind "sinav") dersinde kullanılır (kind ${JSON.stringify(l.kind)})`);
+    if (!Array.isArray(t) || !t.length || !t.every((n) => isInt(n) && n > 0)) p.push(`examTiers pozitif tam sayılardan oluşan bir dizi olmalı: ${JSON.stringify(t)}`);
+    else if (t.some((n, i) => i && n <= t[i - 1])) p.push(`examTiers artan olmalı: ${JSON.stringify(t)}`);
+    if (!Array.isArray(a) || !Array.isArray(t) || a.length !== t.length || !a.every((x) => typeof x === "string" && x.trim())) p.push(`examTierNames examTiers ile aynı sayıda ad olmalı: ${JSON.stringify(a)}`);
   }
   // parts (v2.3 §5): ardışık, boşluksuz, 1. ölçüden tabın son ölçüsüne; focus en çok 60 karakter
   if (l.parts !== undefined) {

@@ -22,8 +22,9 @@ export type Tags = {
 };
 
 /** Dersin türü: drill (varsayılan, kısa tek fikir) · etut (seviye sonu uzun parça) · okuma (tabsız adım)
- *  · quickstudy (okuma + doğaçlama) · transkripsiyon (gizli tab, kulaktan) · kompozisyon · resital */
-export type LessonKind = "drill" | "etut" | "okuma" | "quickstudy" | "transkripsiyon" | "kompozisyon" | "resital";
+ *  · quickstudy (okuma + doğaçlama) · transkripsiyon (gizli tab, kulaktan) · kompozisyon · resital
+ *  · sinav (bölüm sonu sınavı; BPM kademelerden seçilir, bkz. `examTiers`) */
+export type LessonKind = "drill" | "etut" | "okuma" | "quickstudy" | "transkripsiyon" | "kompozisyon" | "resital" | "sinav";
 
 /** Etüt formunun parçası */
 export type FormPart = "intro" | "A" | "B" | "bridge" | "A2";
@@ -37,7 +38,7 @@ export type Lesson = Tags & {
   id: string;
   title: string;
   bpm: number;
-  /** Önerilen tempo aralığı (ör. [40, 150]); verilirse "40–150 BPM" olarak gösterilir */
+  /** Önerilen tempo aralığı (ör. [40, 150]); verilirse "40–150 BPM" olarak gösterilir ve oynatıcıda tempo bu aralıkta seçilir */
   bpmRange?: [number, number];
   /** Dersin hedef çalışma süresi (dakika; 0.75 = 45 sn). Bu süreye ulaşınca ders tamamlanır. */
   minutes: number;
@@ -89,6 +90,10 @@ export type Lesson = Tags & {
   parts?: LessonPart[];
   /** Ders sayfasındaki "Akor Şekilleri" kutusu: akor diyagramları (perdeler kalın Mi → ince Mi, ör. "x 3 2 0 1 0") */
   diagrams?: AkorDiyagrami[];
+  /** Yalnız sınav (kind "sinav"): kademelerin BPM'leri (kolaydan zora); oynatıcıda tempo bu değerlerden seçilir */
+  examTiers?: number[];
+  /** Yalnız sınav: kademe adları, `examTiers` ile aynı sırada (ör. "Altın I", "Platin I", "Elmas I", "Usta") */
+  examTierNames?: string[];
 };
 
 /** Akor diyagramı: ad, perdeler ("x" çalınmaz, 0 açık tel; kalın Mi → ince Mi, boşlukla) ve kısa not (ör. "A şekli · kök 5. tel") */

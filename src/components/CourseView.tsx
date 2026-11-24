@@ -33,13 +33,17 @@ function sectionDone(p: Progress, course: Course, s: Section) {
   return lessons.length > 0 && lessons.every((l) => lessonDone(p, course, l));
 }
 
-/** Bölüm sonundaki sınav satırı: sınavın adı ve kademelerin BPM eşikleri (Altın I · Platin I · Elmas I · Usta) */
-function ExamRow({ section: s }: { section: Section }) {
+/** Sınav alt bölümü: bütün dersleri sınav (kind "sinav"); kenar listesinde alt bölüm olarak değil, sınav satırında gösterilir */
+const sinavBolumu = (c: Section["chapters"][number]) => c.lessons.length > 0 && c.lessons.every((l) => l.kind === "sinav");
+
+/** Bölüm sonundaki sınav satırı: sınavın adı ve kademelerin BPM eşikleri (Altın I · Platin I · Elmas I · Usta).
+ *  Bölümde sınav dersi varsa satır o derse gider. */
+function ExamRow({ section: s, href, done, onClick }: { section: Section; href?: string; done?: boolean; onClick?: () => void }) {
   const tiers = s.examTiers ?? [];
-  return (
-    <div className="mt-1.5 rounded-xl bg-ink/[0.04] px-2.5 py-2 text-xs" title="Sınava girmek istediğin kademeyi ve BPM'i seç">
-      <span className="flex items-center gap-1.5 font-semibold text-accent">
-        <Sparkles size={12} className="shrink-0" /> {s.examName ?? "Sınav"}
+  const govde = (
+    <>
+      <span className={`flex items-center gap-1.5 font-semibold ${done ? "text-ok" : "text-accent"}`}>
+        {done ? <Check size={12} className="shrink-0" /> : <Sparkles size={12} className="shrink-0" />} {s.examName ?? "Sınav"}
       </span>
       {!!tiers.length && (
         <span className="mt-1 flex flex-wrap gap-1">
@@ -51,6 +55,16 @@ function ExamRow({ section: s }: { section: Section }) {
           ))}
         </span>
       )}
+    </>
+  );
+  const sinif = "mt-1.5 block rounded-xl bg-ink/[0.04] px-2.5 py-2 text-xs";
+  return href ? (
+    <Link href={href} onClick={onClick} className={`${sinif} transition hover:bg-ink/[0.08]`} title="Sınava git: kademeni ve BPM'i seç">
+      {govde}
+    </Link>
+  ) : (
+    <div className={sinif} title="Sınava girmek istediğin kademeyi ve BPM'i seç">
+      {govde}
     </div>
   );
 }
@@ -177,7 +191,7 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                   </span>
                 </button>
                 <div className="space-y-0.5 pb-2 pl-3 pr-2">
-                  {s.chapters.map((c) => {
+                  {s.chapters.filter((c) => !sinavBolumu(c)).map((c) => {
                     const done = c.lessons.every((l) => lessonDone(p, course, l));
                     const altAktif = tab === "egzersiz" && gorunenAlt === `bolum-${c.code}`;
                     return (
@@ -198,7 +212,18 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                       </a>
                     );
                   })}
-                  {(s.exam || !!s.examTiers?.length) && <ExamRow section={s} />}
+                  {(s.exam || !!s.examTiers?.length) &&
+                    (() => {
+                      const sinav = s.chapters.find(sinavBolumu)?.lessons[0];
+                      return (
+                        <ExamRow
+                          section={s}
+                          href={sinav ? dersHref(sinav) : undefined}
+                          done={sinav ? lessonDone(p, course, sinav) : undefined}
+                          onClick={mobil ? () => setCekmece(false) : undefined}
+                        />
+                      );
+                    })()}
                 </div>
               </div>
             );
@@ -250,7 +275,7 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
               {siradaki && (
                 <>
                   {" "}
-                  · Mevcut bölüm <span className="font-semibold text-text">{siradaki.c.code}</span>
+                  · Mevcut bölüm <span className="font-semibold text-text">{sinavBolumu(siradaki.c) ? `${siradaki.s.number}. bölüm sınavı` : siradaki.c.code}</span>
                 </>
               )}
             </p>
@@ -319,7 +344,7 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
             return (
               <section key={c.code} id={`bolum-${c.code}`} className="scroll-mt-28 space-y-4 lg:scroll-mt-20">
                 <div className="flex items-center gap-3 border-b border-line/70 pb-3">
-                  <span className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-semibold text-accent">{c.code}</span>
+                  <span className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-semibold text-accent">{sinavBolumu(c) ? "Sınav" : c.code}</span>
                   <h2 className="flex-1 text-lg font-semibold">{c.title}</h2>
                   {badges && chapterLevels(c).map((lv) => <SeviyeRozeti key={lv} level={lv} />)}
                   <span className="text-sm font-medium text-muted">{total} dk</span>
