@@ -74,6 +74,8 @@ export const KURS_SIMGELERI: Record<string, SimgeTanim> = {
   tapping: s("tapping", "lacivert"),
   // Ek kurslar
   "kromatik-isinma": s("kromatik", "gri"),
+  /** Günlük Rutin (kurs değil, /rutin): ana sayfa ve Elektro sayfası kartları */
+  "gunluk-rutin": s("kronometre", "turuncu"),
   "gf-ekler": s("nota-cift", "camgobegi"),
   "gf-stiller": s("stiller", "pembe"),
   // Müzik teorisi
@@ -187,6 +189,7 @@ const YER = {
   dogaclama: s("mikrofon", "turuncu"),
   araclar: s("gosterge", "gri"),
   metronom: s("metronom", "grafit"),
+  rutin: s("kronometre", "turuncu"),
   "nota-testi": s("hedef", "kirmizi"),
   "sap-gezgini": s("klavye", "mavi"),
   akort: s("gosterge", "gri"),

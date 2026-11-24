@@ -4,6 +4,7 @@ import LessonPractice from "@/components/LessonPractice";
 import { Bant } from "@/components/site/Vitrin";
 import { DersAltGezinme, DersUstGezinme } from "@/components/site/DersGezinme";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
+import AkorKutusu from "@/components/yol/AkorKutusu";
 import { kursAnahatti } from "@/lib/katalog";
 import { DERS_TURU_ADI, dersSimgesi, dersTuru, yerSimgesi } from "@/lib/simge";
 import { flatLessons, lessonKey } from "@/content/courses";
@@ -102,6 +103,24 @@ export default async function LessonPage(props: PageProps<"/calis/[kurs]/[ders]"
       </LessonPractice>
 
       <Bant ton="gri" className="mt-12 space-y-8 pt-12">
+      {!!lesson.diagrams?.length && (
+        <section className="card p-6" aria-label="Akor şekilleri" data-akor-sekilleri>
+          <h2 className="flex items-center gap-2.5 text-[21px] font-semibold">
+            <UygulamaSimgesi simge={yerSimgesi("caged")} boyut={32} /> Akor Şekilleri
+          </h2>
+          <p className="mt-1 text-xs text-muted">Perdeler kalın Mi → ince Mi · ○ açık tel · ✕ çalınmaz · soldaki sayı başlangıç perdesi</p>
+          <div className="mt-4 flex flex-wrap gap-4">
+            {lesson.diagrams.map((d) => (
+              <figure key={`${d.ad}-${d.sekil}`} className="flex w-[104px] flex-col items-center text-center">
+                <figcaption className="text-[15px] font-semibold leading-tight">{d.ad}</figcaption>
+                <AkorKutusu sekil={d.sekil} boyut={96} />
+                <span className="font-mono text-[11px] text-muted">{d.sekil}</span>
+                {d.not && <span className="mt-0.5 text-[11px] leading-tight text-muted">{d.not}</span>}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
       {(theory.length > 0 || !!lesson.tips?.length) && (
         <div className="grid gap-4 md:grid-cols-2">
           {theory.length > 0 && (

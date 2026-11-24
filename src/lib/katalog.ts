@@ -4,18 +4,18 @@ import type { Course, Lesson } from "@/content/types";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { dersTuru, type DersTuru } from "./simge";
 
-/** Katalogdaki grup (GuitarBear'deki "teknik seçici" sırasına benzer): rehberler, akor yolu, elektro teknikler,
- *  ek kurslar, akustik teknikler, müzik teorisi */
+/** Katalogdaki grup (GuitarBear'deki "teknik seçici" sırasına benzer): rehberler, akorlar ve günlük ısınma,
+ *  elektro teknikler, ek kurslar, akustik teknikler, müzik teorisi. Arşivdeki kurslar (rehberler, akustik) katalogda yoktur. */
 export type KursGrubu = "rehber" | "akor" | "elektro" | "ileri" | "ek" | "akustik" | "teori";
 /** Kursun ait olduğu bölüm: menüdeki Elektro Gitar / Akustik Gitar / Müzik Teorisi */
 export type KursAilesi = "elektro" | "akustik" | "teori";
 
 export const GRUP_ADI: Record<KursGrubu, string> = {
   rehber: "Başlangıç Rehberleri",
-  akor: "Akor Yolu",
+  akor: "Akorlar ve Günlük Isınma",
   elektro: "Elektro Gitar Teknikleri",
   ileri: "Orta–İleri · L3–L5",
-  ek: "Müzisyenlik ve Isınma",
+  ek: "Müzisyenlik",
   akustik: "Akustik Gitar Teknikleri",
   teori: "Müzik Teorisi",
 };
@@ -24,10 +24,11 @@ export const AILE_ADI: Record<KursAilesi, string> = { elektro: "Elektro Gitar", 
 /** Ailenin ana sayfası (kırıntıdaki ikinci halka) */
 export const AILE_ADRESI: Record<KursAilesi, string> = { elektro: "/elektro", akustik: "/akustik", teori: "/teori" };
 
-const EK_KURSLAR = new Set(["gf-ekler", "gf-stiller", "kromatik-isinma"]);
+const EK_KURSLAR = new Set(["gf-ekler", "gf-stiller"]);
 /** Orta–ileri (L3–L5) ek kurslar: katalogda kendi grubunda, "Ek kurs" etiketiyle (Stiller: bölümleri L2–L5, ağırlığı L3–L5) */
 const ILERI_KURSLAR = new Set(["gf-stiller"]);
-const AKOR_KURSLARI = new Set(["akor-yolu", "akorlar"]);
+/** Akorlar ve Kromatik Isınma (Günlük Rutin'in egzersizleri) birlikte; arşivdeki Akor Yolu da bu gruba düşer */
+const AKOR_KURSLARI = new Set(["akor-yolu", "akorlar", "kromatik-isinma"]);
 
 export function kursAilesi(c: Course): KursAilesi {
   if (c.kind === "theory") return "teori";

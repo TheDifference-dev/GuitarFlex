@@ -6,7 +6,10 @@ import { Check } from "lucide-react";
 import UygulamaSimgesi from "@/components/site/UygulamaSimgesi";
 import { basarimSimgesi, madalyaSimgesi, yerSimgesi } from "@/lib/simge";
 import { today, useProgress } from "@/lib/progress";
-import { KADEMELER, dersKademesi, gorevler, gunler, kademeMetali, olculer, seri, type KursYapisi, type OyunVeri } from "@/lib/oyun";
+import { KADEMELER, dersKademesi, gorevler, gunler, kademeMetali, kurallar, olculer, seri, type KursYapisi, type OyunVeri } from "@/lib/oyun";
+import { useDefter } from "@/lib/defter";
+import { gununTeknikleri, useTeknikSecimi } from "@/lib/gunun-teknikleri";
+import { gununRutini } from "@/content/rutin";
 
 const KATEGORI: Record<string, string> = {
   streak: "Seri",
@@ -32,9 +35,14 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
   const p = useProgress();
   const [kat, setKat] = useState("");
   const kural = oyun.gorevler;
-  const bugun = gorevler(gunler(p).get(today()), kural);
-  const s = seri(p, kural);
-  const olcu = useMemo(() => olculer(p, kurslar, kural), [p, kurslar, kural]);
+  const defter = useDefter();
+  const secim = useTeknikSecimi();
+  const tarih = today();
+  const k = kurallar(kural);
+  const rutin = gununRutini(tarih);
+  const bugun = gorevler(gunler(p, defter).get(tarih), kural, gununTeknikleri(secim, tarih));
+  const s = seri(p, kural, defter, (t) => gununTeknikleri(secim, t));
+  const olcu = useMemo(() => olculer(p, kurslar, kural, defter, (t) => gununTeknikleri(secim, t)), [p, kurslar, kural, defter, secim]);
   const kazanilan = oyun.basarimlar.filter((b) => (olcu[b.olcu] ?? 0) >= b.esik);
   const xp = kazanilan.reduce((n, b) => n + b.xp, 0);
   const metalSayi = Object.fromEntries(["Bronz", "Gümüş", "Altın", "Platin", "Elmas", "Usta"].map((m) => [m, 0]));
@@ -69,8 +77,20 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
                 {g.tamam ? <Check size={16} className="text-ok" /> : <span className="text-xs text-muted">Bekliyor</span>}
               </div>
               <p className="mt-1 text-sm tabular-nums text-muted">
-                {Math.min(g.deger, g.hedef)} / {g.hedef} {g.birim}
+                {Math.min(g.deger, g.hedef)} / {g.hedef}{g.birim ? ` ${g.birim}` : ""}
               </p>
+              {g.alt && (
+                <ul className="mt-1.5 space-y-0.5 text-xs text-muted">
+                  {g.alt.map((a) => (
+                    <li key={a.ad} className="flex items-center justify-between gap-2">
+                      <span className={a.tamam ? "font-semibold text-ok" : ""}>{a.ad}</span>
+                      <span className="tabular-nums">
+                        {Math.min(a.dk, a.hedefDk)}/{a.hedefDk} dk
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10">
                 <div className={`h-full ${g.tamam ? "bg-ok" : "bar-fill"}`} style={{ width: `${Math.min(100, (g.deger / g.hedef) * 100)}%` }} />
               </div>
@@ -78,7 +98,7 @@ export default function OyunPaneli({ oyun, kurslar }: { oyun: OyunVeri; kurslar:
           ))}
         </div>
         <p className="mt-3 text-xs text-muted">
-          Egzersiz: derslerde çalma süresi · Teori: Ritim, Klavye, Kulak ya da Armoni yolunda bir adımı geç · Serbest Çalışma: Doğaçlama eşliklerinde çalma süresi.
+          Günlük hedef: ısınma {k.isinmaDk}–15 dk (bugün Rutin {rutin.gun} · {rutin.ad}), sonra {k.calismaDk} dk çalışma — günün üç tekniğinden en az {k.teknikHedef}&apos;si (her biri ≥ {k.teknikDk} dk, o kursun derslerinde) ve kalan sürede {k.sarkiHedef} şarkı (≥ {k.sarkiDk} dk: Şarkı Kütüphanesi, kendi dosyaların ya da Çalışma Defteri&apos;ne yazdığın Songsterr süresi). Hepsi metronomla. Teknikleri Günlük Rutin sayfasından değiştirebilirsin.
         </p>
       </section>
 

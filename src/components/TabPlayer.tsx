@@ -63,7 +63,7 @@ export type OynaticiDurumu = {
   kisim: string | null;
 };
 /** Dışarıdan "kaldığın yerden devam": `n` her değiştiğinde (oynatıcı hazır olunca) bir kez uygulanır */
-export type DevamKomutu = { n: number; olcu?: number; aralik?: [number, number] | null; hiz?: number | null };
+export type DevamKomutu = { n: number; olcu?: number; aralik?: [number, number] | null; hiz?: number | null; /** Uygulandıktan sonra çal ya da durdur (Günlük Rutin: blok değişince) */ oynat?: "cal" | "dur" };
 
 type View = OynaticiAyarlari["gorunum"];
 /** Ders alanı `stave` → oynatıcının ilk görünümü (verilmezse kayıtlı tercih) */
@@ -142,7 +142,7 @@ const davulKanaliVar = (api: any) => !!api?.score?.tracks?.some((t: any) => t.pl
  * Çıkışa sınırlayıcı (limiter): kanallar %450'ye kadar çıkabildiği için toplam ses 0 dBFS'yi aşınca kırpılıp bozulmasın.
  * alphaTab 1.8.4 sesini kendi AudioContext'inde `worklet.connect(ctx.destination)` ile bağlar (AlphaSynthAudioWorkletOutput
  * › play); bu bağlam örneğinin `destination`'ı sınırlayıcıya yönlendirilir, sınırlayıcı gerçek çıkışa bağlanır.
- * Ses yolunun geri kalanı değişmez. Sınırlayıcı eşiğin (-3 dBFS) altındaki sese dokunmaz.
+ * Ses yolunun geri kalanı değişmez. Sınırlayıcı eşiğin (-4 dBFS) altındaki sese dokunmaz.
  */
 function sinirlayiciKur(api: any) {
   try {
@@ -150,10 +150,11 @@ function sinirlayiciKur(api: any) {
     if (!ctx || ctx.__gfSinirlayici || typeof ctx.createDynamicsCompressor !== "function") return;
     const gercek = ctx.destination;
     const s = ctx.createDynamicsCompressor();
-    s.threshold.value = -3;
+    // Attack 0: tellerin aynı anda vurulduğu akorlarda (6 nota, 450 %) 2 ms'lik attack tepe değeri 1'in üstüne kaçırıyordu
+    s.threshold.value = -4;
     s.knee.value = 0;
     s.ratio.value = 20;
-    s.attack.value = 0.002;
+    s.attack.value = 0;
     s.release.value = 0.15;
     s.connect(gercek);
     Object.defineProperty(ctx, "destination", { configurable: true, get: () => s });
@@ -933,6 +934,8 @@ function Player({
       const ar = devam.aralik;
       if (ar) selectBars(ar[0], ar[1]);
       if (devam.olcu !== undefined && (!ar || (devam.olcu > ar[0] && devam.olcu <= ar[1]))) gotoBar(devam.olcu);
+      if (devam.oynat === "cal" && apiRef.current?.playerState !== 1) apiRef.current?.play();
+      if (devam.oynat === "dur") apiRef.current?.pause();
     });
     return () => cancelAnimationFrame(id);
   }, [devam, playerReady, selectBars, gotoBar, setSpeed]);

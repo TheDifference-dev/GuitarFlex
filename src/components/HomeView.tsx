@@ -22,7 +22,7 @@ export function coursePercent(p: Progress, keys: string[]) {
   return Math.round((keys.filter((k) => p.exercises[k]?.completed).length / keys.length) * 100);
 }
 
-/** Teknik egzersiz merkezi: rehberler, akor yolu kartı, kurs kartları ve şarkı bağlantıları (elektro ya da akustik) */
+/** Teknik egzersiz merkezi: günlük rutin, akorlar kartı, kurs kartları ve şarkı bağlantıları (elektro ya da akustik) */
 export default function HomeView({ texts, courses, songs = "elektro", eyebrow }: { texts: SiteTexts; courses: CourseSummary[]; songs?: "elektro" | "akustik"; eyebrow?: string }) {
   const p = useProgress();
   const songCards = songs === "akustik" ? acousticSongCards(texts.chordCard.slug) : SONG_CARDS;
@@ -75,9 +75,9 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
         kirinti={[{ label: bolum }, { label: "Teknik Egzersizler" }]}
         ust={bolum}
         baslik={songs === "akustik" ? "Akustik Gitar Teknikleri" : "Gitar Teknik Egzersizleri"}
-        alt="Bir rehberle sırayla ilerle ya da istediğin tekniğe doğrudan geç. Hiçbir ders kilitli değil."
+        alt={songs === "akustik" ? "Bir rehberle sırayla ilerle ya da istediğin tekniğe doğrudan geç. Hiçbir ders kilitli değil." : "Her gün 10–15 dakikalık ısınma, sonra 20 dakika teknik ve bir şarkı. Hiçbir ders kilitli değil."}
       >
-        {texts.hero.guides[0] && <HapBag href={`/calis/${texts.hero.guides[0].slug}`}>Rehberle Başlayın</HapBag>}
+        {texts.hero.guides[0] && <HapBag href={texts.hero.guides[0].href ?? `/calis/${texts.hero.guides[0].slug}`}>{texts.hero.guides[0].title}</HapBag>}
         <MetinBag href="/kurslar" buyuk>
           Tüm kurslar
         </MetinBag>
@@ -90,7 +90,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
       <Bant ton="gri" className="space-y-14 pt-12">
 
       <section className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-        {/* Başlangıç rehberleri */}
+        {/* Günlük çalışma: Günlük Rutin ve Kromatik Isınma (akustikte rehberler) */}
         <div className="card relative overflow-hidden p-7 sm:p-8">
           
           <p className="eyebrow">{texts.hero.eyebrow}</p>
@@ -99,7 +99,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
           <div className={`mt-7 grid gap-3 ${texts.hero.guides.length > 1 ? "sm:grid-cols-2" : ""}`}>
             {texts.hero.guides.map((g) => {
               return (
-                <Link key={g.slug} href={`/calis/${g.slug}`} className="group flex items-center gap-4 rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-4 transition hover:bg-ink/[0.08]">
+                <Link key={g.slug} href={g.href ?? `/calis/${g.slug}`} className="group flex items-center gap-4 rounded-2xl border border-ink/[0.08] bg-ink/[0.04] p-4 transition hover:bg-ink/[0.08]">
                   <UygulamaSimgesi simge={kursSimgesi(g.slug)} boyut={44} />
                   <span className="flex-1">
                     <span className="block font-semibold leading-tight">{g.title}</span>
@@ -114,7 +114,7 @@ export default function HomeView({ texts, courses, songs = "elektro", eyebrow }:
           </div>
         </div>
 
-        {/* Akor yolu */}
+        {/* Akorlar */}
         <div className="card relative overflow-hidden p-7 sm:p-8">
           <ChordDiagram />
           <p className="eyebrow mt-10">{texts.chordCard.eyebrow}</p>

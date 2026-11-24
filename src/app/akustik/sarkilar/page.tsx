@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Bant, MetinBag, SayfaBasi } from "@/components/site/Vitrin";
 import SongList from "@/components/SongList";
 import { getCourses } from "@/lib/courses";
@@ -10,6 +11,8 @@ export default async function AcousticSongsPage() {
   const [songs, courses] = await Promise.all([getPopularSongs(), getCourses()]);
   const courseTitles = Object.fromEntries(courses.map((c) => [c.slug, c.title]));
   const acoustic = songs.filter((s) => s.tags.includes("Akustik"));
+  // Akustik şarkılar ve kurslar arşivdeyse sayfa yoktur (bayrak kalkınca geri gelir)
+  if (!acoustic.length || !courses.some((c) => c.kind === "acoustic")) notFound();
   return (
     <div>
       <SayfaBasi

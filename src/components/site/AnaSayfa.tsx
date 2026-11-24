@@ -10,7 +10,9 @@ import { formatDuration, streak, today, totalSeconds, useProgress } from "@/lib/
 import type { Level } from "@/content/types";
 import { kursSimgesi, seviyeSimgesi, yerSimgesi, yolSimgesi, type SimgeRengi } from "@/lib/simge";
 import SongsterrBag from "@/components/SongsterrBag";
-import { defterIsle, kayitAc, songsterrKaydi } from "@/lib/defter";
+import { defterIsle, kayitAc, songsterrKaydi, useDefter } from "@/lib/defter";
+import { gununTeknikleri, useTeknikSecimi } from "@/lib/gunun-teknikleri";
+import { gununRutini } from "@/content/rutin";
 import SimgeIzgarasi, { type IzgaraOgesi } from "./SimgeIzgarasi";
 import UygulamaSimgesi from "./UygulamaSimgesi";
 import IlerlemeHalkasi from "./IlerlemeHalkasi";
@@ -66,7 +68,8 @@ function AnaBant({
 /**
  * Ana sayfa (apple.com düzeni, sade): ince günlük görev şeridi, sonra tam genişlik bantlar sırayla —
  * kapak (siyah) · [kaldığın yerden devam et] · kurslar (beyaz, her kurs kendi renginde) · Seviye Yolu (uzay grisi) ·
- * Şarkılar (açık gri: Rehber Şarkılar ve Tüm Kütüphane) · Teori (siyah) · Elektro / Akustik / Doğaçlama / Araçlar döşemeleri (beyaz).
+ * Şarkılar (açık gri: Rehber Şarkılar ve Tüm Kütüphane) · Teori (siyah) · Elektro / Günlük Rutin (akustik arşivde değilse Akustik) /
+ * Doğaçlama / Araçlar döşemeleri (beyaz).
  */
 export default function AnaSayfa({
   kartlar,
@@ -122,7 +125,7 @@ export default function AnaSayfa({
         alt="Gitarı adım adım öğren."
         eylemler={
           <>
-            <HapBag href={sifirdan ? "/calis/sifirdan-baslangic-rehberi" : "/kurslar"}>Başlayın</HapBag>
+            <HapBag href={sifirdan ? "/calis/sifirdan-baslangic-rehberi" : "/rutin"}>{sifirdan ? "Başlayın" : "Günlük Rutin"}</HapBag>
             <HapBag href="/nasil-calismaliyim" ikincil>
               Seviyenizi Bulun
             </HapBag>
@@ -160,7 +163,7 @@ export default function AnaSayfa({
       <AnaBant
         ton="beyaz"
         baslik="İstediğin teknikten başla."
-        alt="Rehberler, akorlar, elektro ve akustik teknikler, teori yolları."
+        alt="Günlük rutin, akorlar, elektro teknikler ve teori yolları."
         eylemler={
           <>
             <MetinBag href="/kurslar" buyuk>
@@ -302,23 +305,36 @@ export default function AnaSayfa({
           <Doseme
             simge={yerSimgesi("elektro")}
             baslik="Elektro Gitar"
-            alt="Başlangıç rehberleri, akor yolu ve teknik kursları."
+            alt="Akorlar, günlük ısınma ve orta–ileri teknik kursları."
             not={`${sayilar.elektroKurs} kurs · ${sayilar.elektroDers} ders`}
             baglar={[
               { href: "/elektro", label: "Başlayın" },
               { href: "/seviye", label: "Seviye Yolu" },
             ]}
           />
-          <Doseme
-            simge={yerSimgesi("akustik")}
-            baslik="Akustik Gitar"
-            alt="Duruş, ilk akorlar, geçişler ve akustik teknikler."
-            not={`${sayilar.akustikKurs} kurs · ${sayilar.akustikDers} ders`}
-            baglar={[
-              { href: "/akustik", label: "Başlayın" },
-              { href: "/akustik/sarkilar", label: "Şarkılar" },
-            ]}
-          />
+          {sayilar.akustikKurs > 0 ? (
+            <Doseme
+              simge={yerSimgesi("akustik")}
+              baslik="Akustik Gitar"
+              alt="Duruş, ilk akorlar, geçişler ve akustik teknikler."
+              not={`${sayilar.akustikKurs} kurs · ${sayilar.akustikDers} ders`}
+              baglar={[
+                { href: "/akustik", label: "Başlayın" },
+                { href: "/akustik/sarkilar", label: "Şarkılar" },
+              ]}
+            />
+          ) : (
+            <Doseme
+              simge={yerSimgesi("rutin")}
+              baslik="Günlük Rutin"
+              alt="10–15 dakika ısınma, 20 dakika teknik ve bir şarkı. Üç rutin sırayla döner, hepsi metronomla."
+              not="Rutin A · B · C"
+              baglar={[
+                { href: "/rutin", label: "Başlayın" },
+                { href: "/calis/kromatik-isinma", label: "Kromatik Isınma" },
+              ]}
+            />
+          )}
           <Doseme
             simge={yerSimgesi("dogaclama")}
             baslik="Doğaçlama"
@@ -393,9 +409,12 @@ function Kapak() {
   );
 }
 
-/** Bugünkü görevler (içerik paketinde oyun kuralları varsa) ya da çalışma özeti: tek satırlık şerit, renkli seri / rekor rozetleri */
+/** Bugünkü görevler (içerik paketinde oyun kuralları varsa): Isınma 10 dk · Teknik (3'ten 2) · Şarkı 1; yoksa çalışma özeti.
+ *  Tek satırlık şerit, renkli seri / rekor rozetleri. */
 function GorevSeridi({ oyun }: { oyun?: OyunVeri }) {
   const p = useProgress();
+  const defter = useDefter();
+  const secim = useTeknikSecimi();
   const ic = "mx-auto flex max-w-[1100px] flex-wrap items-center justify-center gap-x-6 gap-y-1.5 py-2.5 text-sm";
   const rozet = "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[13px] font-semibold text-white";
   // Rozet zemini rengin koyu tonu: beyaz yazı her renkte ≥ 4,5:1
@@ -414,12 +433,16 @@ function GorevSeridi({ oyun }: { oyun?: OyunVeri }) {
         </div>
       </div>
     );
-  const gv = gorevler(gunler(p).get(today()), oyun.gorevler);
-  const s = seri(p, oyun.gorevler);
+  const bugun = today();
+  const gv = gorevler(gunler(p, defter).get(bugun), oyun.gorevler, gununTeknikleri(secim, bugun));
+  const s = seri(p, oyun.gorevler, defter, (t) => gununTeknikleri(secim, t));
   return (
     <div className="serit acik-kapsam bant-bas" role="region" aria-label="Günlük görevler">
       <div className={ic}>
         <span className="font-semibold">Bugün</span>
+        <Link href="/rutin" className="rounded-full border border-ink/15 px-2.5 py-0.5 text-[13px] font-semibold transition hover:border-ink/30" data-gunun-rutini>
+          Rutin {gununRutini(bugun).gun}
+        </Link>
         {gv.map((g) => (
           <Link key={g.ad} href={g.href} className="flex items-center gap-2 rounded-full transition hover:underline hover:underline-offset-2">
             <span className={`flex size-4 items-center justify-center rounded-full ${g.tamam ? "bg-ok text-ok-ink" : "border border-ink/25"}`} aria-hidden>
@@ -427,7 +450,7 @@ function GorevSeridi({ oyun }: { oyun?: OyunVeri }) {
             </span>
             {g.ad}
             <span className="tabular-nums text-muted">
-              {Math.min(g.deger, g.hedef)}/{g.hedef} {g.birim}
+              {Math.min(g.deger, g.hedef)}/{g.hedef}{g.birim ? ` ${g.birim}` : ""}
             </span>
             <span className="sr-only">{g.tamam ? "(tamamlandı)" : ""}</span>
           </Link>

@@ -13,7 +13,8 @@ import type { KursYapisi } from "@/lib/oyun";
 export const metadata: Metadata = { title: "Profil" };
 
 export default async function ProfilePage() {
-  const [courses, oyun, populer] = await Promise.all([getCourses(), getOyun(), getPopularSongs()]);
+  // Kurs listesi görünen kurslardan; madalya ve başarım hesabı arşivdeki kursların ilerlemesini de sayar (kayıtlar silinmez)
+  const [courses, tumKurslar, oyun, populer] = await Promise.all([getCourses(), getCourses({ arsivDahil: true }), getOyun(), getPopularSongs()]);
   const oneriler = populer.map((s) => ({ title: s.title, artist: s.artist, url: songUrl(s) }));
   const info: CourseInfo[] = courses.map((c) => {
     const lessons = flatLessons(c);
@@ -25,7 +26,7 @@ export default async function ProfilePage() {
     };
   });
   // Başarımlar için kurs yapısı: bölümlerin ders anahtarları ve derslerin hedef süreleri (pratik kartları hariç)
-  const kurslar: KursYapisi[] = courses.map((c) => ({
+  const kurslar: KursYapisi[] = tumKurslar.map((c) => ({
     slug: c.slug,
     teknik: (c.kind === "technique" || c.kind === "acoustic") && !c.slug.endsWith("-rehberi"),
     bolumler: c.sections.map((s) => s.chapters.flatMap((ch) => ch.lessons.filter((l) => !l.practice).map((l) => lessonKey(c.slug, l.id)))),

@@ -87,7 +87,12 @@ export type Lesson = Tags & {
   /** Çalışmanın kısımları (Egzersiz Yazım Standardı v2.3 §5): ardışık, boşluksuz, son kısım son ölçüde biter.
    *  Oynatıcı kısım kısım döngüye alabilir. Verilmezse çalışma tek parça gösterilir. */
   parts?: LessonPart[];
+  /** Ders sayfasındaki "Akor Şekilleri" kutusu: akor diyagramları (perdeler kalın Mi → ince Mi, ör. "x 3 2 0 1 0") */
+  diagrams?: AkorDiyagrami[];
 };
+
+/** Akor diyagramı: ad, perdeler ("x" çalınmaz, 0 açık tel; kalın Mi → ince Mi, boşlukla) ve kısa not (ör. "A şekli · kök 5. tel") */
+export type AkorDiyagrami = { ad: string; sekil: string; not?: string };
 
 /** Tab oynatıcı görünümü: yalnız nota, yalnız tab ya da ikisi birlikte */
 export type Stave = "score" | "tab" | "both";
@@ -133,6 +138,10 @@ export type Course = {
   /** Kullanılmıyor (eski içerik paketlerindeki emoji simge): kursun simgesi slug'a göre src/lib/simge.ts'ten gelir */
   icon?: string;
   status?: "yakinda";
+  /** Arşiv: kurs içerikte kalır ama katalogdan, gezinmeden, ana sayfadan, Seviye Yolu'ndan ve aramadan çıkar
+   *  (bkz. src/lib/courses.ts › getCourses). Adresi (/calis/<slug>) açık kalır, ilerleme kayıtları silinmez.
+   *  Geri açmak için bayrağı kaldırmak yeterli. */
+  arsiv?: boolean;
   videos?: { title: string; channel?: string; url?: string }[];
   /** "Rehber" sekmesindeki metin (paragraflar; "## " ile başlayan satır başlıktır) */
   guide?: string[];
@@ -145,7 +154,8 @@ export type SiteTexts = {
     eyebrow: string;
     title: string;
     text: string;
-    guides: { slug: string; title: string; text: string; button: string }[];
+    /** `href` verilirse bağlantı oraya gider (ör. /rutin); verilmezse /calis/<slug> */
+    guides: { slug: string; title: string; text: string; button: string; href?: string }[];
   };
   chordCard: { eyebrow: string; title: string; text: string; button: string; slug: string };
   /** Kursların sırası (slug listesi). Listede olmayanlar yerleşik sırayla sona eklenir. */

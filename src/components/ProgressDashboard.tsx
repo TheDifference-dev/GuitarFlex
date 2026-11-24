@@ -30,8 +30,13 @@ export default function ProgressDashboard({ courses, oyun, kurslar = [] }: { cou
   const recent = [...p.sessions].reverse().slice(0, 10);
   const serbest = (key: string) => key.startsWith("serbest:eslik/") && key.slice("serbest:eslik/".length);
   const titleOf = (key: string) => (serbest(key) ? `Doğaçlama · ${serbest(key)}` : (courses.find((c) => c.titles[key])?.titles[key] ?? key));
+  const kutuphane = (key: string) => key.startsWith("serbest:kutuphane/") && key.slice("serbest:kutuphane/".length);
   const hrefOf = (key: string) =>
-    serbest(key) ? `/sarkilar/dogaclama/${serbest(key)}` : `/calis/${key.split("/")[0]}/${encodeURIComponent(key.split("/").slice(1).join("/"))}`;
+    serbest(key)
+      ? `/sarkilar/dogaclama/${serbest(key)}`
+      : kutuphane(key)
+        ? kutuphane(key) === "dosya" ? "/kutuphane" : `/kutuphane/${encodeURIComponent(kutuphane(key) as string)}`
+        : `/calis/${key.split("/")[0]}/${encodeURIComponent(key.split("/").slice(1).join("/"))}`;
 
   return (
     <div className="space-y-8">

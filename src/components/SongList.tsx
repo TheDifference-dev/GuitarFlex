@@ -90,6 +90,7 @@ export default function SongList({ songs, courseTitles, gorunum = "tum" }: Props
 
   const turler = [...new Set(songs.map((s) => s.kind))];
   const kokenVar = songs.some((s) => s.koken === "Türkçe") && songs.some((s) => s.koken === "Global");
+  // Akustik şarkılar arşivdeyse (lib/songs.ts) listede hiç akustik yok: "Elektro ve akustik" süzgeci kendiliğinden kalkar
   const tarzVar = songs.some((s) => s.tags.includes("Akustik")) && songs.some((s) => !s.tags.includes("Akustik"));
   const shown = useMemo(() => {
     const needle = q.trim().toLocaleLowerCase("tr");

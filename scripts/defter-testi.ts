@@ -20,7 +20,7 @@ register(
     ),
 );
 const { streak, today } = await import("../src/lib/progress.ts");
-const { gunler, seri } = await import("../src/lib/oyun.ts");
+const { gorevler, gunler, seri } = await import("../src/lib/oyun.ts");
 
 let gecen = 0;
 const testler: [string, () => void][] = [];
@@ -82,13 +82,35 @@ test("oyun.ts › gunler() ve seri(): 23:30'da kaydedilen oturum o günün göre
   // progress.ts › addPracticeTime oturum tarihini today() ile yazar: 23:30 ve 00:30 kayıtları
   const tarih23 = saatiDondur("2026-11-20T23:30:00+03:00", today);
   const tarih00 = saatiDondur("2026-11-21T00:30:00+03:00", today);
-  const p = { exercises: {}, quizBest: {}, steps: {}, teori: {}, sessions: [{ date: tarih23, exerciseId: "legato/1", seconds: 1200, bpm: 60 }, { date: tarih00, exerciseId: "legato/1", seconds: 300, bpm: 60 }] };
+  // Kromatik Isınma dersi: günlük hedefin "Isınma" görevi (W5)
+  const p = { exercises: {}, quizBest: {}, steps: {}, teori: {}, sessions: [{ date: tarih23, exerciseId: "kromatik-isinma/kr2-1-0-1", seconds: 1200, bpm: 60 }, { date: tarih00, exerciseId: "kromatik-isinma/kr2-1-0-1", seconds: 300, bpm: 60 }] };
   const g = gunler(p);
   assert.equal(g.get("2026-11-20")?.egzersiz, 1200);
   assert.equal(g.get("2026-11-21")?.egzersiz, 300);
-  const kural = { egzersizDk: 20, serbestDk: 10, teoriAdim: 1, kalkanGun: 3, kalkanMaks: 2, oyMaks: 10 };
-  // 21 Kasım 00:30: dün (20) Egzersiz görevi tamam, bugün henüz değil → seri 1, bozulmaz
+  assert.equal(g.get("2026-11-20")?.isinma, 1200);
+  const kural = { egzersizDk: 30, isinmaDk: 10, kalkanGun: 3, kalkanMaks: 2, oyMaks: 10 };
+  // 21 Kasım 00:30: dün (20) Isınma görevi tamam, bugün henüz değil → seri 1, bozulmaz
   assert.equal(saatiDondur("2026-11-21T00:30:00+03:00", () => seri(p, kural)).seri, 1);
+});
+
+test("oyun.ts › gorevler(): ısınma, üç teknikten iki, şarkı (ilerleme kaydı + defter, çift sayma yok)", () => {
+  const g = "2026-11-24";
+  const ses = (exerciseId: string, seconds: number) => ({ date: g, exerciseId, seconds, bpm: 80 });
+  const p = {
+    exercises: {}, quizBest: {}, steps: {}, teori: {},
+    sessions: [ses("kromatik-isinma/kr2-1-0-1", 400), ses("kromatik-isinma/kr2-2-0-1", 300), ses("legato/x", 200), ses("hammer-on-pull-off/y", 150), ses("sweep/z", 299), ses("serbest:kutuphane/yesil", 240)],
+  };
+  // Kütüphane şarkısı: defter aynı 240 sn'yi ölçtü (çift sayılmaz) + Songsterr şarkısı elle 6 dk
+  const defter = { kayitlar: {
+    "sarki:kutuphane/yesil": { tur: "sarki", oturumlar: [{ tarih: g, sure: 240 }] },
+    "sarki:songsterr/X|Y": { tur: "sarki", oturumlar: [{ tarih: g, sure: 360, elle: true }] },
+  } };
+  const gun = gunler(p, defter).get(g)!;
+  assert.equal(gun.isinma, 700);
+  assert.equal(gun.sarki["kutuphane/yesil"], 240);
+  const gv = gorevler(gun, { egzersizDk: 30, kalkanGun: 7, kalkanMaks: 10, oyMaks: 10 }, ["legato", "sweep", "tapping"]);
+  assert.deepEqual(gv.map((x) => [x.deger, x.tamam]), [[11, true], [1, false], [1, true]]);
+  assert.deepEqual(gv[1].alt!.map((a) => a.dk), [5, 4, 0]);
 });
 
 test("sureEkle: 23:30 ve 00:30 oturumları ayrı günlere düşer, birleşmez", () => {

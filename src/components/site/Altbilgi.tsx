@@ -7,7 +7,6 @@ const SUTUNLAR: { baslik: string; items: { href: string; label: string }[] }[] =
     baslik: "Gitar Çalış",
     items: [
       { href: "/elektro", label: "Elektro Gitar" },
-      { href: "/akustik", label: "Akustik Gitar" },
       { href: "/seviye", label: "Seviye Yolu" },
       { href: "/kurslar", label: "Tüm Kurslar" },
       { href: "/sarkilar/dogaclama", label: "Doğaçlama Çal" },

@@ -222,7 +222,8 @@ function buildMenu() {
         // Üst gezinmedeki menülerle aynı sıra: Gitar Çalış, Teori, Şarkı Kütüphanesi, Çalışma Defteri, Araçlar, Rig'im, Profil.
         // "Şarkılarla Öğren" artık Şarkı Kütüphanesi › Rehber Şarkılar (eski kısayol Ctrl+3 Şarkı Kütüphanesi'ne gider).
         { label: "Tüm Kurslar", click: () => go("/kurslar") },
-        { label: "Akustik Egzersizler", accelerator: "CmdOrCtrl+8", click: () => go("/akustik") },
+        // W5: Akustik Egzersizler arşivde (Ctrl+8 Günlük Rutin'e gider)
+        { label: "Günlük Rutin", accelerator: "CmdOrCtrl+8", click: () => go("/rutin") },
         { label: "Doğaçlama Çal", accelerator: "CmdOrCtrl+7", click: () => go("/sarkilar/dogaclama") },
         { label: "Gitarda Nasıl Çalışmalıyım?", accelerator: "CmdOrCtrl+9", click: () => go("/nasil-calismaliyim") },
         { type: "separator" },

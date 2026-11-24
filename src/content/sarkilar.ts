@@ -21,6 +21,8 @@ export type PopularSong = {
   bpm?: number;
   /** Listeye yeni eklenen şarkı */
   yeni?: boolean;
+  /** Arşiv: listelerde görünmez (ör. akustik şarkılar); içerik paketinde kalır, bayrak kalkınca geri gelir */
+  arsiv?: boolean;
   /** Şarkı Rehberi adımı: sıra, seviye kodu (ör. "1.10"), hazırlayan teknik bölümleri ve kilit eşiği */
   rehber?: { adim: number; seviye: string; bolumler: { kurs: string; bolum: number; ad: string }[]; puan: number };
 };

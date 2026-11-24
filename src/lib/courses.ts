@@ -96,7 +96,8 @@ function resolveRefs(courses: Course[]): Course[] {
   });
 }
 
-export async function getCourses(): Promise<Course[]> {
+/** Bütün kurslar, arşivdekiler dahil (ref çözümü arşivdeki kurslara da bakar) */
+async function allCourses(): Promise<Course[]> {
   const { courses: pack, site } = await readPack();
   const replaced = BUILTIN_COURSES.map((c) => pack.find((p) => p.slug === c.slug) ?? c);
   const extra = pack.filter((p) => !BUILTIN_COURSES.some((b) => b.slug === p.slug));
@@ -106,8 +107,19 @@ export async function getCourses(): Promise<Course[]> {
   return all.sort((a, b) => rank.get(a.slug)! - rank.get(b.slug)!);
 }
 
+/**
+ * Görünen kurslar: katalog, gezinme, ana sayfa, Seviye Yolu, arama ve profil listeleri bunu kullanır.
+ * `arsiv: true` taşıyan kurslar (akustik kurslar, başlangıç rehberleri, Akor Yolu …) burada yoktur; adresleri
+ * getCourse() ile açık kalır. `arsivDahil` yalnız ilerleme hesapları (madalya, başarım) içindir.
+ */
+export async function getCourses({ arsivDahil = false }: { arsivDahil?: boolean } = {}): Promise<Course[]> {
+  const all = await allCourses();
+  return arsivDahil ? all : all.filter((c) => !c.arsiv);
+}
+
+/** Tek kurs, arşivdekiler dahil: eski bağlantılar ve ilerleme kayıtlarındaki dersler açılmaya devam eder */
 export async function getCourse(slug: string): Promise<Course | undefined> {
-  return (await getCourses()).find((c) => c.slug === slug);
+  return (await allCourses()).find((c) => c.slug === slug);
 }
 
 export async function getSiteTexts(): Promise<SiteTexts> {

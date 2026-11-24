@@ -4,7 +4,7 @@ import path from "node:path";
 import { POPULAR_SONGS, type PopularSong } from "@/content/sarkilar";
 import { PRIVATE_ROOTS } from "./private-roots";
 
-/** Kişisel içerik paketindeki icerik/sarkilar.json; paket yoksa yerleşik liste */
+/** Kişisel içerik paketindeki icerik/sarkilar.json; paket yoksa yerleşik liste. `arsiv` taşıyan şarkılar çıkarılır. */
 export async function getPopularSongs(): Promise<PopularSong[]> {
   const extra: PopularSong[] = [];
   for (const root of PRIVATE_ROOTS) {
@@ -20,5 +20,6 @@ export async function getPopularSongs(): Promise<PopularSong[]> {
     }
   }
   // İçerik paketinin listesi varsa o kullanılır (seviye sayıları ve Şarkı Rehberi ona göre); yoksa yerleşik liste
-  return extra.length ? extra : POPULAR_SONGS;
+  // Arşivdeki şarkılar (akustik şarkı listesi) hiçbir listede görünmez
+  return (extra.length ? extra : POPULAR_SONGS).filter((s) => !s.arsiv);
 }

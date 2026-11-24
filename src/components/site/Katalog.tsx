@@ -57,12 +57,14 @@ export default function Katalog({ kartlar, yollar }: { kartlar: KursKarti[]; yol
   }, [kartlar, aile, durum, ara, p]);
 
   const yolGoster = !durum && !ara.trim() && (aile === "" || aile === "teori");
+  // Yalnız kursu olan bölümler (arşivdeki akustik kurslar katalogda yoksa "Akustik Gitar" düğmesi de çıkmaz)
+  const aileler = AILELER.filter(([id]) => !id || kartlar.some((k) => k.aile === id) || (id === "teori" && yollar.length > 0));
 
   return (
     <div className="space-y-8">
       <div className="card flex flex-col gap-3 p-3 sm:p-4">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Bölüm">
-          {AILELER.map(([id, ad]) => (
+          {aileler.map(([id, ad]) => (
             <button key={id || "tum"} type="button" className={chip(aile === id)} onClick={() => setAile(id)} aria-pressed={aile === id}>
               {ad}
             </button>

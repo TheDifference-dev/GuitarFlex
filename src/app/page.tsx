@@ -43,8 +43,9 @@ export default async function Home() {
     };
   });
 
-  // Kurs simgeleri (ana ekran gibi): bütün kurslar ve teori yolları, her biri kendi renginde
+  // Kurs simgeleri (ana ekran gibi): Günlük Rutin, görünen kurslar ve teori yolları, her biri kendi renginde
   const izgara: IzgaraOgesi[] = [
+    { href: "/rutin", ad: "Günlük Rutin", simge: kursSimgesi("gunluk-rutin") },
     ...kartlar.filter((k) => !k.status).map((k) => ({ href: `/calis/${k.slug}`, ad: kisaAd(k.slug, k.title), simge: kursSimgesi(k.slug) })),
     ...yollar.map((y) => ({ href: y.href, ad: kisaAd(`yol:${y.slug}`, y.ad), simge: yolSimgesi(y.slug) })),
   ];

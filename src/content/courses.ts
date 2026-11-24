@@ -1,5 +1,7 @@
 import type { Chapter, Course, Section, SiteTexts } from "./types.ts";
 import { FULL_COURSES } from "./kurslar/index.ts";
+import { akorEskiCourse } from "./kurslar/akorlar-eski.ts";
+import { kromatikEskiCourse } from "./kurslar/kromatik-eski.ts";
 
 // Yerleşik (özgün) kurslar: src/content/kurslar/. Kişisel içerik paketi aynı slug'la bir kurs
 // içerirse onun yerine geçer (bkz. src/lib/courses.ts).
@@ -9,12 +11,14 @@ const ORDER = [
   "economy-pena", "slide", "palm-mute", "akorlar", "ritim-tarama", "kromatik-isinma",
 ];
 const bySlug = Object.fromEntries(FULL_COURSES.map((c) => [c.slug, c]));
+// Arşivdeki rehberler eski Akorlar ve Kromatik Isınma kurslarından ödünç alır (yeni kurslarda bu alt bölümler yok)
+const rehberKaynagi: Record<string, Course> = { ...bySlug, akorlar: akorEskiCourse, "kromatik-isinma": kromatikEskiCourse };
 
 /** Rehberler için: bir kursun alt bölümünü (ör. "1.0") yeni koduyla ve başlığıyla alır. */
 function borrow(slug: string, code: string, newCode: string, title?: string): Chapter {
-  const ch = bySlug[slug].sections.flatMap((s) => s.chapters).find((c) => c.code === code);
+  const ch = rehberKaynagi[slug].sections.flatMap((s) => s.chapters).find((c) => c.code === code);
   if (!ch) throw new Error(`${slug} kursunda ${code} yok`);
-  return { ...ch, code: newCode, title: title ?? `${bySlug[slug].title}: ${ch.title}` };
+  return { ...ch, code: newCode, title: title ?? `${rehberKaynagi[slug].title}: ${ch.title}` };
 }
 
 const beginnerGuide: Course = {
@@ -22,6 +26,8 @@ const beginnerGuide: Course = {
   title: "Sıfırdan Başlangıç Rehberi",
   description: "Gitara sıfırdan başla: ısınma, ilk akorlar, ritim ve pena temelleri.",
   kind: "guide",
+  // Başlangıç rehberi: orta–ileri odak için arşivde (W5, 24.11.2026)
+  arsiv: true,
   guide: [
     "## Bu rehber kimin için?",
     "Gitara yeni başlayanlar için adım adım bir yol. Her dersi hedef süresi kadar çal, ders tamamlansın, sonra bir sonrakine geç.",
@@ -52,6 +58,7 @@ const intermediateGuide: Course = {
   title: "Başlangıç-Orta Rehberi",
   description: "Akorlar, ritim ve temel teknikler arasında hedefine göre ilerle.",
   kind: "guide",
+  arsiv: true,
   guide: ["## Bu rehber kimin için?", "Temel akorları ve pena hareketini bilen, düzenli bir çalışma planı arayanlar için."],
   sections: [
     { number: 1, title: "Ritim ve Akorlar", exam: true, chapters: [
@@ -78,15 +85,15 @@ export const BUILTIN_COURSES: Course[] = [beginnerGuide, intermediateGuide, ...O
 export const DEFAULT_SITE_TEXTS: SiteTexts = {
   navSubtitle: "Teknik Egzersizler",
   hero: {
-    eyebrow: "Başlangıç Rehberleri",
-    title: "Nereden Başlamak İstersin?",
-    text: "Gitara sıfırdan başla ya da temellerini başlangıç–orta seviyede pekiştir.",
+    eyebrow: "Her Gün",
+    title: "Bugün Ne Çalışmalı?",
+    text: "10–15 dakika günlük ısınma, sonra 20 dakika: günün üç tekniğinden en az ikisi ve kalan sürede bir şarkı. Hepsi metronomla.",
     guides: [
-      { slug: "sifirdan-baslangic-rehberi", title: "Sıfırdan Başlangıç Rehberi", text: "Isınma, ilk akorlar, ritim ve pena temelleriyle adım adım ilerle.", button: "Rehberi Aç" },
-      { slug: "baslangic-orta-rehberi", title: "Başlangıç-Orta Rehberi", text: "Akorlar, ritim ve temel teknikler arasında kendi hedefinle ilerle.", button: "Rehberi Aç" },
+      { slug: "gunluk-rutin", href: "/rutin", title: "Günlük Rutin", text: "Üç farklı 15 dakikalık ısınma (Gün A, B, C): bloklar zamanlayıcıyla sırayla açılır.", button: "Başla" },
+      { slug: "kromatik-isinma", title: "Kromatik Isınma", text: "Permütasyon, örümcek, tel atlama, pena, legato, bend, gam, arpej ve akor ısınmaları.", button: "Aç" },
     ],
   },
-  chordCard: { eyebrow: "Akor Yolu", title: "Akorları Çal", text: "Akorları, geçişleri ve ritmi çalış.", button: "Akorlara Başla", slug: "akorlar" },
+  chordCard: { eyebrow: "Akorlar", title: "Akorları Sapın Her Yerinde Çal", text: "Akor nasıl oluşur, CAGED ile beş pozisyon, akor türleri ve pozisyon geçişleri.", button: "Akorlara Başla", slug: "akorlar" },
 };
 
 /** Bir kursun tüm derslerini sırayla, bölüm ve alt bölüm bilgisiyle döndürür. */

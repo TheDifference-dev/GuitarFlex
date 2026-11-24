@@ -8,7 +8,7 @@ import { seviyeSimgesi, yerSimgesi } from "@/lib/simge";
 
 export type LevelOption = { title: string; text: string; href: string };
 
-/** "Gitarda Nasıl Çalışmalıyım?" seçicisi: elektro / akustik sekmesi ve üç seviye */
+/** "Gitarda Nasıl Çalışmalıyım?" seçicisi: seviye seçenekleri; akustik seçenek varsa elektro / akustik sekmesi */
 export default function LevelPicker({ elektro, akustik }: { elektro: LevelOption[]; akustik: LevelOption[] }) {
   const [tab, setTab] = useState<"elektro" | "akustik">("elektro");
   const options = tab === "elektro" ? elektro : akustik;
@@ -16,6 +16,7 @@ export default function LevelPicker({ elektro, akustik }: { elektro: LevelOption
     `flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${on ? "bg-seg text-text shadow-[var(--shadow-seg)]" : "text-muted hover:text-text"}`;
   return (
     <div className="space-y-4">
+      {akustik.length > 0 && (
       <div className="flex gap-1 rounded-full border border-ink/[0.08] bg-ink/[0.05] p-1">
         <button type="button" className={tabCls(tab === "elektro")} onClick={() => setTab("elektro")}>
           <UygulamaSimgesi simge={yerSimgesi("elektro")} boyut={24} /> Elektro gitar
@@ -24,10 +25,11 @@ export default function LevelPicker({ elektro, akustik }: { elektro: LevelOption
           <UygulamaSimgesi simge={yerSimgesi("akustik")} boyut={24} /> Akustik gitar
         </button>
       </div>
+      )}
       <div className="space-y-3">
         {options.map((o, i) => (
           <Link key={o.title} href={o.href} className="group flex items-center gap-4 card p-5 transition hover:border-ink/20">
-            <UygulamaSimgesi simge={seviyeSimgesi(i * 2 + 1)} boyut={44} />
+            <UygulamaSimgesi simge={seviyeSimgesi(1 + Math.round((i * 4) / Math.max(1, options.length - 1)))} boyut={44} />
             <span className="flex-1">
               <span className="block font-semibold">{o.title}</span>
               <span className="mt-0.5 block text-sm text-muted">{o.text}</span>

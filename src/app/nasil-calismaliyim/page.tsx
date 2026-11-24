@@ -11,16 +11,19 @@ export default async function HowToPracticePage() {
   const course = (slug: string, fallback: string) => (has(slug) ? `/calis/${slug}` : fallback);
   const chords = `/calis/${texts.chordCard.slug}`;
 
+  // Orta–ileri odak (W5): başlangıç rehberleri ve akustik kurslar arşivde; arşivden çıkarsa seçenekleri geri gelir
   const elektro: LevelOption[] = [
-    { title: "Gitara sıfırdan başlıyorum", text: "Temel konular ve ilk egzersizler, adım adım.", href: course("sifirdan-baslangic-rehberi", "/elektro") },
-    { title: "Başlangıç / orta seviyedeyim", text: "Akorları, ritmi ve temel teknikleri düzenli bir plana oturtmak istiyorum.", href: course("baslangic-orta-rehberi", "/elektro") },
-    { title: "Orta / ileri seviyedeyim", text: "Bir tekniği derinleştirmek, hızımı ve repertuvarımı geliştirmek istiyorum.", href: "/elektro" },
+    ...(has("sifirdan-baslangic-rehberi") ? [{ title: "Gitara sıfırdan başlıyorum", text: "Temel konular ve ilk egzersizler, adım adım.", href: "/calis/sifirdan-baslangic-rehberi" }] : []),
+    { title: "Orta seviyeye geçiyorum", text: "Akorları sapın her yerinde bulmak (CAGED, akor türleri) ve her gün düzenli ısınmak istiyorum.", href: course("akorlar", chords) },
+    { title: "Orta seviyedeyim", text: "Her gün 10–15 dk ısınma, sonra 20 dk teknik (günün üç tekniğinden ikisi) ve bir şarkı.", href: "/rutin" },
+    { title: "İleri seviyeye çıkıyorum", text: "Bir tekniği derinleştirmek, hızımı ve repertuvarımı geliştirmek istiyorum.", href: "/seviye" },
   ];
-  const akustik: LevelOption[] = [
-    { title: "Gitara sıfırdan başlıyorum", text: "Akustikte duruş, ilk akorlar ve temel teknikler.", href: course("akustik-baslangic-rehberi", chords) },
-    { title: "Başlangıç / orta seviyedeyim", text: "Akor geçişlerini, ritim kalıplarını ve stilleri çalışmak istiyorum.", href: chords },
-    { title: "Orta / ileri seviyedeyim", text: "Akustik tekniklerde (arpej, slide, bend) ilerlemek istiyorum.", href: "/akustik" },
-  ];
+  const akustik: LevelOption[] = courses.some((c) => c.kind === "acoustic")
+    ? [
+        { title: "Gitara sıfırdan başlıyorum", text: "Akustikte duruş, ilk akorlar ve temel teknikler.", href: course("akustik-baslangic-rehberi", chords) },
+        { title: "Orta / ileri seviyedeyim", text: "Akustik tekniklerde (arpej, slide, bend) ilerlemek istiyorum.", href: "/akustik" },
+      ]
+    : [];
 
   return (
     <div>

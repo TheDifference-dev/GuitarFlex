@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import HomeView, { type CourseSummary } from "@/components/HomeView";
 import { flatLessons, lessonKey } from "@/content/courses";
 import { getCourses, getSiteTexts } from "@/lib/courses";
 
 export const metadata: Metadata = { title: "Akustik Gitar" };
 
-/** Akustik gitar teknik egzersizleri: akustik rehber, akor yolu ve akustik kurslar */
+/** Akustik gitar teknik egzersizleri: akustik rehber, akor yolu ve akustik kurslar (şimdilik arşivde: sayfa 404) */
 export default async function AcousticPage() {
   const [courses, texts] = await Promise.all([getCourses(), getSiteTexts()]);
   const acoustic = courses.filter((c) => c.kind === "acoustic");
+  // Akustik kurslar arşivdeyse (bayrak: Course.arsiv) bölüm sayfası da yoktur; bayrak kalkınca sayfa geri gelir
+  if (!acoustic.length) notFound();
   const guides = acoustic.filter((c) => c.slug.endsWith("-rehberi"));
   const summaries: CourseSummary[] = acoustic.map((c) => ({
     slug: c.slug,

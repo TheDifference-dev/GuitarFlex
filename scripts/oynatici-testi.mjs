@@ -130,6 +130,8 @@ function sayfaListesi() {
   // Teori: ana sayfa, Armoni ve Nota Okuma kitapları, bütün A4 dersleri ve Sap Gezgini (tabsız: 200 + konsol temiz)
   for (const url of ["/teori", "/teori/armoni", "/teori/nota-okuma", ...TUM_DERSLER.map((d) => `/teori/${d.slug}`), "/sap-gezgini"])
     sayfalar.push({ url, grup: "teori", kimlik: `teori#${url}`, baslik: url, tur: "tabsiz" });
+  // Günlük Rutin (/rutin): üç rutinin ilk bloğu (oynatıcı Kromatik Isınma dersinin tabını blok temposuyla çalar)
+  for (const g of ["A", "B", "C"]) sayfalar.push({ url: `/rutin?gun=${g}`, grup: "rutin", kimlik: `rutin#${g}`, baslik: `Günlük Rutin ${g}`, tur: "ders" });
   for (const yol of ["ritim", "klavye", "kulak", "okuma", "armoni"]) {
     const y = jsonOku(`icerik/yollar/${yol}.json`);
     for (const a of y?.adimlar ?? []) sayfalar.push({ url: `/teori/yol/${yol}/${encodeURIComponent(a.kod)}`, grup: `yol:${yol}`, kimlik: `yol:${yol}#${a.kod}`, baslik: a.ad, tur: "adim", yol });

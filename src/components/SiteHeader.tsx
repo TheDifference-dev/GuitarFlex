@@ -35,7 +35,7 @@ export const MENULER: Menu[] = [
     id: "calis",
     label: "Gitar Çalış",
     href: "/kurslar",
-    active: (p) => ["/calis", "/akustik", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye", "/sarkilar/dogaclama"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
+    active: (p) => ["/calis", "/akustik", "/elektro", "/kurslar", "/nasil-calismaliyim", "/seviye", "/sarkilar/dogaclama", "/rutin"].some((x) => p.startsWith(x)) && !p.startsWith("/calis/armoni"),
     buyuk: [
       { href: "/kurslar", label: "Tüm Kurslar", simge: yerSimgesi("kurslar") },
       { href: "/seviye", label: "Seviye Yolu", simge: yerSimgesi("seviye") },
@@ -46,14 +46,10 @@ export const MENULER: Menu[] = [
         baslik: "Elektro Gitar",
         href: "/elektro",
         items: [
-          { href: "/calis/sifirdan-baslangic-rehberi", label: "Sıfırdan Başlangıç" },
-          { href: "/calis/akor-yolu", label: "Akor Yolu" },
+          // W5: Sıfırdan Başlangıç ve Akor Yolu arşivde; yerlerine Akorlar ve Günlük Rutin. Akustik Gitar sütunu arşivde.
+          { href: "/calis/akorlar", label: "Akorlar" },
+          { href: "/rutin", label: "Günlük Rutin" },
         ],
-      },
-      {
-        baslik: "Akustik Gitar",
-        href: "/akustik",
-        items: [{ href: "/akustik/sarkilar", label: "Akustik Şarkılar" }],
       },
       {
         baslik: "Müzisyenlik",
