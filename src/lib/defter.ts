@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { songUrl, type PopularSong } from "@/content/sarkilar";
 import { songsterrAdresi } from "./songsterr";
-import { DEFTER_SURUM, bos, goc, kayitAc, type DefterVeri, type KayitBilgisi } from "./defter-cekirdek";
+import { DEFTER_SURUM, bos, geriYukle, goc, kayitAc, type DefterVeri, type Kayit, type KayitBilgisi } from "./defter-cekirdek";
 
 export * from "./defter-cekirdek";
 
@@ -59,11 +59,44 @@ export function useDefter(): DefterVeri {
   return useSyncExternalStore(subscribe, read, () => BOS);
 }
 
-/** Defteri bir işlemle günceller: `defterIsle((v) => sureEkle(v, …))` */
-export function defterIsle(f: (v: DefterVeri) => DefterVeri) {
+/* ───────────── Geri al ───────────── */
+
+/** Son işlemde defterden çıkan kayıtlar (silinmeden önceki halleriyle): "Geri al" bildirimi bunları gösterir */
+export type SilinenKayitlar = { n: number; kayitlar: { kayit: Kayit; sira: number }[] } | null;
+let silinen: SilinenKayitlar = null;
+let silinenNo = 0;
+const silinenDinleyiciler = new Set<() => void>();
+const silinenAbone = (l: () => void) => {
+  silinenDinleyiciler.add(l);
+  return () => silinenDinleyiciler.delete(l);
+};
+const silinenBildir = (x: SilinenKayitlar) => {
+  silinen = x;
+  silinenDinleyiciler.forEach((l) => l());
+};
+/** Son işlemde silinen kayıtlar (bildirim kapanınca null) */
+export const useSilinenKayitlar = () => useSyncExternalStore(silinenAbone, () => silinen, () => null);
+export const silinenBildiriminiKapat = () => silinenBildir(null);
+/** Son silinenleri geri koyar */
+export function geriAl() {
+  const s = silinen;
+  if (!s) return;
+  silinenBildir(null);
+  defterIsle((v) => geriYukle(v, s.kayitlar), { sessiz: true });
+}
+
+/**
+ * Defteri bir işlemle günceller: `defterIsle((v) => sureEkle(v, …))`. İşlem kayıt sildiyse (son işaret kaldırıldı ya
+ * da kayıt silindi) birkaç saniyelik "Geri al" bildirimi çıkar; `sessiz` (ör. yedeği içe aktar › Değiştir) çıkarmaz.
+ */
+export function defterIsle(f: (v: DefterVeri) => DefterVeri, { sessiz = false }: { sessiz?: boolean } = {}) {
   const once = read();
   const sonra = f(once);
-  if (sonra !== once) write(sonra);
+  if (sonra === once) return;
+  write(sonra);
+  if (sessiz) return;
+  const giden = Object.keys(once.kayitlar).filter((id) => !sonra.kayitlar[id]);
+  if (giden.length) silinenBildir({ n: ++silinenNo, kayitlar: giden.map((id) => ({ kayit: once.kayitlar[id], sira: once.liste.indexOf(id) })) });
 }
 
 export const defterOku = read;

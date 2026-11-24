@@ -6,7 +6,7 @@ process.env.TZ = "Europe/Istanbul";
 import assert from "node:assert/strict";
 import { register } from "node:module";
 import {
-  bilinenKisim, birlestir, bos, disaAktar, durumAyarla, elleEkle, gitarBasina, gitarEkle, gitarSil, goc, gunToplami, gunlukToplamlar, gununOturumlari,
+  bilinenKisim, birlestir, geriYukle, bos, disaAktar, durumAyarla, elleEkle, gitarBasina, gitarEkle, gitarSil, goc, gunToplami, gunlukToplamlar, gununOturumlari,
   gununPlanlari, haftaBasi, haftaOzeti, iceAktarMetin, isaretli, kademe, kayitAc, konumYaz, listedenCikar, listele, listeTasi, listeyeEkle, planAyarla,
   planaEkle, plandanKaldir, sureEkle, yakinPlan, yerelGun, type DefterVeri, type KayitBilgisi,
 } from "../src/lib/defter-cekirdek.ts";
@@ -286,6 +286,37 @@ test("son işaret kalkınca kayıt defterden çıkar; başka işaret varsa kalı
   v = listedenCikar(v, DERS.id);
   assert.equal(v.kayitlar[DERS.id], undefined);
   assert.deepEqual(v.liste, []);
+});
+
+test("son işaret kalkınca notu ya da süresi olan kayıt silinmez, işaretsiz not olarak kalır; göçte de korunur", () => {
+  let v = durumAyarla(bos(), DERS, "devam", "B", an("2026-11-21T10:00:00"));
+  v = sureEkle(v, DERS, 300, { konum: 7 }, an("2026-11-21T10:05:00"));
+  v = durumAyarla(v, DERS, null, undefined, an("2026-11-21T10:10:00"));
+  assert.ok(v.kayitlar[DERS.id], "süreli kayıt kalır");
+  assert.equal(isaretli(v, v.kayitlar[DERS.id]), false);
+  assert.equal(v.kayitlar[DERS.id].toplamSure, 300);
+  assert.equal(sureEkle(v, DERS, 60, {}, an("2026-11-21T10:11:00")), v, "işaretsiz nota ölçülen süre yazılmaz");
+  let w = listeyeEkle(bos(), SARKI, an("2026-11-21T10:00:00"));
+  w = { ...w, kayitlar: { ...w.kayitlar, [SARKI.id]: { ...w.kayitlar[SARKI.id], not: "nakarat zor" } } };
+  w = listedenCikar(w, SARKI.id);
+  assert.equal(w.kayitlar[SARKI.id]?.not, "nakarat zor", "notlu kayıt kalır");
+  // v2 yedeği açılınca işaretsiz ama süreli/notlu kayıtlar korunur, boş işaretsizler çıkar
+  const geri = goc(JSON.parse(JSON.stringify({ ...v, kayitlar: { ...v.kayitlar, ...w.kayitlar, "egzersiz:bos/1": { id: "egzersiz:bos/1", tur: "egzersiz", baslik: "Boş", durum: null } } })));
+  assert.deepEqual(Object.keys(geri.kayitlar).sort(), [DERS.id, SARKI.id].sort());
+});
+
+test("geriYukle: silinen kayıt işaretleri ve liste sırasıyla geri gelir", () => {
+  const C: KayitBilgisi = { ...SARKI, id: "sarki:songsterr/AC/DC|Back in Black", baslik: "Back in Black", altBaslik: "AC/DC" };
+  let v = listeyeEkle(bos(), DERS, an("2026-11-21T10:00:00"));
+  v = listeyeEkle(v, C, an("2026-11-21T10:01:00"));
+  v = listeyeEkle(v, SARKI, an("2026-11-21T10:02:00"));
+  const once = v;
+  v = listedenCikar(v, C.id);
+  assert.equal(v.kayitlar[C.id], undefined, "boş kayıt çıkar");
+  const geri = geriYukle(v, [{ kayit: once.kayitlar[C.id], sira: once.liste.indexOf(C.id) }]);
+  assert.deepEqual(geri.liste, once.liste);
+  assert.deepEqual(geri.kayitlar[C.id], once.kayitlar[C.id]);
+  assert.equal(geriYukle(geri, [{ kayit: once.kayitlar[C.id], sira: 1 }]).liste.length, 3, "var olan kayda dokunulmaz");
 });
 
 test("Takvime al: seçilen güne plan düşer, gün ve en yakın plan bulunur, plan kaldırılınca kayıt çıkar", () => {

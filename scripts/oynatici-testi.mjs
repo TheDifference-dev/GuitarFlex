@@ -439,6 +439,26 @@ async function calVeOlc(s, i = 0, { enCok = 3500, enAz = 900 } = {}) {
 const duraklat = async (s, i = 0) => {
   if ((await s.durum(i)).calma === 1) await s.js(`window.__gfSonda.tikla(document.querySelectorAll('${CAL}')[${i}])`, true);
 };
+/**
+ * Çalarken dinler (ses kanalı adımları için): pencere boyunca en yüksek RMS ve konumun ilerleyip ilerlemediği.
+ * Yük altında (load 15–25) AudioWorklet bir süre ses üretmeyebilir; o sırada konum da durur. Konum İLERLEDİĞİ hâlde ses
+ * yoksa bu gerçek sessizliktir ve yeniden denenmez (adım kalır). Konum ilerlemediyse (çıkış takıldı ya da parça bitti)
+ * parça baştan çalınır ve bir kez daha dinlenir; yine sessizse adım kalır. Pencere en az iki tık + 1 sn.
+ */
+async function dinle(s, ms) {
+  const olc = async () => {
+    const t0 = (await s.durum()).tick;
+    const rms = await pencere(s, ms);
+    const d = await s.durum();
+    return { rms, ilerledi: d.tick !== t0, calma: d.calma, tick: d.tick };
+  };
+  const r = await olc();
+  if (r.rms > ESIK || r.ilerledi) return { ...r, deneme: 1 };
+  await s.js(`(() => { const a = window.__gfSonda.api(0); a.tickPosition = 0; if (a.playerState !== 1) a.play(); })()`);
+  await bekle(800);
+  return { ...(await olc()), deneme: 2 };
+}
+
 /** Bir süre boyunca en yüksek RMS (ölçüm penceresi sıfırlanır) */
 async function pencere(s, ms) {
   await s.js("window.__gfSonda.sifirla()");
@@ -732,27 +752,29 @@ async function ekSenaryo(s, sayfa) {
   await bekle(300);
   adim("metronom-acik", (await pencere(s, 1500)) > ESIK, {});
 
-  // 6b) Ses kanalları: müzik %0 iken metronom çalmaya devam eder; hoparlör (müzik sessiz) metronomu kapatmaz
+  // 6b) Ses kanalları: müzik %0 iken metronom çalmaya devam eder; hoparlör (müzik sessiz) metronomu kapatmaz.
+  // Pencere en az iki vuruş + 1 sn (her pencerede en az iki tık düşer); yük kaynaklı takılmada bir kez yeniden (bkz. dinle)
   const MET_SES = 'input[aria-label="Metronom sesi"]';
+  const kanalPencere = Math.max(2500, vurusMs * 2 + 1000);
   await s.js(`window.__gfSonda.kaydir('${SES}', 0)`, true);
   await bekle(500);
-  rms = await pencere(s, 2000);
+  let k = await dinle(s, kanalPencere);
   d = await s.durum();
-  adim("muzik-0-metronom", rms > ESIK && d.muzik === 0 && d.metronomSesi > 0.5, { rms, muzik: d.muzik, metronomSesi: d.metronomSesi });
+  adim("muzik-0-metronom", k.rms > ESIK && d.muzik === 0 && d.metronomSesi > 0.5, { ...k, muzik: d.muzik, metronomSesi: d.metronomSesi });
   await s.js(`window.__gfSonda.kaydir('${SES}', 100)`, true);
+  await bekle(400); // hoparlör düğmesi yeni müzik değeriyle çizilsin (eski değerle basılırsa sessizi açar)
   await s.js(`window.__gfSonda.tikla('button[data-ana-ses-dugmesi]')`, true);
   await bekle(500);
-  rms = await pencere(s, 2000);
+  k = await dinle(s, kanalPencere);
   d = await s.durum();
-  adim("hoparlor-metronom", rms > ESIK && d.muzik === 0, { rms, muzik: d.muzik });
+  adim("hoparlor-metronom", k.rms > ESIK && d.muzik === 0, { ...k, muzik: d.muzik });
   await s.js(`window.__gfSonda.tikla('button[data-ana-ses-dugmesi]')`, true);
-  // Metronom %0 iken müzik çalar
+  // Metronom %0 iken müzik çalar (uzun notalar ve suslar için pencere biraz daha uzun)
   await s.js(`window.__gfSonda.kaydir('${MET_SES}', 0)`, true);
   await bekle(500);
-  rms = await pencere(s, 2000);
-  if (rms <= ESIK) rms = await pencere(s, 2500);
+  k = await dinle(s, kanalPencere + 1000);
   d = await s.durum();
-  adim("metronom-0-muzik", rms > ESIK && d.metronomSesi === 0 && d.muzik === 100, { rms, metronomSesi: d.metronomSesi, muzik: d.muzik });
+  adim("metronom-0-muzik", k.rms > ESIK && d.metronomSesi === 0 && d.muzik === 100, { ...k, metronomSesi: d.metronomSesi, muzik: d.muzik });
   // Üst sınır %450 (eskinin 3 katı): kaydırıcı kabul eder, alphaTab'a 4,5 kazanç gider; sınırlayıcı tepeyi tam ölçekte tutar
   await s.js(`window.__gfSonda.kaydir('${MET_SES}', 450)`, true);
   await s.js(`window.__gfSonda.kaydir('${SES}', 450)`, true);
@@ -798,6 +820,50 @@ async function ekSenaryo(s, sayfa) {
   } else adim("dongu", false, { aralik: d.aralik, dongu: d.dongu });
   await duraklat(s);
   r.hatalar = [...new Set(s.hatalar)].slice(0, 5);
+  r.gecti = Object.values(r.adimlar).every((a) => a.gecti);
+  return r;
+}
+
+/**
+ * (g) Ölçü başı metronomu ve Müzik kanalı (davullu ve davulsuz parçalar): metronom "yalnız ölçü başı" kipinde, Müzik %0
+ * iken tık DUYULUR (tık davul kanalını paylaşmaz, kendi kanalında çalar); metronom kapatılınca aynı yerde ses SÖNER
+ * (duyulan ses gerçekten tıktır, parçanın kendisi değil); alphaTab'ın her vuruş metronomu kapalıdır (metronomeVolume 0).
+ */
+async function olcuBasiSenaryo(s, sayfa) {
+  const r = { url: sayfa.url, kimlik: sayfa.kimlik, adimlar: {}, neden: [] };
+  const adim = (ad, ok, ayrinti) => {
+    r.adimlar[ad] = { gecti: !!ok, ...ayrinti };
+    if (!ok) r.neden.push(`${ad}: ${JSON.stringify(ayrinti)}`);
+  };
+  // Tercihler her sayfa yüklenişinde depoya yazılır (Sekme › depoAyarla): ölçü başı kipi, sayım kapalı, Müzik %0
+  await s.depoAyarla({ metronomKipi: "olcu", sayim: false, anaSes: 0 });
+  await s.git(sayfa.url);
+  let d = await s.yokla((x) => x.hazir, 90000);
+  if (!d.hazir) {
+    adim("olcu-hazir", false, { calEtiket: d.calEtiket });
+    r.gecti = false;
+    return r;
+  }
+  const parca = await s.js("window.__gfSonda.parca(0)");
+  const davul = parca.izler.some((i) => i.perkusyon || i.kanal === 9);
+  r.davul = davul;
+  // Metronom açık (ölçü başı kipi, MIDI tıklarla yeniden üretilir), Müzik %0
+  if ((await s.js(`document.querySelector('${METRONOM}')?.getAttribute("aria-pressed")`)) !== "true") await s.js(`window.__gfSonda.tikla('${METRONOM}')`, true);
+  await bekle(800);
+  const vurusMs = (60000 / parca.tempo) * (4 / parca.payda);
+  const olcuMs = vurusMs * parca.pay;
+  let o = await calVeOlc(s, 0, { enCok: Math.max(4000, olcuMs * 2 + 1000), enAz: Math.min(3000, olcuMs + 300) });
+  // Konum ilerlemediyse (yük altında çıkış takıldı) bir kez daha dinlenir; konum ilerleyip ses yoksa gerçek sessizliktir
+  if (o.rms <= ESIK && !o.ilerledi) o = { ...o, ...(await dinle(s, Math.max(4000, olcuMs * 2 + 1000))) };
+  d = await s.durum();
+  adim("olcu-muzik-0-tik", o.ilerledi && o.rms > ESIK && d.muzik === 0 && d.metronomSesi === 0, { davul, rms: o.rms, ilerledi: o.ilerledi, deneme: o.deneme ?? 1, muzik: d.muzik, herVurusMetronomu: d.metronomSesi, olcuMs: Math.round(olcuMs) });
+  // Metronom kapalı, Müzik yine %0: ses söner (duyulan tıktı)
+  await s.js(`window.__gfSonda.tikla('${METRONOM}')`, true);
+  await bekle(1000);
+  const rms = await pencere(s, Math.max(1500, olcuMs + 500));
+  d = await s.durum();
+  adim("olcu-tiksiz-sessiz", rms < SESSIZ && d.calma === 1, { davul, rms, calma: d.calma });
+  await duraklat(s);
   r.gecti = Object.values(r.adimlar).every((a) => a.gecti);
   return r;
 }
@@ -1131,6 +1197,28 @@ async function main() {
           await s.kapat();
         }),
       );
+    }
+
+    // Ölçü başı metronomu + Müzik %0: davullu (kütüphane/eşlik) ve davulsuz (ders) örnekler; --olcu-filtre=<regex>
+    {
+      const aday = sayfalar.filter((x) => x.tur === "ders");
+      let olcuOrnek = arg("olcu-filtre") ? aday.filter((x) => new RegExp(String(arg("olcu-filtre"))).test(x.url)) : [];
+      if (!arg("olcu-filtre") && EK_SAYI > 0)
+        olcuOrnek = [...aday.filter((x) => x.grup === "kutuphane").slice(0, 2), ...aday.filter((x) => x.grup === "dogaclama").slice(0, 1), ...aday.filter((x) => x.grup.startsWith("kurs:")).slice(0, 2)];
+      if (olcuOrnek.length) {
+        console.log(`(g) ölçü başı tık + Müzik %0: ${olcuOrnek.length} örnek…`);
+        let s = await new Sekme(cdp).ac(null);
+        for (const sayfa of olcuOrnek) {
+          try {
+            ek.push(await Promise.race([olcuBasiSenaryo(s, sayfa), bekle(150000).then(() => Promise.reject(new Error("150 sn'de bitmedi")))]));
+          } catch (e) {
+            ek.push({ url: sayfa.url, kimlik: sayfa.kimlik, adimlar: {}, neden: [`test hatası: ${e.message}`], gecti: false });
+            await s.kapat();
+            s = await new Sekme(cdp).ac(null);
+          }
+        }
+        await s.kapat();
+      }
     }
 
     // Kök neden senaryoları

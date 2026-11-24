@@ -5,7 +5,9 @@
 // açılır: "Öğrendim", "Öğreniyorum", "Takvime al" (planlı tarih) ya da "Listeye ekle" (Çalışma listem). Serbest notlar
 // ("+ Not ekle") kullanıcı yazdığı için işaretli sayılır. Açmak, çalmak ya da Songsterr'de aramak kayıt AÇMAZ: çalma
 // süresi ilerleme kaydına (Profil, günlük görevler) her zaman yazılır, deftere yalnız kayıt zaten varsa yazılır.
-// Son işaret kaldırılınca kayıt defterden çıkar.
+// Son işaret kaldırılınca: kaydın notu ya da çalışma süresi varsa kayıt SİLİNMEZ, işaretsiz not olarak kalır (Tümü
+// filtresinde); hiçbir şeyi yoksa defterden çıkar. Arayüz silinen kaydı birkaç saniye "Geri al" ile geri getirebilir
+// (bkz. geriYukle, components/defter/GeriAlBildirimi.tsx).
 //
 // Süre kaynakları ve günlük görevler (Profil › "Bugün: Egzersiz 0/20 dk, Serbest Çalışma"):
 //  • Uygulamada ölçülen süre (oynatıcı çalarken) aynı saniye sayacından hem ilerleme kaydına (progress.ts) hem
@@ -222,8 +224,10 @@ const metinListesi = (x: unknown) => [...new Set((Array.isArray(x) ? x : []).fil
  *  • v1                  → alanlar doğrulanır, toplam süre oturumlardan yeniden hesaplanır
  *  • v2                  → v1 + planlı tarihler, bilinen kısımlar ve Çalışma listem
  *  • daha yeni sürüm     → bilinen alanlar okunur (eski uygulama yeni yedeği açabilsin)
- * Her sürümde İŞARETSİZ kayıtlar (v1'in otomatik açtığı, durumu, planı, listesi ve notu olmayan egzersiz/şarkı
- * kayıtları) temizlenir: defter yalnız kullanıcının işaretlediklerini tutar (bkz. isaretli).
+ * v2'den eski verilerde İŞARETSİZ kayıtlar (v1'in otomatik açtığı, durumu, planı, listesi ve notu olmayan
+ * egzersiz/şarkı kayıtları) temizlenir: defter yalnız kullanıcının işaretlediklerini tutar (bkz. isaretli). v2'de
+ * işaretsiz kayıtlar ancak kullanıcının işaretini kaldırdığı ve notu ya da süresi olan kayıtlardır: korunur (boş olanlar
+ * çıkar, bkz. bosKayit).
  */
 export function goc(ham: unknown): DefterVeri {
   const v = bos();
@@ -235,7 +239,8 @@ export function goc(ham: unknown): DefterVeri {
     if (n) v.kayitlar[n.id] = n;
   }
   v.liste = metinListesi(kaynak.liste).filter((id) => v.kayitlar[id]);
-  for (const k of Object.values(v.kayitlar)) if (!isaretli(v, k) && !k.not.trim()) delete v.kayitlar[k.id];
+  const eski = sayi(kaynak.surum) === null || (sayi(kaynak.surum) ?? 0) < 2;
+  for (const k of Object.values(v.kayitlar)) if (!isaretli(v, k) && (eski ? !k.not.trim() : bosKayit(k))) delete v.kayitlar[k.id];
   const gitarlar = Array.isArray(kaynak.gitarlar) ? kaynak.gitarlar : [];
   gitarlar.forEach((g, i) => {
     const ad = typeof g === "string" ? g : nesne(g) ? metin(g.ad) : "";
@@ -271,10 +276,28 @@ function yeniKayit(b: KayitBilgisi, simdi: Date): Kayit {
 /** Kayıt kullanıcı tarafından işaretlenmiş mi: durum, planlı gün, Çalışma listem ya da serbest not */
 export const isaretli = (v: DefterVeri, k: Kayit) => k.tur === "serbest" || k.durum !== null || k.planli.length > 0 || v.liste.includes(k.id);
 
-/** İşareti kalmayan kaydı defterden çıkarır (notu olsa bile: kullanıcı son işareti kendisi kaldırdı) */
+/** Kaydın kullanıcıya ait içeriği yok mu: not ve çalışma süresi yok */
+export const bosKayit = (k: Kayit) => !k.not.trim() && k.toplamSure === 0 && k.oturumlar.length === 0;
+
+/** İşareti kalmayan kayıt: notu ya da süresi varsa işaretsiz not olarak kalır, boşsa defterden çıkar */
 function temizle(v: DefterVeri, id: string): DefterVeri {
   const k = v.kayitlar[id];
-  return k && !isaretli(v, k) ? kayitSil(v, id) : v;
+  return k && !isaretli(v, k) && bosKayit(k) ? kayitSil(v, id) : v;
+}
+
+/**
+ * "Geri al": silinen kayıtları (işaretleri, notu, oturumlarıyla, silinmeden önceki halleriyle) geri koyar; Çalışma
+ * listem'deyse eski sırasına döner. Arada eklenen bir kayıt aynı kimlikle varsa ona dokunulmaz.
+ */
+export function geriYukle(v: DefterVeri, silinenler: { kayit: Kayit; sira: number }[]): DefterVeri {
+  const kayitlar = { ...v.kayitlar };
+  let liste = [...v.liste];
+  for (const { kayit, sira } of silinenler) {
+    if (kayitlar[kayit.id]) continue;
+    kayitlar[kayit.id] = kayit;
+    if (sira >= 0 && !liste.includes(kayit.id)) liste = [...liste.slice(0, sira), kayit.id, ...liste.slice(sira)];
+  }
+  return { ...v, kayitlar, liste };
 }
 
 function kayitAl(v: DefterVeri, b: KayitBilgisi, simdi: Date): Kayit {
@@ -296,13 +319,15 @@ function ekUygula(k: Kayit, ek: Ek) {
 export const kayitGitari = (v: DefterVeri, k?: Kayit | null) => (k?.gitar && v.gitarlar.some((g) => g.id === k.gitar) ? k.gitar : v.varsayilanGitar);
 
 /**
- * Süre ekler (saniye). Kayıt YOKSA HİÇBİR ŞEY YAPMAZ (defter yalnız işaretlenenleri tutar; süre ilerleme kaydına
+ * Süre ekler (saniye). Kayıt YOKSA ya da işareti kaldırılmışsa (ölçülen süre için) HİÇBİR ŞEY YAPMAZ (defter yalnız işaretlenenleri tutar; süre ilerleme kaydına
  * ayrıca yazılır). Aynı gün, aynı gitar, aynı kısım ve aynı kaynakla (ölçülen / elle) son eklemeden 15 dk içinde
  * gelen süre son oturumla birleşir. 0 sn: yalnız son durum (konum, hız…) güncellenir.
  */
 export function sureEkle(v: DefterVeri, b: KayitBilgisi, saniye: number, ek: Ek = {}, simdi = new Date()): DefterVeri {
   const sn = Math.max(0, Math.round(saniye));
-  if (!v.kayitlar[b.id]) return v;
+  const var_ = v.kayitlar[b.id];
+  // İşareti kaldırılmış (işaretsiz not olarak duran) kayda ölçülen süre yazılmaz; elle girilen süre yazılabilir
+  if (!var_ || (!isaretli(v, var_) && !ek.elle)) return v;
   const k = kayitAl(v, b, simdi);
   ekUygula(k, ek);
   if (sn) {

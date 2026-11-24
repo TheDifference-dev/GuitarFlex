@@ -370,7 +370,7 @@ function DefterTablosu({ veri, kayitlar, siralanir, vurgu, bugun }: { veri: Deft
                     <span className="flex flex-wrap items-center gap-1">
                       {k.durum && <DurumIsareti durum={k.durum} />}
                       {listede && <ListeIsareti sira={veri.liste.indexOf(k.id) + 1} />}
-                      {!k.durum && !listede && (k.planli.length ? <PlanIsareti /> : <span className="text-xs text-muted">—</span>)}
+                      {!k.durum && !listede && (k.planli.length ? <PlanIsareti /> : <span className="text-xs text-muted" title="İşareti kaldırıldı; notu ya da süresi olduğu için defterde duruyor">işaretsiz not</span>)}
                     </span>
                   </td>
                   <td className={`${TD} whitespace-nowrap tabular-nums`}>{son ? tarihYaz(son) : k.acildi ? "açıldı" : "—"}</td>
@@ -420,7 +420,7 @@ function DefterTablosu({ veri, kayitlar, siralanir, vurgu, bugun }: { veri: Deft
             setSil(null);
           }}
         >
-          Kaydın bütün işaretleri, notu ve {sil.oturumlar.length} oturumu silinir. Günlük görev ve ders süreleri (Profil) değişmez.
+          Kaydın bütün işaretleri, notu ve {sil.oturumlar.length} oturumu silinir (birkaç saniye &quot;Geri al&quot; ile geri getirilebilir). Günlük görev ve ders süreleri (Profil) değişmez.
         </Onay>
       )}
     </div>
@@ -745,7 +745,7 @@ function Yedek({ veri }: { veri: DefterVeri }) {
               <button
                 type="button"
                 onClick={() => {
-                  defterIsle(() => gelen);
+                  defterIsle(() => gelen, { sessiz: true });
                   setGelen(null);
                 }}
                 className="rounded-full bg-bad px-4 py-2 text-sm font-semibold text-bad-ink hover:opacity-90"

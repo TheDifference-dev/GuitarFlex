@@ -22,7 +22,7 @@ declare global {
   interface Window {
     alphaTab?: any;
     /** Test kancası (scripts/oynatici-testi.mjs): sayfadaki oynatıcıların alphaTab api'leri. Uygulama bunu okumaz. */
-    __gfTest?: { players: any[] };
+    __gfTest?: { players: any[]; tik?: { kanal: number; tik: number } };
   }
 }
 
@@ -140,8 +140,42 @@ function isActivePlayer(id: string) {
 /** alphaTab'ın ana sesi sabittir: kanallar (Müzik, Metronom, Sayım) ayrı ayrı ayarlanır (bkz. muzikSesi) */
 const CIKIS = 1;
 
-/** Parçada perküsyon kanalını (9) kullanan iz var mı */
-const davulKanaliVar = (api: any) => !!api?.score?.tracks?.some((t: any) => t.playbackInfo?.primaryChannel === 9 || t.playbackInfo?.secondaryChannel === 9);
+/**
+ * "Yalnız ölçü başı" metronomunun kanalı: parçanın kullandığı en büyük MIDI kanalının bir fazlası (9 değil). Kanal 9
+ * (davul) parçanın davul iziyle paylaşılırsa Müzik kanalı kısılınca tık da susardı. alphaTab 1.8.4'te yalnız kanal 9
+ * program değişikliğiyle davul setine geçer (TinySoundFont › processMidiMessage: `channel === 9`); başka kanalda davul
+ * seti banka seçimiyle alınır: BankSelectCoarse 1 + BankSelectFine 0 → banka 128 (SF2 perküsyon bankası), ardından
+ * program 0. Metronom tıkının sesi (anahtar 33, SynthConstants.MetronomeKey) her ses bankası yüklemesinde zaten
+ * yüklenir (MidiFileSequencer › createStateFromFile: percussionKeys.add(MetronomeKey)).
+ */
+/** MIDI'de nota ya da program olayı olan kanallar (alphaTab metronom kanalını bunların en büyüğünün bir fazlası seçer) */
+function notaKanallari(midi: any, T: any): Set<number> {
+  const k = new Set<number>();
+  for (const iz of midi?.tracks ?? []) for (const e of iz?.events ?? []) if ((e?.type === T.NoteOn || e?.type === T.ProgramChange) && typeof e.channel === "number") k.add(e.channel);
+  return k;
+}
+
+/**
+ * Müzik kanalı: her track'in karışım sesi = alphaTab varsayılanı (playbackInfo.volume / 16) × mikserdeki track sesi ×
+ * Müzik. Track'in ikinci kanalı (secondaryChannel) MIDI'de hiç kullanılmıyorsa ona dokunulmaz: alphaTab 1.8.4 metronom
+ * kanalını kullanılan en büyük kanalın bir fazlası seçtiği için kullanılmayan ikinci kanal metronom kanalıyla aynı
+ * olabiliyor; ona 0 yazmak (Müzik %0) metronomu da susturuyordu (ölçüldü: bazı derslerde RMS 0).
+ */
+function muzigiUygula(api: any, sesler: Record<number, number>, muzik: number, kullanilan: Set<number> | null) {
+  for (const t of api.score.tracks) {
+    const v = (t.playbackInfo.volume / 16) * ((sesler[t.index] ?? 100) / 100) * muzik;
+    const { primaryChannel: a, secondaryChannel: b } = t.playbackInfo;
+    api.player?.setChannelVolume?.(a, v);
+    if (b !== a && (!kullanilan || kullanilan.has(b))) api.player?.setChannelVolume?.(b, v);
+  }
+}
+
+function tikKanaliSec(midi: any): number {
+  let enBuyuk = -1;
+  for (const iz of midi?.tracks ?? []) for (const e of iz?.events ?? []) if (typeof e?.channel === "number" && e.channel > enBuyuk) enBuyuk = e.channel;
+  const k = enBuyuk + 1;
+  return k === 9 ? 10 : k;
+}
 
 /**
  * Çıkışa sınırlayıcı (limiter): kanallar %450'ye kadar çıkabildiği için toplam ses 0 dBFS'yi aşınca kırpılıp bozulmasın.
@@ -316,7 +350,29 @@ function Player({
   const anaYuzde = Math.round(muzikSesi * 100);
   const metronomYuzde = Math.round(metronomSesi * 100);
   const anaSesiAyarla = useCallback((v: number) => guncelle({ anaSes: v, sessiz: false }), [guncelle]);
-  const playback = useRef({ countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi, muzikSesi });
+  const playback = useRef({ countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi, muzikSesi, metronome });
+  /** Ölçü başı tıklarının MIDI kanalı (MIDI üretilince seçilir; bkz. tikKanaliSec) */
+  const tikKanali = useRef<number | null>(null);
+  /** Parçanın MIDI'de gerçekten nota/program olayı olan kanalları (MIDI üretilince; bkz. muzigiUygula) */
+  const kullanilanKanallar = useRef<Set<number> | null>(null);
+  /** Mikserdeki track sesleri (MIDI yeniden yüklenince kanallara yeniden uygulanır) */
+  const sesRef = useRef<Record<number, number>>({});
+  /**
+   * Kanal seslerini uygular: her track = alphaTab'ın varsayılanı (playbackInfo.volume / 16) × mikserdeki track sesi ×
+   * Müzik; ölçü başı tık kanalı = Metronom. alphaTab 1.8.4 her MIDI yüklenişinden sonra (readyForPlayback: ilk açılış,
+   * ölçü başı tıkı açılıp kapanınca, pan değişince) track kanallarının sesini kendi varsayılanına geri yazar
+   * (AlphaTabApiBase › _setupPlayerWrapper); bu yüzden "oynatıcı hazır" olayından hemen sonra yeniden uygulanır.
+   * (api.midiLoaded'a dinleyici eklemek 1.8.4'te kayıtta sonsuz özyinelemeye düştüğü için o olay kullanılmaz.)
+   */
+  const kanallariUygula = useCallback(() => {
+    const api = apiRef.current;
+    if (!api?.score) return;
+    const p = playback.current;
+    muzigiUygula(api, sesRef.current, p.muzikSesi, kullanilanKanallar.current);
+    if (p.barClicks && tikKanali.current !== null) api.player?.setChannelVolume?.(tikKanali.current, p.metronomSesi);
+    // Metronom kanalının sesi yeniden: alphaTab'ın varsayılan track sesi döngüsü metronom kanalına da yazabiliyor
+    api.metronomeVolume = p.metronome && !p.barClicks ? p.metronomSesi : 0;
+  }, []);
   /** "Hemen başla" ile sayımsız başlatılan çalmada sayım gösterilmez */
   const skipNext = useRef(false);
   /** Shift+tık aralık seçimi: tıklama anında Shift basılı mıydı, son tıklanan ölçü */
@@ -326,7 +382,8 @@ function Player({
     callbacks.current = { onBpmChange, onPlayingChange, onScore, onBar, onFinished, onDurum };
     panelRef.current = panel;
     display.current = { view, zoom, horizontal };
-    playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi, muzikSesi };
+    playback.current = { countIn, speed, loop, ramp, rampa: ayarlar.rampa, barClicks, showFret, shown, metronomSesi, sayimSesi, muzikSesi, metronome };
+    sesRef.current = volumes;
   });
 
   const staveProfile = useCallback((v: View, percussion: boolean) => {
@@ -447,6 +504,8 @@ function Player({
         api.error.on(() => !disposed && !api.score && setStatus("error"));
         api.playerReady.on(() => {
           if (disposed) return;
+          // alphaTab bu olaydan hemen sonra track seslerini varsayılana yazar: kanallar ondan sonra uygulanır
+          queueMicrotask(() => !disposed && kanallariUygula());
           sinirlayiciKur(api);
           setPlayerReady(true);
           setSfPercent(null);
@@ -476,22 +535,30 @@ function Player({
         sesYukleRef.current = sesYukle;
         sesYukle();
 
-        // "Yalnız ölçü başı" metronomu: her ölçünün ilk vuruşuna perküsyon kanalında (9) tık. Parçada davul izi yoksa
-        // kanal 9 yalnız bu tıklarındır: sesi Metronom kanalından gelir (kanal karışım sesi, Müzik'ten bağımsız). Davul izi
-        // varsa kanal paylaşılır; tıkın gücü vuruş hızıyla (velocity) ayarlanır.
+        // "Yalnız ölçü başı" metronomu: her ölçünün ilk vuruşuna KENDİ kanalında (tikKanaliSec) davul setinden tık. Sesi
+        // Metronom kanalından gelir (kanal karışım sesi); Müzik kanalı yalnız parçaların izlerine uygulandığı için müzik
+        // %0 ya da sessizken (davullu parçalarda da) tık çalmaya devam eder. Banka ve program her tıktan önce yinelenir:
+        // alphaTab durdurup sararken kanal ayarlarını sıfırlar (resetSoft), tık yine davul setinden çalsın.
         api.midiLoad.on((midi: any) => {
-          if (disposed || !playback.current.barClicks) return;
+          if (disposed) return;
+          kullanilanKanallar.current = notaKanallari(midi, at.midi.MidiEventType);
+          if (!playback.current.barClicks) return;
           const M = at.midi;
           const shift = midi.tickShift ?? 0;
           const lookups: any[] = api.tickCache?.masterBars ?? [];
-          const davul = davulKanaliVar(api);
-          const hiz = davul ? Math.min(127, Math.round(112 * Math.min(1, playback.current.metronomSesi))) : 112;
-          midi.addEvent(new M.ProgramChangeEvent(0, shift, 9, 0));
+          const k = tikKanaliSec(midi);
+          tikKanali.current = k;
           for (const mb of lookups) {
             const t = mb.start + shift;
-            midi.addEvent(new M.NoteOnEvent(0, t, 9, 33, hiz));
-            midi.addEvent(new M.NoteOffEvent(0, t + 240, 9, 33, 0));
+            midi.addEvent(new M.ControlChangeEvent(0, t, k, 0, 1));
+            midi.addEvent(new M.ControlChangeEvent(0, t, k, 32, 0));
+            midi.addEvent(new M.ProgramChangeEvent(0, t, k, 0));
+            midi.addEvent(new M.NoteOnEvent(0, t, k, 33, 112));
+            midi.addEvent(new M.NoteOffEvent(0, t + 240, k, 33, 0));
           }
+          api.player?.setChannelVolume?.(k, playback.current.metronomSesi);
+          // Test kancası: ölçü başı tıkının kanalı ve tık sayısı (scripts/oynatici-testi.mjs)
+          if (window.__gfTest) window.__gfTest.tik = { kanal: k, tik: lookups.length };
         });
 
         let countTimer = 0;
@@ -606,7 +673,7 @@ function Player({
       apiRef.current?.destroy();
       apiRef.current = null;
     };
-  }, [source, bank, staveProfile, rhythmMode, kaydirmaPayi]);
+  }, [source, bank, staveProfile, rhythmMode, kaydirmaPayi, kanallariUygula]);
 
   /** Ölçüleri (0'dan, kapsayıcı) çalma aralığı yap ve tabda işaretle */
   const selectBars = useCallback((a: number, b: number) => {
@@ -719,15 +786,16 @@ function Player({
     api.metronomeVolume = metronome && !barClicks ? metronomSesi : 0;
     api.isLooping = loop;
     api.countInVolume = countIn ? sayimSesi : 0;
-    // Ölçü başı tıkları (kanal 9, davul izi yoksa): Metronom kanalının sesi
-    if (barClicks && api.score && !davulKanaliVar(api)) api.player?.setChannelVolume?.(9, metronomSesi);
+    // Ölçü başı tıkları (kendi kanalları): Metronom kanalının sesi
+    if (barClicks && tikKanali.current !== null) api.player?.setChannelVolume?.(tikKanali.current, metronomSesi);
   }, [speed, metronome, barClicks, loop, countIn, metronomSesi, sayimSesi, playerReady]);
 
   // Müzik kanalı: her track'in karışım sesi = mikserdeki track sesi × Müzik. Metronom ve sayım bundan etkilenmez.
   useEffect(() => {
     const api = apiRef.current;
     if (!api?.score || !playerReady) return;
-    for (const t of api.score.tracks) api.changeTrackVolume([t], ((volumes[t.index] ?? 100) / 100) * muzikSesi);
+    muzigiUygula(api, volumes, muzikSesi, kullanilanKanallar.current);
+    api.metronomeVolume = playback.current.metronome && !playback.current.barClicks ? playback.current.metronomSesi : 0;
   }, [volumes, muzikSesi, playerReady, tracks]);
 
   // Ölçü başı tıkları MIDI'nin parçası: açılıp kapanınca MIDI yeniden üretilir (çalıyorsa kaldığı yerden sürer)
@@ -743,6 +811,7 @@ function Player({
     const tick = api.tickPosition;
     const keepRange = api.playbackRange;
     api.loadMidiForScore();
+    kanallariUygula();
     if (keepRange) api.playbackRange = keepRange;
     api.tickPosition = tick;
     if (wasPlaying) {
@@ -751,7 +820,7 @@ function Player({
       api.play();
       api.countInVolume = playback.current.countIn ? playback.current.sayimSesi : 0;
     }
-  }, [barClicks, playerReady]);
+  }, [barClicks, playerReady, kanallariUygula]);
 
   // Saklı mikser ayarlarını oynatıcıya uygula (ses bankası yüklenince) ve değiştikçe sakla
   useEffect(() => {
@@ -892,6 +961,7 @@ function Player({
       const tick = api.tickPosition;
       const keepRange = api.playbackRange;
       api.loadMidiForScore();
+      kanallariUygula();
       if (keepRange) api.playbackRange = keepRange;
       api.tickPosition = tick;
       if (wasPlaying) {

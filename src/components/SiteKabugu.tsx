@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { bolumeKaydir } from "./site/BolumGezgini";
+import GeriAlBildirimi from "./defter/GeriAlBildirimi";
 
 /** Gezinme ve alt bilgi olmadan açılan yollar (küçük pencereler) */
 const YALIN = ["/metronom/mini"];
@@ -64,6 +65,7 @@ export default function SiteKabugu({ ust, alt, children }: { ust: ReactNode; alt
       {/* Sayfa kabı: bantlar (.bant) bu kabın dışına tam genişlikte taşar */}
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-20 pt-8 sm:px-6">{children}</main>
       {alt}
+      <GeriAlBildirimi />
     </>
   );
 }
