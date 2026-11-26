@@ -222,6 +222,10 @@ export function seviyeSimgesi(seviye: string | number): SimgeTanim {
   return s(`seviye-${n as 1 | 2 | 3 | 4 | 5}`, SEVIYE_RENGI[n - 1]);
 }
 
+/** Dört kademenin simgesi (Başlangıç, Orta, Orta-Üst, Üst Düzey): basamaklar 1, 2, 3 ve dolu */
+const KADEME_BASAMAK = { baslangic: 1, orta: 2, "orta-ust": 3, ust: 5 } as const;
+export const kademeSimgesi = (k: keyof typeof KADEME_BASAMAK): SimgeTanim => seviyeSimgesi(KADEME_BASAMAK[k]);
+
 // ── Müzik türleri (çalınabilir parçalar, doğaçlama eşlikleri) ────────────────
 const TUR: Record<string, SimgeTanim> = {
   Blues: s("nota-uclu", "mavi"),

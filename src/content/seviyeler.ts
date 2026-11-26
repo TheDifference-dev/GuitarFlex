@@ -38,6 +38,45 @@ export const SEVIYE: Record<Level, { ad: string; tanim: string; etut: string }> 
   },
 };
 
+// ── Dört kademe (Arda, 24.11.2026): Başlangıç, Orta, Orta-Üst, Üst Düzey ─────
+// İçerikteki etiketler L1–L5 olarak kalır; uygulama onları dört kademede gösterir ve öneri yapar.
+// Eşleme: L1 → Başlangıç, L2 → Orta, L3 → Orta-Üst, L4 + L5 → Üst Düzey (kademe içinde L4 önce gelir).
+
+export type Kademe = "baslangic" | "orta" | "orta-ust" | "ust";
+export const KADEMELER: Kademe[] = ["baslangic", "orta", "orta-ust", "ust"];
+export const isKademe = (v: string): v is Kademe => (KADEMELER as string[]).includes(v);
+
+export const KADEME: Record<Kademe, { ad: string; tanim: string; seviyeler: Level[]; etut: string }> = {
+  baslangic: {
+    ad: "Başlangıç",
+    tanim: "Alternatif pena, power chord ve açık akorlar; açık pozisyon; dörtlük ve sekizlik ritim; nota adları.",
+    seviyeler: ["L1"],
+    etut: "E1 “İlk Riff”",
+  },
+  orta: {
+    ad: "Orta",
+    tanim: "Hammer-on, bend, vibrato, slide ve bare; pentatonik kutular; 16'lık, üçleme ve shuffle; majör gam ve pentatonik doğaçlama.",
+    seviyeler: ["L2"],
+    etut: "E2 “Kutudan Kutuya”",
+  },
+  "orta-ust": {
+    ad: "Orta-Üst",
+    tanim: "Legato, economy ve hybrid pena; 3NPS pozisyonlar ve triad çevrimleri; altılama ve funk 16'lık; modlar ve 7'li akorlar.",
+    seviyeler: ["L3"],
+    etut: "E3 “Doryen Yolculuk”",
+  },
+  ust: {
+    ad: "Üst Düzey",
+    tanim: "Sweep, tapping ve armonikler; CAGED ve drop 2/3; aksak ölçü ve poliritim; ii–V–I, modal interchange ve değişimler üzerinde doğaçlama.",
+    seviyeler: ["L4", "L5"],
+    etut: "E4 “Neoklasik” · E5 “Ödünç Renkler”",
+  },
+};
+
+const KADEME_OF: Record<Level, Kademe> = { L1: "baslangic", L2: "orta", L3: "orta-ust", L4: "ust", L5: "ust" };
+/** İçerik seviyesinin (L1–L5) kademesi */
+export const kademeOf = (l: Level): Kademe => KADEME_OF[l];
+
 export const EKSEN: Record<Axis, string> = {
   technique: "Teknik",
   fretboard: "Klavye",
@@ -88,33 +127,34 @@ export function chapterLevels(ch: Chapter): Level[] {
 
 // ── Sayfaya giden veri (sunucuda kurulur, tarayıcıya düz nesne olarak geçer) ──
 
-/** İlerleme anahtarı: pratik kartında teori yolu adımı, diğerlerinde ders kaydı */
-export type SeviyeDers = { key: string; step?: string; tab: boolean };
+/** İlerleme anahtarı: pratik kartında teori yolu adımı, diğerlerinde ders kaydı. href/ad: öneri kartı için */
+export type SeviyeDers = { key: string; step?: string; tab: boolean; href: string; ad: string };
 
+/** Listede bir satır: kurs alt bölümü ya da bir teori yolunun bir bölümündeki adımlar */
 export type SeviyeSatiri = {
+  /** Kurs slug'ı ya da "yol:<slug>" */
   course: string;
   courseTitle: string;
   code: string;
   title: string;
   href: string;
+  axis: Axis;
+  level: Level;
+  kaynak: "kurs" | "ek" | "stil" | "etut" | "yol";
   lessons: SeviyeDers[];
 };
 
-export type SeviyeGrubu = { axis: Axis; rows: SeviyeSatiri[] };
-
-/** Bitirme koşulunun yol adımları (§3): Okuma, Kulak ve Ritim yollarında bu seviyedeki adımlar */
+/** Bitirme koşulunun yol adımları (§3): Okuma, Kulak ve Ritim yollarında bu kademedeki adımlar */
 export const KOSUL_YOLLARI = ["okuma", "kulak", "ritim"] as const;
-export type SeviyeYolAdimi = { kod: string; ad: string; bolum: string; step: string };
-export type SeviyeYolu = { slug: string; ad: string; adimlar: SeviyeYolAdimi[] };
 
 export type SeviyeVerisi = {
-  level: Level;
-  /** Okuma, Kulak, Ritim yolları: adımın seviyesine (adım, yoksa bölüm etiketi) göre bu seviyedeki adımlar */
-  yollar: SeviyeYolu[];
-  /** Dört eksen, her zaman bu sırada (boş olabilir) */
-  groups: SeviyeGrubu[];
-  /** Ek kurs / Stil kursu / Etüt: içerik paketinde yoksa null */
-  ekler: SeviyeGrubu[] | null;
-  stiller: SeviyeGrubu[] | null;
-  etut: SeviyeSatiri[] | null;
+  kademe: Kademe;
+  /** Önerilen sırayla: önce kolay içerik seviyesi (L4 < L5), sonra beceri önkoşul derinliği, kurs sırası, kod */
+  rows: SeviyeSatiri[];
 };
+
+/** Bitirme koşuluna giren dersler: tablı drill'ler ve Okuma, Kulak, Ritim yolu adımları */
+export const kosulDersleri = (v: SeviyeVerisi): SeviyeDers[] =>
+  v.rows.flatMap((r) =>
+    r.kaynak === "yol" ? (KOSUL_YOLLARI.some((y) => r.course === `yol:${y}`) ? r.lessons : []) : r.lessons.filter((d) => d.tab),
+  );

@@ -1,6 +1,6 @@
 import AnaSayfa, { type RehberSarki, type SeviyeBasamagi, type TeoriYolu } from "@/components/site/AnaSayfa";
 import { BACKINGS } from "@/content/dogaclama";
-import { LEVELS, SEVIYE } from "@/content/seviyeler";
+import { KADEME, KADEMELER } from "@/content/seviyeler";
 import { getCourses } from "@/lib/courses";
 import { kursAnahatti, kursKarti } from "@/lib/katalog";
 import { getOyun } from "@/lib/oyun-veri";
@@ -18,7 +18,7 @@ export default async function Home() {
   const elektro = aile("elektro");
   const akustik = aile("akustik");
 
-  const seviyeler: SeviyeBasamagi[] = LEVELS.map((l) => ({ level: l, ad: SEVIYE[l].ad, etut: SEVIYE[l].etut }));
+  const seviyeler: SeviyeBasamagi[] = KADEMELER.map((k) => ({ kademe: k, ad: KADEME[k].ad, etut: KADEME[k].etut }));
   const yollar: TeoriYolu[] = (
     await Promise.all(
       YOLLAR.map(async (y): Promise<TeoriYolu | null> => {

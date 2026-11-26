@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { SeviyeSayfasi } from "@/components/SeviyeYolu";
-import { SEVIYE, isLevel } from "@/content/seviyeler";
+import { KADEME, isKademe, isLevel, kademeOf } from "@/content/seviyeler";
 import { getSeviyeYolu } from "@/lib/seviye";
 
 export async function generateMetadata(props: PageProps<"/seviye/[seviye]">): Promise<Metadata> {
   const { seviye } = await props.params;
-  return { title: isLevel(seviye) ? `${seviye} ${SEVIYE[seviye].ad} · Seviye Yolu` : "Seviye Yolu" };
+  return { title: isKademe(seviye) ? `${KADEME[seviye].ad} · Seviye Yolu` : "Seviye Yolu" };
 }
 
 export default async function SeviyePage(props: PageProps<"/seviye/[seviye]">) {
   const { seviye } = await props.params;
-  if (!isLevel(seviye)) notFound();
-  const yol = await getSeviyeYolu();
-  return <SeviyeSayfasi data={yol[seviye]} />;
+  // Eski adresler (/seviye/L1 … L5) dört kademeye yönlenir
+  if (isLevel(seviye)) permanentRedirect(`/seviye/${kademeOf(seviye)}`);
+  if (!isKademe(seviye)) notFound();
+  const veriler = await getSeviyeYolu();
+  return <SeviyeSayfasi data={veriler[seviye]} veriler={veriler} />;
 }

@@ -7,8 +7,8 @@ import { dersAdresi, type KursAnahat, type KursKarti } from "@/lib/katalog";
 import { anahatDersleri, dersBitti, kartIlerleme, siradakiDers, sonCalisilan } from "@/lib/katalog-ilerleme";
 import { gorevler, gunler, seri, type OyunVeri } from "@/lib/oyun";
 import { formatDuration, streak, today, totalSeconds, useProgress } from "@/lib/progress";
-import type { Level } from "@/content/types";
-import { kursSimgesi, seviyeSimgesi, yerSimgesi, yolSimgesi, type SimgeRengi } from "@/lib/simge";
+import { kademeSimgesi, kursSimgesi, yerSimgesi, yolSimgesi, type SimgeRengi } from "@/lib/simge";
+import type { Kademe } from "@/content/seviyeler";
 import SongsterrBag from "@/components/SongsterrBag";
 import { defterIsle, kayitAc, songsterrKaydi, useDefter } from "@/lib/defter";
 import { gununTeknikleri, useTeknikSecimi } from "@/lib/gunun-teknikleri";
@@ -18,7 +18,7 @@ import UygulamaSimgesi from "./UygulamaSimgesi";
 import IlerlemeHalkasi from "./IlerlemeHalkasi";
 import { Eylemler, HapBag, MetinBag } from "./Vitrin";
 
-export type SeviyeBasamagi = { level: Level; ad: string; etut: string };
+export type SeviyeBasamagi = { kademe: Kademe; ad: string; etut: string };
 export type TeoriYolu = { slug: string; href: string; ad: string; etiket: string; not: string };
 export type RehberSarki = { adim: number; title: string; artist: string; kind: string; madalya?: string; url: string; renk: SimgeRengi };
 type Sayilar = { elektroKurs: number; elektroDers: number; akustikKurs: number; akustikDers: number; eslik: number };
@@ -186,7 +186,7 @@ export default function AnaSayfa({
       <AnaBant
         ton="uzay"
         baslik="Seviye Yolu"
-        alt="Beş seviye, tek yol. Kilit yok."
+        alt="Dört seviye, tek yol. Bilgi düzeyine göre öneri, kilit yok."
         eylemler={
           <>
             <HapBag href="/seviye">Daha Fazla Bilgi</HapBag>
@@ -196,20 +196,20 @@ export default function AnaSayfa({
           </>
         }
       >
-        <ol className="mx-auto mt-12 grid w-full max-w-[1024px] grid-cols-5 items-end gap-3">
+        <ol className="mx-auto mt-12 grid w-full max-w-[1024px] grid-cols-4 items-end gap-3">
           {seviyeler.map((s, i) => {
-            const simge = seviyeSimgesi(s.level);
+            const simge = kademeSimgesi(s.kademe);
             return (
-              <li key={s.level}>
+              <li key={s.kademe}>
                 <Link
-                  href={`/seviye/${s.level}`}
+                  href={`/seviye/${s.kademe}`}
                   data-renk={simge.renk}
                   className="yukselen flex flex-col justify-between rounded-[var(--radius-card)] p-5 text-left text-white"
-                  style={{ minHeight: `${10 + i * 2.5}rem`, background: "linear-gradient(180deg, var(--r1) 0%, var(--r2) 60%)" }}
+                  style={{ minHeight: `${10 + i * 3}rem`, background: "linear-gradient(180deg, var(--r1) 0%, var(--r2) 60%)" }}
                 >
                   <span className="flex items-center gap-2">
                     <UygulamaSimgesi simge={simge} boyut={32} />
-                    <span className="rounded-full bg-black/25 px-2 py-0.5 text-[13px] font-semibold tabular-nums">{s.level}</span>
+                    <span className="rounded-full bg-black/25 px-2 py-0.5 text-[13px] font-semibold tabular-nums">{i + 1}</span>
                   </span>
                   <span>
                     <span className="block font-[family-name:var(--font-display)] text-[21px] font-semibold leading-tight">{s.ad}</span>

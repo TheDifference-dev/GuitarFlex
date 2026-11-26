@@ -6,7 +6,7 @@ import SongsterrAra from "@/components/SongsterrAra";
 import { POPULAR_SONGS } from "@/content/sarkilar";
 import { HardDrive, Search, Star, Trash2, Upload, X } from "lucide-react";
 import type { Level } from "@/content/types";
-import { LEVELS, SEVIYE } from "@/content/seviyeler";
+import { KADEME, KADEMELER, LEVELS, kademeOf, type Kademe } from "@/content/seviyeler";
 import { AILELER, aileler as aileListesi, enstruman, type EnstrumanAilesi } from "@/lib/enstruman";
 import { dosyaSil, useDosyalarim, type DosyaKaydi } from "@/lib/dosyalarim";
 import { dosyaKimlik, favoriDegistir, kimlikUnut, ozgunKimlik, useFavoriler, useSonCalinanlar, type SarkiKimligi } from "@/lib/kutuphane-yerel";
@@ -98,7 +98,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
   const [sekme, setSekme] = useState<Sekme>("tumu");
   const [q, setQ] = useState("");
   const [aile, setAile] = useState<EnstrumanAilesi | "">("");
-  const [seviye, setSeviye] = useState<Level | "">("");
+  const [seviye, setSeviye] = useState<Kademe | "">("");
   const [tur, setTur] = useState("");
   const [sira, setSira] = useState<Siralama>("onerilen");
   const [surukle, setSurukle] = useState(false);
@@ -122,7 +122,7 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
     const igne = q.trim().toLocaleLowerCase("tr");
     const out = sekmeSatirlari(sekme).filter((s) => {
       if (aile && !s.aileler.includes(aile)) return false;
-      if (seviye && s.seviye !== seviye) return false;
+      if (seviye && (!s.seviye || kademeOf(s.seviye) !== seviye)) return false;
       if (tur && s.tur !== tur) return false;
       return !igne || s.ara.toLocaleLowerCase("tr").includes(igne);
     });
@@ -245,11 +245,11 @@ export default function LibraryBrowser({ songs }: { songs: LibrarySummary[] }) {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <select value={seviye} onChange={(e) => setSeviye(e.target.value as Level | "")} className={secim} aria-label="Zorluk">
+            <select value={seviye} onChange={(e) => setSeviye(e.target.value as Kademe | "")} className={secim} aria-label="Zorluk">
               <option value="">Zorluk: Tümü</option>
-              {LEVELS.map((l) => (
-                <option key={l} value={l}>
-                  {l} · {SEVIYE[l].ad}
+              {KADEMELER.map((k) => (
+                <option key={k} value={k}>
+                  {KADEME[k].ad}
                 </option>
               ))}
             </select>

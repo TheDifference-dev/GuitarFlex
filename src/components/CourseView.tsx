@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { BookText, Check, ChevronDown, FileText, ListTree, ListVideo, PlayCircle, Sparkles } from "lucide-react";
 import type { Course, Lesson, Section } from "@/content/types";
 import { lessonKey } from "@/content/courses";
-import { chapterLevels, isAcoustic } from "@/content/seviyeler";
+import { chapterLevels, isAcoustic, kademeOf } from "@/content/seviyeler";
 import SeviyeRozeti from "./SeviyeRozeti";
 import Cekmece from "./site/Cekmece";
 import Kirinti from "./site/Kirinti";
@@ -346,7 +346,7 @@ export default function CourseView({ course, kurslar = [], aile }: { course: Cou
                 <div className="flex items-center gap-3 border-b border-line/70 pb-3">
                   <span className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-semibold text-accent">{sinavBolumu(c) ? "Sınav" : c.code}</span>
                   <h2 className="flex-1 text-lg font-semibold">{c.title}</h2>
-                  {badges && chapterLevels(c).map((lv) => <SeviyeRozeti key={lv} level={lv} />)}
+                  {badges && [...new Map(chapterLevels(c).map((lv) => [kademeOf(lv), lv])).values()].map((lv) => <SeviyeRozeti key={lv} level={lv} />)}
                   <span className="text-sm font-medium text-muted">{total} dk</span>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
